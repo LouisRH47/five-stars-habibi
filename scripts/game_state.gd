@@ -53,7 +53,7 @@ var insurance_on := true
 var boss_paid_crash := false
 
 ## The shift (Session 13). scripts/shift_manager.gd counts shift_time_left down.
-var shift_number := 1
+var shift_number := 0  # start_shift() makes the first one shift 1
 var shift_time_left := GameConfig.SHIFT_LENGTH
 ## True once the shift clock has run out (you may still be finishing your last order).
 var shift_clock_out := false
@@ -75,6 +75,63 @@ var stage: Stage = Stage.NONE
 
 # Your last accept (true) / skip (false) choices, newest at the end.
 var _choices: Array[bool] = []
+
+## Where the game is saved (Session 15). The smoke test points this at its own file.
+var save_path := "user://save.json"
+var _save_waiting := false
+
+
+func _ready() -> void:
+	Settings.load_once()
+	load_game()
+	# Save by itself whenever something worth keeping changes.
+	for changed in [money_changed, stats_changed, insurance_changed, shift_ended]:
+		changed.connect(func(_a = null): save_soon())
+
+
+## Saves at the end of this frame (several changes at once only save once).
+func save_soon() -> void:
+	if not _save_waiting:
+		_save_waiting = true
+		_save_if_waiting.call_deferred()
+
+
+func _save_if_waiting() -> void:
+	if _save_waiting:  # skip it if something already saved this frame
+		save_game()
+
+
+func save_game() -> bool:
+	_save_waiting = false
+	return SaveGame.save(self, save_path)
+
+
+## Loads the saved game (if there is one) and starts a fresh shift.
+func load_game() -> bool:
+	var found := SaveGame.load_into(self, save_path)
+	start_shift()
+	money_changed.emit(money)
+	stats_changed.emit()
+	insurance_changed.emit(insurance_on)
+	return found
+
+
+## Wipes everything, you too: back to the application. Deletes the save.
+func new_game() -> void:
+	SaveGame.delete(save_path)
+	rider_name = ""
+	rider_country = ""
+	rider_look = 0
+	hired = false
+	tutorial_done = false
+	tutorial_running = false
+	reset()
+	save_game()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		save_game()  # closing the window: keep your progress
 
 
 ## Starts everything again from zero. Used by the smoke test.
@@ -245,6 +302,7 @@ func hire(rider: String, country: String, look: int) -> void:
 	rider_look = look
 	hired = true
 	tutorial_done = false
+	save_soon()
 
 
 ## Starts a new shift: a full clock and a fresh summary.

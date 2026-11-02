@@ -264,7 +264,7 @@ Done when:
 - [ ] Customers use your name
 - [ ] The tutorial order explains the controls
 
-### Session 15: Menu and saving
+### Session 15: Menu and saving (built, needs testing)
 
 ```text
 Session 15. Add a main menu (Play, Settings, Quit) and a proper pause menu.

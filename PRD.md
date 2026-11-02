@@ -389,6 +389,7 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 2 Nov 2026 | Crashes: a fairly head-on hit at 10 km/h or more is a small crash (fall off 2 s, -30% damage); above 20 km/h into a car, wall or pole is a big crash. Cats and kids only cause small crashes. A cancelled order counts as 0 stars in the rating. Wallet can go below 0. I toggles insurance |
 | 2 Nov 2026 | Shifts: 10 real minutes, clock 08:00 to 18:00, orange in the last minute. An order on the phone when the clock runs out disappears without counting as a skip. A big crash ends the shift after the clinic |
 | 2 Nov 2026 | Application: 43 countries + 'Somewhere else'; a 3D preview shows the picked look. Tutorial order: Pizza to villa 4. During the tutorial no other orders come and the shift clock waits |
+| 2 Nov 2026 | Saving: one JSON save (user://save.json) that saves itself after every change and when you close the game. New game wipes it. Settings (fullscreen, later volume) live in their own file so New game keeps them |
 | 2 Nov 2026 | Palm Grove layout: 300 m square with a wall and a closed gate in the south, Palm Grove Avenue from the gate to a central roundabout, three cross streets, 36 villas, restaurant strip just inside the gate |
 
 ## Sources

@@ -21,7 +21,11 @@ func _ready() -> void:
 
 ## A random line with the rider's name filled in.
 static func pick_line(rider_name: String) -> String:
-	var line: String = LINES_SCRIPT.LINES.pick_random()
+	return fill_line(LINES_SCRIPT.LINES.pick_random(), rider_name)
+
+
+## Puts the rider's name where a line says {name} ("habibi" if there's no name yet).
+static func fill_line(line: String, rider_name: String) -> String:
 	return line.replace("{name}", rider_name if rider_name != "" else GameConfig.DEFAULT_RIDER_NAME)
 
 

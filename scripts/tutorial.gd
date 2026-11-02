@@ -83,6 +83,7 @@ func _on_delivered(_order: Order) -> void:
 func finish() -> void:
 	GameState.tutorial_running = false
 	GameState.tutorial_done = true
+	GameState.save_soon()
 	_ending = false
 	_panel.visible = false
 

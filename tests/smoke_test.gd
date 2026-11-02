@@ -34,6 +34,8 @@ const TEST_OFFER_TIMEOUT := 0.2
 ## Every action the test might press. All of them are let go at the end.
 const ACTIONS := ["move_forward", "move_back", "sprint", "handbrake", "interact", "skip_order"]
 const FONT_PATH := "res://assets/fonts/NotoSansArabic.ttf"
+## The test saves here, never over the real save (user://save.json).
+const TEST_SAVE := "user://smoke_test_save.json"
 
 var _main: Node
 var _bike: CharacterBody3D
@@ -62,6 +64,10 @@ func _initialize() -> void:
 	if not user_args.is_empty():
 		scene_path = user_args[0]
 	print("      scene: ", scene_path)
+	# Start from a clean slate, whatever is in the real save, and never write to it.
+	var state := root.get_node("GameState")
+	state.save_path = TEST_SAVE
+	state.new_game()
 	var packed := load(scene_path) as PackedScene
 	if packed == null:
 		print("FAIL: could not load ", scene_path)
@@ -546,10 +552,8 @@ func _check_tutorial() -> void:
 	_check("the 3 looks are different", parts[0] != parts[1] and parts[1] != parts[2], "%s parts" % [parts])
 	RiderLook.apply(model, gs.rider_look)
 	var spawner := _main.get_node("CustomerSpawner")
-	var named := false
-	for i in 80:
-		named = named or "Sam" in spawner.pick_line(gs.rider_name)
-	_check("customers use your name", named, "")
+	var named: String = spawner.fill_line("Thanks, {name}!", gs.rider_name)
+	_check("customers use your name", named == "Thanks, Sam!", named)
 	if tutorial == null:
 		print("      no Tutorial in this scene, tutorial not checked")
 		return
@@ -584,6 +588,55 @@ func _check_tutorial() -> void:
 	tutorial.finish()
 	_check("the tutorial finishes and normal orders start", gs.tutorial_done and not gs.tutorial_running, "")
 	gs.reset()
+
+
+## Session 15: save and load keep your progress, the menus have their buttons.
+## Runs last (from _finish), on the test's own save file.
+func _check_saving() -> void:
+	var gs: Node = _game_state
+	if gs == null:
+		return
+	paused = false
+	gs.reset()
+	gs.hire("Lina", "Oman", 1)
+	_quick_delivery(100.0, false)
+	_quick_delivery(50.0, false)
+	gs.set_insurance(false)
+	var keep := {"money": gs.money, "xp": gs.xp, "jobs": gs.history.size(), "rating": gs.rating()}
+	_check("the game saves", gs.save_game() and FileAccess.file_exists(TEST_SAVE), TEST_SAVE)
+	gs.reset()
+	gs.rider_name = ""
+	gs.hired = false
+	gs.insurance_on = true
+	_check("loading finds the save", gs.load_game(), "")
+	_check("money, XP and history come back", gs.money == keep["money"] and gs.xp == keep["xp"]
+			and gs.history.size() == keep["jobs"] and absf(gs.rating() - keep["rating"]) < 0.001,
+			"Dh %d, %d XP, %d jobs" % [gs.money, gs.xp, gs.history.size()])
+	_check("name, country, look and insurance come back", gs.rider_name == "Lina" and gs.rider_country == "Oman"
+			and gs.rider_look == 1 and gs.hired and not gs.insurance_on, "")
+	_check("saved numbers stay whole numbers", typeof(gs.money) == TYPE_INT and typeof(gs.history[0]["pay"]) == TYPE_INT, "")
+	var menu: Control = load("res://scenes/main_menu.tscn").instantiate()
+	root.add_child(menu)
+	_check("main menu: Continue goes to Palm Grove once hired", menu.play_button.text == "Continue"
+			and menu.play_scene() == "res://scenes/palm_grove.tscn", menu.play_button.text)
+	gs.hired = false
+	_check("main menu: Play goes to the application the first time", menu.play_scene() == "res://scenes/application.tscn", "")
+	menu._open_settings()
+	_check("main menu: Settings opens", menu.settings_panel.visible and menu.settings_panel.fullscreen_box != null, "")
+	menu.free()
+	var pause_menu: Node = _main.get_node("PauseMenu")
+	pause_menu._pause()
+	var names := []
+	for button in pause_menu.get_node("Panel/Margin/Rows/Buttons").get_children():
+		names.append(button.text)
+	_check("pause menu: Resume, Settings, Main menu, Quit", names == ["Resume", "Settings", "Main menu", "Quit game"], "%s" % [names])
+	pause_menu._resume()
+	_check("the game opens on the main menu",
+			ProjectSettings.get_setting("application/run/main_scene") == "res://scenes/main_menu.tscn", "")
+	gs.new_game()
+	_check("New game wipes everything", gs.money == 0 and gs.history.is_empty() and not gs.hired and gs.rider_name == "", "")
+	SaveGame.delete(TEST_SAVE)
+	_check("the test save is cleaned up", not FileAccess.file_exists(TEST_SAVE), "")
 
 
 ## Session 13: a 1-second test shift. carrying: run out of time while carrying an order.
@@ -819,6 +872,7 @@ func _check(label: String, ok: bool, detail: String) -> void:
 
 
 func _finish() -> void:
+	_check_saving()
 	for action in ACTIONS:
 		Input.action_release(action)
 	_phase = "done"

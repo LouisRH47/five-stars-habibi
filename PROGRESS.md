@@ -270,6 +270,24 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - The smoke test fills in the application, checks all 3 looks, and walks through the tutorial.
   It now always tests Palm Grove (not the main scene, which is the application).
 
+### Session 15
+- The game now opens on the main menu (`scenes/main_menu.tscn`, `scripts/main_menu.gd`):
+  the title, a slowly turning bike in your look, and Play (Continue once you're hired),
+  New game (wipes the save, back to the application), Settings and Quit.
+- Play goes to the application the first time, and straight to Palm Grove after that.
+- Saving (`scripts/save_game.gd`): money, delivery history (so your rating), XP, your name,
+  country and look, the insurance setting, and whether you're hired / did the tutorial /
+  the boss paid a crash. GameState saves by itself after every delivery, crash, shift end
+  and insurance switch, and when you close the window. It loads when the game starts.
+  The save is `user://save.json` (on a Mac: ~/Library/Application Support/Godot/app_userdata/Five Stars Habibi/).
+- Settings (`scripts/settings.gd`, `scripts/settings_panel.gd`): Fullscreen for now, kept in
+  `user://settings.cfg`, so New game doesn't reset them.
+- The pause menu (Esc) now has Resume, Settings, Main menu (saves first) and Quit game (saves
+  first), and lists all the keys.
+- Fixed: the first shift was called "Shift 2".
+- The smoke test uses its own save file (never the real one), checks save and load keep
+  everything, the menus' buttons, and New game; then deletes its save.
+
 ## Known bugs
 - None found yet. Not play-tested by Louis yet.
 - Godot is in the Downloads folder, not Applications, so the commands in CLAUDE.md

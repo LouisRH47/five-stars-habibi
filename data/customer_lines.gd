@@ -25,5 +25,7 @@ const LINES := [
 	"Best part of my day, honestly.",
 	"Hold on, let me find my slippers... never mind!",
 	"Habibi, you're a hero!",
+	"{name}! My favourite rider is back!",
+	"Thank you, {name}. Drink some water, it's hot out there!",
 	"Ice cold, just how I like it. Wait, is this pizza?",
 ]
