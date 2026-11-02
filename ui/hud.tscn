@@ -1,0 +1,94 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/hud.gd" id="1_rbyyf"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_276te"]
+bg_color = Color(0.05882353, 0.1254902, 0.14901961, 0.86)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_546lt"]
+bg_color = Color(0.18039216, 0.2901961, 0.32156864, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7ihmi"]
+bg_color = Color(0.49803922, 0.827451, 0.8784314, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[node name="HUD" type="CanvasLayer" unique_id=1036215161]
+script = ExtResource("1_rbyyf")
+
+[node name="Panel" type="PanelContainer" parent="." unique_id=618163567]
+custom_minimum_size = Vector2(210, 0)
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -234.0
+offset_top = -134.0
+offset_right = -24.0
+offset_bottom = -24.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_276te")
+
+[node name="Margin" type="MarginContainer" parent="Panel" unique_id=740298529]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 14
+
+[node name="Rows" type="VBoxContainer" parent="Panel/Margin" unique_id=1800304725]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="SpeedRow" type="HBoxContainer" parent="Panel/Margin/Rows" unique_id=236858449]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Speed" type="Label" parent="Panel/Margin/Rows/SpeedRow" unique_id=436105369]
+layout_mode = 2
+theme_override_font_sizes/font_size = 48
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "0"
+
+[node name="Unit" type="Label" parent="Panel/Margin/Rows/SpeedRow" unique_id=2143146328]
+layout_mode = 2
+size_flags_vertical = 8
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.7882353, 0.89411765, 0.91764706, 1)
+text = "km/h"
+
+[node name="StaminaRow" type="HBoxContainer" parent="Panel/Margin/Rows" unique_id=1361244368]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Panel/Margin/Rows/StaminaRow" unique_id=1136216593]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.7882353, 0.89411765, 0.91764706, 1)
+text = "STAMINA"
+
+[node name="Hint" type="Label" parent="Panel/Margin/Rows/StaminaRow" unique_id=961846233]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.7882353, 0.89411765, 0.91764706, 1)
+text = "SHIFT to sprint"
+
+[node name="Stamina" type="ProgressBar" parent="Panel/Margin/Rows" unique_id=1347498092]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_546lt")
+theme_override_styles/fill = SubResource("StyleBoxFlat_7ihmi")
+value = 100.0
+show_percentage = false

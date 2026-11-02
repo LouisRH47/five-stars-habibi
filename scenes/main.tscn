@@ -2,6 +2,8 @@
 
 [ext_resource type="Script" path="res://scripts/bike.gd" id="1_0wfyh"]
 [ext_resource type="Script" path="res://scripts/follow_camera.gd" id="2_sugp2"]
+[ext_resource type="PackedScene" path="res://ui/hud.tscn" id="3_jyhfs"]
+[ext_resource type="Script" path="res://scripts/hud.gd" id="4_tbgi4"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_jyhfs"]
 sky_top_color = Color(0.30980393, 0.6627451, 0.8392157, 1)
@@ -324,3 +326,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 4.5)
 fov = 70.0
 script = ExtResource("2_sugp2")
 target = NodePath("../Bike")
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=1036215161 node_paths=PackedStringArray("bike") instance=ExtResource("3_jyhfs")]
+script = ExtResource("4_tbgi4")
+bike = NodePath("../Bike")

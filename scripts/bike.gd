@@ -1,26 +1,62 @@
 extends CharacterBody3D
 ## The player's bicycle.
 ## W / Up arrow = pedal, S / Down arrow = brake (then roll backwards),
-## A / D or Left / Right = steer, Space = handbrake.
+## A / D or Left / Right = steer, Space = handbrake, Shift = sprint.
 ## Tuning numbers are in scripts/game_config.gd.
+
+## Sent when the bike hits something. strength is 0 (tiny tap) to 1 (full-speed, head-on).
+signal bumped(strength: float)
 
 ## Current speed in metres per second. Positive = forwards.
 var speed := 0.0
+## Sprint energy, 0 to STAMINA_MAX.
+var stamina := GameConfig.STAMINA_MAX
+## True after stamina runs out, until it refills to STAMINA_TIRED_UNTIL.
+var tired := false
+## True while actually sprinting this frame.
+var sprinting := false
+
+var _steer := 0.0
+var _bump_cooldown := 0.0
+
+@onready var _model: Node3D = $Model
 
 
 func _physics_process(delta: float) -> void:
-	_update_speed(delta)
+	_update_stamina_and_speed(delta)
 	_update_steering(delta)
 	_move(delta)
+	_update_lean(delta)
+	_bump_cooldown = maxf(_bump_cooldown - delta, 0.0)
 
 
-func _update_speed(delta: float) -> void:
-	var max_speed := GameConfig.BIKE_MAX_SPEED_KMH / 3.6
+func _update_stamina_and_speed(delta: float) -> void:
 	var pedal := Input.get_action_strength("move_forward")
 	var brake := Input.get_action_strength("move_back")
 
+	sprinting = pedal > 0.0 and Input.is_action_pressed("sprint") and not tired and stamina > 0.0
+	if sprinting:
+		stamina = maxf(stamina - GameConfig.STAMINA_DRAIN_PER_SEC * delta, 0.0)
+		if stamina <= 0.0:
+			tired = true
+	else:
+		var refill := GameConfig.STAMINA_REFILL_PEDALLING if pedal > 0.0 else GameConfig.STAMINA_REFILL_COASTING
+		stamina = minf(stamina + refill * delta, GameConfig.STAMINA_MAX)
+		if tired and stamina >= GameConfig.STAMINA_TIRED_UNTIL:
+			tired = false
+
+	var max_kmh := GameConfig.BIKE_SPRINT_MAX_SPEED_KMH if sprinting else GameConfig.BIKE_MAX_SPEED_KMH
+	var accel := GameConfig.BIKE_SPRINT_ACCELERATION if sprinting else GameConfig.BIKE_ACCELERATION
+	var max_speed := max_kmh / 3.6
+
 	if pedal > 0.0:
-		speed = move_toward(speed, max_speed, GameConfig.BIKE_ACCELERATION * pedal * delta)
+		if speed > max_speed:
+			# Just stopped sprinting: ease back down to normal top speed.
+			speed = move_toward(speed, max_speed, GameConfig.BIKE_COAST_DRAG * delta)
+		else:
+			# Gentle start: you gain speed fastest from a standstill and slower near the top.
+			var ease_off := 1.0 - 0.6 * clampf(speed / max_speed, 0.0, 1.0)
+			speed = move_toward(speed, max_speed, accel * pedal * ease_off * delta)
 	elif brake > 0.0:
 		if speed > 0.1:
 			speed = move_toward(speed, 0.0, GameConfig.BIKE_BRAKE * brake * delta)
@@ -35,14 +71,13 @@ func _update_speed(delta: float) -> void:
 
 
 func _update_steering(delta: float) -> void:
-	var steer := Input.get_action_strength("steer_left") - Input.get_action_strength("steer_right")
-	if steer == 0.0:
+	_steer = Input.get_action_strength("steer_left") - Input.get_action_strength("steer_right")
+	if _steer == 0.0:
 		return
-	var max_speed := GameConfig.BIKE_MAX_SPEED_KMH / 3.6
-	var speed_ratio := clampf(absf(speed) / max_speed, 0.0, 1.0)
+	var speed_ratio := clampf(absf(speed) / (GameConfig.BIKE_MAX_SPEED_KMH / 3.6), 0.0, 1.0)
 	# You can't turn while standing still, and turning is a bit gentler at top speed.
 	var grip := clampf(speed_ratio * 3.0, 0.0, 1.0) * lerpf(1.0, 0.6, speed_ratio)
-	var turn := deg_to_rad(GameConfig.BIKE_STEER_DEG_PER_SEC) * steer * grip * delta
+	var turn := deg_to_rad(GameConfig.BIKE_STEER_DEG_PER_SEC) * _steer * grip * delta
 	if speed < 0.0:
 		turn = -turn  # steering flips when rolling backwards, like a real bike
 	rotate_y(turn)
@@ -65,5 +100,17 @@ func _move(delta: float) -> void:
 		var normal := get_slide_collision(i).get_normal()
 		if absf(normal.y) < 0.5:
 			var head_on := absf(forward.dot(normal))
+			var strength := head_on * clampf(absf(speed) / (GameConfig.BIKE_MAX_SPEED_KMH / 3.6), 0.0, 1.0)
 			speed *= lerpf(1.0, GameConfig.BIKE_BUMP_SPEED_KEEP, head_on)
+			if strength >= GameConfig.BUMP_MIN_STRENGTH and _bump_cooldown <= 0.0:
+				_bump_cooldown = GameConfig.BUMP_COOLDOWN
+				bumped.emit(strength)
 			break
+
+
+func _update_lean(delta: float) -> void:
+	# Lean into turns: more lean when going faster. Only the model leans, not the physics body.
+	var speed_ratio := clampf(absf(speed) / (GameConfig.BIKE_MAX_SPEED_KMH / 3.6), 0.0, 1.0)
+	var target_lean := deg_to_rad(GameConfig.BIKE_LEAN_MAX_DEG) * _steer * speed_ratio
+	var follow := 1.0 - exp(-GameConfig.BIKE_LEAN_SMOOTHING * delta)
+	_model.rotation.z = lerpf(_model.rotation.z, target_lean, follow)
