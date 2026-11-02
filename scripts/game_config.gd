@@ -39,3 +39,20 @@ const CAMERA_FOLLOW_SMOOTHING := 6.0  # higher = camera catches up faster
 const GRAVITY := 9.8
 const WORLD_FALL_RESET_Y := -20.0      # if the bike drops below this height it goes back to the start
 const WHEEL_RADIUS := 0.34            # metres, matches the wheel mesh (used to spin the wheels)
+
+# --- Orders (Session 3) ---
+const ORDER_NEXT_DELAY := 3.0         # seconds with no order before the next one pops up
+const ORDER_OFFER_TIMEOUT := 30.0     # an order you ignore this long counts as skipped (PRD)
+const ORDER_PAY_MIN := 8              # Dh, lowest Tier 1 pay (PRD: 8 to 15 Dh)
+const ORDER_PAY_MAX := 15             # Dh, highest Tier 1 pay
+const ORDER_PAY_BASE := 7.0           # Dh every order pays before the distance extra
+const ORDER_PAY_PER_METRE := 0.08     # Dh extra per metre from restaurant to villa (30 m = 9 Dh, 90 m = 14 Dh)
+const ORDER_ACCEPT_HISTORY := 20      # acceptance rate looks at your last 20 accept/skip choices
+const ORDER_LOW_ACCEPTANCE := 0.7     # below 70% you get boring orders: short ride, lowest pay
+const ORDER_BORING_CHOICES := 2       # a boring order goes to one of the 2 villas closest to the restaurant
+const INTERACT_RADIUS := 3.5          # metres from a door where E picks up or drops off
+const DOOR_DISTANCE := 2.5            # the door spot is this many metres in front of a building
+const DELIVERED_MESSAGE_TIME := 2.5   # seconds the phone shows "+12 Dh  Delivered!"
+const MARKER_RADIUS := 1.2            # the glowing beam over the next stop
+const MARKER_HEIGHT := 4.0            # lower than every roof (4.5 m), so the beam never covers a sign
+const MARKER_COLOUR := Color(0.9490196, 0.54901963, 0.15686275, 0.4)  # see-through orange

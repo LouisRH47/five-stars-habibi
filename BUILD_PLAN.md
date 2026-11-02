@@ -71,7 +71,7 @@ Done when:
 
 **Stop here until you have played Sessions 1 and 2 on your Mac.** Don't build Session 3 on top of something nobody has played yet.
 
-### Session 3: One full delivery on the test area
+### Session 3: One full delivery on the test area (built, needs testing)
 
 ```text
 Session 3. Before anything else, read PRD.md "Delivery loop" and "Controls".

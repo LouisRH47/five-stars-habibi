@@ -1,8 +1,8 @@
 # Progress
 
 ## Current session
-Session 2 plus review fixes (built, waiting for Louis to test on the Mac).
-Session 1 is built but also still needs testing on the Mac.
+Session 3: One full delivery on the test area (built, waiting for Louis to test on the Mac).
+Sessions 1, 2 and the review fixes also still need testing on the Mac.
 
 ## What works
 - Godot 4.7 project (Forward+), opens with `scenes/main.tscn` as the main scene.
@@ -46,11 +46,35 @@ Session 1 is built but also still needs testing on the Mac.
   sprints, drains stamina and brakes. Command is in CLAUDE.md.
 - The HUD script was attached twice (scene + main); now only in the HUD scene.
 
+### Session 3
+- Three restaurants (Pizza, Brain Freeze Gelato, Boba Oasis, teal) and ten villas
+  (numbers 1 to 10, cream) stand around the test area. They're built when the game
+  starts from the list in `data/test_area_places.gd` by `scripts/place_builder.gd`.
+  Move a building by changing its line in the list.
+- Signs are English only for now. Arabic + English signs come in Session 5.
+- `scripts/game_state.gd` is an autoload called GameState: the only place that keeps
+  money, the delivery history, the current order and your accept/skip record.
+- `scripts/order.gd` describes one order. `scripts/delivery_manager.gd` runs the loop.
+- The phone (top right, `ui/phone.tscn`) shows your wallet, new orders with a 30 s
+  countdown, and where to ride next. E accepts, Q skips, ignoring an order counts as a skip.
+- A see-through orange beam marks the next stop. Within 3.5 m of the door, the
+  "E" hint turns orange and E picks up or drops off. Delivering adds the pay (8 to 15 Dh,
+  more for longer rides) and the phone shows "+12 Dh  Delivered!".
+- Skipping a lot (accepting under 70% of your last 20 orders) gives short, 8 Dh orders.
+- All new numbers are in the Orders block of `scripts/game_config.gd`.
+- The smoke test now also does one full delivery, a skip, a boring order and a timeout.
+- Built and checked by reading (a builder, three reviewers and a fixer). Godot could not
+  be run in the cloud session, so nothing has been run yet.
+
 ## Known bugs
 - None found yet. Not tested on a real screen yet.
 - The review fixes and the smoke test were written without Godot available, so the
   first run on the Mac is the real check. If the smoke test prints an error, paste it in.
 
+- New scripts with class_name need Godot to refresh its class list once. Opening the
+  project in the Godot editor does it. If F5 shows "Could not find type Order" or similar,
+  close and reopen the project in the editor.
+
 ## Next
-- Louis tests Sessions 1 and 2 (plus the review fixes) with the checklists in BUILD_PLAN.md.
-- Then Session 3: one full delivery on the test area.
+- Louis tests Sessions 1, 2, the review fixes and Session 3 with the checklists in BUILD_PLAN.md.
+- Then Session 4: Palm Grove part 1, roads and villas.

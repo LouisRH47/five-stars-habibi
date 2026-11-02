@@ -21,7 +21,9 @@ Look and feel: the mockup linked at the top of PRD.md.
 ## How to work
 - Only build the current session from BUILD_PLAN.md. Don't jump ahead.
 - Small steps. Get one thing working before adding the next.
-- Before handing over, run Godot headless to catch script errors:
+- Before handing over, run Godot headless to catch script errors. The first
+  command refreshes Godot's list of named scripts (class_name), which new scripts need:
+  /Applications/Godot.app/Contents/MacOS/Godot --path . --headless --import
   /Applications/Godot.app/Contents/MacOS/Godot --path . --headless --quit
   Then run the smoke test, which rides the bike and checks it works:
   /Applications/Godot.app/Contents/MacOS/Godot --path . --headless -s tests/smoke_test.gd

@@ -4,6 +4,9 @@
 [ext_resource type="Script" path="res://scripts/follow_camera.gd" id="2_sugp2"]
 [ext_resource type="PackedScene" path="res://ui/hud.tscn" id="3_jyhfs"]
 [ext_resource type="PackedScene" path="res://ui/pause_menu.tscn" id="4_pause"]
+[ext_resource type="Script" path="res://scripts/place_builder.gd" id="5_places"]
+[ext_resource type="Script" path="res://scripts/delivery_manager.gd" id="6_orders"]
+[ext_resource type="PackedScene" path="res://ui/phone.tscn" id="7_phone"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_jyhfs"]
 sky_top_color = Color(0.30980393, 0.6627451, 0.8392157, 1)
@@ -300,6 +303,9 @@ shape = SubResource("BoxShape3D_tel4y")
 [node name="Mesh" type="MeshInstance3D" parent="Boxes/Box8" unique_id=922013321]
 mesh = SubResource("BoxMesh_5q0nq")
 
+[node name="PlaceBuilder" type="Node3D" parent="." unique_id=1507245001]
+script = ExtResource("5_places")
+
 [node name="Bike" type="CharacterBody3D" parent="." unique_id=869423824]
 script = ExtResource("1_0wfyh")
 
@@ -355,3 +361,11 @@ target = NodePath("../Bike")
 bike = NodePath("../Bike")
 
 [node name="PauseMenu" parent="." unique_id=1507244800 instance=ExtResource("4_pause")]
+
+[node name="DeliveryManager" type="Node" parent="." unique_id=1507245002 node_paths=PackedStringArray("bike", "place_builder")]
+script = ExtResource("6_orders")
+bike = NodePath("../Bike")
+place_builder = NodePath("../PlaceBuilder")
+
+[node name="Phone" parent="." unique_id=1507245003 node_paths=PackedStringArray("delivery_manager") instance=ExtResource("7_phone")]
+delivery_manager = NodePath("../DeliveryManager")
