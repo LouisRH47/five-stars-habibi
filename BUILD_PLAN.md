@@ -204,7 +204,7 @@ Done when:
 - [ ] Tips sometimes appear on 5-star jobs, never on lower ones
 - [ ] Wallet, rating and XP update correctly
 
-### Session 11: Customers at the door
+### Session 11: Customers at the door (built, needs testing)
 
 ```text
 Session 11. When you deliver, a simple customer character comes out of the

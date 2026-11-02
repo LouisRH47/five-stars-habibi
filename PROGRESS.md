@@ -202,6 +202,19 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - The smoke test checks the PRD star examples, that tips only come on 5-star jobs, the
   level rule, and that the rating uses the last 50 deliveries.
 
+### Session 11
+- When you deliver, a customer (`scripts/customer.gd`) steps out of the villa's front door,
+  waves and says one line in a white speech bubble, then turns round and goes back in.
+  5 outfits (white kandura, black abaya, t-shirt, hoodie, top with a cap), 4 skin tones.
+- 20 funny lines in `data/customer_lines.gd`. `{name}` in a line becomes the rider's name
+  (GameState.rider_name; "habibi" until the application form in Session 14).
+- 15% of orders say "Leave it at the door, please": nobody comes out, an orange food bag
+  is left on the doorstep for 8 seconds and the phone says "Left at the door!".
+  Other notes ("Extra napkins, please!"...) now come on 25% of the other orders.
+- `scripts/customer_spawner.gd` does this on every delivery. Numbers in `game_config.gd`.
+- The smoke test checks a customer comes out at the right villa with a line from the list,
+  the lines vary, and a leave-at-the-door order leaves a bag instead.
+
 ## Known bugs
 - None found yet. Not play-tested by Louis yet.
 - Godot is in the Downloads folder, not Applications, so the commands in CLAUDE.md
