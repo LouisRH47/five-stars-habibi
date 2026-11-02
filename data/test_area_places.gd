@@ -11,14 +11,19 @@ class_name TestAreaPlaces
 ## obstacles, so every building here keeps well clear of them.
 
 ## Building sizes: width (across the front), height, depth (front to back).
-const RESTAURANT_SIZE := Vector3(8.0, 4.5, 6.0)
+## Same restaurant size as in data/palm_grove.gd.
+const RESTAURANT_SIZE := Vector3(10.0, 5.0, 8.0)
 const VILLA_SIZE := Vector3(8.0, 5.5, 8.0)
 
-## Restaurants. Names are English only for now: bilingual signs come in Session 5.
+## Restaurants. arabic: the Arabic name on the signs. colour: the brand colour.
+## Same names and colours as in data/palm_grove.gd.
 const RESTAURANTS := [
-	{"id": "pizza", "name": "Pizza", "food": "pizza", "position": Vector3(-35, 0, 5), "facing": 90.0},
-	{"id": "gelato", "name": "Brain Freeze Gelato", "food": "ice cream", "position": Vector3(0, 0, 30), "facing": 180.0},
-	{"id": "boba", "name": "Boba Oasis", "food": "bubble tea", "position": Vector3(35, 0, 5), "facing": -90.0},
+	{"id": "pizza", "name": "Pizza", "arabic": "بيتزا", "food": "pizza",
+			"colour": Color(0.8, 0.2, 0.15, 1), "position": Vector3(-35, 0, 5), "facing": 90.0},
+	{"id": "gelato", "name": "Brain Freeze Gelato", "arabic": "برين فريز جيلاتو", "food": "ice cream",
+			"colour": Color(0.86, 0.33, 0.56, 1), "position": Vector3(0, 0, 30), "facing": 180.0},
+	{"id": "boba", "name": "Boba Oasis", "arabic": "واحة البوبا", "food": "bubble tea",
+			"colour": Color(0.47, 0.3, 0.66, 1), "position": Vector3(35, 0, 5), "facing": -90.0},
 ]
 
 ## Villas: a row of five far ahead of the start and a row of five behind it,

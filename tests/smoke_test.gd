@@ -1,7 +1,8 @@
 extends SceneTree
 ## Smoke test: loads the main scene (Palm Grove), pedals for a few seconds and checks
-## the bike actually moves, sprints and stops. Then it does one full delivery (offer,
-## accept, pick up, drop off, get paid), skips an order and lets one run out of time.
+## the bike actually moves, sprints and stops. It checks the sign font and that the
+## restaurants and street signs have Arabic + English text. Then it does one full delivery
+## (offer, accept, pick up, drop off, get paid), skips an order and lets one run out of time.
 ## Run it with:
 ##   /Applications/Godot.app/Contents/MacOS/Godot --path . --headless -s tests/smoke_test.gd
 ## To test another scene, add its path after "--", for example the old test area:
@@ -19,7 +20,9 @@ const STEPS := {
 const TEST_OFFER_TIMEOUT := 0.2
 ## Every action the test might press. All of them are let go at the end.
 const ACTIONS := ["move_forward", "move_back", "sprint", "handbrake", "interact", "skip_order"]
+const FONT_PATH := "res://assets/fonts/NotoSansArabic.ttf"
 
+var _main: Node
 var _bike: CharacterBody3D
 var _game_state: Node
 var _delivery: Node
@@ -45,10 +48,10 @@ func _initialize() -> void:
 		_phase = "done"
 		quit(1)
 		return
-	var main: Node = packed.instantiate()
-	root.add_child(main)
-	_bike = main.get_node("Bike")
-	_delivery = main.get_node_or_null("DeliveryManager")
+	_main = packed.instantiate()
+	root.add_child(_main)
+	_bike = _main.get_node("Bike")
+	_delivery = _main.get_node_or_null("DeliveryManager")
 	# GameState is an autoload, so it sits on the root next to the main scene.
 	_game_state = root.get_node_or_null("GameState")
 	Input.action_press("move_forward")
@@ -110,6 +113,7 @@ func _physics_process(_delta: float) -> bool:
 
 ## Fresh start, a new order pops up, accept it, then jump to the restaurant door.
 func _start_delivery_check() -> void:
+	_check_signs()
 	if _game_state == null:
 		_check("GameState autoload exists", false, "add scripts/game_state.gd as GameState in Project Settings > Globals")
 		_finish()
@@ -144,6 +148,60 @@ func _start_delivery_check() -> void:
 	_move_bike_to(_delivery.target_door())
 	_frame = 0
 	_phase = "at_restaurant"
+
+
+## The sign font has Arabic and Latin letters, every restaurant has an Arabic and an
+## English sign, and (on Palm Grove) every road end has a street sign, plus the welcome sign.
+func _check_signs() -> void:
+	var font := load(FONT_PATH) as Font
+	_check("sign font loads", font != null, FONT_PATH)
+	if font != null:
+		_check("sign font has Arabic and Latin letters", font.has_char(0x0628) and font.has_char(0x41), "")
+	var places := _main.get_node_or_null("PlaceBuilder")
+	if places == null:
+		_check("PlaceBuilder node exists in the scene", false, "")
+		return
+	for place in places.restaurants:
+		var node_name: String = "Restaurant_" + place["id"]
+		var restaurant := places.get_node_or_null(node_name)
+		_check(node_name + " was built", restaurant != null, "")
+		if restaurant != null:
+			_check(node_name + " has an Arabic sign", _has_arabic_label(restaurant), "")
+			_check(node_name + " has an English sign", _has_label_text(restaurant, place["name"]), place["name"])
+	var signs := _main.get_node_or_null("SignBuilder")
+	if signs == null:
+		print("      no SignBuilder in this scene, street signs not checked")
+		return
+	var good := 0
+	for i in signs.roads.size():
+		for end in 2:
+			var street_sign := signs.get_node_or_null("StreetSign_%d_%d" % [i, end])
+			if street_sign != null and _has_arabic_label(street_sign):
+				good += 1
+	var wanted: int = signs.roads.size() * 2
+	_check("every road end has a street sign with Arabic", wanted > 0 and good == wanted, "%d of %d" % [good, wanted])
+	var welcome := signs.get_node_or_null("WelcomeSign")
+	_check("the welcome sign has Arabic", welcome != null and _has_arabic_label(welcome), "")
+
+
+func _labels_under(node: Node) -> Array[Node]:
+	return node.find_children("*", "Label3D", true, false)
+
+
+func _has_arabic_label(node: Node) -> bool:
+	for label in _labels_under(node):
+		for i in label.text.length():
+			var code: int = label.text.unicode_at(i)
+			if code >= 0x0600 and code <= 0x06FF:
+				return true
+	return false
+
+
+func _has_label_text(node: Node, text: String) -> bool:
+	for label in _labels_under(node):
+		if label.text == text:
+			return true
+	return false
 
 
 ## Skip one order with Q, then let one run out of time.

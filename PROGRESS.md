@@ -1,8 +1,8 @@
 # Progress
 
 ## Current session
-Session 4: Palm Grove part 1, roads and villas (built, waiting for Louis to test on the Mac).
-Sessions 1 to 3 and the review fixes also still need testing on the Mac.
+Session 5: Palm Grove part 2, restaurants and bilingual signs (built, waiting for Louis
+to test on the Mac). Sessions 1 to 4 and the review fixes also still need testing on the Mac.
 
 ## What works
 - Godot 4.7 project (Forward+). The main scene is `scenes/palm_grove.tscn` (since Session 4).
@@ -90,6 +90,27 @@ Sessions 1 to 3 and the review fixes also still need testing on the Mac.
 - Not run yet: Godot can't be run in the cloud session. Checked by reading and by a
   separate reviewer.
 
+### Session 5
+- Font: Noto Sans Arabic (`assets/fonts/`, free SIL Open Font License, credited in
+  `CREDITS.md`). One font does both the Arabic and the English line on every sign.
+- `scripts/sign_text.gd` makes the sign text: flat, bold, Arabic line on top, English
+  below. Free-standing signs get a second face on the back so they never read mirrored.
+- Welcome sign (the Arabic test sign): "Welcome to Palm Grove / أهلاً بكم في بستان النخيل",
+  on two posts ahead on the right as soon as you start.
+- Restaurant strip: Pizza, Brain Freeze Gelato and Boba Oasis now stand side by side just
+  inside the gate (`scenes/restaurant.tscn`, `scripts/restaurant.gd`). Each has a brand
+  colour (red, pink, purple), an awning, shop windows, a glass door, a big bilingual sign
+  board and a blade sign sticking out so you can read it while riding up the avenue.
+  Orders pick up at their doors.
+- Street signs: every road has a bilingual name sign near each end (12 in all), built by
+  `scripts/sign_builder.gd` from the road list. Plates run along the road, so you read them
+  from the crossing street, like real street signs. The avenue's gate end has one facing you.
+- The Arabic names are in `data/palm_grove.gd` next to the English ones.
+- The smoke test checks the font has Arabic letters and every restaurant and street sign
+  has Arabic and English text. It can't check that the letters look joined: Louis checks that.
+- Not run yet: Godot can't be run in the cloud session. Built and checked by reading
+  (a builder, four reviewers, skeptics, a fixer and a final reviewer).
+
 ## Known bugs
 - None found yet. Not tested on a real screen yet.
 - The review fixes and the smoke test were written without Godot available, so the
@@ -100,7 +121,8 @@ Sessions 1 to 3 and the review fixes also still need testing on the Mac.
   close and reopen the project in the editor.
 
 ## Next
-- Louis tests Sessions 1 to 4 and the review fixes with the checklists in BUILD_PLAN.md.
-- Then Session 5: Palm Grove part 2, restaurants and bilingual signs.
+- Louis tests Sessions 1 to 5 and the review fixes with the checklists in BUILD_PLAN.md.
+- First check in Session 5: the Arabic on the welcome sign looks joined up and right-to-left.
+- Then Session 6: Palm Grove part 3, decoration and static obstacles.
 - Open question for Louis: rides in Palm Grove take up to about a minute, the PRD hoped
   for 2 to 3 minutes. See "Still open" in PRD.md.
