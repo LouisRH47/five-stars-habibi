@@ -145,7 +145,7 @@ Done when:
 - [ ] Palm Grove feels like a real community
 - [ ] Speed bumps give a noticeable bump
 
-### Session 7: Mini-map and addresses
+### Session 7: Mini-map and addresses (built, needs testing)
 
 ```text
 Session 7. Add a mini-map in the bottom-left corner showing the roads, the

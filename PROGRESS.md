@@ -1,13 +1,12 @@
 # Progress
 
 ## Current session
-Session 6: Palm Grove part 3, decoration and static obstacles (built, waiting for Louis
-to test on the Mac). Sessions 1 to 5 also still need testing on the Mac.
+Session 7: Mini-map and addresses (built and smoke-tested on the Mac, waiting for Louis
+to play-test). Sessions 1 to 6 still need play-testing on a real screen.
 
-**Handover:** Sessions 1 to 6 were built in a cloud session where Godot could not run,
-so none of it has ever been run. From Session 7 on, work happens on Louis's Mac in Claude
-Code in the terminal, where Godot can run. First job there: run the headless checks and
-the smoke test from CLAUDE.md and fix anything that fails, then play-test, then Session 7.
+**Godot checks on the Mac (start of Session 7):** the headless import, the quit check and
+the smoke test all ran on Godot 4.7.2 for Sessions 1 to 6 with no errors and RESULT: PASS,
+on both Palm Grove and the test area. Nothing needed fixing.
 
 ## What works
 - Godot 4.7 project (Forward+). The main scene is `scenes/palm_grove.tscn` (since Session 4).
@@ -137,18 +136,37 @@ the smoke test from CLAUDE.md and fix anything that fails, then play-test, then 
 - Layout checked with a script: nothing overlaps roads, buildings, signs, doors or walls.
 - Not run yet (no Godot in the cloud session). Built and checked by reading.
 
+### Session 7
+- Mini-map in the bottom-left corner (`ui/minimap.tscn`, `scripts/minimap.gd`). It turns
+  with you: the way you're riding is always up, you're the white arrow in the middle.
+- It draws the walls, roads, roundabout, park, car parks, mosque, mini market, restaurants
+  (in their brand colours) and every villa with its house number, all from the same data
+  list the map is built from. Moving a villa in `data/palm_grove.gd` moves it here too.
+- During an order an orange pin marks the next stop. Going to the villa, the villa turns
+  orange and the pin shows its number. A strip along the bottom says "Villa 12   85 m" (or
+  the restaurant name). If the stop is off the map, an orange arrow on the edge points the way.
+- A small "N" on the edge shows where north is.
+- Zoom and size are in the Mini-map block of `scripts/game_config.gd`.
+- About 1 in 3 orders comes with a customer note on the phone, like "Leave it at the door,
+  please". The notes are the ORDER_NOTES list in `game_config.gd`. They're only text for now;
+  Session 11 makes "leave it at the door" mean nobody comes out.
+- No GPS line on the road (that's a later upgrade).
+- The smoke test checks the mini-map turns with the bike, the pin shows the restaurant then
+  the villa number, a far-away stop stays pinned inside the map, and some orders have notes.
+- Checked with real screenshots too, not only headless.
+
 ## Known bugs
-- None found yet. Not tested on a real screen yet.
-- The review fixes and the smoke test were written without Godot available, so the
-  first run on the Mac is the real check. If the smoke test prints an error, paste it in.
+- None found yet. Not play-tested by Louis yet.
+- Godot is in the Downloads folder, not Applications, so the commands in CLAUDE.md
+  (/Applications/Godot.app/...) don't find it. Drag Godot.app into Applications to fix it.
 
 - New scripts with class_name need Godot to refresh its class list once. Opening the
   project in the Godot editor does it. If F5 shows "Could not find type Order" or similar,
   close and reopen the project in the editor.
 
 ## Next
-- Louis tests Sessions 1 to 6 and the review fixes with the checklists in BUILD_PLAN.md.
+- Louis play-tests Sessions 1 to 7 with the checklists in BUILD_PLAN.md.
 - First check in Session 5: the Arabic on the welcome sign looks joined up and right-to-left.
-- Then Session 7: Mini-map and addresses (from Louis's terminal, with Godot running).
+- Then Session 8: The three meters.
 - Open question for Louis: rides in Palm Grove take up to about a minute, the PRD hoped
   for 2 to 3 minutes. See "Still open" in PRD.md.

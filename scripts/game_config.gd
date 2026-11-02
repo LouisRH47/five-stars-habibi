@@ -68,3 +68,19 @@ const DELIVERED_MESSAGE_TIME := 2.5   # seconds the phone shows "+12 Dh  Deliver
 const MARKER_RADIUS := 1.2            # the glowing beam over the next stop
 const MARKER_HEIGHT := 4.0            # lower than every roof (5 m and up), so the beam never covers a sign
 const MARKER_COLOUR := Color(0.9490196, 0.54901963, 0.15686275, 0.4)  # see-through orange
+
+# --- Order notes (Session 7) ---
+const ORDER_NOTE_CHANCE := 0.35       # share of orders that come with a note from the customer
+const ORDER_NOTES := [                # picked at random; shown on the phone
+	"Leave it at the door, please",
+	"Please don't ring the bell, the baby is asleep",
+	"Extra napkins, please!",
+	"Call me when you're outside",
+	"Watch out for the cat by the gate",
+	"Knock twice, the bell is broken",
+]
+
+# --- Mini-map (Session 7) ---
+const MINIMAP_SIZE := 280.0           # pixels, the square in the bottom-left corner
+const MINIMAP_METRES_ACROSS := 170.0  # how many metres of the map fit across it (bigger = zoomed out)
+const MINIMAP_EDGE_INSET := 16.0      # pixels: a stop that's off the map gets pinned this far inside the edge

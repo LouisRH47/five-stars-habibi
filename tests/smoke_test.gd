@@ -5,6 +5,9 @@ extends SceneTree
 ## (offer, accept, pick up, drop off, get paid), skips an order and lets one run out of time.
 ## On Palm Grove it then checks the decorations (mosque, mini market, palms, parked cars,
 ## speed bumps) were built and rides over the first speed bump.
+## It also checks the mini-map (Session 7): it turns with the bike, and its pin shows the
+## restaurant, then the villa number, and stays on the map when the stop is far away.
+## And that some orders (not all) come with a customer note.
 ## Run it with:
 ##   /Applications/Godot.app/Contents/MacOS/Godot --path . --headless -s tests/smoke_test.gd
 ## To test another scene, add its path after "--", for example the old test area:
@@ -31,6 +34,7 @@ var _main: Node
 var _bike: CharacterBody3D
 var _game_state: Node
 var _delivery: Node
+var _minimap: Node
 var _order: Object
 var _money_before := 0
 var _skipped := 0
@@ -60,6 +64,7 @@ func _initialize() -> void:
 	root.add_child(_main)
 	_bike = _main.get_node("Bike")
 	_delivery = _main.get_node_or_null("DeliveryManager")
+	_minimap = _main.get_node_or_null("Minimap")
 	# GameState is an autoload, so it sits on the root next to the main scene.
 	_game_state = root.get_node_or_null("GameState")
 	Input.action_press("move_forward")
@@ -97,14 +102,23 @@ func _physics_process(_delta: float) -> bool:
 		"at_restaurant":
 			if _frame >= STEPS.settle:
 				_check("bike is near the restaurant door", _delivery.is_near_target(), "")
+				_check_minimap_pin(_order.restaurant_name)
 				_check("E at the restaurant picks up the food", _delivery.try_interact(), "")
 				_check_stage("TO_VILLA")
+				# Still at the restaurant, so the villa may be off the map: the pin must stay on it.
+				_check_minimap_pin(str(_order.villa_number))
+				_check_minimap_turns()
 				_move_bike_to(_delivery.target_door())
 				_frame = 0
 				_phase = "at_villa"
 		"at_villa":
 			if _frame >= STEPS.settle:
 				_check("bike is near the villa door", _delivery.is_near_target(), "")
+				_check_minimap_pin(str(_order.villa_number))
+				var spot: Vector2 = _minimap.world_to_map(_delivery.target_door())
+				var middle: Vector2 = _minimap.get_node("Panel/Margin/Map").size * 0.5
+				_check("at the villa the pin is right next to you", spot.distance_to(middle) < 10.0,
+						"%.1f px from the middle" % spot.distance_to(middle))
 				_check("E at the villa delivers", _delivery.try_interact(), "")
 				_check("money goes up by the order's pay", _game_state.money == _money_before + _order.pay, "Dh %d" % _game_state.money)
 				_check("delivery is saved in the history", _game_state.history.size() == 1, "%d in history" % _game_state.history.size())
@@ -218,6 +232,7 @@ func _has_label_text(node: Node, text: String) -> bool:
 
 ## Skip one order with Q, then let one run out of time.
 func _start_skip_check() -> void:
+	_check_notes()
 	_check("a second order pops up", _delivery.offer_now() != null, "")
 	_check("Q skips the order", _delivery.skip(), "")
 	_check_stage("NONE")
@@ -291,6 +306,53 @@ func _check_bump_ride() -> void:
 	_check("the bike rides on over the speed bump", moving,
 			"%.1f m past it, %.1f m/s" % [past, _bike.speed])
 	_check("the bike is still on the ground after the bump", _bike.is_on_floor(), "")
+
+
+## The mini-map's pin shows the right text and is drawn inside the map.
+func _check_minimap_pin(expected: String) -> void:
+	if _minimap == null:
+		_check("Minimap node exists in the scene", false, "add ui/minimap.tscn to the scene")
+		return
+	var view: Control = _minimap.get_node("Panel/Margin/Map")
+	_check("the mini-map is on screen", view.is_visible_in_tree() and view.size.x > 100.0, "%.0f px wide" % view.size.x)
+	_check("the mini-map has a pin during the order", _minimap.has_target(), "")
+	_check("the pin says " + expected, _minimap.target_label() == expected, _minimap.target_label())
+	var pin: Vector2 = _minimap.target_on_map()
+	_check("the pin is inside the mini-map", Rect2(Vector2.ZERO, view.size).has_point(pin), "at %s" % pin)
+
+
+## The mini-map turns with the bike: straight ahead is always up, your right is right.
+func _check_minimap_turns() -> void:
+	if _minimap == null:
+		return
+	var middle: Vector2 = _minimap.get_node("Panel/Margin/Map").size * 0.5
+	var old_turn := _bike.rotation.y
+	var ok := true
+	for turn in [0.0, 1.2, -2.5]:
+		_bike.rotation.y = turn
+		var ahead: Vector2 = _minimap.world_to_map(_bike.global_position - _bike.global_basis.z * 20.0) - middle
+		var right: Vector2 = _minimap.world_to_map(_bike.global_position + _bike.global_basis.x * 20.0) - middle
+		ok = ok and ahead.y < -10.0 and absf(ahead.x) < 0.5 and right.x > 10.0 and absf(right.y) < 0.5
+	_bike.rotation.y = old_turn
+	_check("the mini-map turns with the bike (ahead is up)", ok, "")
+	var far: Vector2 = _minimap.pin_spot(middle + Vector2(5000.0, -3000.0))
+	var inset := GameConfig.MINIMAP_EDGE_INSET
+	_check("a stop far away is pinned to the mini-map's edge",
+			Rect2(Vector2.ZERO, middle * 2.0).has_point(far) and absf(far.x - (middle.x * 2.0 - inset)) < 0.5,
+			"at %s" % far)
+
+
+## Some orders come with a note from the customer, most don't, and every note is from the list.
+func _check_notes() -> void:
+	var with_note := 0
+	var all_listed := true
+	for i in 200:
+		var note: String = _delivery.make_order().note
+		if note != "":
+			with_note += 1
+			all_listed = all_listed and GameConfig.ORDER_NOTES.has(note)
+	_check("some orders have a note, not all", with_note > 20 and with_note < 180, "%d of 200" % with_note)
+	_check("every note comes from the list in game_config.gd", all_listed, "")
 
 
 ## While the game is paused, the DeliveryManager gets no keys and no timer ticks.

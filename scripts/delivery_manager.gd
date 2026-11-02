@@ -78,6 +78,9 @@ func make_order() -> Order:
 	order.food = restaurant["food"]
 	order.villa_number = villa["number"]
 	order.pay = GameConfig.ORDER_PAY_MIN if boring else _pay_for(from.distance_to(to))
+	# Some customers add a short note, like "Leave it at the door, please".
+	if randf() < GameConfig.ORDER_NOTE_CHANCE:
+		order.note = GameConfig.ORDER_NOTES.pick_random()
 	return order
 
 
