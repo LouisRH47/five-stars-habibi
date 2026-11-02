@@ -379,6 +379,7 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 2 Nov 2026 | Controls table added to the PRD (Esc pause, R reset). Vision-only sections marked NOT NOW |
 | 2 Nov 2026 | Build order changed: delivery loop on the test area before the Palm Grove map. Villas placed from a data list |
 | 2 Nov 2026 | Signs use Noto Sans Arabic (SIL Open Font License, credited in CREDITS.md) for both lines. Brand names are written out in Arabic letters (برين فريز جيلاتو), plain words are translated (واحة البوبا, شارع الواحة) |
+| 2 Nov 2026 | Palm Grove gets a mosque and a park north of Ghaf Street, the Al Sarab Mini Market by the gate, palm trees, parked cars and 10 speed bumps. Speed bumps are a trigger, not a solid block: the bike hops, slows if fast, and counts each bump for the Session 8 damage meter |
 | 2 Nov 2026 | Palm Grove layout: 300 m square with a wall and a closed gate in the south, Palm Grove Avenue from the gate to a central roundabout, three cross streets, 36 villas, restaurant strip just inside the gate |
 
 ## Sources

@@ -3,6 +3,8 @@ extends SceneTree
 ## the bike actually moves, sprints and stops. It checks the sign font and that the
 ## restaurants and street signs have Arabic + English text. Then it does one full delivery
 ## (offer, accept, pick up, drop off, get paid), skips an order and lets one run out of time.
+## On Palm Grove it then checks the decorations (mosque, mini market, palms, parked cars,
+## speed bumps) were built and rides over the first speed bump.
 ## Run it with:
 ##   /Applications/Godot.app/Contents/MacOS/Godot --path . --headless -s tests/smoke_test.gd
 ## To test another scene, add its path after "--", for example the old test area:
@@ -15,7 +17,10 @@ const STEPS := {
 	"brake": 240,
 	"settle": 3,       # frames to wait after moving the bike to a door
 	"timeout": 30,     # half a second, longer than TEST_OFFER_TIMEOUT
+	"bump_ride": 300,  # 5 seconds of pedalling from a standstill, over a speed bump
 }
+## How far before the speed bump the bike starts its ride, in metres.
+const BUMP_RUN_UP := 6.0
 ## A short offer timer for the test, so it doesn't have to wait 30 seconds.
 const TEST_OFFER_TIMEOUT := 0.2
 ## Every action the test might press. All of them are let go at the end.
@@ -33,6 +38,9 @@ var _frame := 0
 var _phase := "pedal"
 var _failed := false
 var _top_speed := 0.0
+var _bumps_before := 0
+var _bump_spot := Vector3.ZERO
+var _bump_direction := Vector3.FORWARD
 
 
 func _initialize() -> void:
@@ -107,6 +115,10 @@ func _physics_process(_delta: float) -> bool:
 				_check("an ignored order counts as skipped", _skipped == 2, "%d skipped" % _skipped)
 				_check_stage("NONE")
 				_delivery.offer_timeout = GameConfig.ORDER_OFFER_TIMEOUT
+				_start_decor_check()
+		"bump_ride":
+			if _frame >= STEPS.bump_ride:
+				_check_bump_ride()
 				_finish()
 	return false
 
@@ -220,6 +232,65 @@ func _start_skip_check() -> void:
 		_check("low acceptance rate gives a boring order", boring.pay == GameConfig.ORDER_PAY_MIN, "%d Dh" % boring.pay)
 	_frame = 0
 	_phase = "timeout"
+
+
+## Session 6: every palm, parked car and speed bump in the data list was built, the mosque
+## and mini market have Arabic + English signs. Then the bike rides over the first speed bump.
+func _start_decor_check() -> void:
+	var decor := _main.get_node_or_null("DecorBuilder")
+	if decor == null:
+		print("      no DecorBuilder in this scene, decorations and speed bumps not checked")
+		_finish()
+		return
+	var lists := [["Palm_", decor.palms], ["ParkedCar_", decor.parked_cars], ["SpeedBump_", decor.speed_bumps]]
+	for pair in lists:
+		var prefix: String = pair[0]
+		var listed: Array = pair[1]
+		var built := 0
+		for i in listed.size():
+			if decor.get_node_or_null(prefix + str(i)) != null:
+				built += 1
+		_check("every %s* in the data list was built" % prefix, listed.size() > 0 and built == listed.size(),
+				"%d of %d" % [built, listed.size()])
+	var map: Dictionary = decor.data.get_script_constant_map()
+	for pair in [["Mosque", "MOSQUE"], ["Supermarket", "SUPERMARKET"]]:
+		var node_name: String = pair[0]
+		var place: Dictionary = map[pair[1]]
+		var english: String = place["name"]
+		var building := decor.get_node_or_null(node_name)
+		_check(node_name + " was built", building != null, "")
+		if building != null:
+			_check(node_name + " has an Arabic sign", _has_arabic_label(building), "")
+			_check(node_name + " has an English sign", _has_label_text(building, english), english)
+	var park := decor.get_node_or_null("Park")
+	_check("the park sign has Arabic", park != null and _has_arabic_label(park), "")
+	if decor.speed_bumps.is_empty():
+		_finish()
+		return
+	# Put the bike, standing still, a few metres before the first bump, facing across it.
+	var bump: Dictionary = decor.speed_bumps[0]
+	var facing: float = bump["facing"]
+	_bump_spot = bump["position"]
+	_bump_direction = Vector3(sin(deg_to_rad(facing)), 0.0, cos(deg_to_rad(facing)))
+	_move_bike_to(_bump_spot - _bump_direction * BUMP_RUN_UP)
+	# The bike rides towards its -Z side, so turn it to face the bump.
+	_bike.rotation = Vector3(0.0, atan2(-_bump_direction.x, -_bump_direction.z), 0.0)
+	_bumps_before = _bike.bumps_taken
+	Input.action_press("move_forward")
+	_frame = 0
+	_phase = "bump_ride"
+
+
+## Riding over a speed bump counts exactly once, and the bike doesn't get stuck on it.
+func _check_bump_ride() -> void:
+	Input.action_release("move_forward")
+	var taken: int = _bike.bumps_taken - _bumps_before
+	_check("riding over a speed bump counts once", taken == 1, "%d bumps" % taken)
+	var past: float = (_bike.global_position - _bump_spot).dot(_bump_direction)
+	var moving: bool = _bike.speed > 1.0 or past > 1.0
+	_check("the bike rides on over the speed bump", moving,
+			"%.1f m past it, %.1f m/s" % [past, _bike.speed])
+	_check("the bike is still on the ground after the bump", _bike.is_on_floor(), "")
 
 
 ## While the game is paused, the DeliveryManager gets no keys and no timer ticks.

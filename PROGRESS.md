@@ -1,8 +1,13 @@
 # Progress
 
 ## Current session
-Session 5: Palm Grove part 2, restaurants and bilingual signs (built, waiting for Louis
-to test on the Mac). Sessions 1 to 4 and the review fixes also still need testing on the Mac.
+Session 6: Palm Grove part 3, decoration and static obstacles (built, waiting for Louis
+to test on the Mac). Sessions 1 to 5 also still need testing on the Mac.
+
+**Handover:** Sessions 1 to 6 were built in a cloud session where Godot could not run,
+so none of it has ever been run. From Session 7 on, work happens on Louis's Mac in Claude
+Code in the terminal, where Godot can run. First job there: run the headless checks and
+the smoke test from CLAUDE.md and fix anything that fails, then play-test, then Session 7.
 
 ## What works
 - Godot 4.7 project (Forward+). The main scene is `scenes/palm_grove.tscn` (since Session 4).
@@ -111,6 +116,27 @@ to test on the Mac). Sessions 1 to 4 and the review fixes also still need testin
 - Not run yet: Godot can't be run in the cloud session. Built and checked by reading
   (a builder, four reviewers, skeptics, a fixer and a final reviewer).
 
+### Session 6
+- `scripts/decor_builder.gd` builds everything below from new lists in `data/palm_grove.gd`.
+  `scripts/low_poly.gd` is a small shared helper for boxes, cylinders and spheres.
+- Mosque north of Ghaf Street, facing it: prayer hall, dome, minaret, forecourt, sign
+  "Palm Grove Mosque / مسجد بستان النخيل" (`scenes/mosque.tscn`).
+- Park on the west side north of Ghaf Street: grass, paths, shade trees, palms, benches,
+  a fountain, sign "Palm Grove Park / حديقة بستان النخيل" (`scenes/park.tscn`).
+- Al Sarab Mini Market east of the avenue by the gate, with a car park and bay lines,
+  sign "Al Sarab Mini Market / ميني ماركت السراب" (`scenes/supermarket.tscn`).
+- 37 palm trees (avenue, roundabout island, mosque, market, park), solid trunks.
+- 16 parked cars (solid) in the car parks and on villa driveways, clear of every door spot.
+- 10 speed bumps on the streets (none on the avenue near the gate). They're a trigger, not
+  a solid block: the bike rolls up and over (nose up, nose down), hops more when fast,
+  the camera shakes, and above 10 km/h you lose speed (down to 55% at full speed).
+  Each bump adds 1 to `bumps_taken` and sends `went_over_bump`, ready for Session 8's
+  damage meter. Numbers are the `SPEED_BUMP_*` block in `scripts/game_config.gd`.
+- The smoke test checks every palm, car and bump was built, the mosque/market/park signs
+  have Arabic, and rides the bike over a speed bump.
+- Layout checked with a script: nothing overlaps roads, buildings, signs, doors or walls.
+- Not run yet (no Godot in the cloud session). Built and checked by reading.
+
 ## Known bugs
 - None found yet. Not tested on a real screen yet.
 - The review fixes and the smoke test were written without Godot available, so the
@@ -121,8 +147,8 @@ to test on the Mac). Sessions 1 to 4 and the review fixes also still need testin
   close and reopen the project in the editor.
 
 ## Next
-- Louis tests Sessions 1 to 5 and the review fixes with the checklists in BUILD_PLAN.md.
+- Louis tests Sessions 1 to 6 and the review fixes with the checklists in BUILD_PLAN.md.
 - First check in Session 5: the Arabic on the welcome sign looks joined up and right-to-left.
-- Then Session 6: Palm Grove part 3, decoration and static obstacles.
+- Then Session 7: Mini-map and addresses (from Louis's terminal, with Godot running).
 - Open question for Louis: rides in Palm Grove take up to about a minute, the PRD hoped
   for 2 to 3 minutes. See "Still open" in PRD.md.

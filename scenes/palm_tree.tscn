@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/palm_tree.gd" id="1_palm_tree"]
+
+[node name="PalmTree" type="StaticBody3D" unique_id=1507250001]
+script = ExtResource("1_palm_tree")

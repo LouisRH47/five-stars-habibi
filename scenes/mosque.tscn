@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/mosque.gd" id="1_mosque"]
+
+[node name="Mosque" type="StaticBody3D" unique_id=1507253001]
+script = ExtResource("1_mosque")

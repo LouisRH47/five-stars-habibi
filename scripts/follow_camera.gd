@@ -1,6 +1,6 @@
 extends Camera3D
 ## Follows the bike from behind and a little above, smoothly.
-## Shakes a bit when the bike bumps into something.
+## Shakes a bit when the bike bumps into something or rides over a speed bump.
 ## Distance, height and shake are in scripts/game_config.gd.
 
 ## The thing to follow (the bike).
@@ -17,6 +17,8 @@ func _ready() -> void:
 		return
 	if target.has_signal("bumped"):
 		target.bumped.connect(_on_bumped)
+	if target.has_signal("went_over_bump"):
+		target.went_over_bump.connect(_on_speed_bump)
 	_rest_position = _wanted_position()
 	global_position = _rest_position
 	_aim()
@@ -39,6 +41,11 @@ func _process(delta: float) -> void:
 
 func _on_bumped(strength: float) -> void:
 	_shake = maxf(_shake, strength)
+
+
+## strength: 0 (crawling over the bump) to 1 (full speed).
+func _on_speed_bump(strength: float) -> void:
+	_shake = maxf(_shake, lerpf(GameConfig.SPEED_BUMP_SHAKE_MIN, GameConfig.SPEED_BUMP_SHAKE_MAX, strength))
 
 
 func _target_transform() -> Transform3D:
