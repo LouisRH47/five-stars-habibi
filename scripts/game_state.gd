@@ -15,6 +15,8 @@ signal order_delivered(order: Order)
 signal order_skipped(order: Order)
 ## The time, freshness and damage meters changed (Session 8).
 signal meters_changed
+## XP, Rider Level or rating changed (Session 10).
+signal stats_changed
 
 ## The three meters for the order you're carrying, 100 (green) to 0 (red). Set by
 ## scripts/meters.gd while you ride from the restaurant to the villa.
@@ -27,8 +29,13 @@ var ride_time := 0.0
 
 ## Money in the wallet, in Dh.
 var money := 0
-## One small Dictionary per finished delivery: restaurant, villa, food, pay.
+## All the XP you've ever earned. Your Rider Level comes from it (see level()).
+var xp := 0
+## One small Dictionary per finished delivery: restaurant, villa, food, pay, tip,
+## the three meters, stars and xp.
 var history: Array[Dictionary] = []
+## The last delivery's Dictionary from history (the phone shows its stars), or empty.
+var last_result: Dictionary = {}
 ## The order waiting on the phone for you to accept or skip (or null).
 var offered_order: Order = null
 ## The order you accepted and are riding with (or null).
@@ -42,12 +49,15 @@ var _choices: Array[bool] = []
 ## Starts everything again from zero. Used by the smoke test.
 func reset() -> void:
 	money = 0
+	xp = 0
 	history.clear()
+	last_result = {}
 	offered_order = null
 	current_order = null
 	_choices.clear()
 	start_meters(0.0)
 	money_changed.emit(money)
+	stats_changed.emit()
 	_set_stage(Stage.NONE)
 
 
@@ -98,17 +108,29 @@ func deliver() -> bool:
 		return false
 	var done := current_order
 	current_order = null
-	money += done.pay
-	history.append({
+	var stars := stars_for(meter_time, meter_freshness, meter_damage)
+	# Tips only on 5-star jobs, and not every time. Boring orders never tip (PRD).
+	var tip := 0
+	if stars >= 5.0 and not done.boring and randf() < GameConfig.TIP_CHANCE:
+		tip = randi_range(GameConfig.TIP_MIN, GameConfig.TIP_MAX)
+	var earned_xp := GameConfig.XP_PER_DELIVERY + roundi(GameConfig.XP_PER_STAR * stars)
+	money += done.pay + tip
+	xp += earned_xp
+	last_result = {
 		"restaurant": done.restaurant_name,
 		"villa": done.villa_number,
 		"food": done.food,
 		"pay": done.pay,
+		"tip": tip,
 		"time": meter_time,
 		"freshness": meter_freshness,
 		"damage": meter_damage,
-	})
+		"stars": stars,
+		"xp": earned_xp,
+	}
+	history.append(last_result)
 	money_changed.emit(money)
+	stats_changed.emit()
 	_set_stage(Stage.NONE)
 	# Sent last, so the phone's "Delivered!" message comes after "no order".
 	order_delivered.emit(done)
@@ -131,6 +153,57 @@ func set_meters(time: float, freshness: float, damage: float) -> void:
 	meter_freshness = clampf(freshness, 0.0, 100.0)
 	meter_damage = clampf(damage, 0.0, 100.0)
 	meters_changed.emit()
+
+
+## Stars for a delivery from its three meters (PRD "Stars"): start at 5, each orange meter
+## takes off half a star, each red one one and a half. Rounded to the nearest half star,
+## never below 1.
+static func stars_for(time: float, freshness: float, damage: float) -> float:
+	var stars := 5.0
+	for value in [time, freshness, damage]:
+		if value < GameConfig.METER_RED_BELOW:
+			stars -= GameConfig.STARS_RED_COST
+		elif value <= GameConfig.METER_GREEN_ABOVE:
+			stars -= GameConfig.STARS_ORANGE_COST
+	return maxf(roundf(stars * 2.0) / 2.0, GameConfig.STARS_MIN)
+
+
+## Your star rating: the average of your last 50 deliveries (0 before your first one).
+func rating() -> float:
+	var recent := history.slice(-GameConfig.RATING_WINDOW)
+	if recent.is_empty():
+		return 0.0
+	var total := 0.0
+	for job in recent:
+		total += job["stars"]
+	return total / recent.size()
+
+
+## Your Rider Level, from 1 up. Level 1 to 2 needs LEVEL_XP_FIRST XP, each level after
+## that needs LEVEL_XP_STEP more than the one before.
+func level() -> int:
+	return level_for(xp)
+
+
+## How far you are into your current level: x = XP so far, y = XP that level needs.
+func level_progress() -> Vector2i:
+	var left := xp
+	var need := GameConfig.LEVEL_XP_FIRST
+	while left >= need:
+		left -= need
+		need += GameConfig.LEVEL_XP_STEP
+	return Vector2i(left, need)
+
+
+static func level_for(total_xp: int) -> int:
+	var lvl := 1
+	var need := GameConfig.LEVEL_XP_FIRST
+	var left := total_xp
+	while left >= need:
+		left -= need
+		need += GameConfig.LEVEL_XP_STEP
+		lvl += 1
+	return lvl
 
 
 ## Share of your last ORDER_ACCEPT_HISTORY orders that you accepted, 0.0 to 1.0.

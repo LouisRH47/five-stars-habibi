@@ -188,7 +188,7 @@ Done when:
 - [ ] Cats and kids move around and you can bump into them
 - [ ] Bumping them hurts the damage meter
 
-### Session 10: Stars, money, tips and XP
+### Session 10: Stars, money, tips and XP (built, needs testing)
 
 ```text
 Session 10. At the end of each delivery, give 1 to 5 stars using the star

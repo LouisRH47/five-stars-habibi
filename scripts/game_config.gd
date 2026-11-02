@@ -64,7 +64,6 @@ const ORDER_LOW_ACCEPTANCE := 0.7     # below 70% you get boring orders: short r
 const ORDER_BORING_CHOICES := 2       # a boring order goes to one of the 2 villas closest to the restaurant
 const INTERACT_RADIUS := 3.5          # metres from a door where E picks up or drops off
 const DOOR_DISTANCE := 2.5            # the door spot is this many metres in front of a building
-const DELIVERED_MESSAGE_TIME := 2.5   # seconds the phone shows "+12 Dh  Delivered!"
 const MARKER_RADIUS := 1.2            # the glowing beam over the next stop
 const MARKER_HEIGHT := 4.0            # lower than every roof (5 m and up), so the beam never covers a sign
 const MARKER_COLOUR := Color(0.9490196, 0.54901963, 0.15686275, 0.4)  # see-through orange
@@ -114,3 +113,18 @@ const SCOOTER_TURN_PAUSE := 1.5       # seconds a kid waits at each end before t
 const CRITTER_SCARED_TIME := 1.5      # seconds a bumped cat runs / a bumped kid stops
 # Extra food damage when you bump a cat or a kid (on top of the crash itself).
 const DAMAGE_CRITTER := {"pizza": 10.0, "bubble tea": 15.0, "ice cream": 12.0}
+
+# --- Stars, tips, XP and rating (Session 10) ---
+# Stars: start at 5, each orange meter takes off 0.5, each red one 1.5. Never below 1 (PRD).
+const STARS_ORANGE_COST := 0.5
+const STARS_RED_COST := 1.5
+const STARS_MIN := 1.0
+const RATING_WINDOW := 50             # your rating averages your last 50 deliveries
+const TIP_CHANCE := 0.4               # only on 5-star deliveries (and never on boring orders)
+const TIP_MIN := 2                    # Dh
+const TIP_MAX := 15                   # Dh
+const XP_PER_DELIVERY := 10           # every delivery gives this much XP...
+const XP_PER_STAR := 2                # ...plus this much per star (5 stars = 20 XP in all)
+const LEVEL_XP_FIRST := 50            # XP from Rider Level 1 to 2
+const LEVEL_XP_STEP := 25             # each next level needs this much more than the last
+const RESULT_MESSAGE_TIME := 4.0      # seconds the phone shows your stars after a delivery

@@ -136,6 +136,7 @@ func _physics_process(_delta: float) -> bool:
 				_check("an ignored order counts as skipped", _skipped == 2, "%d skipped" % _skipped)
 				_check_stage("NONE")
 				_delivery.offer_timeout = GameConfig.ORDER_OFFER_TIMEOUT
+				_check_scoring()
 				_start_decor_check()
 		"bump_ride":
 			if _frame >= STEPS.bump_ride:
@@ -376,13 +377,76 @@ func _order_food() -> String:
 	return _game_state.current_order.food
 
 
+## Session 10: stars from the meters, tips only on 5-star jobs, XP and Rider Level, and a
+## rating that averages the last 50 deliveries.
+func _check_scoring() -> void:
+	var gs: Node = _game_state
+	var ok: bool = gs.stars_for(100, 100, 100) == 5.0 and gs.stars_for(50, 100, 100) == 4.5 \
+			and gs.stars_for(10, 100, 100) == 3.5 and gs.stars_for(10, 10, 10) == 1.0 and gs.stars_for(50, 50, 10) == 2.5
+	_check("star formula matches the PRD examples", ok, "")
+	gs.reset()
+	var clean := _quick_delivery(100.0, false)
+	_check("a clean delivery gets 5 stars", clean["stars"] == 5.0, "%.1f" % clean["stars"])
+	var messy := _quick_delivery(20.0, false)
+	_check("a messy delivery gets fewer stars", messy["stars"] < 5.0, "%.1f" % messy["stars"])
+	var money_before: int = gs.money
+	var tips := 0
+	var tips_ok := true
+	for i in 200:
+		var job := _quick_delivery(100.0, false)
+		if job["tip"] > 0:
+			tips += 1
+			tips_ok = tips_ok and job["tip"] >= GameConfig.TIP_MIN and job["tip"] <= GameConfig.TIP_MAX
+	_check("tips sometimes come on 5-star jobs, 2 to 15 Dh", tips > 40 and tips < 120 and tips_ok, "%d of 200" % tips)
+	var low_tips := 0
+	for i in 100:
+		low_tips += _quick_delivery(50.0, false)["tip"] + _quick_delivery(100.0, true)["tip"]
+	_check("never a tip under 5 stars or on a boring order", low_tips == 0, "")
+	_check("tips go into the wallet", gs.money > money_before, "Dh %d" % gs.money)
+	_check("Rider Level follows the XP rule", gs.level_for(0) == 1 and gs.level_for(49) == 1 and gs.level_for(50) == 2
+			and gs.level_for(124) == 2 and gs.level_for(125) == 3, "level %d with %d XP" % [gs.level(), gs.xp])
+	var xp_before: int = gs.xp
+	var five := _quick_delivery(100.0, false)
+	_check("XP goes up after a delivery", gs.xp == xp_before + five["xp"] and five["xp"] == 20, "+%d XP" % five["xp"])
+	gs.reset()
+	for i in 10:
+		_quick_delivery(10.0, false)  # ten 1-star jobs...
+	for i in GameConfig.RATING_WINDOW:
+		_quick_delivery(100.0, false)  # ...then 50 five-star jobs push them out of the window
+	_check("rating averages the last 50 deliveries", absf(gs.rating() - 5.0) < 0.001, "%.2f" % gs.rating())
+	_quick_delivery(10.0, false)
+	var want := (49.0 * 5.0 + 1.0) / 50.0
+	_check("one bad job only dents the rating", absf(gs.rating() - want) < 0.001, "%.2f" % gs.rating())
+	var phone := _main.get_node("Phone")
+	phone._on_order_delivered(null)
+	phone._process(0.0)
+	_check("the phone shows the stars after a delivery", phone.get_node("Panel/Margin/Rows/Result").visible, "")
+	_check("the phone shows rating and level", phone.get_node("Panel/Margin/Rows/Profile/Rating").text == "%.1f" % gs.rating()
+			and phone.get_node("Panel/Margin/Rows/Profile/Level").text == "Lv %d" % gs.level(), "")
+	gs.reset()
+
+
+## Offers, accepts, picks up and delivers an order at once, with all three meters at
+## `meters`. Returns the delivery's result (stars, tip, xp...).
+func _quick_delivery(meters: float, boring: bool) -> Dictionary:
+	var gs: Node = _game_state
+	var order: Object = _delivery.make_order()
+	order.boring = boring
+	gs.offer_order(order)
+	gs.accept_offer()
+	gs.pick_up()
+	gs.set_meters(meters, meters, meters)
+	gs.deliver()
+	return gs.last_result
+
+
 ## Session 8: the meters fill at pickup and drop with time, bumps and hard braking.
 ## Ends with every meter at 0, so the delivery after it checks a red order can still be delivered.
 func _check_meters() -> void:
 	if _meters == null:
 		_check("Meters node exists in the scene", false, "")
 		return
-	var gs := _game_state
+	var gs: Node = _game_state
 	var places: Node = _delivery.place_builder
 	var want: float = _meters.target_time_for(places.restaurant_door(_order.restaurant_id), places.villa_door(_order.villa_number))
 	_check("meters are full at pickup", gs.meter_time == 100.0 and gs.meter_freshness == 100.0 and gs.meter_damage == 100.0, "")

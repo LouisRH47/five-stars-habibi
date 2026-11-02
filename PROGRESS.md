@@ -185,6 +185,23 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - The smoke test checks they were all built, a kid riding into the bike counts once and
   hurts the food, and the cats stay on their patches.
 
+### Session 10
+- Every delivery now gets 1 to 5 stars from the three meters (PRD formula: start at 5,
+  orange meter -0.5, red meter -1.5, never below 1). `GameState.stars_for()`.
+- Tips: only on 5-star deliveries, 40% of the time, 2 to 15 Dh. Never on boring orders.
+- XP: 10 per delivery plus 2 per star. Rider Level 1 to 2 needs 50 XP, then 75, 100...
+- Rating: the average stars of your last 50 deliveries.
+- The phone's top now shows your rating as stars and a number ("New" before your first
+  delivery), your Rider Level ("Lv 2") and a thin XP bar. After a delivery it shows
+  "Delivered!" with big stars, the pay, any tip and the XP for 4 seconds.
+- Stars are drawn as shapes (`scripts/star_row.gd`), because the font has no star letter.
+- Everything is kept in GameState (money, xp, history with stars/tip/xp per delivery).
+- Numbers are in the "Stars, tips, XP and rating" block of `game_config.gd`.
+- Not built yet: "better orders show up more often at a high rating" (PRD) wasn't part of
+  this session's prompt.
+- The smoke test checks the PRD star examples, that tips only come on 5-star jobs, the
+  level rule, and that the rating uses the last 50 deliveries.
+
 ## Known bugs
 - None found yet. Not play-tested by Louis yet.
 - Godot is in the Downloads folder, not Applications, so the commands in CLAUDE.md

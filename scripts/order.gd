@@ -9,6 +9,7 @@ var food := ""             # "pizza", "ice cream" or "bubble tea"
 var villa_number := 0      # the house number to deliver to
 var pay := 0               # Dh you get for delivering it
 var note := ""             # a short note from the customer, usually empty
+var boring := false        # a boring order (you skipped too many): lowest pay, no tip
 
 
 ## A one-line summary, handy for printing while testing.
