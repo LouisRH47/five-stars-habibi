@@ -1,6 +1,10 @@
-# Five Stars Habibi: Game Design
+# Five Stars Habibi: PRD (Game Design)
 
 *Working name. Subtitle: Rider to Driver.*
+
+This is the product requirements document: **what** the game is and how it works. It's the one true copy of the design. If something changes, update this file first (and add a line to the Decisions log at the bottom), then build it. The older copy on claude.ai is out of date.
+
+**Mockup:** [Five Stars Habibi Mockup](https://claude.ai/artifact/8vzJizBsB69zJsuSEuWmS4) shows the gameplay HUD, the rider application, a finished delivery and the big crash screen. Use it as the look to aim for: sunny desert colours (sand, teal, orange), rounded fonts, low-poly 3D.
 
 ## Overview
 
@@ -310,6 +314,27 @@ Build it in milestones and play-test at the end of each one. Only move on when t
 - Tuning all pay, bills and insurance numbers once Tier 1 is playable
 - Whether the motorbike can carry several orders at once, later on
 - Exact keys for the taxi requests
+
+## Decisions log
+
+One line per decision, newest at the bottom. Add a line whenever the design changes.
+
+| Date | Decision |
+| --- | --- |
+| 2 Nov 2026 | Food delivery career game with a 6-tier ladder: bicycle, motorbike, pro rider, taxi, premium taxi, luxury chauffeur |
+| 2 Nov 2026 | Build in Godot 4 with GDScript, 3D, camera behind the rider. Roblox port maybe later |
+| 2 Nov 2026 | First version is Tier 1 only (bicycle in Palm Grove) |
+| 2 Nov 2026 | All brands are made up (Snackaroo, Dune Express, Yalla Cabs, Falcon Ride, Mirage Black). City is Al Sarab |
+| 2 Nov 2026 | Motorbike test: cone course + 10-question theory, pass with 8/10, 10/10 gets half the fee back |
+| 2 Nov 2026 | Test costs 200 Dh, retake 100 Dh after 5 more deliveries. Taxi tier uses a car test built the same way |
+| 2 Nov 2026 | Bicycle carries one small order; motorbike carries bigger orders that pay more |
+| 2 Nov 2026 | Crashes: small ones hurt your rating, big ones mean clinic + repair bills. Optional insurance per delivery |
+| 2 Nov 2026 | Bad ratings send you down a tier; crashing a lot sends you down and you retake the test |
+| 2 Nov 2026 | Game text English only; signs in the world are Arabic + English. Chill Arabic-style music, free tracks only |
+| 2 Nov 2026 | Low-poly graphics with free CC0 assets; keyboard controls first |
+| 2 Nov 2026 | Working name Five Stars Habibi (may change later). Release Tier 1 free on itch.io |
+| 2 Nov 2026 | Mockup made; gameplay and customer screens should feel 3D with real depth |
+| 2 Nov 2026 | This file is the PRD and the one true copy of the design |
 
 ## Sources
 

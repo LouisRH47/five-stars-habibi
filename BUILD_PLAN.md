@@ -1,6 +1,6 @@
 # Build Plan for Claude Code
 
-A step-by-step plan for building Tier 1 of Five Stars Habibi with Claude Code on a Mac. It's written for a total beginner with 1 to 3 hours a week. Everything Claude Code needs is in this repo: `GAME_DESIGN.md` (the design), this file (the steps), `CLAUDE.md` (rules it reads every session) and `PROGRESS.md` (what's done).
+A step-by-step plan for building Tier 1 of Five Stars Habibi with Claude Code on a Mac. It's written for a total beginner with 1 to 3 hours a week. Everything Claude Code needs is in this repo: `PRD.md` (the design), this file (the steps), `CLAUDE.md` (rules it reads every session) and `PROGRESS.md` (what's done).
 
 ## Setup on the Mac (one time, about 30 minutes)
 
@@ -32,7 +32,7 @@ Tier 1 is split into 14 sessions of about 1 hour each, so at 1 to 3 hours a week
 ### Session 1: Project, bicycle and camera
 
 ```text
-Read CLAUDE.md, GAME_DESIGN.md and BUILD_PLAN.md. We're doing Session 1.
+Read CLAUDE.md, PRD.md and BUILD_PLAN.md. We're doing Session 1.
 There's no Godot project yet. Create one in this folder (project.godot) for the
 Godot 4 version installed at /Applications/Godot.app (check its version first),
 using the Forward+ renderer and GDScript.
@@ -68,7 +68,7 @@ Done when:
 ### Session 3: Palm Grove map
 
 ```text
-Session 3. Build the Palm Grove villa community from GAME_DESIGN.md (City map
+Session 3. Build the Palm Grove villa community from PRD.md (City map
 section): roads, a roundabout, 25 to 40 villas with big readable house numbers,
 a restaurant strip at the entrance with 3 restaurants (Pizza, Brain Freeze
 Gelato, Boba Oasis), a park, a small supermarket, palm trees. All signs
@@ -99,7 +99,7 @@ Done when:
 ### Session 5: Phone and orders
 
 ```text
-Session 5. Add the phone UI and order system from GAME_DESIGN.md (Delivery
+Session 5. Add the phone UI and order system from PRD.md (Delivery
 loop). An order pops up on a phone in the corner showing restaurant, villa
 number, food type and pay. Press E to accept or Q to skip. Ride to the
 restaurant marker, press E to pick up, ride to the villa marker, press E to
@@ -142,7 +142,7 @@ Done when:
 ### Session 8: The three meters
 
 ```text
-Session 8. Add the time, heat and damage meters from GAME_DESIGN.md (Delivery
+Session 8. Add the time, heat and damage meters from PRD.md (Delivery
 loop). They show on screen during a delivery. Food types: pizza (easy),
 ice cream (melts fast), bubble tea (spills on bumps). Heat drains over time,
 damage goes up on bumps, hard braking and collisions.
@@ -171,7 +171,7 @@ Done when:
 ### Session 10: Crashes and insurance
 
 ```text
-Session 10. Add crashes from GAME_DESIGN.md (Crashes, bills and insurance).
+Session 10. Add crashes from PRD.md (Crashes, bills and insurance).
 Small crash: rider falls off, damage meter jumps, back on after 2 seconds.
 Big crash (hitting a car/wall/pole above about 20 km/h): fade out, clinic
 screen, order cancelled, hospital bill 150 Dh + repair bill 80 Dh, shift ends.
@@ -199,7 +199,7 @@ Done when:
 ### Session 12: Application and characters
 
 ```text
-Session 12. Add the start of the game from GAME_DESIGN.md (Start of the game):
+Session 12. Add the start of the game from PRD.md (Start of the game):
 a phone-style Snackaroo rider application (name, where you're from), 3 character
 presets to pick from, a "Reviewing..." spinner, then "Congrats, you're hired!".
 The first order is an easy pizza two streets away that works as a tutorial

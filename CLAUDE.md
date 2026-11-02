@@ -2,8 +2,15 @@
 
 A 3D job-sim driving game made in Godot 4 with GDScript. You start as a bicycle food
 delivery rider in a villa community in Al Sarab (a made-up, Dubai-style desert city) and
-climb a career ladder up to luxury chauffeur. Full design: GAME_DESIGN.md.
+climb a career ladder up to luxury chauffeur. Full design (the PRD): PRD.md.
 Build steps: BUILD_PLAN.md. What's done so far: PROGRESS.md.
+Look and feel: the mockup linked at the top of PRD.md.
+
+## Keeping the PRD up to date
+- PRD.md is the one true copy of the design. Follow it over anything else.
+- When Louis changes his mind about how the game works, update PRD.md first
+  (and add a line to its Decisions log), then build it.
+- If something in a session prompt disagrees with PRD.md, ask Louis which is right.
 
 ## Who you're working with
 - Louis is a total beginner. He doesn't write code himself.
@@ -27,7 +34,7 @@ Build steps: BUILD_PLAN.md. What's done so far: PROGRESS.md.
   scripts/game_config.gd, so they're easy to change later.
 - Graphics: simple low-poly. Use basic shapes or free CC0 assets (e.g. Kenney).
   Never paid or copyrighted assets.
-- Never use real company names or logos. Use the made-up brands in GAME_DESIGN.md
+- Never use real company names or logos. Use the made-up brands in PRD.md
   (Snackaroo, Dune Express, Yalla Cabs, Falcon Ride, Mirage Black).
 - Currency is Dh (game dirhams).
 - All game text (menus, phone, customers) is English only.
