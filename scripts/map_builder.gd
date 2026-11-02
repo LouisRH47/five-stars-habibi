@@ -4,6 +4,9 @@ extends Node3D
 ## data/palm_grove.gd. Buildings (villas, restaurants) are made by PlaceBuilder.
 ## Roads are flat and have no collision: the bike rides on the ground underneath.
 
+## The map data to build from (set in the scene): data/palm_grove.gd.
+@export var data: Script
+
 const GROUND_COLOUR := Color(0.9098039, 0.827451, 0.6509804, 1)  # sand
 const ROAD_COLOUR := Color(0.32, 0.33, 0.35, 1)                 # asphalt grey
 const ISLAND_COLOUR := Color(0.45, 0.65, 0.35, 1)               # grass
@@ -16,36 +19,44 @@ const WALL_THICKNESS := 0.6
 const GATE_BAR_HEIGHT := 1.2
 
 
+# The constants from the data script, e.g. _map["ROADS"].
+var _map: Dictionary = {}
+
+
 func _ready() -> void:
+	if data == null:
+		push_error("MapBuilder has no data list set in the scene")
+		return
+	_map = data.get_script_constant_map()
 	_build_ground()
-	for road in PalmGrove.ROADS:
+	for road in _map["ROADS"]:
 		_build_road(road["from"], road["to"])
 	_build_roundabout()
 	_build_walls()
 
 
 func _build_ground() -> void:
-	var side := PalmGrove.HALF_SIZE * 2.0 + GROUND_MARGIN * 2.0
+	var side: float = _map["HALF_SIZE"] * 2.0 + GROUND_MARGIN * 2.0
 	_add_block(Vector3(side, 1.0, side), GROUND_COLOUR, Vector3(0, -0.5, 0), true)
 
 
 ## A road is a long flat strip from one end of its middle line to the other.
 ## It is made one road-width longer so corners and crossings are filled in.
 func _build_road(from: Vector2, to: Vector2) -> void:
-	var length := from.distance_to(to) + PalmGrove.ROAD_WIDTH
+	var length: float = from.distance_to(to) + _map["ROAD_WIDTH"]
 	var middle := (from + to) * 0.5
-	var strip := _add_block(Vector3(PalmGrove.ROAD_WIDTH, ROAD_THICKNESS, length), ROAD_COLOUR,
+	var strip := _add_block(Vector3(_map["ROAD_WIDTH"], ROAD_THICKNESS, length), ROAD_COLOUR,
 			Vector3(middle.x, ROAD_THICKNESS * 0.5, middle.y), false)
 	var direction := to - from
 	strip.rotation.y = atan2(direction.x, direction.y)
 
 
 func _build_roundabout() -> void:
-	var centre := PalmGrove.ROUNDABOUT_CENTRE
+	var centre: Vector2 = _map["ROUNDABOUT_CENTRE"]
 	# The road ring, a tiny bit higher than the roads so the two don't flicker.
 	var ring := CylinderMesh.new()
-	ring.top_radius = PalmGrove.ROUNDABOUT_RADIUS
-	ring.bottom_radius = PalmGrove.ROUNDABOUT_RADIUS
+	ring.top_radius = _map["ROUNDABOUT_RADIUS"]
+	ring.bottom_radius = _map["ROUNDABOUT_RADIUS"]
 	ring.height = ROAD_THICKNESS * 1.5
 	ring.material = _material(ROAD_COLOUR)
 	var ring_mesh := MeshInstance3D.new()
@@ -58,14 +69,14 @@ func _build_roundabout() -> void:
 	island.position = Vector3(centre.x, ISLAND_HEIGHT * 0.5, centre.y)
 	add_child(island)
 	var cylinder := CylinderShape3D.new()
-	cylinder.radius = PalmGrove.ROUNDABOUT_ISLAND_RADIUS
+	cylinder.radius = _map["ROUNDABOUT_ISLAND_RADIUS"]
 	cylinder.height = ISLAND_HEIGHT
 	var shape := CollisionShape3D.new()
 	shape.shape = cylinder
 	island.add_child(shape)
 	var grass := CylinderMesh.new()
-	grass.top_radius = PalmGrove.ROUNDABOUT_ISLAND_RADIUS
-	grass.bottom_radius = PalmGrove.ROUNDABOUT_ISLAND_RADIUS
+	grass.top_radius = _map["ROUNDABOUT_ISLAND_RADIUS"]
+	grass.bottom_radius = _map["ROUNDABOUT_ISLAND_RADIUS"]
 	grass.height = ISLAND_HEIGHT
 	grass.material = _material(ISLAND_COLOUR)
 	var grass_mesh := MeshInstance3D.new()
@@ -75,18 +86,18 @@ func _build_roundabout() -> void:
 
 ## Four walls around the community, with a gap in the south wall closed by a red gate bar.
 func _build_walls() -> void:
-	var h := PalmGrove.HALF_SIZE
-	var gap := PalmGrove.GATE_HALF_WIDTH
-	var y := PalmGrove.WALL_HEIGHT * 0.5
+	var h: float = _map["HALF_SIZE"]
+	var gap: float = _map["GATE_HALF_WIDTH"]
+	var y: float = _map["WALL_HEIGHT"] * 0.5
 	var full := h * 2.0 + WALL_THICKNESS
-	_add_block(Vector3(full, PalmGrove.WALL_HEIGHT, WALL_THICKNESS), WALL_COLOUR, Vector3(0, y, -h), true)
-	_add_block(Vector3(WALL_THICKNESS, PalmGrove.WALL_HEIGHT, full), WALL_COLOUR, Vector3(-h, y, 0), true)
-	_add_block(Vector3(WALL_THICKNESS, PalmGrove.WALL_HEIGHT, full), WALL_COLOUR, Vector3(h, y, 0), true)
+	_add_block(Vector3(full, _map["WALL_HEIGHT"], WALL_THICKNESS), WALL_COLOUR, Vector3(0, y, -h), true)
+	_add_block(Vector3(WALL_THICKNESS, _map["WALL_HEIGHT"], full), WALL_COLOUR, Vector3(-h, y, 0), true)
+	_add_block(Vector3(WALL_THICKNESS, _map["WALL_HEIGHT"], full), WALL_COLOUR, Vector3(h, y, 0), true)
 	# South wall: two pieces, one each side of the gate.
 	var piece := h - gap
 	var piece_x := gap + piece * 0.5
-	_add_block(Vector3(piece, PalmGrove.WALL_HEIGHT, WALL_THICKNESS), WALL_COLOUR, Vector3(-piece_x, y, h), true)
-	_add_block(Vector3(piece, PalmGrove.WALL_HEIGHT, WALL_THICKNESS), WALL_COLOUR, Vector3(piece_x, y, h), true)
+	_add_block(Vector3(piece, _map["WALL_HEIGHT"], WALL_THICKNESS), WALL_COLOUR, Vector3(-piece_x, y, h), true)
+	_add_block(Vector3(piece, _map["WALL_HEIGHT"], WALL_THICKNESS), WALL_COLOUR, Vector3(piece_x, y, h), true)
 	# The gate is closed for now: Palm Grove is your whole world in Tier 1.
 	_add_block(Vector3(gap * 2.0, GATE_BAR_HEIGHT, WALL_THICKNESS), GATE_COLOUR,
 			Vector3(0, GATE_BAR_HEIGHT * 0.5, h), true)

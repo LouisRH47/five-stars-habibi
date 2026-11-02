@@ -38,7 +38,14 @@ func _initialize() -> void:
 	if not user_args.is_empty():
 		scene_path = user_args[0]
 	print("      scene: ", scene_path)
-	var main: Node = load(scene_path).instantiate()
+	var packed := load(scene_path) as PackedScene
+	if packed == null:
+		print("FAIL: could not load ", scene_path)
+		print("RESULT: FAIL")
+		_phase = "done"
+		quit(1)
+		return
+	var main: Node = packed.instantiate()
 	root.add_child(main)
 	_bike = main.get_node("Bike")
 	_delivery = main.get_node_or_null("DeliveryManager")
@@ -48,6 +55,8 @@ func _initialize() -> void:
 
 
 func _physics_process(_delta: float) -> bool:
+	if _phase == "done":
+		return false
 	_frame += 1
 	_top_speed = maxf(_top_speed, _bike.speed)
 	match _phase:
@@ -113,7 +122,13 @@ func _start_delivery_check() -> void:
 	_game_state.connect("order_skipped", _on_order_skipped)
 	_order = _delivery.offer_now()
 	var places: Node = _delivery.place_builder
-	_check("villas were built from the data list", places != null and places.villas.size() > 0 and places.get_child_count() >= places.villas.size(), "")
+	var built := 0
+	if places != null:
+		for child in places.get_children():
+			if child.name.begins_with("Villa"):
+				built += 1
+	var listed: int = 0 if places == null else places.villas.size()
+	_check("every villa in the data list was built", listed > 0 and built == listed, "%d of %d" % [built, listed])
 	_check("an order pops up", _order != null, "")
 	if _order == null:
 		_finish()
