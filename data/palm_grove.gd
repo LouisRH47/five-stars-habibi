@@ -239,3 +239,27 @@ const PARK_BENCHES := [
 ## Bench size: width, height, depth. The fountain basin's radius.
 const BENCH_SIZE := Vector3(1.8, 0.9, 0.7)
 const FOUNTAIN_RADIUS := 2.5
+
+
+# --- Session 9: moving obstacles ---
+# scripts/obstacle_builder.gd builds these. They're gentle: cats wander slowly in the gaps
+# between villas, kids ride scooters up and down the edge of a street. Bumping into one
+# knocks your food (damage meter). Kept clear of villas, parked cars and door spots.
+
+## Cats. area: where the cat wanders, Rect2(x, z, width along x, depth along z).
+## colour: the fur colour.
+const CATS := [
+	{"area": Rect2(-69, 94, 4, 10), "colour": Color(0.93, 0.55, 0.2, 1)},   # between villas 1 and 2
+	{"area": Rect2(29, 94, 4, 10), "colour": Color(0.35, 0.35, 0.38, 1)},   # between villas 5 and 6
+	{"area": Rect2(-69, 77, 4, 9), "colour": Color(0.95, 0.93, 0.88, 1)},   # between villas 9 and 10
+	{"area": Rect2(47, 5, 4, 10), "colour": Color(0.15, 0.15, 0.17, 1)},    # between villas 20 and 21
+	{"area": Rect2(-33, -84, 4, 10), "colour": Color(0.8, 0.62, 0.4, 1)},   # between villas 31 and 32
+]
+
+## Kids on scooters ride back and forth between two points near the edge of a street.
+## shirt: the kid's shirt colour.
+const SCOOTER_KIDS := [
+	{"from": Vector3(-80, 0, 92.5), "to": Vector3(-14, 0, 92.5), "shirt": Color(0.2, 0.55, 0.9, 1)},  # Date Palm Street, west
+	{"from": Vector3(14, 0, -87.5), "to": Vector3(80, 0, -87.5), "shirt": Color(0.9, 0.3, 0.5, 1)},   # Ghaf Street, east
+	{"from": Vector3(92.5, 0, -78), "to": Vector3(92.5, 0, 78), "shirt": Color(0.3, 0.75, 0.35, 1)},  # East Lane
+]

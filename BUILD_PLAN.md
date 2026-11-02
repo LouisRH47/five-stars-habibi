@@ -174,7 +174,7 @@ Done when:
 - [ ] All three meters show and change while riding
 - [ ] Ice cream melts faster than pizza, and bubble tea hates speed bumps
 
-### Session 9: Moving obstacles
+### Session 9: Moving obstacles (built, needs testing)
 
 ```text
 Session 9. Add a few cats that wander slowly and kids on scooters riding

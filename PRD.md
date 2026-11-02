@@ -382,6 +382,7 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 2 Nov 2026 | Palm Grove gets a mosque and a park north of Ghaf Street, the Al Sarab Mini Market by the gate, palm trees, parked cars and 10 speed bumps. Speed bumps are a trigger, not a solid block: the bike hops, slows if fast, and counts each bump for the Session 8 damage meter |
 | 2 Nov 2026 | Mini-map turns with the rider (heading up), shows villa numbers, an orange pin with the next stop's number and distance, pinned to the edge when off the map. About 1 in 3 orders has a customer note |
 | 2 Nov 2026 | Meters: freshness drains 0.35 (pizza), 0.6 (bubble tea), 1.0 (ice cream) % per second. Damage per knock depends on the food; bubble tea loses 14% on a fast speed bump. Hard braking = braking above 18 km/h |
+| 2 Nov 2026 | 5 cats wander slowly in gaps between villas, 3 kids on scooters ride up and down street edges. Both are solid; bumping one costs 10 to 15% food damage and they get scared for 1.5 s. Kids wait if the bike blocks them |
 | 2 Nov 2026 | Palm Grove layout: 300 m square with a wall and a closed gate in the south, Palm Grove Avenue from the gate to a central roundabout, three cross streets, 36 villas, restaurant strip just inside the gate |
 
 ## Sources

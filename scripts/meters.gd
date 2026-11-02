@@ -15,6 +15,7 @@ enum Band { GREEN, ORANGE, RED }
 
 
 func _ready() -> void:
+	add_to_group("meters")  # cats and kids (scripts/critter.gd) call hurt_food_critter()
 	GameState.order_stage_changed.connect(_on_stage_changed)
 	if bike != null:
 		bike.bumped.connect(_on_bumped)
@@ -52,6 +53,11 @@ static func target_time_for(from: Vector3, to: Vector3) -> float:
 func hurt_food(amount: float) -> void:
 	if _carrying():
 		GameState.set_meters(GameState.meter_time, GameState.meter_freshness, GameState.meter_damage - amount)
+
+
+## A cat or a kid on a scooter got bumped (Session 9).
+func hurt_food_critter() -> void:
+	hurt_food(_per_food(GameConfig.DAMAGE_CRITTER))
 
 
 func _carrying() -> bool:

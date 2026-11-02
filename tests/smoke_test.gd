@@ -21,6 +21,7 @@ const STEPS := {
 	"settle": 3,       # frames to wait after moving the bike to a door
 	"timeout": 30,     # half a second, longer than TEST_OFFER_TIMEOUT
 	"bump_ride": 300,  # 5 seconds of pedalling from a standstill, over a speed bump
+	"critters": 120,   # 2 seconds for a kid on a scooter to ride into the bike
 }
 ## How far before the speed bump the bike starts its ride, in metres.
 const BUMP_RUN_UP := 6.0
@@ -46,6 +47,8 @@ var _top_speed := 0.0
 var _bumps_before := 0
 var _bump_spot := Vector3.ZERO
 var _bump_direction := Vector3.FORWARD
+var _kid_hits := 0
+var _kid_start := Vector3.ZERO
 
 
 func _initialize() -> void:
@@ -137,6 +140,10 @@ func _physics_process(_delta: float) -> bool:
 		"bump_ride":
 			if _frame >= STEPS.bump_ride:
 				_check_bump_ride()
+				_start_critter_check()
+		"critters":
+			if _frame >= STEPS.critters:
+				_check_critters()
 				_finish()
 	return false
 
@@ -310,6 +317,63 @@ func _check_bump_ride() -> void:
 	_check("the bike rides on over the speed bump", moving,
 			"%.1f m past it, %.1f m/s" % [past, _bike.speed])
 	_check("the bike is still on the ground after the bump", _bike.is_on_floor(), "")
+
+
+## Session 9: cats and kids were built. Pick up an order, then park the bike in front of
+## a kid on a scooter and let them ride into it.
+func _start_critter_check() -> void:
+	var obstacles := _main.get_node_or_null("ObstacleBuilder")
+	if obstacles == null:
+		_check("ObstacleBuilder node exists in the scene", false, "")
+		_finish()
+		return
+	for pair in [["Cat_", obstacles.cats], ["ScooterKid_", obstacles.kids]]:
+		var listed: Array = pair[1]
+		var built := 0
+		for i in listed.size():
+			if obstacles.get_node_or_null(pair[0] + str(i)) != null:
+				built += 1
+		_check("every %s* in the data list was built" % pair[0], listed.size() > 0 and built == listed.size(),
+				"%d of %d" % [built, listed.size()])
+	var kid: Node3D = obstacles.get_node("ScooterKid_0")
+	kid.position = kid._from
+	kid._going_to_end = true
+	kid._pause_left = 0.0
+	kid.scared_left = 0.0
+	_kid_start = kid.position
+	kid.hit_by_bike.connect(func(): _kid_hits += 1)
+	var ahead: Vector3 = (kid._to - kid._from).normalized()
+	_game_state.reset()
+	_delivery.offer_now()
+	_delivery.accept()
+	_game_state.pick_up()
+	_move_bike_to(kid._from + ahead * 2.5)
+	_frame = 0
+	_phase = "critters"
+
+
+func _check_critters() -> void:
+	var obstacles := _main.get_node("ObstacleBuilder")
+	var kid: Node3D = obstacles.get_node("ScooterKid_0")
+	_check("kids on scooters move", kid.position.distance_to(_kid_start) > 0.5, "%.1f m" % kid.position.distance_to(_kid_start))
+	_check("a kid riding into the bike counts once", _kid_hits == 1, "%d hits" % _kid_hits)
+	_check("bumping a kid hurts the damage meter", _game_state.meter_damage < 100.0, "%.0f%%" % _game_state.meter_damage)
+	var cats_home := true
+	for i in obstacles.cats.size():
+		var cat: Node3D = obstacles.get_node("Cat_%d" % i)
+		var patch: Rect2 = cat.area().grow(1.0)
+		cats_home = cats_home and patch.has_point(Vector2(cat.position.x, cat.position.z))
+	_check("cats stay on their own patch", cats_home, "")
+	var cat: Node3D = obstacles.get_node("Cat_0")
+	var before: float = _game_state.meter_damage
+	cat.bumped_by(_bike)
+	cat.bumped_by(_bike)
+	var lost: float = before - _game_state.meter_damage
+	_check("bumping a cat hurts the food once", absf(lost - GameConfig.DAMAGE_CRITTER[_order_food()]) < 0.01, "%.0f%% lost" % lost)
+
+
+func _order_food() -> String:
+	return _game_state.current_order.food
 
 
 ## Session 8: the meters fill at pickup and drop with time, bumps and hard braking.

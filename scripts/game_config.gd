@@ -103,3 +103,14 @@ const DAMAGE_HARD_BRAKE := {"pizza": 3.0, "bubble tea": 8.0, "ice cream": 4.0}
 const DAMAGE_COLLISION := {"pizza": 15.0, "bubble tea": 25.0, "ice cream": 18.0}  # a full-speed head-on hit
 # Hard braking: braking (S or Space) while going faster than this counts once per press.
 const HARD_BRAKE_MIN_KMH := 18.0
+
+# --- Moving obstacles (Session 9) ---
+const CAT_WALK_SPEED := 0.8           # m/s, a slow stroll
+const CAT_RUN_SPEED := 4.0            # m/s, running off after you bump it
+const CAT_PAUSE_MIN := 1.5            # seconds a cat sits still between strolls
+const CAT_PAUSE_MAX := 4.0
+const SCOOTER_SPEED := 2.5            # m/s, about 9 km/h
+const SCOOTER_TURN_PAUSE := 1.5       # seconds a kid waits at each end before turning round
+const CRITTER_SCARED_TIME := 1.5      # seconds a bumped cat runs / a bumped kid stops
+# Extra food damage when you bump a cat or a kid (on top of the crash itself).
+const DAMAGE_CRITTER := {"pizza": 10.0, "bubble tea": 15.0, "ice cream": 12.0}

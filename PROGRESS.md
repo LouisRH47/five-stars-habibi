@@ -171,6 +171,20 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - The smoke test checks the target time, that each meter drains, the bands, and that an
   all-red order can still be delivered.
 
+### Session 9
+- 5 cats (`scripts/cat.gd`) stroll slowly around their own patch between two villas,
+  sit for a few seconds, then stroll on. Bump one and it dashes away, then wanders back.
+- 3 kids on kick scooters (`scripts/scooter_kid.gd`) ride back and forth along the edge
+  of Date Palm Street, Ghaf Street and East Lane, waiting a moment at each end. Bump one
+  and they stop and wobble. If the bike is in their way, they wait instead of pushing it.
+- Both are solid (`scripts/critter.gd`, the shared part), so you can't ride through them.
+  Touching one while carrying food takes 10% (pizza) to 15% (bubble tea) off the damage
+  meter, on top of the normal crash damage. Each bump counts once.
+- Where they go is in the CATS and SCOOTER_KIDS lists at the end of `data/palm_grove.gd`,
+  built by `scripts/obstacle_builder.gd`. Speeds and damage are in `game_config.gd`.
+- The smoke test checks they were all built, a kid riding into the bike counts once and
+  hurts the food, and the cats stay on their patches.
+
 ## Known bugs
 - None found yet. Not play-tested by Louis yet.
 - Godot is in the Downloads folder, not Applications, so the commands in CLAUDE.md
