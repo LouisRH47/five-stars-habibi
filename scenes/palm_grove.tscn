@@ -12,6 +12,8 @@
 [ext_resource type="Script" path="res://scripts/sign_builder.gd" id="10_signs"]
 [ext_resource type="Script" path="res://scripts/decor_builder.gd" id="11_decor"]
 [ext_resource type="PackedScene" path="res://ui/minimap.tscn" id="12_minimap"]
+[ext_resource type="Script" path="res://scripts/meters.gd" id="13_meters"]
+[ext_resource type="PackedScene" path="res://ui/meters_panel.tscn" id="14_meters_panel"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_pg"]
 sky_top_color = Color(0.30980393, 0.6627451, 0.8392157, 1)
@@ -81,3 +83,10 @@ delivery_manager = NodePath("../DeliveryManager")
 bike = NodePath("../Bike")
 delivery_manager = NodePath("../DeliveryManager")
 place_builder = NodePath("../PlaceBuilder")
+
+[node name="Meters" type="Node" parent="." node_paths=PackedStringArray("bike", "delivery_manager")]
+script = ExtResource("13_meters")
+bike = NodePath("../Bike")
+delivery_manager = NodePath("../DeliveryManager")
+
+[node name="MetersPanel" parent="." instance=ExtResource("14_meters_panel")]

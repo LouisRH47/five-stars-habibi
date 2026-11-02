@@ -35,6 +35,7 @@ var _bike: CharacterBody3D
 var _game_state: Node
 var _delivery: Node
 var _minimap: Node
+var _meters: Node
 var _order: Object
 var _money_before := 0
 var _skipped := 0
@@ -65,6 +66,7 @@ func _initialize() -> void:
 	_bike = _main.get_node("Bike")
 	_delivery = _main.get_node_or_null("DeliveryManager")
 	_minimap = _main.get_node_or_null("Minimap")
+	_meters = _main.get_node_or_null("Meters")
 	# GameState is an autoload, so it sits on the root next to the main scene.
 	_game_state = root.get_node_or_null("GameState")
 	Input.action_press("move_forward")
@@ -108,6 +110,7 @@ func _physics_process(_delta: float) -> bool:
 				# Still at the restaurant, so the villa may be off the map: the pin must stay on it.
 				_check_minimap_pin(str(_order.villa_number))
 				_check_minimap_turns()
+				_check_meters()
 				_move_bike_to(_delivery.target_door())
 				_frame = 0
 				_phase = "at_villa"
@@ -122,6 +125,7 @@ func _physics_process(_delta: float) -> bool:
 				_check("E at the villa delivers", _delivery.try_interact(), "")
 				_check("money goes up by the order's pay", _game_state.money == _money_before + _order.pay, "Dh %d" % _game_state.money)
 				_check("delivery is saved in the history", _game_state.history.size() == 1, "%d in history" % _game_state.history.size())
+				_check("an all-red order can still be delivered", _game_state.history.size() == 1 and _game_state.history[0]["damage"] == 0.0, "")
 				_check_stage("NONE")
 				_start_skip_check()
 		"timeout":
@@ -306,6 +310,49 @@ func _check_bump_ride() -> void:
 	_check("the bike rides on over the speed bump", moving,
 			"%.1f m past it, %.1f m/s" % [past, _bike.speed])
 	_check("the bike is still on the ground after the bump", _bike.is_on_floor(), "")
+
+
+## Session 8: the meters fill at pickup and drop with time, bumps and hard braking.
+## Ends with every meter at 0, so the delivery after it checks a red order can still be delivered.
+func _check_meters() -> void:
+	if _meters == null:
+		_check("Meters node exists in the scene", false, "")
+		return
+	var gs := _game_state
+	var places: Node = _delivery.place_builder
+	var want: float = _meters.target_time_for(places.restaurant_door(_order.restaurant_id), places.villa_door(_order.villa_number))
+	_check("meters are full at pickup", gs.meter_time == 100.0 and gs.meter_freshness == 100.0 and gs.meter_damage == 100.0, "")
+	_check("the target time follows the PRD rule", absf(gs.target_time - want) < 0.01 and gs.target_time > GameConfig.TIME_TARGET_EXTRA,
+			"%.0f s" % gs.target_time)
+	var panel: Control = _main.get_node("MetersPanel/Panel")
+	_check("the meters panel shows while carrying food", panel.visible, "")
+	_meters._physics_process(gs.target_time * 0.5)
+	_check("the time meter drains", absf(gs.meter_time - 50.0) < 1.0, "%.0f%%" % gs.meter_time)
+	_check("freshness drains over time", gs.meter_freshness < 100.0, "%.0f%%" % gs.meter_freshness)
+	var damage: float = gs.meter_damage
+	_bike.went_over_bump.emit(1.0)
+	_check("a speed bump hurts the damage meter", gs.meter_damage < damage, "%.0f%%" % gs.meter_damage)
+	damage = gs.meter_damage
+	var brakes := [0]
+	_bike.hard_braked.connect(func(): brakes[0] += 1)
+	_bike.speed = 7.0
+	Input.action_press("move_back")
+	_bike._update_stamina_and_speed(1.0 / 60.0)
+	_bike._update_stamina_and_speed(1.0 / 60.0)
+	Input.action_release("move_back")
+	_bike._update_stamina_and_speed(1.0 / 60.0)
+	_bike.speed = 0.0
+	_check("hard braking counts once per press", brakes[0] == 1, "%d" % brakes[0])
+	_check("hard braking hurts the damage meter", gs.meter_damage < damage, "%.0f%%" % gs.meter_damage)
+	var drain: Dictionary = GameConfig.FRESHNESS_DRAIN
+	_check("ice cream melts faster than pizza", drain["ice cream"] > drain["pizza"], "")
+	var bump: Dictionary = GameConfig.DAMAGE_SPEED_BUMP
+	_check("bubble tea hates speed bumps most", bump["bubble tea"] > bump["pizza"] and bump["bubble tea"] > bump["ice cream"], "")
+	_check("meter bands: green, orange, red", _meters.band(61.0) == _meters.Band.GREEN
+			and _meters.band(45.0) == _meters.Band.ORANGE and _meters.band(29.0) == _meters.Band.RED, "")
+	_meters._physics_process(gs.target_time * 3.0)
+	_check("the time meter stops at 0 and the order goes on", gs.meter_time == 0.0 and gs.stage_name() == "TO_VILLA", "")
+	gs.set_meters(0.0, 0.0, 0.0)
 
 
 ## The mini-map's pin shows the right text and is drawn inside the map.

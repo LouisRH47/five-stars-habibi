@@ -155,6 +155,22 @@ on both Palm Grove and the test area. Nothing needed fixing.
   the villa number, a far-away stop stays pinned inside the map, and some orders have notes.
 - Checked with real screenshots too, not only headless.
 
+### Session 8
+- Three meters while you carry food (`scripts/meters.gd`), shown top left in
+  `ui/meters_panel.tscn`: TIME (counts down to the target time), FRESHNESS and DAMAGE.
+  Each bar is green above 60%, orange from 30% to 60%, red under 30%.
+- Time: full at pickup, empty at the target time = straight-line distance at 20 km/h,
+  times 1.5, plus 20 s (PRD). After that it stays empty; the order is never cancelled.
+- Freshness drains every second: pizza slowly, bubble tea medium, ice cream fast.
+- Damage drops on speed bumps (more when fast), hard braking (braking above 18 km/h, once
+  per press, the bike sends `hard_braked`) and crashing into things. Bubble tea loses the
+  most on speed bumps.
+- The values live in GameState (meter_time, meter_freshness, meter_damage) and are saved
+  with each delivery in the history, ready for the stars in Session 10.
+- All numbers are in the Meters block of `scripts/game_config.gd`.
+- The smoke test checks the target time, that each meter drains, the bands, and that an
+  all-red order can still be delivered.
+
 ## Known bugs
 - None found yet. Not play-tested by Louis yet.
 - Godot is in the Downloads folder, not Applications, so the commands in CLAUDE.md

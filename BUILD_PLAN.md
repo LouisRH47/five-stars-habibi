@@ -159,7 +159,7 @@ Done when:
 - [ ] The mini-map turns with you and shows the next stop
 - [ ] You can find any villa using just the mini-map and house numbers
 
-### Session 8: The three meters
+### Session 8: The three meters (built, needs testing)
 
 ```text
 Session 8. Add the time, freshness and damage meters from PRD.md (Delivery

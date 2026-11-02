@@ -13,6 +13,17 @@ signal order_offered(order: Order)
 signal order_stage_changed(stage: int)
 signal order_delivered(order: Order)
 signal order_skipped(order: Order)
+## The time, freshness and damage meters changed (Session 8).
+signal meters_changed
+
+## The three meters for the order you're carrying, 100 (green) to 0 (red). Set by
+## scripts/meters.gd while you ride from the restaurant to the villa.
+var meter_time := 100.0
+var meter_freshness := 100.0
+var meter_damage := 100.0
+## Seconds you have to reach the villa before the time meter is empty, and seconds ridden so far.
+var target_time := 0.0
+var ride_time := 0.0
 
 ## Money in the wallet, in Dh.
 var money := 0
@@ -35,6 +46,7 @@ func reset() -> void:
 	offered_order = null
 	current_order = null
 	_choices.clear()
+	start_meters(0.0)
 	money_changed.emit(money)
 	_set_stage(Stage.NONE)
 
@@ -92,12 +104,33 @@ func deliver() -> bool:
 		"villa": done.villa_number,
 		"food": done.food,
 		"pay": done.pay,
+		"time": meter_time,
+		"freshness": meter_freshness,
+		"damage": meter_damage,
 	})
 	money_changed.emit(money)
 	_set_stage(Stage.NONE)
 	# Sent last, so the phone's "Delivered!" message comes after "no order".
 	order_delivered.emit(done)
 	return true
+
+
+## Fills all three meters for a new ride. target: seconds before the time meter is empty.
+func start_meters(target: float) -> void:
+	target_time = target
+	ride_time = 0.0
+	meter_time = 100.0
+	meter_freshness = 100.0
+	meter_damage = 100.0
+	meters_changed.emit()
+
+
+## Sets the meters (each is kept between 0 and 100).
+func set_meters(time: float, freshness: float, damage: float) -> void:
+	meter_time = clampf(time, 0.0, 100.0)
+	meter_freshness = clampf(freshness, 0.0, 100.0)
+	meter_damage = clampf(damage, 0.0, 100.0)
+	meters_changed.emit()
 
 
 ## Share of your last ORDER_ACCEPT_HISTORY orders that you accepted, 0.0 to 1.0.

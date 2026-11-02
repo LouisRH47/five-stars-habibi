@@ -10,6 +10,9 @@ signal bumped(strength: float)
 ## or faster). The camera shakes on it. Session 8's damage meter can listen to it too
 ## ("bubble tea hates speed bumps").
 signal went_over_bump(strength: float)
+## Sent once each time you slam on the brakes (S or Space) while going faster than
+## HARD_BRAKE_MIN_KMH. The damage meter listens to it (drinks spill).
+signal hard_braked
 
 ## Current speed in metres per second. Positive = forwards.
 var speed := 0.0
@@ -33,6 +36,7 @@ const HOP_WHEEL_RISE := 1.0   # metres a wheel is going up and down (bump + roun
 const WHEEL_BASE := 1.1       # metres between the two wheels
 
 var _steer := 0.0
+var _braking := false        # true while a brake key is held (so a long press counts once)
 var _bump_cooldown := 0.0
 var _start_transform: Transform3D
 var _hop_active := false     # true while the bike is going over a speed bump
@@ -111,6 +115,11 @@ func _update_stamina_and_speed(delta: float) -> void:
 		stamina = minf(stamina + refill * delta, GameConfig.STAMINA_MAX)
 		if tired and stamina >= GameConfig.STAMINA_TIRED_UNTIL:
 			tired = false
+
+	var braking_now := (brake > 0.0 and pedal == 0.0) or Input.is_action_pressed("handbrake")
+	if braking_now and not _braking and speed * 3.6 > GameConfig.HARD_BRAKE_MIN_KMH:
+		hard_braked.emit()
+	_braking = braking_now
 
 	var max_kmh := GameConfig.BIKE_SPRINT_MAX_SPEED_KMH if sprinting else GameConfig.BIKE_MAX_SPEED_KMH
 	var accel := GameConfig.BIKE_SPRINT_ACCELERATION if sprinting else GameConfig.BIKE_ACCELERATION

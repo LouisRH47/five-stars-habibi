@@ -84,3 +84,22 @@ const ORDER_NOTES := [                # picked at random; shown on the phone
 const MINIMAP_SIZE := 280.0           # pixels, the square in the bottom-left corner
 const MINIMAP_METRES_ACROSS := 170.0  # how many metres of the map fit across it (bigger = zoomed out)
 const MINIMAP_EDGE_INSET := 16.0      # pixels: a stop that's off the map gets pinned this far inside the edge
+
+# --- Meters (Session 8) ---
+# Every meter goes from 100 (green) down to 0 (red). Above 60 is green, 30 to 60 orange,
+# under 30 red (PRD "How the meters go from green to red"). A red meter never cancels the order.
+const METER_GREEN_ABOVE := 60.0
+const METER_RED_BELOW := 30.0
+# Time: target = straight-line distance at 20 km/h, times 1.5 for corners, plus 20 seconds.
+const TIME_TARGET_SPEED_KMH := 20.0
+const TIME_TARGET_CORNERS := 1.5
+const TIME_TARGET_EXTRA := 20.0       # seconds
+# Freshness lost per second, per food (pizza slow, bubble tea medium, ice cream fast).
+const FRESHNESS_DRAIN := {"pizza": 0.35, "bubble tea": 0.6, "ice cream": 1.0}
+# Damage lost per knock, per food. Bubble tea hates speed bumps.
+const DAMAGE_SPEED_BUMP := {"pizza": 3.0, "bubble tea": 14.0, "ice cream": 5.0}  # at full speed
+const DAMAGE_SPEED_BUMP_SLOW_SHARE := 0.25  # crawling over a bump costs a quarter of that
+const DAMAGE_HARD_BRAKE := {"pizza": 3.0, "bubble tea": 8.0, "ice cream": 4.0}
+const DAMAGE_COLLISION := {"pizza": 15.0, "bubble tea": 25.0, "ice cream": 18.0}  # a full-speed head-on hit
+# Hard braking: braking (S or Space) while going faster than this counts once per press.
+const HARD_BRAKE_MIN_KMH := 18.0
