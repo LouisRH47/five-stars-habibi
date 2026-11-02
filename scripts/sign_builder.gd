@@ -2,7 +2,8 @@ extends Node3D
 ## Builds the street-name signs and the welcome sign when the game starts, from the
 ## data list in data/palm_grove.gd. Every sign is Arabic on top, English below.
 ## Each road gets a sign near each end (StreetSign_<road>_<end>, e.g. StreetSign_0_1),
-## standing beside the road and turned along it, readable from both sides.
+## standing beside the road and turned along it, readable from both sides. At the gate
+## end of the avenue (no crossing road) the sign faces down the road instead.
 ## If the first spot is on a road, a building, a door or too near the wall, the sign
 ## moves to the other side of the road, then a bit further from the end.
 
@@ -24,6 +25,7 @@ const PLATE_FONT_SIZE := 48
 const SIGN_INWARD := 3.0     # metres in from the road end, past the crossing road's edge
 const SIGN_SIDE := 1.5       # metres out from the road edge
 const SIGN_STEP := 2.0       # how far to move the sign along the road if a spot is no good
+const DEAD_END_INWARD := 22.0  # extra metres in at a road end by the wall (the gate)
 const KEEP_CLEAR := 1.5      # metres kept free around buildings and the welcome sign
 const ROAD_CLEAR := 1.0      # metres kept free from road edges and the roundabout
 const DOOR_CLEAR := 3.5      # metres kept free around door spots (where you press E)
@@ -89,15 +91,29 @@ func _footprint(spot: Vector3, facing_deg: float, size: Vector3) -> Rect2:
 
 ## A street sign near the end "end" of the road (the other end is "other").
 func _build_street_sign(sign_name: String, road: Dictionary, end: Vector2, other: Vector2) -> void:
-	var half_width: float = _map["ROAD_WIDTH"] * 0.5
+	var road_width: float = _map["ROAD_WIDTH"]
+	var half_size: float = _map["HALF_SIZE"]
+	var half_width := road_width * 0.5
 	var along := (end - other).normalized()   # riding towards this end
 	var right := Vector2(-along.y, along.x)   # the right-hand side of the road
+	var english: String = road["name"]
+	var arabic: String = road["arabic"]
+	var font_size := SignText.fit_size(arabic, english, PLATE_FONT_SIZE, 4.0)
+	var wide := maxf(SignText.text_width(english, font_size),
+			SignText.text_width(arabic, roundi(font_size * SignText.ARABIC_SCALE)))
+	var plate_width := maxf(PLATE_MIN_WIDTH, wide + 0.4)
+	# An end at the wall (the gate end of the avenue) has no crossing road to read the
+	# sign from. There the plate faces along the road, stands further in (past the
+	# welcome sign, so it never hides it) and far enough out that it doesn't hang over the road.
+	var dead_end := absf(end.x) >= half_size - road_width or absf(end.y) >= half_size - road_width
+	var inward: float = SIGN_INWARD + (DEAD_END_INWARD if dead_end else 0.0)
+	var side_gap: float = maxf(SIGN_SIDE, plate_width * 0.5 + 0.5) if dead_end else SIGN_SIDE
 	var spot := Vector2.INF
 	var first := Vector2.INF
 	for step in 6:
-		var back := end - along * (half_width + SIGN_INWARD + SIGN_STEP * step)
+		var back := end - along * (half_width + inward + SIGN_STEP * step)
 		for side in [1.0, -1.0]:
-			var candidate: Vector2 = back + right * (half_width + SIGN_SIDE) * side
+			var candidate: Vector2 = back + right * (half_width + side_gap) * side
 			if first == Vector2.INF:
 				first = candidate
 			if _is_clear(candidate):
@@ -110,18 +126,13 @@ func _build_street_sign(sign_name: String, road: Dictionary, end: Vector2, other
 		spot = first
 	_placed.append(spot)
 
-	var english: String = road["name"]
-	var arabic: String = road["arabic"]
-	var font_size := SignText.fit_size(arabic, english, PLATE_FONT_SIZE, 4.0)
-	var wide := maxf(SignText.text_width(english, font_size),
-			SignText.text_width(arabic, roundi(font_size * SignText.ARABIC_SCALE)))
-	var plate_width := maxf(PLATE_MIN_WIDTH, wide + 0.4)
-
 	var holder := StaticBody3D.new()
 	holder.name = sign_name
 	holder.position = Vector3(spot.x, 0.0, spot.y)
 	# Turned so the plate runs along the road: its faces look across the road.
-	holder.rotation.y = atan2(right.x, right.y)
+	# At a dead end it turns square to the road, so riders on it see it face-on.
+	var facing: Vector2 = along if dead_end else right
+	holder.rotation.y = atan2(facing.x, facing.y)
 	add_child(holder)
 	_add_pole(holder, Vector3.ZERO, POLE_HEIGHT)
 	var plate_y := POLE_HEIGHT - PLATE_HEIGHT * 0.5

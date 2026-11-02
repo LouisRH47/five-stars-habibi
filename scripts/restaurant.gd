@@ -38,7 +38,8 @@ func setup(english: String, arabic: String, colour: Color, size: Vector3) -> voi
 	add_child(shape)
 
 	_add_box(size, STONE_COLOUR, Vector3(0, size.y * 0.5, 0))
-	var edge := Vector3(size.x + 0.2, ROOF_EDGE_HEIGHT, size.z + 0.2)
+	# Only deeper than the shop, not wider: the shops in the strip touch side by side.
+	var edge := Vector3(size.x, ROOF_EDGE_HEIGHT, size.z + 0.2)
 	_add_box(edge, colour, Vector3(0, size.y + ROOF_EDGE_HEIGHT * 0.5, 0))
 
 	# Glass door in the middle (the delivery spot is straight out from here),
