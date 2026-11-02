@@ -22,11 +22,24 @@ var sprinting := false
 ## How many speed bumps you've ridden over since the game started.
 var bumps_taken := 0
 
+# Where the wheels meet a speed bump, in metres ridden after the bike's collision box
+# first touches it. The box front is 0.85 m ahead of the bike's middle, the front wheel
+# 0.55 m, and a bump is 0.5 m deep: so the front wheel is on top of the bump from 0.3 to
+# 0.8 m, and the back wheel (1.1 m further back) from 1.4 to 1.9 m.
+const HOP_FRONT_START := 0.3
+const HOP_REAR_START := 1.4
+const HOP_END := 2.2          # both wheels are off the bump again
+const HOP_WHEEL_RISE := 1.0   # metres a wheel is going up and down (bump + round wheel edge)
+const WHEEL_BASE := 1.1       # metres between the two wheels
+
 var _steer := 0.0
 var _bump_cooldown := 0.0
 var _start_transform: Transform3D
-var _hop_left := 0.0     # seconds left of the speed-bump bounce
-var _hop_height := 0.0   # metres, how high this bounce goes
+var _hop_active := false     # true while the bike is going over a speed bump
+var _hop_dist := 0.0         # metres ridden since the bike touched the bump
+var _hop_time := 0.0         # seconds since the bike touched the bump
+var _hop_height := 0.0       # metres of extra springy bounce (0 when crawling)
+var _hop_backwards := false  # true if we went over it rolling backwards
 
 @onready var _model: Node3D = $Model
 @onready var _front_wheel: Node3D = $Model/FrontWheel
@@ -60,7 +73,7 @@ func reset_to_start() -> void:
 	velocity = Vector3.ZERO
 	speed = 0.0
 	_model.rotation.z = 0.0
-	_hop_left = 0.0
+	_hop_active = false
 	_model.position.y = 0.0
 	_model.rotation.x = 0.0
 
@@ -74,8 +87,12 @@ func hit_speed_bump() -> void:
 	var too_fast := clampf((kmh - GameConfig.SPEED_BUMP_SAFE_KMH)
 			/ (GameConfig.BIKE_MAX_SPEED_KMH - GameConfig.SPEED_BUMP_SAFE_KMH), 0.0, 1.0)
 	speed *= lerpf(1.0, GameConfig.SPEED_BUMP_SPEED_KEEP, too_fast)
-	_hop_height = lerpf(GameConfig.SPEED_BUMP_HOP_MIN, GameConfig.SPEED_BUMP_HOP_MAX, strength)
-	_hop_left = GameConfig.SPEED_BUMP_HOP_TIME
+	# The wheels always roll up over the bump; going fast adds a springy bounce on top.
+	_hop_height = lerpf(0.0, GameConfig.SPEED_BUMP_HOP_MAX - GameConfig.SPEED_BUMP_HEIGHT, strength)
+	_hop_active = true
+	_hop_dist = 0.0
+	_hop_time = 0.0
+	_hop_backwards = speed < 0.0
 	bumps_taken += 1
 	went_over_bump.emit(strength)
 
@@ -172,18 +189,46 @@ func _update_lean(delta: float) -> void:
 
 
 func _update_hop(delta: float) -> void:
-	# The speed-bump bounce: a big hop, then a smaller one, like a spring settling.
+	# The speed-bump bounce. It follows the distance ridden, not the clock, so each wheel
+	# rolls up over the bump exactly while it is on it, at any speed: nose up while the
+	# front wheel is on it, nose down while the back wheel is. If you stop on the bump,
+	# the bike just stays up there until you move on.
 	# Only the model moves; the physics body stays on the ground, so is_on_floor() and
 	# the camera don't notice.
-	if _hop_left <= 0.0:
+	if not _hop_active:
 		return
-	_hop_left = maxf(_hop_left - delta, 0.0)
-	var done := 1.0 - _hop_left / GameConfig.SPEED_BUMP_HOP_TIME  # 0 at the start, 1 at the end
-	var wave := sin(done * TAU) * (1.0 - done)  # up, then down, dying away
-	_model.position.y = _hop_height * absf(wave)
-	# Nose up while the front wheel goes over, nose down when the back wheel does.
+	_hop_dist += absf(speed) * delta
+	_hop_time += delta
+	if _hop_dist > HOP_END:
+		_hop_active = false
+		_model.position.y = 0.0
+		_model.rotation.x = 0.0
+		return
+	var front := _wheel_lift(_hop_dist, HOP_FRONT_START)
+	var back := _wheel_lift(_hop_dist, HOP_REAR_START)
+	if _hop_backwards:
+		# Rolling backwards, the back wheel reaches the bump first.
+		var first := front
+		front = back
+		back = first
+	# Going fast adds a spring bounce on top: a big hop, then a smaller one, dying away.
+	var wave := 0.0
+	if _hop_time < GameConfig.SPEED_BUMP_HOP_TIME:
+		var done := _hop_time / GameConfig.SPEED_BUMP_HOP_TIME  # 0 at the start, 1 at the end
+		wave = sin(done * TAU) * (1.0 - done)
+	_model.position.y = (front + back) * 0.5 + _hop_height * absf(wave)
+	# Tip the model so each wheel sits on its own height (positive = nose up, as the
+	# front of the bike is -Z), plus a little extra tip from the spring bounce.
 	var size := _hop_height / GameConfig.SPEED_BUMP_HOP_MAX
-	_model.rotation.x = deg_to_rad(GameConfig.SPEED_BUMP_TILT_DEG) * size * wave
+	_model.rotation.x = atan2(front - back, WHEEL_BASE) \
+			+ deg_to_rad(GameConfig.SPEED_BUMP_TILT_DEG) * size * wave
+
+
+## How high one wheel is lifted by the bump after riding dist metres, for a wheel that
+## reaches the bump at start: rises to SPEED_BUMP_HEIGHT on top of it, then back to 0.
+func _wheel_lift(dist: float, start: float) -> float:
+	var t := clampf((dist - start + 0.25) / HOP_WHEEL_RISE, 0.0, 1.0)
+	return GameConfig.SPEED_BUMP_HEIGHT * clampf(sin(t * PI), 0.0, 1.0)
 
 
 func _spin_wheels(delta: float) -> void:
