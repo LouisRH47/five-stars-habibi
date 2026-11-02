@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scripts/bike.gd" id="1_0wfyh"]
 [ext_resource type="Script" path="res://scripts/follow_camera.gd" id="2_sugp2"]
 [ext_resource type="PackedScene" path="res://ui/hud.tscn" id="3_jyhfs"]
-[ext_resource type="Script" path="res://scripts/hud.gd" id="4_tbgi4"]
+[ext_resource type="PackedScene" path="res://ui/pause_menu.tscn" id="4_pause"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_jyhfs"]
 sky_top_color = Color(0.30980393, 0.6627451, 0.8392157, 1)
@@ -29,6 +29,12 @@ albedo_color = Color(0.9098039, 0.827451, 0.6509804, 1)
 [sub_resource type="BoxMesh" id="BoxMesh_85g3d"]
 material = SubResource("StandardMaterial3D_tipki")
 size = Vector3(200, 1, 200)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_edge_ns"]
+size = Vector3(204, 6, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_edge_ew"]
+size = Vector3(2, 6, 204)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_choun"]
 size = Vector3(2, 1.5, 2)
@@ -202,6 +208,24 @@ shape = SubResource("BoxShape3D_o6xl0")
 [node name="Mesh" type="MeshInstance3D" parent="Ground" unique_id=1460711159]
 mesh = SubResource("BoxMesh_85g3d")
 
+[node name="EdgeWalls" type="StaticBody3D" parent="." unique_id=1507244900]
+
+[node name="North" type="CollisionShape3D" parent="EdgeWalls" unique_id=1507244901]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, -101)
+shape = SubResource("BoxShape3D_edge_ns")
+
+[node name="South" type="CollisionShape3D" parent="EdgeWalls" unique_id=1507244902]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 101)
+shape = SubResource("BoxShape3D_edge_ns")
+
+[node name="East" type="CollisionShape3D" parent="EdgeWalls" unique_id=1507244903]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 101, 3, 0)
+shape = SubResource("BoxShape3D_edge_ew")
+
+[node name="West" type="CollisionShape3D" parent="EdgeWalls" unique_id=1507244904]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -101, 3, 0)
+shape = SubResource("BoxShape3D_edge_ew")
+
 [node name="Boxes" type="Node3D" parent="." unique_id=1699862601]
 
 [node name="Box1" type="StaticBody3D" parent="Boxes" unique_id=2045494571]
@@ -327,6 +351,7 @@ fov = 70.0
 script = ExtResource("2_sugp2")
 target = NodePath("../Bike")
 
-[node name="HUD" type="CanvasLayer" parent="." unique_id=1036215161 node_paths=PackedStringArray("bike") instance=ExtResource("3_jyhfs")]
-script = ExtResource("4_tbgi4")
+[node name="HUD" parent="." unique_id=1036215161 node_paths=PackedStringArray("bike") instance=ExtResource("3_jyhfs")]
 bike = NodePath("../Bike")
+
+[node name="PauseMenu" parent="." unique_id=1507244800 instance=ExtResource("4_pause")]

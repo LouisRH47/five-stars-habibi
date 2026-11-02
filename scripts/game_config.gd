@@ -37,3 +37,5 @@ const CAMERA_FOLLOW_SMOOTHING := 6.0  # higher = camera catches up faster
 
 # --- World ---
 const GRAVITY := 9.8
+const WORLD_FALL_RESET_Y := -20.0      # if the bike drops below this height it goes back to the start
+const WHEEL_RADIUS := 0.34            # metres, matches the wheel mesh (used to spin the wheels)

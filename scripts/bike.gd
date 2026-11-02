@@ -1,7 +1,7 @@
 extends CharacterBody3D
 ## The player's bicycle.
 ## W / Up arrow = pedal, S / Down arrow = brake (then roll backwards),
-## A / D or Left / Right = steer, Space = handbrake, Shift = sprint.
+## A / D or Left / Right = steer, Space = handbrake, Shift = sprint, R = back to start.
 ## Tuning numbers are in scripts/game_config.gd.
 
 ## Sent when the bike hits something. strength is 0 (tiny tap) to 1 (full-speed, head-on).
@@ -18,16 +18,37 @@ var sprinting := false
 
 var _steer := 0.0
 var _bump_cooldown := 0.0
+var _start_transform: Transform3D
 
 @onready var _model: Node3D = $Model
+@onready var _front_wheel: Node3D = $Model/FrontWheel
+@onready var _rear_wheel: Node3D = $Model/RearWheel
+
+
+func _ready() -> void:
+	# Remember where the bike started so R can put it back there.
+	_start_transform = global_transform
 
 
 func _physics_process(delta: float) -> void:
+	if Input.is_action_just_pressed("reset_bike"):
+		reset_to_start()
+		return
 	_update_stamina_and_speed(delta)
 	_update_steering(delta)
 	_move(delta)
 	_update_lean(delta)
+	_spin_wheels(delta)
 	_bump_cooldown = maxf(_bump_cooldown - delta, 0.0)
+
+
+## Puts the bike back where it started, standing still. Used by the R key
+## and when the bike falls off the world.
+func reset_to_start() -> void:
+	global_transform = _start_transform
+	velocity = Vector3.ZERO
+	speed = 0.0
+	_model.rotation.z = 0.0
 
 
 func _update_stamina_and_speed(delta: float) -> void:
@@ -95,6 +116,11 @@ func _move(delta: float) -> void:
 		velocity.y -= GameConfig.GRAVITY * delta
 	move_and_slide()
 
+	# Safety net: if the bike somehow falls off the world, put it back.
+	if global_position.y < GameConfig.WORLD_FALL_RESET_Y:
+		reset_to_start()
+		return
+
 	# Riding into a wall or box slows you down. Head-on hits slow you the most.
 	for i in get_slide_collision_count():
 		var normal := get_slide_collision(i).get_normal()
@@ -114,3 +140,11 @@ func _update_lean(delta: float) -> void:
 	var target_lean := deg_to_rad(GameConfig.BIKE_LEAN_MAX_DEG) * _steer * speed_ratio
 	var follow := 1.0 - exp(-GameConfig.BIKE_LEAN_SMOOTHING * delta)
 	_model.rotation.z = lerpf(_model.rotation.z, target_lean, follow)
+
+
+func _spin_wheels(delta: float) -> void:
+	# Wheels turn with the ground speed. The wheel meshes are tipped on their side,
+	# so spinning around their local Y axis rolls them forwards.
+	var turn := speed / GameConfig.WHEEL_RADIUS * delta
+	_front_wheel.rotate_object_local(Vector3.UP, -turn)
+	_rear_wheel.rotate_object_local(Vector3.UP, -turn)

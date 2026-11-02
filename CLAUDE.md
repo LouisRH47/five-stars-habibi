@@ -23,6 +23,13 @@ Look and feel: the mockup linked at the top of PRD.md.
 - Small steps. Get one thing working before adding the next.
 - Before handing over, run Godot headless to catch script errors:
   /Applications/Godot.app/Contents/MacOS/Godot --path . --headless --quit
+  Then run the smoke test, which rides the bike and checks it works:
+  /Applications/Godot.app/Contents/MacOS/Godot --path . --headless -s tests/smoke_test.gd
+  It must print RESULT: PASS. When a session adds a new system, add a check for it.
+- Shared game data (money, rating, current order) lives in one autoload,
+  scripts/game_state.gd (from Session 3). Don't store it anywhere else.
+- Build the map from a data list (data/) plus a builder script, not by hand-editing
+  scene files.
 - At the end of every session: update PROGRESS.md (what works, what's next,
   known bugs) and make a git commit with a clear message. Louis pushes to GitHub
   with GitHub Desktop (or ask him if he wants you to push).

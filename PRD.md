@@ -13,6 +13,7 @@ Five Stars Habibi is a job-sim driving game set in Al Sarab, a made-up desert ci
 - **Built with:** Claude Code, in Godot 4 (GDScript). 3D, with the camera behind the rider. A Roblox port might come later.
 - **First playable version:** Tier 1 only (bicycle deliveries around one villa community).
 - **Big rule:** plan the whole ladder, but build one tier at a time. Don't start Tier 2 until Tier 1 is fun.
+- **Reading this file:** the sections "The career ladder", "The motorbike test" and "Taxi tiers" are the long-term vision. They are marked **NOT NOW**. Session prompts only build what's in the Tier 1 sections.
 
 **Decided so far**
 
@@ -29,7 +30,7 @@ Five Stars Habibi is a job-sim driving game set in Al Sarab, a made-up desert ci
 - Game text is English only. Signs in the world are Arabic + English, like Dubai.
 - Chill Arabic-style background music (free-to-use tracks only).
 
-## The career ladder
+## The career ladder (NOT NOW, vision only)
 
 Six tiers, each one with a new vehicle, new areas and better pay. Pay numbers are starting guesses in game Dirhams (Dh) and will need tuning once it's playable.
 
@@ -54,7 +55,7 @@ Six tiers, each one with a new vehicle, new areas and better pay. Pay numbers ar
 
 **Getting sent down**
 
-- **Bad ratings:** if your average over your last 30 deliveries drops below your tier's minimum, you get a warning. Still below after 10 more deliveries means you go down a tier.
+- **Bad ratings:** if your rating (the average of your last 50 deliveries, same number everywhere) drops below your tier's minimum, you get a warning. Still below after 10 more deliveries means you go down a tier.
 - **Crashing a lot:** 3 big crashes within 5 shifts sends you down a tier, and you have to retake that tier's test (100 Dh retake).
 - **Climbing back:** meet the requirements again and you go straight back up. No new test unless crashes were the reason you went down.
 
@@ -88,7 +89,8 @@ Every delivery is a race against three meters: time, heat and damage. How well y
 **One delivery, step by step**
 
 1. An order pops up on your phone: restaurant, customer address, food type, pay.
-2. Accept it (or skip it, but skipping too many hurts your acceptance rate).
+2. Accept it (or skip it). An order you ignore for 30 seconds counts as skipped.
+   - **Acceptance rate** is the share of your last 20 orders you accepted. Below 70% the next few orders are the boring short ones (low pay, no tip chance) until it's back above 70%. No other punishment.
 3. Ride to the restaurant and pick up the food.
 4. Ride to the customer's villa. The meters start ticking.
 5. Drop it off at the door, then you get stars, pay and maybe a tip.
@@ -98,14 +100,23 @@ Every delivery is a race against three meters: time, heat and damage. How well y
 | Meter | What drains it | Food that cares most |
 | --- | --- | --- |
 | Time | Every second after pickup | Everything |
-| Heat | Time in the sun (faster on the day shift) | Ice cream, cold drinks, hot coffee |
+| Freshness | Time in the sun (faster on the day shift). Cold food melts, hot food goes cold | Ice cream, cold drinks, hot coffee |
 | Damage | Bumps, crashes, kerbs, hard braking | Cake, drinks, soup |
+
+**How the meters go from green to red**
+
+- Each meter is a bar from 100% (green) down to 0% (red). Above 60% is green, 30% to 60% is orange, below 30% is red.
+- **Time:** the target time is the straight-line distance from restaurant to villa at a normal riding pace (20 km/h), times 1.5 for corners, plus 20 seconds. The bar is full at pickup and empty at the target time. After that it stays empty, the order isn't cancelled.
+- **Freshness:** drains at a fixed rate per food type (pizza slow, bubble tea medium, ice cream fast). Numbers live in game_config.gd.
+- **Damage:** starts full. Every bump, speed bump, kerb, hard brake or crash takes off a chunk. Bubble tea loses the most per bump.
+- A meter at 0% never cancels the order. You can always deliver, you just get fewer stars.
 
 **Stars (1 to 5)**
 
-- All three meters green = 5 stars. Each meter in the red takes off stars.
+- Start at 5 stars. Each meter in the orange takes off half a star, each meter in the red takes off one and a half stars. Round to the nearest half star, never below 1 star.
+- Examples: all green = 5. One orange = 4.5. One red = 3.5. All three red = 1.
 - Your rating is the average of your last 50 deliveries, so one bad run doesn't ruin you.
-- Higher rating = better orders show up more often.
+- Higher rating = better orders show up more often. A "better order" is one with higher pay, a shorter ride, or a tip-friendly customer (a higher tip chance). Starting idea: at 4.5+ stars, half the orders are better orders; below 4.0, one in five.
 
 **Money**
 
@@ -116,6 +127,8 @@ Every delivery is a race against three meters: time, heat and damage. How well y
 **XP**
 
 - Every delivery gives XP. Higher-tier jobs give more.
+- XP builds your **Rider Level** (shown on your profile). Each level needs more XP than the last.
+- Rider Level is what gear needs. Gear costs money **and** a level: a louder bell at level 2, the GPS line at level 3, a bigger stamina bar at level 5. Levels don't change the career ladder, stars and money do.
 - Doing jobs from a lower tier gives less money and less XP (starting idea: 50% of normal).
 
 **Tier 1 food types (first version)**
@@ -127,6 +140,7 @@ Every delivery is a race against three meters: time, heat and damage. How well y
 **Shifts**
 
 - One shift is about 10 real minutes (one in-game day). Tier 1 is day shift only. Night shifts unlock at Tier 2.
+- If the clock runs out while you're carrying an order, you still finish that delivery. The shift ends right after you drop it off. No new orders pop up once the clock is out.
 - At the end you get a summary screen: deliveries, stars, money earned, XP.
 
 **Bicycle stamina:** sprinting drains a stamina bar and coasting refills it, so you can't hold sprint forever. The motorbike doesn't have this.
@@ -141,6 +155,22 @@ Every delivery is a race against three meters: time, heat and damage. How well y
 - A GPS line on the road is a cheap upgrade you buy, not there from the start.
 
 **Customers at the door:** the customer comes out with a short animation and one line of speech. Some ask you to leave it at the door. More customer types get added later.
+
+## Controls (Tier 1, keyboard)
+
+Keys are placeholders until the controls are tested. Controller support comes later.
+
+| Key | What it does |
+| --- | --- |
+| W or Up arrow | Pedal |
+| S or Down arrow | Brake, then roll slowly backwards |
+| A / D or Left / Right | Steer (only while moving) |
+| Shift | Sprint (uses stamina) |
+| Space | Handbrake |
+| E | Accept order, pick up, drop off, talk |
+| Q | Skip order |
+| Esc | Pause (and resume) |
+| R | Put the bike back on the road if you get stuck |
 
 ## Crashes, bills and insurance
 
@@ -159,7 +189,10 @@ Crashing costs you, and insurance is an optional bet. Prices are scaled down fro
 | Motorbike | 400 Dh | 300 Dh | 50 Dh |
 | Taxi tiers | 800 Dh | 1,500 Dh+ | 150 Dh |
 
-One uninsured big crash on the bicycle costs about 20 deliveries of pay.
+One uninsured big crash on the bicycle costs about 20 deliveries of pay. That is too harsh for someone still learning the bike, so:
+
+- **The boss covers your first big crash.** The first big crash of the game shows the bills, then a message from the boss saying Snackaroo pays this one. You still lose the order and the shift.
+- **Insurance starts switched on.** You can turn it off from the phone whenever you like. The tutorial points it out.
 
 **Insurance (optional, paid per delivery)**
 
@@ -174,7 +207,7 @@ One uninsured big crash on the bicycle costs about 20 deliveries of pay.
 
 **Real prices this is based on:** a UAE ER visit costs about 500 to 1,500 AED before tests ([Zavis](https://www.zavis.ai/directory/pricing/guide/for-tourists)). A bike service in Dubai runs from about 50 to 300 AED ([UAEcycle](https://www.uaecycle.com/pages/bike-service-charging-list), [Adventure HQ](https://adventurehq.ae/pages/bike-service)). Real riders can earn 4 to 13 AED per delivery in incentives ([job ad](https://app.qureos.com/jobs/bike-rider-1773450516512)), which is why insurance had to be scaled down.
 
-## The motorbike test (Tier 1 to Tier 2)
+## The motorbike test (Tier 1 to Tier 2) (NOT NOW, vision only)
 
 To leave the bicycle behind you book and pay for a test at the Al Sarab Riding School. It has two parts, a practical yard test and a theory quiz, and you need to pass both.
 
@@ -218,9 +251,9 @@ Mistakes give penalty points. Starting idea: a touched cone is 1 point, going ov
 
 The car test for Tier 4 reuses the same system: a yard course (parking, hill start, emergency stop) plus a theory quiz.
 
-## Taxi tiers (4 to 6)
+## Taxi tiers (4 to 6) (NOT NOW, vision only)
 
-Taxis swap food for passengers but keep the same three-meter idea, so players already know how it works. Passengers ask for things mid-ride and you respond with keys while you keep driving.
+Taxis swap food for passengers but keep the same three-meter idea (time, comfort instead of damage, mood instead of freshness), so players already know how it works. Passengers ask for things mid-ride and you respond with keys while you keep driving.
 
 **Passenger meters**
 
@@ -228,7 +261,7 @@ Taxis swap food for passengers but keep the same three-meter idea, so players al
 | --- | --- | --- |
 | Time | Time | Slow routes, getting lost |
 | Comfort | Damage | Hard braking, sharp turns, bumps, crashes |
-| Mood | Heat | Ignoring requests, wrong AC, bad music, a hot car |
+| Mood | Freshness | Ignoring requests, wrong AC, bad music, a hot car |
 
 **Passenger requests**
 
@@ -299,12 +332,12 @@ Al Sarab is one map. Districts sit behind barriers or a "not in your zone yet" m
 Build it in milestones and play-test at the end of each one. Only move on when the current milestone feels good. The exact sessions are in BUILD_PLAN.md.
 
 1. **Bike feel:** a bicycle you can ride around a flat test area.
-2. **Palm Grove map:** villas with house numbers, roads, the restaurant strip, a few obstacles.
-3. **One full delivery:** phone order, pickup, drop-off, pay. No meters yet.
-4. **Meters and stars:** time, heat and damage, plus the star score at the end.
-5. **Money, tips and XP:** wallet, random tips on 5-star jobs, XP bar.
-6. **Start screen:** application form and the 3 presets.
-7. **Polish Tier 1:** sounds, music, a day shift, a basic menu and saving your progress.
+2. **One full delivery on the test area:** phone order, pickup, drop-off, pay. No meters yet. If this isn't fun, the map won't fix it.
+3. **Palm Grove map:** roads, villas with house numbers (placed from a data list, not by hand), the restaurant strip with Arabic + English signs, decoration, mini-map.
+4. **Meters, obstacles and stars:** time, freshness and damage, the things that hurt them, plus the star score at the end.
+5. **Money, tips, XP and customers:** wallet, random tips on 5-star jobs, Rider Level, customers at the door.
+6. **Crashes and shifts:** small and big crashes, insurance, the 10-minute shift and the summary screen.
+7. **Start screen and polish:** application form and the 3 presets, menu, saving, sounds and music.
 8. **Motorbike test:** yard course, instructor, theory quiz, fail and retake rules.
 9. **Tier 2 and beyond:** motorbike, Old Town, then the next tiers one by one.
 
@@ -335,6 +368,15 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 2 Nov 2026 | Working name Five Stars Habibi (may change later). Release Tier 1 free on itch.io |
 | 2 Nov 2026 | Mockup made; gameplay and customer screens should feel 3D with real depth |
 | 2 Nov 2026 | This file is the PRD and the one true copy of the design |
+| 2 Nov 2026 | Review fixes: rating always averages the last 50 deliveries (was 30 in one place) |
+| 2 Nov 2026 | Heat meter renamed Freshness. Meters have green/orange/red bands and a written time target. A red meter never cancels an order |
+| 2 Nov 2026 | Star formula: start at 5, orange meter takes half a star, red takes one and a half, never below 1 |
+| 2 Nov 2026 | XP builds a Rider Level that gates gear (bell, GPS line, stamina). Ladder still uses stars and money only |
+| 2 Nov 2026 | Ignored orders count as skipped after 30 s. Acceptance rate under 70% gives boring orders, nothing worse |
+| 2 Nov 2026 | Boss covers the first big crash. Insurance starts switched on |
+| 2 Nov 2026 | Shift clock running out mid-delivery lets you finish that delivery first |
+| 2 Nov 2026 | Controls table added to the PRD (Esc pause, R reset). Vision-only sections marked NOT NOW |
+| 2 Nov 2026 | Build order changed: delivery loop on the test area before the Palm Grove map. Villas placed from a data list |
 
 ## Sources
 
