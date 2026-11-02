@@ -215,6 +215,25 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - The smoke test checks a customer comes out at the right villa with a line from the list,
   the lines vary, and a leave-at-the-door order leaves a bag instead.
 
+### Session 12
+- Crashes (`scripts/bike.gd`). A crash is hitting something fairly straight on:
+  - Small crash (10 km/h or more): you fall off, the bike lies on its side for 2 seconds,
+    the food loses 30% on the damage meter, then you get back on.
+  - Big crash (above 20 km/h into a car, wall, palm or building): the screen fades out and
+    the Al Sarab Clinic screen shows the bills (`scripts/clinic_screen.gd`). Your order is
+    cancelled (counts as 0 stars, no pay). Press E or click OK: back at the start.
+    Cats and kids only ever cause a small crash.
+- Bills: 150 Dh hospital + 80 Dh repair. The boss pays the very first big crash. With
+  insurance you only pay 20 Dh. Your wallet can go below 0.
+- Insurance starts on and costs 2 Dh per delivery (shown on the phone after each delivery).
+  Press I to switch it on or off; the bottom of the phone says which.
+- Session 13 will make a big crash end the shift (GameState sends `big_crashed`).
+- Numbers are in the "Crashes, bills and insurance" block of `game_config.gd`.
+- The smoke test rides into a villa wall slowly (small crash, back on after 2 s) and fast
+  (big crash, clinic, boss pays), and checks the insured and uninsured bills and the I key.
+  On the old test area its riding checks now start in a clear lane (the old start rides
+  into a box at sprint speed, which is now a big crash).
+
 ## Known bugs
 - None found yet. Not play-tested by Louis yet.
 - Godot is in the Downloads folder, not Applications, so the commands in CLAUDE.md

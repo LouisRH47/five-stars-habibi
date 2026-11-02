@@ -13,6 +13,10 @@ signal went_over_bump(strength: float)
 ## Sent once each time you slam on the brakes (S or Space) while going faster than
 ## HARD_BRAKE_MIN_KMH. The damage meter listens to it (drinks spill).
 signal hard_braked
+## Sent when you crash (Session 12). big = false: you fall off and get back on after
+## CRASH_FALLEN_TIME. big = true: a car/wall/pole above CRASH_BIG_KMH, the CrashManager
+## takes over (clinic). Cats and kids only ever cause a small crash.
+signal crashed(big: bool)
 
 ## Current speed in metres per second. Positive = forwards.
 var speed := 0.0
@@ -24,6 +28,10 @@ var tired := false
 var sprinting := false
 ## How many speed bumps you've ridden over since the game started.
 var bumps_taken := 0
+## Seconds left lying on the ground after a small crash (0 = riding).
+var fallen_left := 0.0
+## True after a big crash, until the CrashManager puts you back at the start.
+var wrecked := false
 
 # Where the wheels meet a speed bump, in metres ridden after the bike's collision box
 # first touches it. The box front is 0.85 m ahead of the bike's middle, the front wheel
@@ -58,8 +66,11 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if Input.is_action_just_pressed("reset_bike"):
+	if Input.is_action_just_pressed("reset_bike") and fallen_left <= 0.0 and not wrecked:
 		reset_to_start()
+		return
+	if fallen_left > 0.0 or wrecked:
+		_lie_on_ground(delta)
 		return
 	_update_stamina_and_speed(delta)
 	_update_steering(delta)
@@ -76,6 +87,8 @@ func reset_to_start() -> void:
 	global_transform = _start_transform
 	velocity = Vector3.ZERO
 	speed = 0.0
+	fallen_left = 0.0
+	wrecked = false
 	_model.rotation.z = 0.0
 	_hop_active = false
 	_model.position.y = 0.0
@@ -178,15 +191,52 @@ func _move(delta: float) -> void:
 
 	# Riding into a wall or box slows you down. Head-on hits slow you the most.
 	for i in get_slide_collision_count():
-		var normal := get_slide_collision(i).get_normal()
+		var hit := get_slide_collision(i)
+		var normal := hit.get_normal()
 		if absf(normal.y) < 0.5:
 			var head_on := absf(forward.dot(normal))
+			if _check_crash(head_on, hit.get_collider()):
+				return
 			var strength := head_on * clampf(absf(speed) / (GameConfig.BIKE_MAX_SPEED_KMH / 3.6), 0.0, 1.0)
 			speed *= lerpf(1.0, GameConfig.BIKE_BUMP_SPEED_KEEP, head_on)
 			if strength >= GameConfig.BUMP_MIN_STRENGTH and _bump_cooldown <= 0.0:
 				_bump_cooldown = GameConfig.BUMP_COOLDOWN
 				bumped.emit(strength)
 			break
+
+
+## Was that a crash? Returns true if it was (the bike stops). Small: fall off for a bit.
+## Big: a solid thing (not a cat or kid) hit fast and fairly straight on.
+func _check_crash(head_on: float, thing: Object) -> bool:
+	var kmh := absf(speed) * 3.6
+	if head_on < GameConfig.CRASH_HEAD_ON or kmh < GameConfig.CRASH_SMALL_KMH:
+		return false
+	var soft := thing is Node and (thing as Node).is_in_group("critter")
+	var big := kmh > GameConfig.CRASH_BIG_KMH and not soft
+	bumped.emit(clampf(kmh / GameConfig.BIKE_MAX_SPEED_KMH, 0.0, 1.0))  # camera shake
+	speed = 0.0
+	velocity = Vector3.ZERO
+	if big:
+		wrecked = true
+	else:
+		fallen_left = GameConfig.CRASH_FALLEN_TIME
+	crashed.emit(big)
+	return true
+
+
+## On the ground after a crash: the model tips over on its side, then gets back up
+## for the last half second.
+func _lie_on_ground(delta: float) -> void:
+	speed = 0.0
+	velocity = Vector3.ZERO
+	var down := deg_to_rad(80.0)
+	if not wrecked:
+		fallen_left = maxf(fallen_left - delta, 0.0)
+		if fallen_left < 0.5:
+			down = 0.0
+	_model.rotation.z = lerpf(_model.rotation.z, down, 1.0 - exp(-10.0 * delta))
+	if fallen_left <= 0.0 and not wrecked:
+		_model.rotation.z = 0.0
 
 
 func _update_lean(delta: float) -> void:

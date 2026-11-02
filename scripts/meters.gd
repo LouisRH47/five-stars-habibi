@@ -21,6 +21,7 @@ func _ready() -> void:
 		bike.bumped.connect(_on_bumped)
 		bike.went_over_bump.connect(_on_speed_bump)
 		bike.hard_braked.connect(_on_hard_brake)
+		bike.crashed.connect(_on_crashed)
 
 
 func _physics_process(delta: float) -> void:
@@ -86,6 +87,11 @@ func _on_bumped(strength: float) -> void:
 
 func _on_speed_bump(strength: float) -> void:
 	hurt_food(_per_food(GameConfig.DAMAGE_SPEED_BUMP) * lerpf(GameConfig.DAMAGE_SPEED_BUMP_SLOW_SHARE, 1.0, strength))
+
+
+func _on_crashed(big: bool) -> void:
+	if not big:
+		hurt_food(GameConfig.CRASH_SMALL_DAMAGE)  # you fell off: the food took a big knock
 
 
 func _on_hard_brake() -> void:

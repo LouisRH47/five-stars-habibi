@@ -21,12 +21,15 @@ var _flash_left := 0.0
 @onready var _level: Label = $Panel/Margin/Rows/Profile/Level
 @onready var _xp_bar: ProgressBar = $Panel/Margin/Rows/XP
 @onready var _result: StarRow = $Panel/Margin/Rows/Result
+@onready var _insurance: Label = $Panel/Margin/Rows/Insurance
 
 
 func _ready() -> void:
 	GameState.money_changed.connect(_on_money_changed)
 	GameState.order_delivered.connect(_on_order_delivered)
 	GameState.stats_changed.connect(_on_stats_changed)
+	GameState.insurance_changed.connect(_on_insurance_changed)
+	_on_insurance_changed(GameState.insurance_on)
 	_on_money_changed(GameState.money)
 	_on_stats_changed()
 
@@ -53,6 +56,8 @@ func _process(delta: float) -> void:
 		var lines := "+%d Dh pay" % job["pay"]
 		if job["tip"] > 0:
 			lines += "\n+%d Dh tip!" % job["tip"]
+		if job["insurance"] > 0:
+			lines += "\n-%d Dh insurance" % job["insurance"]
 		lines += "\n+%d XP" % job["xp"]
 		var done := "Left at the door!" if job["left_at_door"] else "Delivered!"
 		_show("%s  %s stars" % [done, _stars_text(job["stars"])], lines, "", false)
@@ -83,6 +88,17 @@ func _on_money_changed(new_money: int) -> void:
 
 func _on_order_delivered(_order: Order) -> void:
 	_flash_left = GameConfig.RESULT_MESSAGE_TIME
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("toggle_insurance"):
+		GameState.set_insurance(not GameState.insurance_on)
+		get_viewport().set_input_as_handled()
+
+
+func _on_insurance_changed(on: bool) -> void:
+	_insurance.text = "Insurance %s  (I to switch)" % ("ON, 2 Dh a job" if on else "OFF")
+	_insurance.modulate = Color(1, 1, 1, 1) if on else Color(1, 0.6, 0.5, 1)
 
 
 func _on_stats_changed() -> void:

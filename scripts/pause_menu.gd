@@ -11,6 +11,8 @@ func _ready() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause"):
+		if get_tree().paused and not visible:
+			return  # something else paused the game (like the clinic screen): leave it
 		if get_tree().paused:
 			_resume()
 		else:

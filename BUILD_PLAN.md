@@ -218,7 +218,7 @@ Done when:
 - [ ] Customers come out and say different lines
 - [ ] Leave-at-the-door orders work
 
-### Session 12: Crashes and insurance
+### Session 12: Crashes and insurance (built, needs testing)
 
 ```text
 Session 12. Add crashes from PRD.md (Crashes, bills and insurance).

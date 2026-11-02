@@ -22,6 +22,9 @@ const STEPS := {
 	"timeout": 30,     # half a second, longer than TEST_OFFER_TIMEOUT
 	"bump_ride": 300,  # 5 seconds of pedalling from a standstill, over a speed bump
 	"critters": 120,   # 2 seconds for a kid on a scooter to ride into the bike
+	"crash_small": 30, # half a second to coast into a wall
+	"fallen": 150,     # long enough to get back on the bike
+	"crash_big": 60,   # one second to ride fast into a wall
 }
 ## How far before the speed bump the bike starts its ride, in metres.
 const BUMP_RUN_UP := 6.0
@@ -48,6 +51,7 @@ var _bumps_before := 0
 var _bump_spot := Vector3.ZERO
 var _bump_direction := Vector3.FORWARD
 var _kid_hits := 0
+var _riding_crashes := 0
 var _kid_start := Vector3.ZERO
 
 
@@ -70,6 +74,11 @@ func _initialize() -> void:
 	_delivery = _main.get_node_or_null("DeliveryManager")
 	_minimap = _main.get_node_or_null("Minimap")
 	_meters = _main.get_node_or_null("Meters")
+	# The old test area has boxes straight ahead of the start, and riding into one at sprint
+	# speed is a big crash (Session 12). Do the riding checks in a clear lane instead.
+	if scene_path.ends_with("test_area.tscn"):
+		_bike.position = Vector3(60.0, 0.05, 0.0)  # the bike sits right under the scene root
+	_bike.crashed.connect(func(big): if _phase in ["pedal", "sprint", "brake"]: _riding_crashes += 1)
 	# GameState is an autoload, so it sits on the root next to the main scene.
 	_game_state = root.get_node_or_null("GameState")
 	Input.action_press("move_forward")
@@ -101,6 +110,7 @@ func _physics_process(_delta: float) -> bool:
 		"brake":
 			if _frame >= STEPS.brake:
 				_check("brake stops the bike", _bike.speed <= 0.1, "speed %.1f m/s" % _bike.speed)
+				_check("no crash while testing the riding", _riding_crashes == 0, "")
 				_check("stamina refills", _bike.stamina > 30.0, "stamina %.0f" % _bike.stamina)
 				Input.action_release("move_back")
 				_start_delivery_check()
@@ -128,7 +138,7 @@ func _physics_process(_delta: float) -> bool:
 				_order.leave_at_door = false  # this one: the customer comes out
 				_check("E at the villa delivers", _delivery.try_interact(), "")
 				_check_customer()
-				_check("money goes up by the order's pay", _game_state.money == _money_before + _order.pay, "Dh %d" % _game_state.money)
+				_check("money goes up by the pay, minus 2 Dh insurance", _game_state.money == _money_before + _order.pay - GameConfig.INSURANCE_PER_DELIVERY, "Dh %d" % _game_state.money)
 				_check("delivery is saved in the history", _game_state.history.size() == 1, "%d in history" % _game_state.history.size())
 				_check("an all-red order can still be delivered", _game_state.history.size() == 1 and _game_state.history[0]["damage"] == 0.0, "")
 				_check_stage("NONE")
@@ -139,6 +149,22 @@ func _physics_process(_delta: float) -> bool:
 				_check_stage("NONE")
 				_delivery.offer_timeout = GameConfig.ORDER_OFFER_TIMEOUT
 				_check_scoring()
+				_start_crash(false)
+		"crash_small":
+			if _frame >= STEPS.crash_small:
+				_check("a slow hit is a small crash: you fall off", _bike.fallen_left > 0.0 and not _bike.wrecked, "")
+				_check("a small crash knocks the food hard", _game_state.meter_damage <= 100.0 - GameConfig.CRASH_SMALL_DAMAGE, "%.0f%%" % _game_state.meter_damage)
+				_check("no clinic after a small crash", not _main.get_node("ClinicScreen").showing, "")
+				_frame = 0
+				_phase = "fallen"
+		"fallen":
+			if _frame >= STEPS.fallen:
+				_check("back on the bike after the small crash", _bike.fallen_left == 0.0, "")
+				_start_crash(true)
+		"crash_big":
+			if _frame >= STEPS.crash_big:
+				Input.action_release("move_forward")
+				_check_big_crash()
 				_start_decor_check()
 		"bump_ride":
 			if _frame >= STEPS.bump_ride:
@@ -415,6 +441,59 @@ func _check_customer() -> void:
 		if _delivery.make_order().leave_at_door:
 			leaves += 1
 	_check("some orders say leave it at the door", leaves > 15 and leaves < 90, "%d of 300" % leaves)
+
+
+## Session 12: park the bike in front of villa 1's wall with an order on board and let it
+## hit the wall: slowly (small crash) or fast (big crash).
+func _start_crash(big: bool) -> void:
+	var gs: Node = _game_state
+	gs.reset()
+	_delivery.offer_now()
+	_delivery.accept()
+	gs.pick_up()
+	var villa: Dictionary = _delivery.place_builder.villas[0]
+	var angle := deg_to_rad(villa["facing"])
+	var front := Vector3(sin(angle), 0.0, cos(angle))
+	_move_bike_to(_delivery.place_builder.villa_door(villa["number"]))
+	_bike.rotation = Vector3(0.0, atan2(front.x, front.z), 0.0)  # facing the wall
+	_bike.speed = 7.5 if big else 4.2  # 27 km/h or 15 km/h
+	if big:
+		_money_before = gs.money
+		Input.action_press("move_forward")
+	_frame = 0
+	_phase = "crash_big" if big else "crash_small"
+
+
+func _check_big_crash() -> void:
+	var gs: Node = _game_state
+	var clinic: Node = _main.get_node("ClinicScreen")
+	_check("a fast hit into a wall is a big crash", _bike.wrecked or clinic.showing, "")
+	_check("the clinic screen shows and the game pauses", clinic.showing and paused, "")
+	var bills: Dictionary = clinic.last_bills
+	_check("the bills are 150 Dh hospital + 80 Dh repair", bills.get("hospital") == 150 and bills.get("repair") == 80, "")
+	_check("the boss pays the first big crash", bills.get("boss", false) and gs.money == _money_before, "Dh %d" % gs.money)
+	_check("the order is cancelled with 0 stars", gs.stage_name() == "NONE" and gs.history.size() == 1
+			and gs.history[0]["cancelled"] and gs.history[0]["stars"] == 0.0, "")
+	clinic.close()
+	_check("after the clinic: game runs, bike back at the start", not paused and not _bike.wrecked, "")
+	var before: int = gs.money
+	var insured: Dictionary = gs.big_crash()
+	_check("with insurance a big crash costs 20 Dh", insured["paid"] == 20 and gs.money == before - 20, "Dh %d" % gs.money)
+	gs.set_insurance(false)
+	before = gs.money
+	var uninsured: Dictionary = gs.big_crash()
+	_check("without insurance a big crash costs 230 Dh", uninsured["paid"] == 230 and gs.money == before - 230, "Dh %d" % gs.money)
+	gs.set_insurance(true)
+	_check("insurance starts switched on", true, "")
+	var phone := _main.get_node("Phone")
+	var key := InputEventAction.new()
+	key.action = "toggle_insurance"
+	key.pressed = true
+	phone._unhandled_input(key)
+	_check("I switches insurance off on the phone", not gs.insurance_on
+			and "OFF" in phone.get_node("Panel/Margin/Rows/Insurance").text, "")
+	gs.reset()
+	_check("a fresh game starts with insurance on", gs.insurance_on, "")
 
 
 ## Session 10: stars from the meters, tips only on 5-star jobs, XP and Rider Level, and a

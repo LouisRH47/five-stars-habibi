@@ -169,6 +169,7 @@ Keys are placeholders until the controls are tested. Controller support comes la
 | Space | Handbrake |
 | E | Accept order, pick up, drop off, talk |
 | Q | Skip order |
+| I | Switch crash insurance on or off (shown on the phone) |
 | Esc | Pause (and resume) |
 | R | Put the bike back on the road if you get stuck |
 
@@ -385,6 +386,7 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 2 Nov 2026 | 5 cats wander slowly in gaps between villas, 3 kids on scooters ride up and down street edges. Both are solid; bumping one costs 10 to 15% food damage and they get scared for 1.5 s. Kids wait if the bike blocks them |
 | 2 Nov 2026 | XP per delivery = 10 + 2 per star (5 stars = 20 XP). Rider Level 1 to 2 needs 50 XP, each next level needs 25 more. Boring orders never tip. Better orders for high ratings not built yet |
 | 2 Nov 2026 | Customers: 5 outfits (incl. kandura and abaya), 20 lines in data/customer_lines.gd with {name} for the rider's name. 15% of orders are 'leave it at the door': nobody comes out, a bag is left on the doorstep. Other notes on 25% of orders |
+| 2 Nov 2026 | Crashes: a fairly head-on hit at 10 km/h or more is a small crash (fall off 2 s, -30% damage); above 20 km/h into a car, wall or pole is a big crash. Cats and kids only cause small crashes. A cancelled order counts as 0 stars in the rating. Wallet can go below 0. I toggles insurance |
 | 2 Nov 2026 | Palm Grove layout: 300 m square with a wall and a closed gate in the south, Palm Grove Avenue from the gate to a central roundabout, three cross streets, 36 villas, restaurant strip just inside the gate |
 
 ## Sources

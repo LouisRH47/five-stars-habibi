@@ -17,6 +17,10 @@ signal order_skipped(order: Order)
 signal meters_changed
 ## XP, Rider Level or rating changed (Session 10).
 signal stats_changed
+## Insurance was switched on or off (Session 12).
+signal insurance_changed(on: bool)
+## A big crash happened; bills: what it cost (see big_crash()). Session 13 ends the shift.
+signal big_crashed(bills: Dictionary)
 
 ## The three meters for the order you're carrying, 100 (green) to 0 (red). Set by
 ## scripts/meters.gd while you ride from the restaurant to the villa.
@@ -29,8 +33,12 @@ var ride_time := 0.0
 
 ## Your name from the rider application (customers use it). Empty until Session 14's form.
 var rider_name := ""
-## Money in the wallet, in Dh.
+## Money in the wallet, in Dh. Can go below 0 after a big crash without insurance.
 var money := 0
+## Crash insurance: 2 Dh per delivery, then a big crash only costs 20 Dh. Starts on (PRD).
+var insurance_on := true
+## True once the boss has paid for your first big crash (only happens once per game).
+var boss_paid_crash := false
 ## All the XP you've ever earned. Your Rider Level comes from it (see level()).
 var xp := 0
 ## One small Dictionary per finished delivery: restaurant, villa, food, pay, tip,
@@ -52,6 +60,8 @@ var _choices: Array[bool] = []
 func reset() -> void:
 	money = 0
 	xp = 0
+	insurance_on = true
+	boss_paid_crash = false
 	history.clear()
 	last_result = {}
 	offered_order = null
@@ -116,7 +126,8 @@ func deliver() -> bool:
 	if stars >= 5.0 and not done.boring and randf() < GameConfig.TIP_CHANCE:
 		tip = randi_range(GameConfig.TIP_MIN, GameConfig.TIP_MAX)
 	var earned_xp := GameConfig.XP_PER_DELIVERY + roundi(GameConfig.XP_PER_STAR * stars)
-	money += done.pay + tip
+	var insurance := GameConfig.INSURANCE_PER_DELIVERY if insurance_on else 0
+	money += done.pay + tip - insurance
 	xp += earned_xp
 	last_result = {
 		"restaurant": done.restaurant_name,
@@ -130,6 +141,8 @@ func deliver() -> bool:
 		"stars": stars,
 		"xp": earned_xp,
 		"left_at_door": done.leave_at_door,
+		"insurance": insurance,
+		"cancelled": false,
 	}
 	history.append(last_result)
 	money_changed.emit(money)
@@ -156,6 +169,49 @@ func set_meters(time: float, freshness: float, damage: float) -> void:
 	meter_freshness = clampf(freshness, 0.0, 100.0)
 	meter_damage = clampf(damage, 0.0, 100.0)
 	meters_changed.emit()
+
+
+## Turns crash insurance on or off (the I key on the phone).
+func set_insurance(on: bool) -> void:
+	insurance_on = on
+	insurance_changed.emit(on)
+
+
+## A big crash (PRD "Crashes, bills and insurance"): the order you had is cancelled
+## (0 stars, no pay) and the bills come in. The boss pays for your very first one;
+## with insurance you only pay INSURED_CRASH_COST. Returns what happened, for the clinic
+## screen: hospital, repair, paid (what came off your wallet), boss, insured, lost_order.
+func big_crash() -> Dictionary:
+	var bills := {
+		"hospital": GameConfig.HOSPITAL_BILL,
+		"repair": GameConfig.REPAIR_BILL,
+		"boss": not boss_paid_crash,
+		"insured": insurance_on,
+		"lost_order": current_order != null or offered_order != null,
+		"paid": 0,
+	}
+	if not boss_paid_crash:
+		boss_paid_crash = true
+	elif insurance_on:
+		bills["paid"] = GameConfig.INSURED_CRASH_COST
+	else:
+		bills["paid"] = GameConfig.HOSPITAL_BILL + GameConfig.REPAIR_BILL
+	if current_order != null:
+		# Cancelled: counts as a 0-star job in your rating, no pay, no XP.
+		history.append({
+			"restaurant": current_order.restaurant_name, "villa": current_order.villa_number,
+			"food": current_order.food, "pay": 0, "tip": 0, "insurance": 0, "xp": 0,
+			"time": 0.0, "freshness": 0.0, "damage": 0.0, "stars": 0.0,
+			"left_at_door": false, "cancelled": true,
+		})
+	current_order = null
+	offered_order = null
+	money -= bills["paid"]
+	money_changed.emit(money)
+	stats_changed.emit()
+	_set_stage(Stage.NONE)
+	big_crashed.emit(bills)
+	return bills
 
 
 ## Stars for a delivery from its three meters (PRD "Stars"): start at 5, each orange meter

@@ -16,6 +16,7 @@ var scared_left := 0.0
 func _init() -> void:
 	# We move it ourselves by setting position each frame, so don't let physics overwrite it.
 	sync_to_physics = false
+	add_to_group("critter")  # the bike only ever has a small crash with these
 
 
 ## True while the bike is touching us (kids wait instead of pushing it along).

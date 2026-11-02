@@ -136,3 +136,16 @@ const CUSTOMER_WALK_TIME := 0.6       # seconds to walk out (and back in)
 const CUSTOMER_TALK_TIME := 3.5       # seconds the speech bubble shows
 const PARCEL_STAYS_TIME := 8.0        # seconds a left-at-the-door bag stays on the doorstep
 const DEFAULT_RIDER_NAME := "habibi"  # what customers call you before you've filled in the application
+
+# --- Crashes, bills and insurance (Session 12) ---
+# A crash is hitting something fairly straight on (HEAD_ON or more, 1 = dead straight).
+const CRASH_HEAD_ON := 0.6
+const CRASH_SMALL_KMH := 10.0         # hitting anything at this speed or more: you fall off
+const CRASH_BIG_KMH := 20.0           # hitting a car, wall or pole faster than this: clinic (PRD)
+const CRASH_FALLEN_TIME := 2.0        # seconds on the ground after a small crash
+const CRASH_SMALL_DAMAGE := 30.0      # % off the damage meter for a small crash
+const HOSPITAL_BILL := 150            # Dh, big crash on the bicycle (PRD)
+const REPAIR_BILL := 80               # Dh
+const INSURED_CRASH_COST := 20        # Dh, all you pay for a big crash with insurance
+const INSURANCE_PER_DELIVERY := 2     # Dh, taken from every delivery while insurance is on
+const CRASH_FADE_TIME := 0.6          # seconds the screen takes to fade out (and back in)
