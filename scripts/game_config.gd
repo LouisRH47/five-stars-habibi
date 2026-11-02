@@ -54,5 +54,5 @@ const INTERACT_RADIUS := 3.5          # metres from a door where E picks up or d
 const DOOR_DISTANCE := 2.5            # the door spot is this many metres in front of a building
 const DELIVERED_MESSAGE_TIME := 2.5   # seconds the phone shows "+12 Dh  Delivered!"
 const MARKER_RADIUS := 1.2            # the glowing beam over the next stop
-const MARKER_HEIGHT := 4.0            # lower than every roof (4.5 m), so the beam never covers a sign
+const MARKER_HEIGHT := 4.0            # lower than every roof (5 m and up), so the beam never covers a sign
 const MARKER_COLOUR := Color(0.9490196, 0.54901963, 0.15686275, 0.4)  # see-through orange
