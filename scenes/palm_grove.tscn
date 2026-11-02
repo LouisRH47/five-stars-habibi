@@ -14,6 +14,7 @@
 [ext_resource type="PackedScene" path="res://ui/minimap.tscn" id="12_minimap"]
 [ext_resource type="Script" path="res://scripts/meters.gd" id="13_meters"]
 [ext_resource type="PackedScene" path="res://ui/meters_panel.tscn" id="14_meters_panel"]
+[ext_resource type="Script" path="res://scripts/customer_spawner.gd" id="16_customers"]
 [ext_resource type="Script" path="res://scripts/obstacle_builder.gd" id="15_obstacles"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_pg"]
@@ -95,3 +96,7 @@ delivery_manager = NodePath("../DeliveryManager")
 [node name="ObstacleBuilder" type="Node3D" parent="."]
 script = ExtResource("15_obstacles")
 data = ExtResource("8_data")
+
+[node name="CustomerSpawner" type="Node3D" parent="." node_paths=PackedStringArray("place_builder")]
+script = ExtResource("16_customers")
+place_builder = NodePath("../PlaceBuilder")

@@ -80,7 +80,10 @@ func make_order() -> Order:
 	order.boring = boring
 	order.pay = GameConfig.ORDER_PAY_MIN if boring else _pay_for(from.distance_to(to))
 	# Some customers add a short note, like "Leave it at the door, please".
-	if randf() < GameConfig.ORDER_NOTE_CHANCE:
+	if randf() < GameConfig.ORDER_LEAVE_AT_DOOR_CHANCE:
+		order.leave_at_door = true
+		order.note = GameConfig.ORDER_LEAVE_AT_DOOR_NOTE
+	elif randf() < GameConfig.ORDER_NOTE_CHANCE:
 		order.note = GameConfig.ORDER_NOTES.pick_random()
 	return order
 

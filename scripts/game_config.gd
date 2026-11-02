@@ -69,9 +69,10 @@ const MARKER_HEIGHT := 4.0            # lower than every roof (5 m and up), so t
 const MARKER_COLOUR := Color(0.9490196, 0.54901963, 0.15686275, 0.4)  # see-through orange
 
 # --- Order notes (Session 7) ---
-const ORDER_NOTE_CHANCE := 0.35       # share of orders that come with a note from the customer
+const ORDER_NOTE_CHANCE := 0.25       # share of orders that come with one of the notes below
+const ORDER_LEAVE_AT_DOOR_CHANCE := 0.15  # share of orders where nobody comes out (Session 11)
+const ORDER_LEAVE_AT_DOOR_NOTE := "Leave it at the door, please"
 const ORDER_NOTES := [                # picked at random; shown on the phone
-	"Leave it at the door, please",
 	"Please don't ring the bell, the baby is asleep",
 	"Extra napkins, please!",
 	"Call me when you're outside",
@@ -128,3 +129,10 @@ const XP_PER_STAR := 2                # ...plus this much per star (5 stars = 20
 const LEVEL_XP_FIRST := 50            # XP from Rider Level 1 to 2
 const LEVEL_XP_STEP := 25             # each next level needs this much more than the last
 const RESULT_MESSAGE_TIME := 4.0      # seconds the phone shows your stars after a delivery
+
+# --- Customers at the door (Session 11) ---
+const CUSTOMER_STEP_OUT := 1.2        # metres the customer walks out of the door
+const CUSTOMER_WALK_TIME := 0.6       # seconds to walk out (and back in)
+const CUSTOMER_TALK_TIME := 3.5       # seconds the speech bubble shows
+const PARCEL_STAYS_TIME := 8.0        # seconds a left-at-the-door bag stays on the doorstep
+const DEFAULT_RIDER_NAME := "habibi"  # what customers call you before you've filled in the application

@@ -125,7 +125,9 @@ func _physics_process(_delta: float) -> bool:
 				var middle: Vector2 = _minimap.get_node("Panel/Margin/Map").size * 0.5
 				_check("at the villa the pin is right next to you", spot.distance_to(middle) < 10.0,
 						"%.1f px from the middle" % spot.distance_to(middle))
+				_order.leave_at_door = false  # this one: the customer comes out
 				_check("E at the villa delivers", _delivery.try_interact(), "")
+				_check_customer()
 				_check("money goes up by the order's pay", _game_state.money == _money_before + _order.pay, "Dh %d" % _game_state.money)
 				_check("delivery is saved in the history", _game_state.history.size() == 1, "%d in history" % _game_state.history.size())
 				_check("an all-red order can still be delivered", _game_state.history.size() == 1 and _game_state.history[0]["damage"] == 0.0, "")
@@ -377,6 +379,44 @@ func _order_food() -> String:
 	return _game_state.current_order.food
 
 
+## Session 11: a customer came out of the delivered villa with a line from the list,
+## and a leave-at-the-door order leaves a bag and nobody comes out.
+func _check_customer() -> void:
+	var spawner := _main.get_node_or_null("CustomerSpawner")
+	if spawner == null:
+		_check("CustomerSpawner node exists in the scene", false, "")
+		return
+	var customer: Node3D = spawner.last_spawned
+	var door: Vector3 = _delivery.place_builder.villa_door(_order.villa_number)
+	_check("a customer comes out at the villa", customer != null and customer.name.begins_with("Customer")
+			and customer.global_position.distance_to(door) < 4.0, "")
+	if customer == null or not customer.name.begins_with("Customer"):
+		return
+	var lines: Array = load("res://data/customer_lines.gd").LINES
+	_check("there are at least 15 customer lines", lines.size() >= 15, "%d lines" % lines.size())
+	var said: String = customer.line
+	print("      customer says: ", said)
+	var known := false
+	for line in lines:
+		known = known or line.replace("{name}", GameConfig.DEFAULT_RIDER_NAME) == said
+	_check("the customer says a line from the list", known, "")
+	var different := {}
+	for i in 60:
+		different[spawner.pick_line("Sam")] = true
+	_check("customers say different lines", different.size() >= 10, "%d different" % different.size())
+	_check("customers use the rider's name", lines.any(func(l): return "{name}" in l), "")
+	var left: Object = _delivery.make_order()
+	left.villa_number = _order.villa_number
+	left.leave_at_door = true
+	spawner._on_order_delivered(left)
+	_check("leave-at-the-door: nobody comes out, a bag is left", spawner.last_spawned.name.begins_with("LeftBag"), "")
+	var leaves := 0
+	for i in 300:
+		if _delivery.make_order().leave_at_door:
+			leaves += 1
+	_check("some orders say leave it at the door", leaves > 15 and leaves < 90, "%d of 300" % leaves)
+
+
 ## Session 10: stars from the meters, tips only on 5-star jobs, XP and Rider Level, and a
 ## rating that averages the last 50 deliveries.
 func _check_scoring() -> void:
@@ -525,7 +565,7 @@ func _check_notes() -> void:
 		var note: String = _delivery.make_order().note
 		if note != "":
 			with_note += 1
-			all_listed = all_listed and GameConfig.ORDER_NOTES.has(note)
+			all_listed = all_listed and (GameConfig.ORDER_NOTES.has(note) or note == GameConfig.ORDER_LEAVE_AT_DOOR_NOTE)
 	_check("some orders have a note, not all", with_note > 20 and with_note < 180, "%d of 200" % with_note)
 	_check("every note comes from the list in game_config.gd", all_listed, "")
 

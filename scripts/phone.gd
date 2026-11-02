@@ -54,7 +54,8 @@ func _process(delta: float) -> void:
 		if job["tip"] > 0:
 			lines += "\n+%d Dh tip!" % job["tip"]
 		lines += "\n+%d XP" % job["xp"]
-		_show("Delivered!  %s stars" % _stars_text(job["stars"]), lines, "", false)
+		var done := "Left at the door!" if job["left_at_door"] else "Delivered!"
+		_show("%s  %s stars" % [done, _stars_text(job["stars"])], lines, "", false)
 	else:
 		_show("Waiting for orders...", "", "", false)
 

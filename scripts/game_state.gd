@@ -27,6 +27,8 @@ var meter_damage := 100.0
 var target_time := 0.0
 var ride_time := 0.0
 
+## Your name from the rider application (customers use it). Empty until Session 14's form.
+var rider_name := ""
 ## Money in the wallet, in Dh.
 var money := 0
 ## All the XP you've ever earned. Your Rider Level comes from it (see level()).
@@ -127,6 +129,7 @@ func deliver() -> bool:
 		"damage": meter_damage,
 		"stars": stars,
 		"xp": earned_xp,
+		"left_at_door": done.leave_at_door,
 	}
 	history.append(last_result)
 	money_changed.emit(money)
