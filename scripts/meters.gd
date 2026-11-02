@@ -28,7 +28,7 @@ func _physics_process(delta: float) -> void:
 	if not _carrying():
 		return
 	GameState.ride_time += delta
-	var time := 100.0 * (1.0 - GameState.ride_time / maxf(GameState.target_time, 1.0))
+	var time := time_meter_for(GameState.ride_time, GameState.target_time)
 	var fresh := GameState.meter_freshness - _per_food(GameConfig.FRESHNESS_DRAIN) * delta
 	GameState.set_meters(time, fresh, GameState.meter_damage)
 
@@ -40,6 +40,16 @@ static func band(value: float) -> Band:
 	if value >= GameConfig.METER_RED_BELOW:
 		return Band.ORANGE
 	return Band.RED
+
+
+## The time bar after riding `ride` seconds with a target of `target` seconds: 100 at
+## pickup, TIME_METER_AT_TARGET at the target time, 0 at TIME_EMPTY_AT x the target.
+static func time_meter_for(ride: float, target: float) -> float:
+	var done := ride / maxf(target, 1.0)
+	var at_target := GameConfig.TIME_METER_AT_TARGET
+	if done <= 1.0:
+		return lerpf(100.0, at_target, done)
+	return maxf(at_target * (1.0 - (done - 1.0) / maxf(GameConfig.TIME_EMPTY_AT - 1.0, 0.01)), 0.0)
 
 
 ## Seconds to ride from a restaurant door to a villa door: straight-line distance at
@@ -86,7 +96,11 @@ func _on_bumped(strength: float) -> void:
 
 
 func _on_speed_bump(strength: float) -> void:
-	hurt_food(_per_food(GameConfig.DAMAGE_SPEED_BUMP) * lerpf(GameConfig.DAMAGE_SPEED_BUMP_SLOW_SHARE, 1.0, strength))
+	# Slow over a bump (at or under the safe speed): only a little damage. Fast: the full knock.
+	var kmh := strength * GameConfig.BIKE_MAX_SPEED_KMH
+	var too_fast := clampf((kmh - GameConfig.SPEED_BUMP_SAFE_KMH)
+			/ (GameConfig.BIKE_MAX_SPEED_KMH - GameConfig.SPEED_BUMP_SAFE_KMH), 0.0, 1.0)
+	hurt_food(_per_food(GameConfig.DAMAGE_SPEED_BUMP) * lerpf(GameConfig.DAMAGE_SPEED_BUMP_SLOW_SHARE, 1.0, too_fast))
 
 
 func _on_crashed(big: bool) -> void:

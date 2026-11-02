@@ -106,7 +106,7 @@ Every delivery is a race against three meters: time, heat and damage. How well y
 **How the meters go from green to red**
 
 - Each meter is a bar from 100% (green) down to 0% (red). Above 60% is green, 30% to 60% is orange, below 30% is red.
-- **Time:** the target time is the straight-line distance from restaurant to villa at a normal riding pace (20 km/h), times 1.5 for corners, plus 20 seconds. The bar is full at pickup and empty at the target time. After that it stays empty, the order isn't cancelled.
+- **Time:** the target time is the straight-line distance from restaurant to villa at a normal riding pace (20 km/h), times 1.5 for corners, plus 20 seconds. The bar is full at pickup, at 60% (the edge of green) when you reach the target time, and empty at twice the target time. So on time = green, a bit late = orange, very late = red. Once empty it stays empty, the order isn't cancelled.
 - **Freshness:** drains at a fixed rate per food type (pizza slow, bubble tea medium, ice cream fast). Numbers live in game_config.gd.
 - **Damage:** starts full. Every bump, speed bump, kerb, hard brake or crash takes off a chunk. Bubble tea loses the most per bump.
 - A meter at 0% never cancels the order. You can always deliver, you just get fewer stars.
@@ -391,6 +391,7 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 2 Nov 2026 | Application: 43 countries + 'Somewhere else'; a 3D preview shows the picked look. Tutorial order: Pizza to villa 4. During the tutorial no other orders come and the shift clock waits |
 | 2 Nov 2026 | Saving: one JSON save (user://save.json) that saves itself after every change and when you close the game. New game wipes it. Settings (fullscreen, later volume) live in their own file so New game keeps them |
 | 2 Nov 2026 | All music and sounds are made by our own script (tools/make_sounds.py), so they're CC0 and need no downloads. Music: a 53 s loop in maqam Hijaz (oud-like pluck, darbuka maqsum, drone). Volume sliders: Volume, Music, Effects, Ambience |
+| 2 Nov 2026 | Session 17 tuning from a play-test bot that rides whole shifts: the time bar now reaches 60% at the target time and 0% at twice the target (it used to be empty at the target, so even on-time rides were red). Freshness drain lowered to 0.25 / 0.4 / 0.55 % a second (pizza / bubble tea / ice cream). Speed bumps only hurt the food much above 10 km/h. Hard braking starts at 22 km/h. A careful shift now gets about 12 deliveries, 5 stars and 120 Dh; a careless one crashes and earns about half |
 | 2 Nov 2026 | Palm Grove layout: 300 m square with a wall and a closed gate in the south, Palm Grove Avenue from the gate to a central roundabout, three cross streets, 36 villas, restaurant strip just inside the gate |
 
 ## Sources

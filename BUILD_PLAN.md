@@ -288,7 +288,7 @@ Done when:
 
 - [ ] The sounds and music work and aren't annoying
 
-### Session 17: Play-test and tuning
+### Session 17: Play-test and tuning (first pass done with the play-test bot; needs Louis's own play-test)
 
 ```text
 Session 17. I'm going to play-test. Help me tune the numbers in

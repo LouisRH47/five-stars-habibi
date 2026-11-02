@@ -815,7 +815,10 @@ func _check_meters() -> void:
 	var panel: Control = _main.get_node("MetersPanel/Panel")
 	_check("the meters panel shows while carrying food", panel.visible, "")
 	_meters._physics_process(gs.target_time * 0.5)
-	_check("the time meter drains", absf(gs.meter_time - 50.0) < 1.0, "%.0f%%" % gs.meter_time)
+	var half: float = _meters.time_meter_for(gs.target_time * 0.5, gs.target_time)
+	_check("the time meter drains", absf(gs.meter_time - half) < 1.0 and gs.meter_time < 100.0, "%.0f%%" % gs.meter_time)
+	_check("on time is green, twice the target is empty", _meters.time_meter_for(10.0, 10.0) == GameConfig.TIME_METER_AT_TARGET
+			and _meters.time_meter_for(20.0, 10.0) == 0.0 and _meters.time_meter_for(0.0, 10.0) == 100.0, "")
 	_check("freshness drains over time", gs.meter_freshness < 100.0, "%.0f%%" % gs.meter_freshness)
 	var damage: float = gs.meter_damage
 	_bike.went_over_bump.emit(1.0)

@@ -1,8 +1,9 @@
 # Progress
 
 ## Current session
-Session 7: Mini-map and addresses (built and smoke-tested on the Mac, waiting for Louis
-to play-test). Sessions 1 to 6 still need play-testing on a real screen.
+Sessions 7 to 17 are built (all of Tier 1), each checked with the Godot headless checks,
+the smoke test and screenshots, on branch `sessions-8-17` (Session 7 on `session-7-minimap`).
+Louis asked for all of them in one go; they still need Louis's own play-test on the Mac.
 
 **Godot checks on the Mac (start of Session 7):** the headless import, the quit check and
 the smoke test all ran on Godot 4.7.2 for Sessions 1 to 6 with no errors and RESULT: PASS,
@@ -307,8 +308,35 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - Louis: listen and say if anything is too loud, too quiet or annoying. All of it is easy
   to change in `tools/make_sounds.py` or with the sliders.
 
+### Session 17
+- A play-test bot (`tests/playtest_bot.gd`) rides a whole shift in Palm Grove with the
+  real physics and keys: it plans a route along the roads, goes round the roundabout,
+  slows for corners and speed bumps, accepts every order, picks up and delivers, and
+  prints each delivery and the shift summary. Command in CLAUDE.md. "-- careless" makes it
+  ride flat out.
+- What the first run showed (before tuning): even on-time rides ended with a red time bar
+  (the bar was empty AT the target time), ice cream melted to orange on a normal ride, and
+  crawling over bumps still hurt bubble tea. A careful rider averaged 4.0 stars and never
+  got a tip.
+- Tuning (all in `game_config.gd`, PRD updated):
+  - Time bar: 60% at the target time, empty at twice the target (TIME_METER_AT_TARGET,
+    TIME_EMPTY_AT). On time = green.
+  - Freshness drain: pizza 0.25, bubble tea 0.4, ice cream 0.55 % a second (was 0.35/0.6/1.0).
+  - Speed bumps: slow (10 km/h or less) costs only a quarter of the damage.
+  - Hard braking only counts from 22 km/h (was 18, so normal braking counted).
+- After tuning: a careful shift gets about 12 deliveries, 5.0 stars, ~25 Dh tips and
+  ~120 Dh. A careless shift gets fast 5-star jobs at first, then a big crash ends the shift
+  early with about half the money. The longest rides take about a minute.
+- Louis: play a few shifts. If it feels too easy, lower TIME_METER_AT_TARGET or raise the
+  freshness drain; if too hard, the other way. Write down what felt off for the next
+  tuning session.
+
 ## Known bugs
-- None found yet. Not play-tested by Louis yet.
+- None found by the checks. Not play-tested by Louis yet.
+- The bot once got stuck nose-to-nose with a kid on a scooter (the kid waits for the bike,
+  the bot kept pushing). A person just steers round, but say if it happens to you.
+- Palm Grove rides take up to about a minute, not the 2 to 3 minutes the PRD hoped for
+  (see "Still open" in PRD.md).
 - Godot is in the Downloads folder, not Applications, so the commands in CLAUDE.md
   (/Applications/Godot.app/...) don't find it. Drag Godot.app into Applications to fix it.
 
@@ -317,8 +345,10 @@ on both Palm Grove and the test area. Nothing needed fixing.
   close and reopen the project in the editor.
 
 ## Next
-- Louis play-tests Sessions 1 to 7 with the checklists in BUILD_PLAN.md.
-- First check in Session 5: the Arabic on the welcome sign looks joined up and right-to-left.
-- Then Session 8: The three meters.
+- Louis play-tests everything with the "Done when" checklists in BUILD_PLAN.md
+  (start the game with F5: main menu, application, tutorial, then shifts).
+- Merge the branches into main (pull requests on GitHub).
+- Session 17 again with Louis's own notes, then a friend plays for 10 minutes.
+- After that: export for itch.io and write the Tier 2 sessions (see "After Tier 1" in BUILD_PLAN.md).
 - Open question for Louis: rides in Palm Grove take up to about a minute, the PRD hoped
   for 2 to 3 minutes. See "Still open" in PRD.md.
