@@ -28,8 +28,8 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if GameState.shift_clock_out:
-		return
+	if GameState.shift_clock_out or GameState.tutorial_running:
+		return  # the clock waits while the tutorial runs
 	GameState.shift_time_left = maxf(GameState.shift_time_left - delta * GameConfig.SHIFT_LENGTH / shift_length, 0.0)
 	if GameState.shift_time_left <= 0.0:
 		GameState.clock_out()

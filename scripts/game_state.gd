@@ -34,8 +34,17 @@ var meter_damage := 100.0
 var target_time := 0.0
 var ride_time := 0.0
 
-## Your name from the rider application (customers use it). Empty until Session 14's form.
+## You, from the rider application (Session 14). Customers use your name.
 var rider_name := ""
+var rider_country := ""
+## Your look: 0 Classic, 1 Sporty, 2 Chill (data/application.gd LOOKS).
+var rider_look := 0
+## True once you've been hired (the application is done).
+var hired := false
+## True once the first-order tutorial is finished (it only runs once).
+var tutorial_done := false
+## True while the tutorial is running: no other orders, and the shift clock waits.
+var tutorial_running := false
 ## Money in the wallet, in Dh. Can go below 0 after a big crash without insurance.
 var money := 0
 ## Crash insurance: 2 Dh per delivery, then a big crash only costs 20 Dh. Starts on (PRD).
@@ -227,6 +236,15 @@ func big_crash() -> Dictionary:
 	_set_stage(Stage.NONE)
 	big_crashed.emit(bills)
 	return bills
+
+
+## The application was sent in: you're hired. The tutorial runs on your first order.
+func hire(rider: String, country: String, look: int) -> void:
+	rider_name = rider.strip_edges()
+	rider_country = country
+	rider_look = look
+	hired = true
+	tutorial_done = false
 
 
 ## Starts a new shift: a full clock and a fresh summary.

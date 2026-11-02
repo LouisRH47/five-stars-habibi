@@ -63,6 +63,8 @@ func _ready() -> void:
 	_start_transform = global_transform
 	# Speed bumps (scripts/speed_bump.gd) look for this group.
 	add_to_group("bike")
+	# Dress the rider in the look picked on the application (Session 14).
+	RiderLook.apply(_model, GameState.rider_look)
 
 
 func _physics_process(delta: float) -> void:

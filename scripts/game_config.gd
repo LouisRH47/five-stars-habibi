@@ -155,3 +155,8 @@ const SHIFT_LENGTH := 600.0           # seconds of real time in one shift (10 mi
 const SHIFT_START_HOUR := 8.0         # the clock shows 08:00 when the shift starts...
 const SHIFT_END_HOUR := 18.0          # ...and 18:00 when it's over (day shift only in Tier 1)
 const SHIFT_WARNING_TIME := 60.0      # the clock turns orange this many seconds before the end
+
+# --- Application and tutorial (Session 14) ---
+const APPLICATION_REVIEW_TIME := 2.0  # seconds of "Reviewing..." before you're hired
+const RIDER_NAME_MAX := 16            # letters allowed in your name
+const TUTORIAL_LAST_TIPS_TIME := 7.0  # seconds each of the last two tips stays up

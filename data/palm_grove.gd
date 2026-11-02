@@ -44,6 +44,9 @@ const WELCOME_SIGN := {
 	"facing": 0.0,
 }
 
+## The tutorial's first order (Session 14): an easy pizza two streets from the restaurants.
+const TUTORIAL_ORDER := {"restaurant": "pizza", "villa": 4}
+
 ## Every restaurant is the same size: width (along the road), height, depth.
 const RESTAURANT_SIZE := Vector3(10.0, 5.0, 8.0)
 const VILLA_SIZE := Vector3(12.0, 6.5, 12.0)

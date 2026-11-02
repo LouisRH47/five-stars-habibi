@@ -57,6 +57,14 @@ theme_override_font_sizes/font_size = 22
 theme_override_colors/font_color = Color(1, 0.9529412, 0.87058824, 1)
 text = "Dh 0"
 
+[node name="Rider" type="Label" parent="Panel/Margin/Rows"]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.79, 0.89, 0.92, 1)
+text = "Rider"
+text_overrun_behavior = 3
+
 [node name="Profile" type="HBoxContainer" parent="Panel/Margin/Rows"]
 layout_mode = 2
 theme_override_constants/separation = 6

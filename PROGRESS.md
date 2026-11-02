@@ -250,6 +250,26 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - The smoke test runs 1-second shifts: finishing an order after clock-out, no new orders,
   the summary adds up, and an empty shift ends at once.
 
+### Session 14
+- The game now opens on the Snackaroo Rider Application (`scenes/application.tscn`,
+  `scripts/application.gd`), a big phone screen: 1. your name (you can't submit without
+  one), 2. where you're from (a list in `data/application.gd`), 3. pick one of 3 looks with
+  a slowly turning 3D preview of your rider. Submit, "Reviewing..." with a spinner for 2 s,
+  then "Congrats, <name>, you're hired!" and "Start riding" opens Palm Grove.
+- The 3 looks (`scripts/rider_look.gd`), all ride the same: Classic (red cap, grey-blue
+  hoodie, backpack), Sporty (white helmet with stickers, bright sports top), Chill (bucket
+  hat, sunglasses, pink shirt, shorts).
+- The phone shows "<name> · <country>". Customers say your name.
+- Tutorial (`scripts/tutorial.gd`): right after you're hired the boss sends an easy pizza
+  to villa 4 (TUTORIAL_ORDER in `data/palm_grove.gd`). A TIP box at the bottom says what to
+  do at each step (accept with E, follow the mini-map, W/A/S/D, pick up with E, watch the
+  meters, slow down for bumps, Shift to sprint, drop off with E), and at the end points out
+  that crash insurance is on and I switches it. While the tutorial runs no other orders come
+  and the shift clock waits. It only runs once.
+- Pressing F6 on Palm Grove skips the application (handy for testing): no name, no tutorial.
+- The smoke test fills in the application, checks all 3 looks, and walks through the tutorial.
+  It now always tests Palm Grove (not the main scene, which is the application).
+
 ## Known bugs
 - None found yet. Not play-tested by Louis yet.
 - Godot is in the Downloads folder, not Applications, so the commands in CLAUDE.md

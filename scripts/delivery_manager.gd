@@ -28,6 +28,8 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if GameState.tutorial_running:
+		return  # the tutorial hands out its own order, and it never runs out
 	if GameState.stage == GameState.Stage.NONE:
 		_wait_left -= delta
 		if _wait_left <= 0.0:
@@ -63,11 +65,18 @@ func offer_now() -> Order:
 
 ## Picks a random restaurant and villa. If you skip a lot (acceptance rate under
 ## 70%), you get a boring order instead: a short ride for the lowest pay (PRD).
-func make_order() -> Order:
+## restaurant_id and villa_number pick an exact order (the tutorial uses this).
+func make_order(restaurant_id := "", villa_number := 0) -> Order:
 	var restaurant: Dictionary = place_builder.restaurants.pick_random()
+	for place in place_builder.restaurants:
+		if place["id"] == restaurant_id:
+			restaurant = place
 	var from := place_builder.restaurant_door(restaurant["id"])
-	var boring := GameState.acceptance_rate() < GameConfig.ORDER_LOW_ACCEPTANCE
+	var boring := GameState.acceptance_rate() < GameConfig.ORDER_LOW_ACCEPTANCE and villa_number == 0
 	var villa: Dictionary = place_builder.villas.pick_random()
+	for place in place_builder.villas:
+		if place["number"] == villa_number:
+			villa = place
 	if boring:
 		villa = _short_ride_villa(from)
 	var to := place_builder.villa_door(villa["number"])

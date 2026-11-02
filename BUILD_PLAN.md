@@ -248,7 +248,7 @@ Done when:
 
 - [ ] The shift ends on time and the summary numbers are correct
 
-### Session 14: Application and characters
+### Session 14: Application and characters (built, needs testing)
 
 ```text
 Session 14. Add the start of the game from PRD.md (Start of the game):

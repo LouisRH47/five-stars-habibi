@@ -22,6 +22,7 @@ var _flash_left := 0.0
 @onready var _xp_bar: ProgressBar = $Panel/Margin/Rows/XP
 @onready var _result: StarRow = $Panel/Margin/Rows/Result
 @onready var _insurance: Label = $Panel/Margin/Rows/Insurance
+@onready var _rider: Label = $Panel/Margin/Rows/Rider
 
 
 func _ready() -> void:
@@ -32,6 +33,9 @@ func _ready() -> void:
 	_on_insurance_changed(GameState.insurance_on)
 	_on_money_changed(GameState.money)
 	_on_stats_changed()
+	# Your rider profile from the application (Session 14).
+	_rider.visible = GameState.rider_name != ""
+	_rider.text = "%s  ·  %s" % [GameState.rider_name, GameState.rider_country]
 
 
 func _process(delta: float) -> void:
@@ -43,7 +47,7 @@ func _process(delta: float) -> void:
 		var secs := 0 if delivery_manager == null else ceili(delivery_manager.time_left_on_offer())
 		_show("New order!  %d Dh" % offer.pay,
 				"%s (%s)\nto villa %d%s" % [offer.restaurant_name, offer.food, offer.villa_number, _note(offer)],
-				"E accept   Q skip   %d s" % secs, true)
+				"E accept   Q skip" + ("" if GameState.tutorial_running else "   %d s" % secs), true)
 	elif stage == GameState.Stage.TO_RESTAURANT:
 		var order := GameState.current_order
 		_show("Ride to %s" % order.restaurant_name, "Pick up the %s" % order.food, "E to pick up", near)

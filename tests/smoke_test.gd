@@ -57,7 +57,7 @@ var _kid_start := Vector3.ZERO
 
 
 func _initialize() -> void:
-	var scene_path: String = ProjectSettings.get_setting("application/run/main_scene")
+	var scene_path := "res://scenes/palm_grove.tscn"  # the game opens on the application, test the map
 	var user_args := OS.get_cmdline_user_args()
 	if not user_args.is_empty():
 		scene_path = user_args[0]
@@ -174,6 +174,7 @@ func _physics_process(_delta: float) -> bool:
 		"shift_empty":
 			if _frame >= STEPS.shift:
 				_check_shift_empty()
+				_check_tutorial()
 				_start_decor_check()
 		"bump_ride":
 			if _frame >= STEPS.bump_ride:
@@ -188,6 +189,7 @@ func _physics_process(_delta: float) -> bool:
 
 ## Fresh start, a new order pops up, accept it, then jump to the restaurant door.
 func _start_delivery_check() -> void:
+	_check_application()
 	_check_signs()
 	if _game_state == null:
 		_check("GameState autoload exists", false, "add scripts/game_state.gd as GameState in Project Settings > Globals")
@@ -508,6 +510,80 @@ func _check_big_crash() -> void:
 			and "OFF" in phone.get_node("Panel/Margin/Rows/Insurance").text, "")
 	gs.reset()
 	_check("a fresh game starts with insurance on", gs.insurance_on, "")
+
+
+## Session 14: fill in the rider application and get hired. Runs before the map loads.
+func _check_application() -> void:
+	var gs: Node = root.get_node("GameState")
+	var app: Control = load("res://scenes/application.tscn").instantiate()
+	root.add_child(app)
+	_check("the application can't be sent without a name", not app.submit(), "")
+	app.name_box.text = "  Sam "
+	app.country_box.select(6)
+	app._pick_look(2)
+	_check("the application is sent", app.submit() and app.page == "reviewing", app.page)
+	app.finish_review()
+	_check("you're hired", app.page == "hired" and "Sam" in app._hired_text.text, app._hired_text.text)
+	_check("the application keeps name, country and look", gs.rider_name == "Sam" and gs.rider_country == "Egypt"
+			and gs.rider_look == 2 and gs.hired, "%s from %s, look %d" % [gs.rider_name, gs.rider_country, gs.rider_look])
+	app.free()
+	gs.hired = false  # so the tutorial doesn't start by itself; _check_tutorial() runs it
+
+
+## Session 14: the tutorial's first order, its tips, and the look on the bike.
+func _check_tutorial() -> void:
+	var gs: Node = _game_state
+	var tutorial := _main.get_node_or_null("Tutorial")
+	var model: Node3D = _bike.get_node("Model")
+	var parts := []
+	for number in 3:
+		RiderLook.apply(model, number)
+		parts.append(model.get_node("Look").get_child_count())
+		if number == 1:
+			_check("Sporty keeps the helmet (with stickers)", model.get_node("Helmet").visible, "")
+		else:
+			_check("look %d swaps the helmet for a hat" % number, not model.get_node("Helmet").visible, "")
+	_check("the 3 looks are different", parts[0] != parts[1] and parts[1] != parts[2], "%s parts" % [parts])
+	RiderLook.apply(model, gs.rider_look)
+	var spawner := _main.get_node("CustomerSpawner")
+	var named := false
+	for i in 80:
+		named = named or "Sam" in spawner.pick_line(gs.rider_name)
+	_check("customers use your name", named, "")
+	if tutorial == null:
+		print("      no Tutorial in this scene, tutorial not checked")
+		return
+	gs.reset()
+	gs.hired = true
+	gs.tutorial_done = false
+	tutorial.start()
+	var first: Object = gs.offered_order
+	_check("the tutorial's first order is pizza to villa 4", first != null and first.restaurant_id == "pizza"
+			and first.villa_number == 4, "" if first == null else first.describe())
+	tutorial._process(0.0)
+	_check("tip: press E to accept", "Press E to accept" in tutorial.tip, tutorial.tip)
+	_delivery.skip()
+	_check("skipping the tutorial order brings it back", gs.stage_name() == "OFFERED" and gs.offered_order.villa_number == 4, "")
+	var clock: float = gs.shift_time_left
+	_main.get_node("ShiftManager")._physics_process(5.0)
+	_delivery._physics_process(100.0)
+	_check("during the tutorial the clock waits and the order never runs out", gs.shift_time_left == clock
+			and gs.stage_name() == "OFFERED", "")
+	_delivery.accept()
+	tutorial._process(0.0)
+	_check("tip: ride to the pizza place with the mini-map", "Ride to Pizza" in tutorial.tip and "mini-map" in tutorial.tip, "")
+	_move_bike_to(_delivery.target_door())
+	tutorial._process(0.0)
+	_check("tip at the door: press E to pick up", "pick up" in tutorial.tip, tutorial.tip)
+	gs.pick_up()
+	_move_bike_to(Vector3(2.0, 0.05, 140.0))
+	tutorial._process(0.0)
+	_check("tip: take it to villa 4, watch the meters", "villa 4" in tutorial.tip and "meters" in tutorial.tip, "")
+	gs.deliver()
+	_check("after the first delivery: a tip that insurance is on", "insurance is ON" in tutorial.tip, tutorial.tip)
+	tutorial.finish()
+	_check("the tutorial finishes and normal orders start", gs.tutorial_done and not gs.tutorial_running, "")
+	gs.reset()
 
 
 ## Session 13: a 1-second test shift. carrying: run out of time while carrying an order.
