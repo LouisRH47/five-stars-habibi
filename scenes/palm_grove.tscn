@@ -18,6 +18,7 @@
 [ext_resource type="Script" path="res://scripts/clinic_screen.gd" id="17_clinic"]
 [ext_resource type="Script" path="res://scripts/shift_screen.gd" id="18_shift_screen"]
 [ext_resource type="Script" path="res://scripts/shift_manager.gd" id="19_shift"]
+[ext_resource type="Script" path="res://scripts/sounds.gd" id="21_sounds"]
 [ext_resource type="Script" path="res://scripts/tutorial.gd" id="20_tutorial"]
 [ext_resource type="Script" path="res://scripts/obstacle_builder.gd" id="15_obstacles"]
 
@@ -121,3 +122,7 @@ clinic = NodePath("../ClinicScreen")
 [node name="Tutorial" type="CanvasLayer" parent="." node_paths=PackedStringArray("delivery_manager")]
 script = ExtResource("20_tutorial")
 delivery_manager = NodePath("../DeliveryManager")
+
+[node name="Sounds" type="Node" parent="." node_paths=PackedStringArray("bike")]
+script = ExtResource("21_sounds")
+bike = NodePath("../Bike")

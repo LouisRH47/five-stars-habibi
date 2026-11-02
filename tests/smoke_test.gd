@@ -590,6 +590,56 @@ func _check_tutorial() -> void:
 	gs.reset()
 
 
+## Session 16: every sound file loads, the buses and sliders work, and the right sound
+## plays for each event. (Headless has no speakers, so it checks which sound was chosen.)
+func _check_sound() -> void:
+	var gs: Node = _game_state
+	if gs == null:
+		return
+	paused = false
+	var files := ["bell", "cash", "crash", "ping", "bump", "roll_loop", "ambience_loop", "music_loop"]
+	var loaded := 0
+	for file in files:
+		var stream := load("res://assets/audio/%s.wav" % file) as AudioStreamWAV
+		if stream != null and stream.get_length() > 0.1:
+			loaded += 1
+	_check("all 8 sound files load", loaded == files.size(), "%d of %d" % [loaded, files.size()])
+	var buses := 0
+	for bus in ["Music", "Effects", "Ambience"]:
+		if AudioServer.get_bus_index(bus) >= 0:
+			buses += 1
+	_check("the Music, Effects and Ambience buses exist", buses == 3, "")
+	var music_player: AudioStreamPlayer = root.get_node("Music").player
+	_check("the music loops on the Music bus", music_player.bus == "Music"
+			and (music_player.stream as AudioStreamWAV).loop_mode == AudioStreamWAV.LOOP_FORWARD, "")
+	var before: float = Settings.volumes["Music"]
+	Settings.volumes["Music"] = 0.5
+	Settings.apply()
+	var db := AudioServer.get_bus_volume_db(AudioServer.get_bus_index("Music"))
+	_check("the Music volume reaches the bus", absf(db - linear_to_db(0.5)) < 0.01, "%.1f dB" % db)
+	Settings.volumes["Music"] = before
+	Settings.apply()
+	var panel := SettingsPanel.new()
+	root.add_child(panel)
+	_check("Settings has 4 volume sliders", panel.volume_sliders.size() == 4, "")
+	panel.free()
+	var sounds := _main.get_node_or_null("Sounds")
+	if sounds == null:
+		_check("Sounds node exists in the scene", false, "")
+		return
+	gs.reset()
+	_delivery.offer_now()
+	_check("a new order goes ping", sounds.last_played == "ping", sounds.last_played)
+	_delivery.accept()
+	gs.pick_up()
+	_check("picking up rings the bike bell", sounds.last_played == "bell", sounds.last_played)
+	gs.deliver()
+	_check("delivering goes ka-ching", sounds.last_played == "cash", sounds.last_played)
+	_bike.went_over_bump.emit(0.5)
+	_check("a speed bump goes thump", sounds.last_played == "bump", sounds.last_played)
+	gs.reset()
+
+
 ## Session 15: save and load keep your progress, the menus have their buttons.
 ## Runs last (from _finish), on the test's own save file.
 func _check_saving() -> void:
@@ -872,6 +922,7 @@ func _check(label: String, ok: bool, detail: String) -> void:
 
 
 func _finish() -> void:
+	_check_sound()
 	_check_saving()
 	for action in ACTIONS:
 		Input.action_release(action)

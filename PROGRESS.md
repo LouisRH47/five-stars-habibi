@@ -288,6 +288,25 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - The smoke test uses its own save file (never the real one), checks save and load keep
   everything, the menus' buttons, and New game; then deletes its save.
 
+### Session 16
+- All sounds and the music are made by `tools/make_sounds.py` (plain Python, no installs):
+  nothing downloaded or copied, so they're ours and free (CC0, in CREDITS.md). The files
+  are in `assets/audio/`. Run `python3 tools/make_sounds.py` to remake them after a change.
+- Music (`scripts/music.gd`, an autoload called Music, so it keeps playing from the menu
+  into the game): a chill 53-second loop in maqam Hijaz with an oud-like plucked tune, a
+  soft darbuka maqsum rhythm and a low drone.
+- Sound effects (`scripts/sounds.gd`, the Sounds node in each map): phone ping for a new
+  order, bike bell when you pick up, cash register when you deliver, a crash, a thump on
+  speed bumps, and tyre noise that gets louder and higher the faster you ride.
+- Ambience: birds and distant traffic, always on in the map.
+- Settings now has 4 volume sliders: Volume (everything), Music, Effects and Ambience.
+  They're saved in `user://settings.cfg`. Each goes to its own audio bus.
+- Fixed: the Settings box in the pause menu sat in the top-left corner; it's centred now.
+- In the headless smoke test nothing actually plays (no speakers), but it checks every file
+  loads, the buses and sliders work, and the right sound is picked for each event.
+- Louis: listen and say if anything is too loud, too quiet or annoying. All of it is easy
+  to change in `tools/make_sounds.py` or with the sliders.
+
 ## Known bugs
 - None found yet. Not play-tested by Louis yet.
 - Godot is in the Downloads folder, not Applications, so the commands in CLAUDE.md

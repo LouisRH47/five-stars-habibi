@@ -21,6 +21,7 @@
 [ext_resource type="Script" path="res://scripts/clinic_screen.gd" id="17_clinic"]
 [ext_resource type="Script" path="res://scripts/shift_screen.gd" id="18_shift_screen"]
 [ext_resource type="Script" path="res://scripts/shift_manager.gd" id="19_shift"]
+[ext_resource type="Script" path="res://scripts/sounds.gd" id="21_sounds"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_jyhfs"]
 sky_top_color = Color(0.30980393, 0.6627451, 0.8392157, 1)
@@ -306,3 +307,7 @@ script = ExtResource("19_shift")
 bike = NodePath("../Bike")
 shift_screen = NodePath("../ShiftScreen")
 clinic = NodePath("../ClinicScreen")
+
+[node name="Sounds" type="Node" parent="." node_paths=PackedStringArray("bike")]
+script = ExtResource("21_sounds")
+bike = NodePath("../Bike")

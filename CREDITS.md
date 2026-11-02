@@ -11,6 +11,14 @@ Everything in the game that was made by someone else, and the licence that lets 
 - Licence text: `assets/fonts/OFL.txt`
 - Source: https://github.com/notofonts/arabic
 
-## Music
+## Music and sounds
 
-None yet. Free-to-use tracks (CC0 or credited here) come in a later session.
+**All music and sound effects were made for this game** by the script
+`tools/make_sounds.py` (Session 16): sine waves, noise and a plucked-string recipe
+(Karplus-Strong), nothing sampled or copied. Free to use: CC0 (public domain).
+- `assets/audio/music_loop.wav`: a chill loop in maqam Hijaz (oud-like pluck, darbuka
+  maqsum rhythm, low drone)
+- `assets/audio/ambience_loop.wav`: birds and distant traffic
+- `assets/audio/bell.wav`, `cash.wav`, `crash.wav`, `ping.wav`, `bump.wav`, `roll_loop.wav`
+
+To remake them: `python3 tools/make_sounds.py`.

@@ -44,10 +44,8 @@ func _ready() -> void:
 	new_button.visible = GameState.hired
 	_button("Settings", _open_settings)
 	_button("Quit", quit)
-	settings_panel = SettingsPanel.new()
-	settings_panel.visible = false
+	settings_panel = SettingsPanel.add_centered(self)
 	settings_panel.closed.connect(func(): _buttons.visible = true)
-	add_child(settings_panel)
 	play_button.grab_focus.call_deferred()
 
 

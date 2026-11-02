@@ -27,10 +27,8 @@ func _ready() -> void:
 	keys.add_theme_font_size_override("font_size", 15)
 	keys.add_theme_color_override("font_color", Color(0.16, 0.33, 0.37, 1))
 	$Panel/Margin/Rows.add_child(keys)
-	settings_panel = SettingsPanel.new()
-	settings_panel.visible = false
+	settings_panel = SettingsPanel.add_centered(self)
 	settings_panel.closed.connect(func(): _panel.visible = true)
-	add_child(settings_panel)
 
 
 func _unhandled_input(event: InputEvent) -> void:

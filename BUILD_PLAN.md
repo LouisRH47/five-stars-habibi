@@ -276,7 +276,7 @@ Done when:
 
 - [ ] Closing and reopening the game keeps your progress
 
-### Session 16: Sound and music
+### Session 16: Sound and music (built, needs testing)
 
 ```text
 Session 16. Add simple sound effects (bike, bell, crash, cash), chill
