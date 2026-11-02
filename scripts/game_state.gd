@@ -21,6 +21,9 @@ signal stats_changed
 signal insurance_changed(on: bool)
 ## A big crash happened; bills: what it cost (see big_crash()). Session 13 ends the shift.
 signal big_crashed(bills: Dictionary)
+## A new shift started / the shift is over (Session 13).
+signal shift_started
+signal shift_ended(summary: Dictionary)
 
 ## The three meters for the order you're carrying, 100 (green) to 0 (red). Set by
 ## scripts/meters.gd while you ride from the restaurant to the villa.
@@ -39,6 +42,15 @@ var money := 0
 var insurance_on := true
 ## True once the boss has paid for your first big crash (only happens once per game).
 var boss_paid_crash := false
+
+## The shift (Session 13). scripts/shift_manager.gd counts shift_time_left down.
+var shift_number := 1
+var shift_time_left := GameConfig.SHIFT_LENGTH
+## True once the shift clock has run out (you may still be finishing your last order).
+var shift_clock_out := false
+## Where this shift's deliveries start in history, and crash bills paid this shift.
+var shift_start_index := 0
+var shift_bills := 0
 ## All the XP you've ever earned. Your Rider Level comes from it (see level()).
 var xp := 0
 ## One small Dictionary per finished delivery: restaurant, villa, food, pay, tip,
@@ -62,6 +74,8 @@ func reset() -> void:
 	xp = 0
 	insurance_on = true
 	boss_paid_crash = false
+	shift_number = 0
+	start_shift()
 	history.clear()
 	last_result = {}
 	offered_order = null
@@ -207,11 +221,72 @@ func big_crash() -> Dictionary:
 	current_order = null
 	offered_order = null
 	money -= bills["paid"]
+	shift_bills += bills["paid"]
 	money_changed.emit(money)
 	stats_changed.emit()
 	_set_stage(Stage.NONE)
 	big_crashed.emit(bills)
 	return bills
+
+
+## Starts a new shift: a full clock and a fresh summary.
+func start_shift() -> void:
+	shift_number += 1
+	shift_time_left = GameConfig.SHIFT_LENGTH
+	shift_clock_out = false
+	shift_start_index = history.size()
+	shift_bills = 0
+	shift_started.emit()
+
+
+## True while new orders may still pop up (the shift clock hasn't run out).
+func shift_open() -> bool:
+	return not shift_clock_out
+
+
+## The time on the in-game clock, in hours (8.5 = 08:30).
+func clock_hours() -> float:
+	var done := 1.0 - shift_time_left / GameConfig.SHIFT_LENGTH
+	return lerpf(GameConfig.SHIFT_START_HOUR, GameConfig.SHIFT_END_HOUR, clampf(done, 0.0, 1.0))
+
+
+## The shift's numbers for the summary screen: deliveries, cancelled, average stars,
+## pay, tips, insurance, bills, xp and earned (what you took home after all costs).
+func shift_summary() -> Dictionary:
+	var jobs := history.slice(shift_start_index)
+	var summary := {"deliveries": 0, "cancelled": 0, "stars": 0.0, "pay": 0, "tips": 0,
+			"insurance": 0, "bills": shift_bills, "xp": 0, "earned": 0}
+	var star_total := 0.0
+	for job in jobs:
+		if job["cancelled"]:
+			summary["cancelled"] += 1
+		else:
+			summary["deliveries"] += 1
+		star_total += job["stars"]
+		summary["pay"] += job["pay"]
+		summary["tips"] += job["tip"]
+		summary["insurance"] += job["insurance"]
+		summary["xp"] += job["xp"]
+	if not jobs.is_empty():
+		summary["stars"] = star_total / jobs.size()
+	summary["earned"] = summary["pay"] + summary["tips"] - summary["insurance"] - summary["bills"]
+	return summary
+
+
+## The clock ran out: the order on the phone (if any) goes away without counting as a skip.
+func clock_out() -> void:
+	shift_clock_out = true
+	if stage == Stage.OFFERED:
+		offered_order = null
+		_set_stage(Stage.NONE)
+
+
+## Ends the shift and sends the summary.
+func end_shift() -> Dictionary:
+	shift_clock_out = true
+	var summary := shift_summary()
+	shift_ended.emit(summary)
+	return summary
 
 
 ## Stars for a delivery from its three meters (PRD "Stars"): start at 5, each orange meter

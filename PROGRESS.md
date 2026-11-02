@@ -234,6 +234,22 @@ on both Palm Grove and the test area. Nothing needed fixing.
   On the old test area its riding checks now start in a clear lane (the old start rides
   into a box at sprint speed, which is now a big crash).
 
+### Session 13
+- Shifts (`scripts/shift_manager.gd`): one shift is 10 real minutes. A clock at the top
+  middle (`scripts/shift_screen.gd`) shows the in-game time from 08:00 to 18:00 and the
+  shift number. It turns orange with "Last orders!" in the last minute.
+- When the clock runs out, no new orders pop up (an order still waiting on the phone just
+  goes away, it doesn't count as a skip). If you're carrying an order you finish it, and
+  the shift ends right after you drop it off. If not, it ends straight away.
+- A big crash ends the shift too, right after the clinic screen.
+- The summary screen (game paused): deliveries, cancelled orders, average stars, pay, tips,
+  insurance, crash bills, what you earned, and XP. "Start next shift" (or E) starts a new
+  shift with a full clock and puts the bike back at the start. Money and XP carry over.
+- Shift data lives in GameState (shift_time_left, shift_number, shift_summary()).
+- Numbers are in the Shifts block of `game_config.gd`.
+- The smoke test runs 1-second shifts: finishing an order after clock-out, no new orders,
+  the summary adds up, and an empty shift ends at once.
+
 ## Known bugs
 - None found yet. Not play-tested by Louis yet.
 - Godot is in the Downloads folder, not Applications, so the commands in CLAUDE.md

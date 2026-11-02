@@ -149,3 +149,9 @@ const REPAIR_BILL := 80               # Dh
 const INSURED_CRASH_COST := 20        # Dh, all you pay for a big crash with insurance
 const INSURANCE_PER_DELIVERY := 2     # Dh, taken from every delivery while insurance is on
 const CRASH_FADE_TIME := 0.6          # seconds the screen takes to fade out (and back in)
+
+# --- Shifts (Session 13) ---
+const SHIFT_LENGTH := 600.0           # seconds of real time in one shift (10 minutes, PRD)
+const SHIFT_START_HOUR := 8.0         # the clock shows 08:00 when the shift starts...
+const SHIFT_END_HOUR := 18.0          # ...and 18:00 when it's over (day shift only in Tier 1)
+const SHIFT_WARNING_TIME := 60.0      # the clock turns orange this many seconds before the end

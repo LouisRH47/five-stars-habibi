@@ -14,6 +14,9 @@ const TEXT := Color(1, 0.95, 0.87, 1)
 const SOFT := Color(0.79, 0.89, 0.92, 1)
 const ORANGE := Color(0.9490196, 0.54901963, 0.15686275, 1)
 
+## Sent when you close the clinic screen (the ShiftManager then ends the shift).
+signal closed
+
 ## True while the clinic screen is up.
 var showing := false
 ## The last bills shown (for the smoke test).
@@ -65,6 +68,7 @@ func close() -> void:
 	get_tree().paused = false
 	var tween := create_tween()
 	tween.tween_property(_fade, "color:a", 0.0, GameConfig.CRASH_FADE_TIME)
+	closed.emit()
 
 
 func _on_crashed(big: bool) -> void:

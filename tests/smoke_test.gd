@@ -25,6 +25,7 @@ const STEPS := {
 	"crash_small": 30, # half a second to coast into a wall
 	"fallen": 150,     # long enough to get back on the bike
 	"crash_big": 60,   # one second to ride fast into a wall
+	"shift": 90,       # 1.5 seconds, longer than the test's 1-second shift
 }
 ## How far before the speed bump the bike starts its ride, in metres.
 const BUMP_RUN_UP := 6.0
@@ -165,6 +166,14 @@ func _physics_process(_delta: float) -> bool:
 			if _frame >= STEPS.crash_big:
 				Input.action_release("move_forward")
 				_check_big_crash()
+				_start_shift_check(true)
+		"shift_carrying":
+			if _frame >= STEPS.shift:
+				_check_shift_carrying()
+				_start_shift_check(false)
+		"shift_empty":
+			if _frame >= STEPS.shift:
+				_check_shift_empty()
 				_start_decor_check()
 		"bump_ride":
 			if _frame >= STEPS.bump_ride:
@@ -475,7 +484,12 @@ func _check_big_crash() -> void:
 	_check("the order is cancelled with 0 stars", gs.stage_name() == "NONE" and gs.history.size() == 1
 			and gs.history[0]["cancelled"] and gs.history[0]["stars"] == 0.0, "")
 	clinic.close()
-	_check("after the clinic: game runs, bike back at the start", not paused and not _bike.wrecked, "")
+	var shift_screen: Node = _main.get_node("ShiftScreen")
+	_check("a big crash ends the shift: the summary shows", shift_screen.showing and paused
+			and shift_screen.last_summary.get("cancelled") == 1, "")
+	shift_screen._next_shift()
+	_check("next shift: game runs, bike back at the start", not paused and not _bike.wrecked
+			and not gs.shift_clock_out, "shift %d" % gs.shift_number)
 	var before: int = gs.money
 	var insured: Dictionary = gs.big_crash()
 	_check("with insurance a big crash costs 20 Dh", insured["paid"] == 20 and gs.money == before - 20, "Dh %d" % gs.money)
@@ -494,6 +508,54 @@ func _check_big_crash() -> void:
 			and "OFF" in phone.get_node("Panel/Margin/Rows/Insurance").text, "")
 	gs.reset()
 	_check("a fresh game starts with insurance on", gs.insurance_on, "")
+
+
+## Session 13: a 1-second test shift. carrying: run out of time while carrying an order.
+func _start_shift_check(carrying: bool) -> void:
+	var gs: Node = _game_state
+	gs.reset()
+	var clock: Label = _main.get_node("ShiftScreen")._clock
+	_main.get_node("ShiftScreen")._process(0.0)
+	if carrying:
+		_check("the shift clock starts at 08:00", clock.text == "08:00", clock.text)
+		_quick_delivery(100.0, false)  # one finished job this shift
+		_delivery.offer_now()
+		_delivery.accept()
+		gs.pick_up()
+	_main.get_node("ShiftManager").shift_length = 1.0
+	_frame = 0
+	_phase = "shift_carrying" if carrying else "shift_empty"
+
+
+func _check_shift_carrying() -> void:
+	var gs: Node = _game_state
+	var screen: Node = _main.get_node("ShiftScreen")
+	_check("the shift clock runs out", gs.shift_clock_out and gs.clock_hours() == GameConfig.SHIFT_END_HOUR, "")
+	_check("carrying an order: you can still finish it", not screen.showing and gs.stage_name() == "TO_VILLA", "")
+	_check("no new orders once the clock is out", _delivery.offer_now() == null, "")
+	gs.deliver()
+	_check("the shift ends right after the last delivery", screen.showing and paused, "")
+	var summary: Dictionary = screen.last_summary
+	var want: Dictionary = gs.shift_summary()
+	_check("the summary counts both deliveries", summary.get("deliveries") == 2, "%s" % summary.get("deliveries"))
+	var pay: int = gs.history[0]["pay"] + gs.history[1]["pay"]
+	var tips: int = gs.history[0]["tip"] + gs.history[1]["tip"]
+	_check("the summary money adds up", summary["pay"] == pay and summary["tips"] == tips
+			and summary["earned"] == pay + tips - 2 * GameConfig.INSURANCE_PER_DELIVERY and summary["earned"] == gs.money, "%d Dh" % summary["earned"])
+	_check("the summary has stars and XP", summary["stars"] == want["stars"] and summary["xp"] == gs.xp, "%.1f stars, %d XP" % [summary["stars"], summary["xp"]])
+	screen._next_shift()
+	_check("the next shift starts with a full clock", not paused and not gs.shift_clock_out
+			and gs.shift_time_left == GameConfig.SHIFT_LENGTH and gs.shift_number == 2, "")
+
+
+func _check_shift_empty() -> void:
+	var gs: Node = _game_state
+	var screen: Node = _main.get_node("ShiftScreen")
+	_check("with no order, the shift ends as soon as the clock runs out", screen.showing and paused, "")
+	_check("an empty shift's summary shows 0 deliveries", screen.last_summary.get("deliveries") == 0, "")
+	screen._next_shift()
+	_main.get_node("ShiftManager").shift_length = GameConfig.SHIFT_LENGTH
+	gs.reset()
 
 
 ## Session 10: stars from the meters, tips only on 5-star jobs, XP and Rider Level, and a

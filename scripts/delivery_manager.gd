@@ -54,8 +54,8 @@ func _unhandled_input(event: InputEvent) -> void:
 ## Makes a new order and puts it on the phone right away. Returns null if you
 ## already have an order. The timer calls this, and so does the smoke test.
 func offer_now() -> Order:
-	if GameState.stage != GameState.Stage.NONE or place_builder == null:
-		return null
+	if GameState.stage != GameState.Stage.NONE or place_builder == null or not GameState.shift_open():
+		return null  # also no new orders once the shift clock has run out
 	var order := make_order()
 	GameState.offer_order(order)
 	return order

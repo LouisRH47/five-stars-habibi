@@ -16,6 +16,8 @@
 [ext_resource type="PackedScene" path="res://ui/meters_panel.tscn" id="14_meters_panel"]
 [ext_resource type="Script" path="res://scripts/customer_spawner.gd" id="16_customers"]
 [ext_resource type="Script" path="res://scripts/clinic_screen.gd" id="17_clinic"]
+[ext_resource type="Script" path="res://scripts/shift_screen.gd" id="18_shift_screen"]
+[ext_resource type="Script" path="res://scripts/shift_manager.gd" id="19_shift"]
 [ext_resource type="Script" path="res://scripts/obstacle_builder.gd" id="15_obstacles"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_pg"]
@@ -105,3 +107,12 @@ place_builder = NodePath("../PlaceBuilder")
 [node name="ClinicScreen" type="CanvasLayer" parent="." node_paths=PackedStringArray("bike")]
 script = ExtResource("17_clinic")
 bike = NodePath("../Bike")
+
+[node name="ShiftScreen" type="CanvasLayer" parent="."]
+script = ExtResource("18_shift_screen")
+
+[node name="ShiftManager" type="Node" parent="." node_paths=PackedStringArray("bike", "shift_screen", "clinic")]
+script = ExtResource("19_shift")
+bike = NodePath("../Bike")
+shift_screen = NodePath("../ShiftScreen")
+clinic = NodePath("../ClinicScreen")

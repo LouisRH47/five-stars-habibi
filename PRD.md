@@ -387,6 +387,7 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 2 Nov 2026 | XP per delivery = 10 + 2 per star (5 stars = 20 XP). Rider Level 1 to 2 needs 50 XP, each next level needs 25 more. Boring orders never tip. Better orders for high ratings not built yet |
 | 2 Nov 2026 | Customers: 5 outfits (incl. kandura and abaya), 20 lines in data/customer_lines.gd with {name} for the rider's name. 15% of orders are 'leave it at the door': nobody comes out, a bag is left on the doorstep. Other notes on 25% of orders |
 | 2 Nov 2026 | Crashes: a fairly head-on hit at 10 km/h or more is a small crash (fall off 2 s, -30% damage); above 20 km/h into a car, wall or pole is a big crash. Cats and kids only cause small crashes. A cancelled order counts as 0 stars in the rating. Wallet can go below 0. I toggles insurance |
+| 2 Nov 2026 | Shifts: 10 real minutes, clock 08:00 to 18:00, orange in the last minute. An order on the phone when the clock runs out disappears without counting as a skip. A big crash ends the shift after the clinic |
 | 2 Nov 2026 | Palm Grove layout: 300 m square with a wall and a closed gate in the south, Palm Grove Avenue from the gate to a central roundabout, three cross streets, 36 villas, restaurant strip just inside the gate |
 
 ## Sources

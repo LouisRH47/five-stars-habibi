@@ -235,7 +235,7 @@ Done when:
 - [ ] Small and big crashes both happen at the right speeds
 - [ ] Bills are right with and without insurance, and the first one is free
 
-### Session 13: Shifts
+### Session 13: Shifts (built, needs testing)
 
 ```text
 Session 13. Add shifts: one shift is about 10 real minutes (one in-game day,
