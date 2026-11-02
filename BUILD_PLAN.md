@@ -115,7 +115,7 @@ Done when:
 - [ ] Every villa has a number you can read while riding
 - [ ] Moving a villa only means changing one line in the data file
 
-### Session 5: Palm Grove part 2, restaurants and signs
+### Session 5: Palm Grove part 2, restaurants and signs (built, needs testing)
 
 ```text
 Session 5. First, a five-minute test: add a free Arabic font (Noto Sans
