@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/villa.gd" id="1_villa"]
+
+[node name="Villa" type="StaticBody3D" unique_id=1507246001]
+script = ExtResource("1_villa")

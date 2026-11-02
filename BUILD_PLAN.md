@@ -96,7 +96,7 @@ Done when:
 - [ ] Pickup and drop-off work, and money goes up after delivering
 - [ ] Doing five deliveries in a row is already a bit fun
 
-### Session 4: Palm Grove part 1, roads and villas
+### Session 4: Palm Grove part 1, roads and villas (built, needs testing)
 
 ```text
 Session 4. Start the Palm Grove villa community from PRD.md (City map
