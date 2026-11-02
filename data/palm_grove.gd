@@ -98,3 +98,144 @@ const VILLAS := [
 	{"number": 35, "position": Vector3(58, 0, -76), "facing": 180.0, "street": "Ghaf Street"},
 	{"number": 36, "position": Vector3(76, 0, -76), "facing": 180.0, "street": "Ghaf Street"},
 ]
+
+
+# --- Session 6: decoration and static obstacles ---
+# scripts/decor_builder.gd builds everything below. Free land used: the band north of
+# Ghaf Street (the park and the mosque), the corner east of the avenue by the gate (the
+# supermarket and its car park), the avenue's sides and the roundabout island (palms) and
+# the driveway strips between villas and their street (parked cars).
+# Nothing here may stand in the bike's test lane up the avenue (x 0.5 to 3.5, z 90 to 145).
+
+## The mosque, north of Ghaf Street on the avenue's line, its front facing south (0)
+## towards Ghaf Street. size: the prayer hall's width, height, depth. The dome sits on top,
+## the minaret stands at its east side and a stone forecourt runs to the street.
+const MOSQUE := {
+	"name": "Palm Grove Mosque",
+	"arabic": "مسجد بستان النخيل",
+	"position": Vector3(0, 0, -124),
+	"facing": 0.0,
+	"size": Vector3(18.0, 7.0, 14.0),
+}
+
+## The mini market east of the avenue near the gate. Its front faces west (-90), onto its
+## car park, which opens onto the avenue by a short driveway south of the welcome sign.
+const SUPERMARKET := {
+	"name": "Al Sarab Mini Market",
+	"arabic": "ميني ماركت السراب",
+	"position": Vector3(42, 0, 132),
+	"facing": -90.0,
+	"size": Vector3(16.0, 5.0, 12.0),
+}
+
+## Flat asphalt for car parks and driveways (no collision, you ride over them).
+## Rect2(x, z, width along x, depth along z): x/z is the north-west corner.
+const PARKING_AREAS := [
+	Rect2(15, 114, 19, 33),   # mini market car park (x 15 to 34, z 114 to 147)
+	Rect2(4, 137, 11, 8),     # driveway from the avenue into the car park (south of the welcome sign)
+	Rect2(16, -114, 10, 18),  # mosque car park (x 16 to 26, z -114 to -96)
+]
+
+## Every parked car is this big: width, height, length (the bumper-to-bumper length is z).
+const PARKED_CAR_SIZE := Vector3(1.9, 1.5, 4.3)
+
+## Parked cars. facing: which way the car's nose points (same angles as villas).
+## bay: true draws white parking-bay lines around it (car parks only).
+## Driveway cars stand parallel to their street in the strip between the road edge and the
+## villa, at least 2 m away from the door spot so you can still reach the door.
+const PARKED_CARS := [
+	# Mini market car park: one row of 4 and one of 2, noses pointing east.
+	{"position": Vector3(20.5, 0, 117), "facing": 90.0, "bay": true},
+	{"position": Vector3(20.5, 0, 120), "facing": 90.0, "bay": true},
+	{"position": Vector3(20.5, 0, 123), "facing": 90.0, "bay": true},
+	{"position": Vector3(20.5, 0, 126), "facing": 90.0, "bay": true},
+	{"position": Vector3(29.5, 0, 117), "facing": -90.0, "bay": true},
+	{"position": Vector3(29.5, 0, 123), "facing": -90.0, "bay": true},
+	# Mosque car park.
+	{"position": Vector3(21, 0, -104), "facing": 90.0, "bay": true},
+	{"position": Vector3(21, 0, -107), "facing": 90.0, "bay": true},
+	{"position": Vector3(21, 0, -110), "facing": 90.0, "bay": true},
+	# Villa driveways, beside villas 2, 6, 11, 15, 24, 21 and 34.
+	{"position": Vector3(-53.5, 0, 96), "facing": 90.0, "bay": false},
+	{"position": Vector3(44.5, 0, 96), "facing": -90.0, "bay": false},
+	{"position": Vector3(-35.5, 0, 84), "facing": 90.0, "bay": false},
+	{"position": Vector3(62.5, 0, 84), "facing": -90.0, "bay": false},
+	{"position": Vector3(-53.5, 0, -6), "facing": -90.0, "bay": false},
+	{"position": Vector3(62.5, 0, 6), "facing": 90.0, "bay": false},
+	{"position": Vector3(44.5, 0, -84), "facing": 90.0, "bay": false},
+]
+
+## Every speed bump is this big: width (right across the road), height, depth (along the road).
+const SPEED_BUMP_SIZE := Vector3(8.0, 0.12, 0.5)
+
+## Speed bumps, each at least 12 m from any crossing or the roundabout and away from doors.
+## facing: the way you ride over it. 0 = on a north-south road, 90 = on an east-west road.
+## None on the avenue near the gate (z 85 to 150): the smoke test rides there.
+## The smoke test rides over the FIRST bump in this list.
+const SPEED_BUMPS := [
+	{"position": Vector3(-49, 0, 0), "facing": 90.0},    # Oasis Street, west
+	{"position": Vector3(49, 0, 0), "facing": 90.0},     # Oasis Street, east
+	{"position": Vector3(-49, 0, 90), "facing": 90.0},   # Date Palm Street, west
+	{"position": Vector3(49, 0, 90), "facing": 90.0},    # Date Palm Street, east
+	{"position": Vector3(-49, 0, -90), "facing": 90.0},  # Ghaf Street, west
+	{"position": Vector3(49, 0, -90), "facing": 90.0},   # Ghaf Street, east
+	{"position": Vector3(-90, 0, -45), "facing": 0.0},   # West Lane
+	{"position": Vector3(90, 0, 45), "facing": 0.0},     # East Lane
+	{"position": Vector3(0, 0, 50), "facing": 0.0},      # Palm Grove Avenue, south of the roundabout
+	{"position": Vector3(0, 0, -50), "facing": 0.0},     # Palm Grove Avenue, north of the roundabout
+]
+
+## Palm trees. y is the height of the ground they stand on (0.4 on the roundabout island).
+const PALM_TREES := [
+	# Palm Grove Avenue, both sides, between the roundabout and Date Palm Street.
+	Vector3(-5.5, 0, 24), Vector3(5.5, 0, 24), Vector3(-5.5, 0, 36), Vector3(5.5, 0, 36),
+	Vector3(-5.5, 0, 62), Vector3(5.5, 0, 62), Vector3(-5.5, 0, 74), Vector3(5.5, 0, 74),
+	# The avenue between Date Palm Street and the gate (only where there's room).
+	Vector3(-5.5, 0, 98), Vector3(5.5, 0, 98), Vector3(-5.5, 0, 106), Vector3(5.5, 0, 106),
+	Vector3(5.5, 0, 113),
+	# The avenue north of the roundabout.
+	Vector3(-5.5, 0, -26), Vector3(5.5, 0, -26), Vector3(-5.5, 0, -38), Vector3(5.5, 0, -38),
+	Vector3(-5.5, 0, -62), Vector3(5.5, 0, -62), Vector3(-5.5, 0, -74), Vector3(5.5, 0, -74),
+	# The roundabout island.
+	Vector3(0, 0.4, 0), Vector3(3.5, 0.4, 2.0), Vector3(-3.0, 0.4, -3.0),
+	# Around the mosque.
+	Vector3(-10, 0, -99), Vector3(10, 0, -99), Vector3(-13, 0, -118), Vector3(-13, 0, -130),
+	# Around the mini market.
+	Vector3(13, 0, 113), Vector3(52, 0, 127), Vector3(52, 0, 137),
+	# In the park.
+	Vector3(-100, 0, -105), Vector3(-70, 0, -105), Vector3(-128, 0, -128),
+	Vector3(-42, 0, -128), Vector3(-100, 0, -140), Vector3(-70, 0, -140),
+]
+
+## The park north of Ghaf Street, west side. area: the grass, as Rect2(x, z, width, depth).
+## A bilingual sign stands at the entrance, where the north-south path meets Ghaf Street.
+const PARK := {
+	"name": "Palm Grove Park",
+	"arabic": "حديقة بستان النخيل",
+	"area": Rect2(-140, -145, 110, 45),
+	"sign": Vector3(-78, 0, -97.5),
+	"sign_facing": 0.0,
+	"fountain": Vector3(-85, 0, -122),
+}
+## Flat paving paths through the park, as Rect2(x, z, width, depth).
+const PARK_PATHS := [
+	Rect2(-138, -123.5, 106, 3),  # west to east through the fountain
+	Rect2(-86.5, -143, 3, 49),    # from Ghaf Street north through the fountain
+]
+## Round shade trees in the park.
+const PARK_TREES := [
+	Vector3(-125, 0, -108), Vector3(-112, 0, -112), Vector3(-58, 0, -110), Vector3(-45, 0, -106),
+	Vector3(-118, 0, -136), Vector3(-55, 0, -136), Vector3(-95, 0, -132), Vector3(-76, 0, -113),
+]
+## Benches beside the paths. facing: which way you look when you sit (towards the path).
+const PARK_BENCHES := [
+	{"position": Vector3(-105, 0, -119), "facing": 180.0},
+	{"position": Vector3(-65, 0, -119), "facing": 180.0},
+	{"position": Vector3(-105, 0, -125), "facing": 0.0},
+	{"position": Vector3(-65, 0, -125), "facing": 0.0},
+	{"position": Vector3(-82, 0, -108), "facing": -90.0},
+	{"position": Vector3(-89, 0, -136), "facing": 90.0},
+]
+## Bench size: width, height, depth. The fountain basin's radius.
+const BENCH_SIZE := Vector3(1.8, 0.9, 0.7)
+const FOUNTAIN_RADIUS := 2.5

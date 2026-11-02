@@ -6,6 +6,10 @@ extends CharacterBody3D
 
 ## Sent when the bike hits something. strength is 0 (tiny tap) to 1 (full-speed, head-on).
 signal bumped(strength: float)
+## Sent when the bike rides over a speed bump. strength is 0 (crawling) to 1 (full speed
+## or faster). The camera shakes on it. Session 8's damage meter can listen to it too
+## ("bubble tea hates speed bumps").
+signal went_over_bump(strength: float)
 
 ## Current speed in metres per second. Positive = forwards.
 var speed := 0.0
@@ -15,10 +19,14 @@ var stamina := GameConfig.STAMINA_MAX
 var tired := false
 ## True while actually sprinting this frame.
 var sprinting := false
+## How many speed bumps you've ridden over since the game started.
+var bumps_taken := 0
 
 var _steer := 0.0
 var _bump_cooldown := 0.0
 var _start_transform: Transform3D
+var _hop_left := 0.0     # seconds left of the speed-bump bounce
+var _hop_height := 0.0   # metres, how high this bounce goes
 
 @onready var _model: Node3D = $Model
 @onready var _front_wheel: Node3D = $Model/FrontWheel
@@ -28,6 +36,8 @@ var _start_transform: Transform3D
 func _ready() -> void:
 	# Remember where the bike started so R can put it back there.
 	_start_transform = global_transform
+	# Speed bumps (scripts/speed_bump.gd) look for this group.
+	add_to_group("bike")
 
 
 func _physics_process(delta: float) -> void:
@@ -38,6 +48,7 @@ func _physics_process(delta: float) -> void:
 	_update_steering(delta)
 	_move(delta)
 	_update_lean(delta)
+	_update_hop(delta)
 	_spin_wheels(delta)
 	_bump_cooldown = maxf(_bump_cooldown - delta, 0.0)
 
@@ -49,6 +60,24 @@ func reset_to_start() -> void:
 	velocity = Vector3.ZERO
 	speed = 0.0
 	_model.rotation.z = 0.0
+	_hop_left = 0.0
+	_model.position.y = 0.0
+	_model.rotation.x = 0.0
+
+
+## A speed bump calls this when the bike rides onto it (scripts/speed_bump.gd).
+## The bike hops (only the model, not the physics body), and loses speed if it was fast.
+func hit_speed_bump() -> void:
+	var kmh := absf(speed) * 3.6
+	var strength := clampf(kmh / GameConfig.BIKE_MAX_SPEED_KMH, 0.0, 1.0)
+	# Nothing lost at or under the safe speed, the most lost at full speed (rewards slowing down).
+	var too_fast := clampf((kmh - GameConfig.SPEED_BUMP_SAFE_KMH)
+			/ (GameConfig.BIKE_MAX_SPEED_KMH - GameConfig.SPEED_BUMP_SAFE_KMH), 0.0, 1.0)
+	speed *= lerpf(1.0, GameConfig.SPEED_BUMP_SPEED_KEEP, too_fast)
+	_hop_height = lerpf(GameConfig.SPEED_BUMP_HOP_MIN, GameConfig.SPEED_BUMP_HOP_MAX, strength)
+	_hop_left = GameConfig.SPEED_BUMP_HOP_TIME
+	bumps_taken += 1
+	went_over_bump.emit(strength)
 
 
 func _update_stamina_and_speed(delta: float) -> void:
@@ -140,6 +169,21 @@ func _update_lean(delta: float) -> void:
 	var target_lean := deg_to_rad(GameConfig.BIKE_LEAN_MAX_DEG) * _steer * speed_ratio
 	var follow := 1.0 - exp(-GameConfig.BIKE_LEAN_SMOOTHING * delta)
 	_model.rotation.z = lerpf(_model.rotation.z, target_lean, follow)
+
+
+func _update_hop(delta: float) -> void:
+	# The speed-bump bounce: a big hop, then a smaller one, like a spring settling.
+	# Only the model moves; the physics body stays on the ground, so is_on_floor() and
+	# the camera don't notice.
+	if _hop_left <= 0.0:
+		return
+	_hop_left = maxf(_hop_left - delta, 0.0)
+	var done := 1.0 - _hop_left / GameConfig.SPEED_BUMP_HOP_TIME  # 0 at the start, 1 at the end
+	var wave := sin(done * TAU) * (1.0 - done)  # up, then down, dying away
+	_model.position.y = _hop_height * absf(wave)
+	# Nose up while the front wheel goes over, nose down when the back wheel does.
+	var size := _hop_height / GameConfig.SPEED_BUMP_HOP_MAX
+	_model.rotation.x = deg_to_rad(GameConfig.SPEED_BUMP_TILT_DEG) * size * wave
 
 
 func _spin_wheels(delta: float) -> void:

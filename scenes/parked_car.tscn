@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/parked_car.gd" id="1_parked_car"]
+
+[node name="ParkedCar" type="StaticBody3D" unique_id=1507251001]
+script = ExtResource("1_parked_car")
