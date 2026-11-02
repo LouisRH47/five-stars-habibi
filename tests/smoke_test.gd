@@ -1,9 +1,11 @@
 extends SceneTree
-## Smoke test: loads the main scene, pedals for a few seconds and checks the bike
-## actually moves, sprints and stops. Then it does one full delivery (offer, accept,
-## pick up, drop off, get paid), skips an order and lets one run out of time.
+## Smoke test: loads the main scene (Palm Grove), pedals for a few seconds and checks
+## the bike actually moves, sprints and stops. Then it does one full delivery (offer,
+## accept, pick up, drop off, get paid), skips an order and lets one run out of time.
 ## Run it with:
 ##   /Applications/Godot.app/Contents/MacOS/Godot --path . --headless -s tests/smoke_test.gd
+## To test another scene, add its path after "--", for example the old test area:
+##   ... -s tests/smoke_test.gd -- res://scenes/test_area.tscn
 ## It prints PASS or FAIL lines and exits with code 1 on any failure.
 
 const STEPS := {
@@ -31,7 +33,19 @@ var _top_speed := 0.0
 
 
 func _initialize() -> void:
-	var main: Node = load("res://scenes/main.tscn").instantiate()
+	var scene_path: String = ProjectSettings.get_setting("application/run/main_scene")
+	var user_args := OS.get_cmdline_user_args()
+	if not user_args.is_empty():
+		scene_path = user_args[0]
+	print("      scene: ", scene_path)
+	var packed := load(scene_path) as PackedScene
+	if packed == null:
+		print("FAIL: could not load ", scene_path)
+		print("RESULT: FAIL")
+		_phase = "done"
+		quit(1)
+		return
+	var main: Node = packed.instantiate()
 	root.add_child(main)
 	_bike = main.get_node("Bike")
 	_delivery = main.get_node_or_null("DeliveryManager")
@@ -41,6 +55,8 @@ func _initialize() -> void:
 
 
 func _physics_process(_delta: float) -> bool:
+	if _phase == "done":
+		return false
 	_frame += 1
 	_top_speed = maxf(_top_speed, _bike.speed)
 	match _phase:
@@ -99,12 +115,20 @@ func _start_delivery_check() -> void:
 		_finish()
 		return
 	if _delivery == null:
-		_check("DeliveryManager node exists in main.tscn", false, "")
+		_check("DeliveryManager node exists in the scene", false, "")
 		_finish()
 		return
 	_game_state.reset()
 	_game_state.connect("order_skipped", _on_order_skipped)
 	_order = _delivery.offer_now()
+	var places: Node = _delivery.place_builder
+	var built := 0
+	if places != null:
+		for child in places.get_children():
+			if child.name.begins_with("Villa"):
+				built += 1
+	var listed: int = 0 if places == null else places.villas.size()
+	_check("every villa in the data list was built", listed > 0 and built == listed, "%d of %d" % [built, listed])
 	_check("an order pops up", _order != null, "")
 	if _order == null:
 		_finish()

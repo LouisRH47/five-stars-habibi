@@ -1,45 +1,72 @@
 class_name PlaceBuilder
 extends Node3D
-## Builds the restaurants and villas from the list in data/test_area_places.gd
-## when the game starts, and tells other scripts where each front door is.
-## Each building is a solid coloured box with an orange door and a big sign.
-## Signs are English only for now: bilingual Arabic + English signs come in Session 5.
+## Builds the restaurants and villas from a data list when the game starts, and tells
+## other scripts where each front door is. Which list is set in the scene (the "data"
+## property): data/palm_grove.gd for the real map, data/test_area_places.gd for the test area.
+## Villas are scenes/villa.tscn. Restaurants are a solid coloured box with an orange door
+## and a big sign. Signs are English only for now: bilingual signs come in Session 5.
+
+## The data list to build from. It must have RESTAURANTS, VILLAS,
+## RESTAURANT_SIZE and VILLA_SIZE.
+@export var data: Script
+
+const VILLA_SCENE := preload("res://scenes/villa.tscn")
 
 const RESTAURANT_COLOUR := Color(0.16470589, 0.5568628, 0.6117647, 1)  # teal
-const VILLA_COLOUR := Color(1, 0.9529412, 0.87058824, 1)              # cream
 const DOOR_COLOUR := Color(0.9490196, 0.54901963, 0.15686275, 1)      # orange
 const SIGN_TEXT_COLOUR := Color(1, 0.9529412, 0.87058824, 1)          # cream
 const SIGN_OUTLINE_COLOUR := Color(0.05882353, 0.1254902, 0.14901961, 1)  # dark teal
 const DOOR_SIZE := Vector3(1.6, 2.4, 0.2)   # the orange door on the front of each building
 const SIGN_LIFT := 1.2                      # metres above the roof
 const RESTAURANT_SIGN_FONT_SIZE := 128
-const VILLA_SIGN_FONT_SIZE := 320           # villa numbers are extra big, easy to read while riding
 const SIGN_OUTLINE_SIZE := 32
 
 
+## The lists read from the data script. Other scripts (the DeliveryManager) use these.
+var restaurants: Array = []
+var villas: Array = []
+var restaurant_size := Vector3.ONE
+var villa_size := Vector3.ONE
+
+
+func _enter_tree() -> void:
+	# Read the data before any _ready runs, so other nodes can ask about doors right away.
+	if data == null:
+		push_error("PlaceBuilder has no data list set in the scene")
+		return
+	var lists := data.get_script_constant_map()
+	restaurants = lists["RESTAURANTS"]
+	villas = lists["VILLAS"]
+	restaurant_size = lists["RESTAURANT_SIZE"]
+	villa_size = lists["VILLA_SIZE"]
+
+
 func _ready() -> void:
-	for place in TestAreaPlaces.RESTAURANTS:
-		_build(place["position"], place["facing"], TestAreaPlaces.RESTAURANT_SIZE,
+	for place in restaurants:
+		_build(place["position"], place["facing"], restaurant_size,
 				RESTAURANT_COLOUR, place["name"], RESTAURANT_SIGN_FONT_SIZE)
-	for place in TestAreaPlaces.VILLAS:
-		_build(place["position"], place["facing"], TestAreaPlaces.VILLA_SIZE,
-				VILLA_COLOUR, str(place["number"]), VILLA_SIGN_FONT_SIZE)
+	for place in villas:
+		var villa = VILLA_SCENE.instantiate()
+		villa.position = place["position"]
+		villa.rotation_degrees = Vector3(0.0, place["facing"], 0.0)
+		villa.setup(place["number"], villa_size)
+		add_child(villa)
 
 
 ## The spot on the ground in front of a restaurant's door.
 func restaurant_door(id: String) -> Vector3:
-	for place in TestAreaPlaces.RESTAURANTS:
+	for place in restaurants:
 		if place["id"] == id:
-			return door_point(place["position"], place["facing"], TestAreaPlaces.RESTAURANT_SIZE)
+			return door_point(place["position"], place["facing"], restaurant_size)
 	push_error("No restaurant with id " + id)
 	return Vector3.ZERO
 
 
 ## The spot on the ground in front of a villa's door.
 func villa_door(number: int) -> Vector3:
-	for place in TestAreaPlaces.VILLAS:
+	for place in villas:
 		if place["number"] == number:
-			return door_point(place["position"], place["facing"], TestAreaPlaces.VILLA_SIZE)
+			return door_point(place["position"], place["facing"], villa_size)
 	push_error("No villa number %d" % number)
 	return Vector3.ZERO
 

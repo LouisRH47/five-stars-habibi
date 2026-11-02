@@ -46,7 +46,7 @@ const ORDER_OFFER_TIMEOUT := 30.0     # an order you ignore this long counts as 
 const ORDER_PAY_MIN := 8              # Dh, lowest Tier 1 pay (PRD: 8 to 15 Dh)
 const ORDER_PAY_MAX := 15             # Dh, highest Tier 1 pay
 const ORDER_PAY_BASE := 7.0           # Dh every order pays before the distance extra
-const ORDER_PAY_PER_METRE := 0.08     # Dh extra per metre from restaurant to villa (30 m = 9 Dh, 90 m = 14 Dh)
+const ORDER_PAY_PER_METRE := 0.03     # Dh extra per metre, straight line restaurant to villa (30 m = 8 Dh, 270 m = 15 Dh)
 const ORDER_ACCEPT_HISTORY := 20      # acceptance rate looks at your last 20 accept/skip choices
 const ORDER_LOW_ACCEPTANCE := 0.7     # below 70% you get boring orders: short ride, lowest pay
 const ORDER_BORING_CHOICES := 2       # a boring order goes to one of the 2 villas closest to the restaurant

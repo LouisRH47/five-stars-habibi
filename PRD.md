@@ -347,6 +347,7 @@ Build it in milestones and play-test at the end of each one. Only move on when t
 - Tuning all pay, bills and insurance numbers once Tier 1 is playable
 - Whether the motorbike can carry several orders at once, later on
 - Exact keys for the taxi requests
+- Palm Grove is about 300 m across, so the longest rides take about a minute, not the 2 to 3 minutes the city map section asks for. Decide after play-testing whether to make the map bigger or keep it compact
 
 ## Decisions log
 
@@ -377,6 +378,7 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 2 Nov 2026 | Shift clock running out mid-delivery lets you finish that delivery first |
 | 2 Nov 2026 | Controls table added to the PRD (Esc pause, R reset). Vision-only sections marked NOT NOW |
 | 2 Nov 2026 | Build order changed: delivery loop on the test area before the Palm Grove map. Villas placed from a data list |
+| 2 Nov 2026 | Palm Grove layout: 300 m square with a wall and a closed gate in the south, Palm Grove Avenue from the gate to a central roundabout, three cross streets, 36 villas, restaurant strip just inside the gate |
 
 ## Sources
 

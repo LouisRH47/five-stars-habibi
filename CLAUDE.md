@@ -28,6 +28,8 @@ Look and feel: the mockup linked at the top of PRD.md.
   Then run the smoke test, which rides the bike and checks it works:
   /Applications/Godot.app/Contents/MacOS/Godot --path . --headless -s tests/smoke_test.gd
   It must print RESULT: PASS. When a session adds a new system, add a check for it.
+  The smoke test runs on the main scene (Palm Grove). To also check the old test area:
+  /Applications/Godot.app/Contents/MacOS/Godot --path . --headless -s tests/smoke_test.gd -- res://scenes/test_area.tscn
 - Shared game data (money, rating, current order) lives in one autoload,
   scripts/game_state.gd (from Session 3). Don't store it anywhere else.
 - Build the map from a data list (data/) plus a builder script, not by hand-editing

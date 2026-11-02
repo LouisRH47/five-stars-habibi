@@ -64,10 +64,10 @@ func offer_now() -> Order:
 ## Picks a random restaurant and villa. If you skip a lot (acceptance rate under
 ## 70%), you get a boring order instead: a short ride for the lowest pay (PRD).
 func make_order() -> Order:
-	var restaurant: Dictionary = TestAreaPlaces.RESTAURANTS.pick_random()
+	var restaurant: Dictionary = place_builder.restaurants.pick_random()
 	var from := place_builder.restaurant_door(restaurant["id"])
 	var boring := GameState.acceptance_rate() < GameConfig.ORDER_LOW_ACCEPTANCE
-	var villa: Dictionary = TestAreaPlaces.VILLAS.pick_random()
+	var villa: Dictionary = place_builder.villas.pick_random()
 	if boring:
 		villa = _short_ride_villa(from)
 	var to := place_builder.villa_door(villa["number"])
@@ -146,7 +146,7 @@ func _pay_for(metres: float) -> int:
 
 ## One of the villas closest to the given restaurant door (for boring orders).
 func _short_ride_villa(from: Vector3) -> Dictionary:
-	var villas: Array = TestAreaPlaces.VILLAS.duplicate()
+	var villas: Array = place_builder.villas.duplicate()
 	villas.sort_custom(func(a, b): return place_builder.villa_door(a["number"]).distance_to(from) < place_builder.villa_door(b["number"]).distance_to(from))
 	return villas.slice(0, GameConfig.ORDER_BORING_CHOICES).pick_random()
 

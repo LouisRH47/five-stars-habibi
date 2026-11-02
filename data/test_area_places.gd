@@ -1,6 +1,6 @@
 class_name TestAreaPlaces
 ## Data only: where the restaurants and villas stand on the flat test area.
-## scripts/place_builder.gd reads this list and builds the buildings.
+## scripts/place_builder.gd reads this list and builds the buildings (scenes/test_area.tscn).
 ## To move a building, change its line here. Nothing else needs to change.
 ##
 ## position: the middle of the building, on the ground (y = 0). 1 unit = 1 metre.
