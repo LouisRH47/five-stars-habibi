@@ -132,7 +132,7 @@ Done when:
 - [ ] Arabic on signs shows joined up and right-to-left
 - [ ] The 3 restaurants are easy to spot from the road
 
-### Session 6: Palm Grove part 3, decoration and static obstacles
+### Session 6: Palm Grove part 3, decoration and static obstacles (built, needs testing)
 
 ```text
 Session 6. Finish Palm Grove: a park, a mosque, a small supermarket, palm
