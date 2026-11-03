@@ -1170,6 +1170,7 @@ func _finish() -> void:
 	_check_session26()
 	_check_session27()
 	_check_session29()
+	_check_session30()
 	_check_saving()
 	for action in ACTIONS:
 		Input.action_release(action)
@@ -1480,3 +1481,104 @@ func _check_session29() -> void:
 		_check("parked cars use the CC0 car models", car.get_node_or_null("Model") != null, "")
 	var credits := FileAccess.get_file_as_string("res://CREDITS.md")
 	_check("the people and car packs are credited", "Quaternius" in credits and "Car Kit" in credits, "")
+
+
+## Session 30: life on the map. Everything in the data lists was built, nothing's route goes
+## through a wall, buggies drive along their route and stop for the bike (without pushing
+## it), then turn round if it stays; horses, walkers, ducks and donkeys move; palms sway and
+## the water moves; Low shows fewer things than High. Other maps: skipped.
+func _check_session30() -> void:
+	var life: Node = _main.get_node_or_null("LifeBuilder")
+	if life == null:
+		print("      no LifeBuilder on this map, Session 30 checks skipped")
+		return
+	var data: Dictionary = life.data.get_script_constant_map()
+	var want := 0
+	for list in ["BUGGIES", "HORSE_RIDERS", "PEOPLE_ROUTES", "GARDENERS", "PLAY_KIDS", "DUCKS"]:
+		want += data[list].size()
+	_check("every buggy, horse, person, kid and duck in the data was built", life.movers.size() == want,
+			"%d of %d" % [life.movers.size(), want])
+	# Nothing walks through walls: every route, sampled each metre, is clear on the map scan.
+	if _grid != null:
+		var inside := {}
+		for mover in life.movers:
+			var pts: Array = mover.points
+			if pts.size() == 1:
+				pts = [pts[0], pts[0]]
+			for i in pts.size() - (0 if mover.loop else 1):
+				var a: Vector3 = pts[i]
+				var b: Vector3 = pts[(i + 1) % pts.size()]
+				for k in int(a.distance_to(b)) + 1:
+					var spot := a.move_toward(b, float(k))
+					if not _grid.is_free(Vector2(spot.x, spot.z)) and not inside.has(mover.name):
+						inside[mover.name] = spot
+		_check("no buggy, horse or walker route goes through a wall or building", inside.is_empty(), str(inside))
+	var keep := _bike.global_transform
+	var was_parked: bool = _bike.parked
+	_bike.set_parked(true)
+	_move_bike_to(data["START"]["position"])
+	# A buggy drives along its route.
+	var buggy: Node3D = life.get_node("Buggy_0")
+	buggy.scared_left = 0.0
+	buggy._pause_left = 0.0
+	buggy._blocked = 0.0
+	var start: Vector3 = buggy.position
+	for i in 60:
+		buggy._physics_process(1.0 / 30.0)
+	var moved: float = buggy.position.distance_to(start)
+	_check("a golf buggy drives along its route", moved > 2.0 and buggy.distance_to_route() < 0.2,
+			"%.1f m, %.2f m off the route" % [moved, buggy.distance_to_route()])
+	# It stops for the bike parked in front of it, and doesn't push it.
+	buggy._pause_left = 0.0
+	var ahead: Vector3 = buggy.heading()
+	_move_bike_to(buggy.position + ahead * (buggy.size.z * 0.5 + 2.0))
+	var bike_spot := _bike.global_position
+	var at: Vector3 = buggy.position
+	for i in 30:
+		buggy._physics_process(1.0 / 30.0)
+	_check("a buggy stops and waits when the bike is in the way", buggy.position.distance_to(at) < 0.01
+			and _bike.global_position.distance_to(bike_spot) < 0.01, "moved %.2f m" % buggy.position.distance_to(at))
+	for i in int(GameConfig.LIFE_GIVE_UP_TIME * 30.0) + 90:
+		buggy._physics_process(1.0 / 30.0)
+	_check("if the bike stays, the buggy turns round and drives off", buggy.position.distance_to(_bike.global_position) > at.distance_to(bike_spot) + 1.0
+			and _bike.global_position.distance_to(bike_spot) < 0.01, "%.1f m away" % buggy.position.distance_to(_bike.global_position))
+	_move_bike_to(data["START"]["position"])
+	# Horses, walkers, kids and ducks move too.
+	var still := []
+	for name in ["Horse_0", "Person_0", "Person_2", "Kid_0", "Duck_0"]:
+		var thing: Node3D = life.get_node(name)
+		thing.scared_left = 0.0
+		thing._pause_left = 0.0
+		var from: Vector3 = thing.position
+		for i in 60:
+			thing._physics_process(1.0 / 30.0)
+		if thing.position.distance_to(from) < 0.3:
+			still.append(name)
+	_check("horses, joggers, walkers, kids and ducks move along their routes", still.is_empty(), str(still))
+	# Palms sway, the stream has moving water, the donkeys stroll.
+	var ambient: Node = life.ambient
+	var crown: Node3D = ambient._crowns[0][0]
+	var tilt := crown.rotation
+	var donkey: Node3D = ambient._donkeys[0]["node"]
+	ambient._donkeys[0]["pause"] = 0.0
+	var donkey_from := donkey.position
+	for i in 30:
+		ambient._process(1.0 / 30.0)
+	_check("palm tops sway in the breeze", crown.rotation.distance_to(tilt) > 0.001, "")
+	_check("the donkeys stroll round their pen", donkey.position.distance_to(donkey_from) > 0.1, "")
+	var stream := _main.get_node("WahatBuilder/Stream").get_child(0) as MeshInstance3D
+	_check("the stream has moving water", stream.material_override is ShaderMaterial, "")
+	# Fewer things on Low than on High (sets the setting without saving it).
+	var before: int = Settings.graphics
+	Settings.graphics = 0
+	Settings.apply()
+	var low: int = life.shown_count()
+	var low_off: bool = not life.get_node("Buggy_2").visible and life.get_node("Buggy_2").process_mode == Node.PROCESS_MODE_DISABLED
+	Settings.graphics = 2
+	Settings.apply()
+	var high: int = life.shown_count()
+	Settings.graphics = before
+	Settings.apply()
+	_check("Low shows fewer moving things than High", low > 0 and low < high and low_off, "Low %d, High %d" % [low, high])
+	_bike.global_transform = keep
+	_bike.set_parked(was_parked)

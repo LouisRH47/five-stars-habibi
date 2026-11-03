@@ -27,6 +27,7 @@
 [ext_resource type="Script" path="res://scripts/plaza_builder.gd" id="25_plaza"]
 [ext_resource type="Script" path="res://scripts/spine_builder.gd" id="26_spine"]
 [ext_resource type="Script" path="res://scripts/landmark_builder.gd" id="27_landmarks"]
+[ext_resource type="Script" path="res://scripts/life_builder.gd" id="30_life"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_pg"]
 sky_top_color = Color(0.30980393, 0.6627451, 0.8392157, 1)
@@ -119,6 +120,10 @@ delivery_manager = NodePath("../DeliveryManager")
 
 [node name="ObstacleBuilder" type="Node3D" parent="."]
 script = ExtResource("15_obstacles")
+data = ExtResource("8_data")
+
+[node name="LifeBuilder" type="Node3D" parent="."]
+script = ExtResource("30_life")
 data = ExtResource("8_data")
 
 [node name="CustomerSpawner" type="Node3D" parent="." node_paths=PackedStringArray("place_builder")]
