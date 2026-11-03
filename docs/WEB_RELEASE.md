@@ -82,12 +82,22 @@ desktop Forward+.
 - Cloudflare Pages project: `five-stars-habibi`; production branch: `main`.
 - DNS: `fivestarshabibi.middleleap.com` points to `five-stars-habibi.pages.dev`.
 - Single-threaded export; Compatibility renderer; Low graphics by default.
+- Touch menus and form fields have at least 44 CSS-pixel targets; gameplay labels
+  use plain actions. Layout recalculates on rotation and respects screen safe areas.
+- Rendering is capped at one backing pixel per CSS pixel to reduce Retina GPU
+  load. A graphics-context interruption shows a reload action instead of a frozen game.
 - No service worker in this first release, so refreshing checks for updates.
 - Test Safari on a real MacBook and iPad, including a complete shift, save and
   reload, sound, multi-touch steering, and landscape layout. Browser emulation
   does not establish physical iPad performance.
 - Schools may need to allow the domain and WebGL. Browser access still depends
   on the device and school network policies.
+
+For iPad acceptance, also rotate while a control is held (motion must release),
+open Settings and change a slider, enter a rider name with the software keyboard,
+select a country, pause/resume, and reload to Continue the saved rider. Automated
+layout checks cover 1024×768, 1180×820, 768×1024, and 1024×650 CSS pixels. Emulation
+cannot certify the device keyboard, audio output, memory limits or frame rate.
 
 Godot downloads and Actions versions are pinned; the installer checks the official
 engine/template SHA-256 digests. Update those pins deliberately when changing Godot.

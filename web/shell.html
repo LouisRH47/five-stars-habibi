@@ -8,7 +8,11 @@
   <title>$GODOT_PROJECT_NAME</title>
   <style>
     * { box-sizing: border-box; }
+    :root { --safe-top: env(safe-area-inset-top, 0px); --safe-right: env(safe-area-inset-right, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px); --safe-left: env(safe-area-inset-left, 0px); }
     html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #102329; color: #fff2dd; font-family: system-ui, sans-serif; }
+    #game-frame { position: fixed; inset: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left); }
+    /* Godot positions its software-keyboard fields in viewport coordinates. */
+    #game-frame > input, #game-frame > textarea { position: fixed !important; font-size: 16px; }
     #canvas { display: block; width: 100%; height: 100%; touch-action: none; outline: none; }
     #welcome { position: fixed; inset: 0; display: grid; place-items: center; padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left)); overflow-y: auto; background: #102329; }
     .card { width: min(100%, 480px); text-align: center; }
@@ -26,7 +30,7 @@
   $GODOT_HEAD_INCLUDE
 </head>
 <body>
-  <canvas id="canvas" tabindex="0" aria-label="Five Stars Habibi game"></canvas>
+  <div id="game-frame"><canvas id="canvas" tabindex="0" aria-label="Five Stars Habibi game"></canvas></div>
   <main id="welcome">
     <div class="card">
       <div class="stars" aria-hidden="true">★★★★★</div>
@@ -48,17 +52,37 @@
     const notice = document.getElementById('notice');
     const progress = document.getElementById('progress');
     const canvas = document.getElementById('canvas');
+    const gameFrame = document.getElementById('game-frame');
     let failed = false;
 
-    function showFailure(error) {
+    // Godot's full-window resize policy ignores iPad safe-area insets. Size the
+    // backing buffer from the usable frame instead. Cap Retina rendering to one
+    // pixel per CSS pixel: larger buffers made Safari/WebKit lose graphics.
+    function resizeCanvas() {
+      const bounds = gameFrame.getBoundingClientRect();
+      const ratio = Math.min(window.devicePixelRatio || 1, 1);
+      const width = Math.max(1, Math.round(bounds.width * ratio));
+      const height = Math.max(1, Math.round(bounds.height * ratio));
+      if (canvas.width !== width) canvas.width = width;
+      if (canvas.height !== height) canvas.height = height;
+    }
+    new ResizeObserver(resizeCanvas).observe(gameFrame);
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function showFailure(error, message = 'The game could not start. Try an up-to-date Safari or Chrome browser.') {
       console.error(error);
       failed = true;
       document.getElementById('welcome').hidden = false;
-      notice.textContent = 'The game could not start. Try an up-to-date Safari or Chrome browser.\n' + (error.message || String(error));
+      notice.textContent = message + '\n' + (error.message || String(error));
       progress.hidden = true;
       play.textContent = 'Try again';
       play.disabled = false;
     }
+
+    canvas.addEventListener('webglcontextlost', () => {
+      showFailure(new Error('Tap Try again to reload.'), 'The browser interrupted the game’s graphics.');
+    });
 
     window.addEventListener('unhandledrejection', (event) => {
       showFailure(event.reason || new Error('The game stopped unexpectedly.'));
@@ -75,7 +99,8 @@
       try {
         const missing = Engine.getMissingFeatures({ threads: GODOT_THREADS_ENABLED });
         if (missing.length) throw new Error('Required browser features: ' + missing.join(', '));
-        const engine = new Engine(GODOT_CONFIG);
+        resizeCanvas();
+        const engine = new Engine({ ...GODOT_CONFIG, canvasResizePolicy: 0 });
         await engine.startGame({
           canvas,
           onProgress(current, total) {
@@ -93,8 +118,10 @@
             notice.textContent = 'Game closed. Your saved progress stays in this browser.';
           }
         });
-        document.getElementById('welcome').hidden = true;
-        canvas.focus();
+        if (!failed) {
+          document.getElementById('welcome').hidden = true;
+          canvas.focus();
+        }
       } catch (error) { showFailure(error); }
     });
   </script>

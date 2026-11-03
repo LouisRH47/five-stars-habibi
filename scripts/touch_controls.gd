@@ -8,12 +8,19 @@ var _buttons: Array[Dictionary] = []
 var _fingers: Dictionary = {}  # touch index -> action
 var _scene: Node
 var _focused := true
+var _widgets_dirty := true
+var _css_scale := Vector2.ONE
+
+const MIN_TOUCH_TARGET := 44.0
+const MIN_WIDGET_TEXT := 16.0
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	layer = 9  # normal HUD above the world; pause and results stay above us
 	touch_enabled = DisplayServer.is_touchscreen_available()
+	if OS.has_feature("web"):
+		touch_enabled = touch_enabled or JavaScriptBridge.eval("('ontouchstart' in window) || navigator.maxTouchPoints > 0") == true
 	_surface = Control.new()
 	_surface.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_surface.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -33,6 +40,10 @@ func _refresh_state() -> void:
 	if current != _scene:
 		_release_all()
 		_scene = current
+		_widgets_dirty = true
+	if touch_enabled and _widgets_dirty and is_instance_valid(_scene):
+		_resize_touch_widgets(_scene)
+		_widgets_dirty = false
 	var playing := is_instance_valid(_scene) and _scene.has_node("Bike")
 	var active := touch_enabled and playing and not get_tree().paused and _focused
 	if not active:
@@ -44,6 +55,8 @@ func _refresh_state() -> void:
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
+		if not touch_enabled:
+			_widgets_dirty = true
 		touch_enabled = true
 		_refresh_state()
 		if _fingers.has(event.index):
@@ -113,27 +126,85 @@ func _action_at(point: Vector2) -> String:
 
 func _layout() -> void:
 	_release_all()
+	_update_css_scale()
+	_widgets_dirty = true
 	_buttons.clear()
 	var size := get_viewport().get_visible_rect().size
 	var w := size.x
 	var h := size.y
-	_add("steer_left", "A  Left", Rect2(24, h - 150, 140, 126))
-	_add("steer_right", "D  Right", Rect2(178, h - 150, 140, 126))
-	_add("move_forward", "W  Go", Rect2(w - 164, h - 290, 140, 126))
-	_add("move_back", "S  Brake", Rect2(w - 164, h - 150, 140, 126))
-	_add("sprint", "Shift  Fast", Rect2(w - 318, h - 290, 140, 126))
-	_add("handbrake", "Space  Stop", Rect2(w - 318, h - 150, 140, 126))
-	_add("toggle_bike", "F  Bike / walk", Rect2(w / 2 - 200, h - 290, 190, 126))
-	_add("interact", "E  Use / hold", Rect2(w / 2 + 10, h - 290, 190, 126))
-	var extras := [["skip_order", "Q  Skip"], ["ring_bell", "B  Bell"],
-		["reset_bike", "R  Reset"], ["toggle_insurance", "I  Insure"], ["pause", "Pause"]]
+	_add("steer_left", "Left", Rect2(24, h - 150, 140, 126))
+	_add("steer_right", "Right", Rect2(178, h - 150, 140, 126))
+	_add("move_forward", "Go", Rect2(w - 164, h - 290, 140, 126))
+	_add("move_back", "Brake", Rect2(w - 164, h - 150, 140, 126))
+	_add("sprint", "Fast", Rect2(w - 318, h - 290, 140, 126))
+	_add("handbrake", "Stop", Rect2(w - 318, h - 150, 140, 126))
+	_add("toggle_bike", "Bike/walk", Rect2(w / 2 - 200, h - 290, 190, 126))
+	_add("interact", "Use / hold", Rect2(w / 2 + 10, h - 290, 190, 126))
+	var extras := [["skip_order", "Skip"], ["ring_bell", "Bell"],
+		["reset_bike", "Reset"], ["toggle_insurance", "Insure"], ["pause", "Pause"]]
 	for i in extras.size():
 		_add(extras[i][0], extras[i][1], Rect2(w / 2 - 325 + i * 132, h - 136, 122, 112))
 	_surface.queue_redraw()
 
 
+func _update_css_scale() -> void:
+	_css_scale = get_viewport().get_final_transform().get_scale().abs()
+	if OS.has_feature("web"):
+		# Measure the actual game rectangle, including safe-area padding. CSS
+		# pixels stay finger-sized regardless of the Retina backing resolution.
+		var result: Variant = JavaScriptBridge.eval("(() => { const c = document.getElementById('canvas'); if (!c) return ''; const r = c.getBoundingClientRect(); return JSON.stringify({width:r.width,height:r.height}); })()")
+		if result is String and result != "":
+			var rect: Variant = JSON.parse_string(result)
+			if rect is Dictionary and rect.get("width", 0) > 0 and rect.get("height", 0) > 0:
+				var logical := get_viewport().get_visible_rect().size
+				_css_scale = Vector2(float(rect.width) / logical.x, float(rect.height) / logical.y)
+	_css_scale.x = maxf(_css_scale.x, 0.01)
+	_css_scale.y = maxf(_css_scale.y, 0.01)
+
+
+func _resize_touch_widgets(node: Node) -> void:
+	# Keep the desktop layout untouched. Store original values once so rotating
+	# back to landscape can shrink a portrait target to the appropriate size.
+	if node is BaseButton or node is LineEdit or node is Slider:
+		var control := node as Control
+		if not control.has_meta("touch_original_minimum"):
+			control.set_meta("touch_original_minimum", control.custom_minimum_size)
+		var original: Vector2 = control.get_meta("touch_original_minimum")
+		control.custom_minimum_size = Vector2(
+			maxf(original.x, ceilf(MIN_TOUCH_TARGET / _css_scale.x)),
+			maxf(original.y, ceilf(MIN_TOUCH_TARGET / _css_scale.y)))
+		if node is BaseButton or node is LineEdit:
+			if not control.has_meta("touch_original_font_size"):
+				control.set_meta("touch_original_font_size", control.get_theme_font_size("font_size"))
+			var original_font: int = control.get_meta("touch_original_font_size")
+			var font_size := maxi(original_font, ceili(MIN_WIDGET_TEXT / _css_scale.y))
+			control.add_theme_font_size_override("font_size", font_size)
+			if node is OptionButton:
+				var popup := (node as OptionButton).get_popup()
+				popup.add_theme_font_size_override("font_size", font_size)
+				if not popup.has_meta("touch_original_separation"):
+					popup.set_meta("touch_original_separation", popup.get_theme_constant("v_separation"))
+				var font_height := popup.get_theme_font("font").get_height(font_size)
+				var original_gap: int = popup.get_meta("touch_original_separation")
+				popup.add_theme_constant_override("v_separation", maxi(original_gap,
+					ceili(MIN_TOUCH_TARGET / _css_scale.y - font_height)))
+				# OptionButton clamps its popup to the viewport and scrolls long lists.
+	for child in node.get_children():
+		_resize_touch_widgets(child)
+
+
 func _add(action: String, label: String, rect: Rect2) -> void:
 	_buttons.append({"action": action, "label": label, "rect": rect})
+
+
+func _button_font_size(button: Dictionary) -> int:
+	var font := ThemeDB.fallback_font
+	var desired := ceili(16.0 / _css_scale.y)
+	var minimum := ceili(14.0 / _css_scale.y)
+	var available: float = button.rect.size.x - 4.0 / _css_scale.x
+	while desired > minimum and font.get_string_size(button.label, HORIZONTAL_ALIGNMENT_LEFT, -1, desired).x > available:
+		desired -= 1
+	return desired
 
 
 func _draw_buttons() -> void:
@@ -147,8 +218,10 @@ func _draw_buttons() -> void:
 		style.set_corner_radius_all(20)
 		_surface.draw_style_box(style, button.rect)
 		var rect: Rect2 = button.rect
-		_surface.draw_string(font, rect.position + Vector2(0, rect.size.y / 2 + 9),
-			button.label, HORIZONTAL_ALIGNMENT_CENTER, rect.size.x, 24, Color.WHITE)
+		var font_size := _button_font_size(button)
+		var baseline := (rect.size.y - font.get_height(font_size)) / 2 + font.get_ascent(font_size)
+		_surface.draw_string(font, rect.position + Vector2(0, baseline),
+			button.label, HORIZONTAL_ALIGNMENT_CENTER, rect.size.x, font_size, Color.WHITE)
 
 
 func _make_room_for_controls() -> void:
