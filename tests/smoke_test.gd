@@ -1662,12 +1662,13 @@ func _check_session30() -> void:
 	# spend this whole two-second probe in LIFE_END_PAUSE. Start on a long straight,
 	# and test only the bike obstacle we place, not unrelated random traffic/walkers.
 	var keep_watch: Array[Node3D] = buggy.watch.duplicate()
+	var probe_watch: Array[Node3D] = [_bike]
 	var keep_exclude: Array[RID] = buggy._ahead.exclude.duplicate()
 	var probe_exclude: Array[RID] = keep_exclude.duplicate()
 	for other in get_nodes_in_group("critter") + get_nodes_in_group("road_works"):
 		if other is CollisionObject3D and other != buggy:
 			probe_exclude.append(other.get_rid())
-	buggy.watch = [_bike]
+	buggy.watch = probe_watch
 	buggy._ahead.exclude = probe_exclude
 	buggy.start_at(0, 0.5, true)
 	buggy.scared_left = 0.0
