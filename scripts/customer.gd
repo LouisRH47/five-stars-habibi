@@ -20,9 +20,11 @@ var _walking := false
 
 
 ## line_text: what they say. Their start spot is just inside the door; they walk out along +Z.
-func setup(line_text: String) -> void:
+## who: resident, teacher, kid, rider or groom (Session 32). look: a resident's outfit
+## (a regular always wears the same one), -1 = random.
+func setup(line_text: String, who := "resident", look := -1) -> void:
 	line = line_text
-	person = PeopleLooks.resident(randi() % PeopleLooks.RESIDENT_OUTFITS)
+	person = make_person(who, look)
 	person.rotation.y = PI  # people face -Z; customers walk out along +Z
 	add_child(person)
 	add_to_group("hears_bell")
@@ -32,6 +34,20 @@ func setup(line_text: String) -> void:
 	# Keeps moving while the game is paused for the Delivered card.
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_act.call_deferred()
+
+
+## The right kind of person for who's at the door.
+static func make_person(who: String, look := -1) -> Person:
+	match who:
+		"teacher":
+			return PeopleLooks.teacher()
+		"kid":
+			return PeopleLooks.school_kid()
+		"rider":
+			return PeopleLooks.horse_rider()
+		"groom":
+			return PeopleLooks.groom()
+	return PeopleLooks.resident(look if look >= 0 else randi() % PeopleLooks.RESIDENT_OUTFITS)
 
 
 ## Step out, wave and talk; stay while the Delivered card is up; then go back inside.

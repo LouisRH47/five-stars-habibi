@@ -5,7 +5,8 @@ class_name PeopleLooks
 ##   teacher():    lanyard with a card, and a folder in one hand
 ##   school_kid(): smaller, school uniform and a little backpack
 ##   horse_rider() and groom(): riding helmet and boots
-## Nothing spawns teachers, kids, riders or grooms yet: later sessions do.
+## Session 32: teachers and kids come to the school gate, riders and grooms to the stable
+## office, as customers (scripts/customer.gd).
 ## Hats and bags are simple shapes that follow a bone (Person.follow()).
 
 const SKINS := [Color(0.85, 0.66, 0.5), Color(0.7, 0.5, 0.35), Color(0.5, 0.35, 0.25), Color(0.93, 0.78, 0.65)]

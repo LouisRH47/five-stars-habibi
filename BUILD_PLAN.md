@@ -639,8 +639,7 @@ Done when:
 - [ ] Riding, sprinting, braking and delivering all feel punchier
 - [ ] Nothing flashes or shakes so much it's annoying
 
-### Session 32: Special orders, school and stables orders, regulars, goals
-
+### Session 32: Special orders, school and stables orders, regulars, goals (built, needs testing)
 ```text
 Session 32. Read PRD.md (Special orders, goals and events). Add:
 - Special orders (rush, fragile cake, neighbour, big family order) with their

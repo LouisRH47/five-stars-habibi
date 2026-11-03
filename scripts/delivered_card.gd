@@ -53,6 +53,7 @@ var _xp: Label
 ## How many stars and coin bursts have popped (the smoke test checks it).
 var pops := 0
 var _pop_tween: Tween
+var _extra: Label  # Session 32: the regular's name, and any shift goal this delivery finished
 
 
 func _ready() -> void:
@@ -103,13 +104,21 @@ func _on_delivered(_order: Order) -> void:
 		_tiles.add_child(_tile(key, job[key]))
 	for child in _rows.get_children():
 		child.queue_free()
-	_row("Delivery pay", "+%d Dh" % job["pay"], INK)
+	# Session 32: a special order shows its extra pay on its own row.
+	var extra_pay: int = job["pay"] - job.get("base_pay", job["pay"])
+	if job.get("special", "") != "" and extra_pay > 0:
+		_row("Delivery pay", "+%d Dh" % job["base_pay"], INK)
+		_row(GameConfig.SPECIAL_NAMES[job["special"]] + " extra", "+%d Dh" % extra_pay, GameConfig.SPECIAL_COLOURS[job["special"]])
+	else:
+		_row("Delivery pay", "+%d Dh" % job["pay"], INK)
 	if job["tip"] > 0:
 		_row("5-star tip", "+%d Dh" % job["tip"], GREEN)
 	if job["insurance"] > 0:
 		_row("Insurance", "-%d Dh" % job["insurance"], SOFT)
 	_earned.text = "%d Dh" % earned
 	_xp.text = "+%d XP" % job["xp"]
+	_extra.text = _extra_text(job)
+	_extra.visible = _extra.text != ""
 	showing = true
 	_card.visible = true
 	_show_hud(false)
@@ -171,6 +180,17 @@ func _play(sound: String, pitch: float) -> void:
 	var sounds := get_parent().get_node_or_null("Sounds")
 	if sounds != null:
 		sounds.play(sound, pitch)
+
+
+## Session 32: "♥ Regular: Auntie Mariam" for a regular, and a line for each shift goal
+## this delivery finished.
+func _extra_text(job: Dictionary) -> String:
+	var lines: Array[String] = []
+	if job.get("regular", "") != "":
+		lines.append("♥ Regular: %s" % job["regular"])
+	for id in GameState.last_goals_done:
+		lines.append("✓ Goal done: %s  (+%d Dh at the end of the shift)" % [ShiftGoals.ALL.get(id, id), GameConfig.GOAL_BONUS])
+	return "\n".join(lines)
 
 
 ## A shot of the door from the side, so you and the customer show on the left of the screen.
@@ -275,6 +295,9 @@ func _build() -> void:
 	rows.add_child(total)
 	_xp = _label("", 18, ORANGE, "Heading")
 	rows.add_child(_xp)
+	_extra = _label("", 16, TEAL)
+	_extra.visible = false
+	rows.add_child(_extra)
 	var next := Button.new()
 	next.text = "Next order  ·  E"
 	next.add_theme_font_size_override("font_size", 24)

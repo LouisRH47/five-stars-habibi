@@ -293,6 +293,10 @@ func _start_delivery_check() -> void:
 		_finish()
 		return
 	_game_state.reset()
+	# The older checks want plain orders (a neighbour order would send them next door, a rush
+	# order changes the target time). _check_session32 turns specials and regulars back on.
+	_delivery.special_chance = 0.0
+	_delivery.regular_chance = 0.0
 	_game_state.connect("order_skipped", _on_order_skipped)
 	_order = _delivery.offer_now()
 	var places: Node = _delivery.place_builder
@@ -484,7 +488,7 @@ func _start_critter_check() -> void:
 	_delivery.offer_now()
 	_delivery.accept()
 	_game_state.pick_up()
-	_move_bike_to(kid._from + ahead * 2.5)
+	_move_bike_to(kid._from + ahead * 3.5)  # far enough for a clear run, close enough to hit in 2 s
 	_frame = 0
 	_phase = "critters"
 
@@ -528,6 +532,10 @@ func _check_customer() -> void:
 		return
 	var lines: Array = load("res://data/customer_lines.gd").LINES
 	_check("there are at least 15 customer lines", lines.size() >= 15, "%d lines" % lines.size())
+	# Session 32: at the school or the stables a teacher, kid, rider or groom says one of theirs.
+	var spot_lines: Dictionary = load("res://data/customer_lines.gd").SPOT_LINES
+	if spot_lines.has(_order.who):
+		lines = spot_lines[_order.who]
 	var said: String = customer.line
 	print("      customer says: ", said)
 	var known := false
@@ -874,7 +882,8 @@ func _check_shift_carrying() -> void:
 	var pay: int = gs.history[0]["pay"] + gs.history[1]["pay"]
 	var tips: int = gs.history[0]["tip"] + gs.history[1]["tip"]
 	_check("the summary money adds up", summary["pay"] == pay and summary["tips"] == tips
-			and summary["earned"] == pay + tips - 2 * GameConfig.INSURANCE_PER_DELIVERY and summary["earned"] == gs.money, "%d Dh" % summary["earned"])
+			and summary["earned"] == pay + tips + summary["goal_bonus"] - 2 * GameConfig.INSURANCE_PER_DELIVERY  # Session 32: + shift goals
+			and summary["earned"] == gs.money, "%d Dh (goal bonus %d)" % [summary["earned"], summary["goal_bonus"]])
 	_check("the summary has stars and XP", summary["stars"] == want["stars"] and summary["xp"] == gs.xp, "%.1f stars, %d XP" % [summary["stars"], summary["xp"]])
 	screen._next_shift()
 	_check("the next shift starts with a full clock", not paused and not gs.shift_clock_out
@@ -950,6 +959,7 @@ func _start_walk_check() -> void:
 	_delivery.accept()
 	gs.pick_up()
 	_walk_goal = _delivery.target_door()
+	print("      walk check order: ", gs.current_order.describe())
 	var villa: Dictionary = {}
 	for place in _delivery.place_builder.villas:
 		if place["number"] == gs.current_order.villa_number:
@@ -1182,6 +1192,7 @@ func _finish() -> void:
 	_check_session30()
 	await _check_session33()
 	await _check_life_meets_events()
+	_check_session32()
 	_check_saving()
 	for action in ACTIONS:
 		Input.action_release(action)
@@ -1904,3 +1915,290 @@ func _check_life_meets_events() -> void:
 	works.queue_free()
 	await physics_frame
 
+## Session 32: special orders (rush, fragile cake, neighbour, big family) each with their rule
+## and reward, school orders only 08:00 to 15:00 and more at lunch, stables and farm orders,
+## the regulars (heart on the phone, your name, saved), and the shift goals (a done goal adds
+## its 15 Dh to the summary). Maps without a school, Sunrise Bakery or regulars skip those parts.
+func _check_session32() -> void:
+	if _delivery == null or _game_state == null or not is_instance_valid(_main):
+		return
+	paused = false
+	var gs: Node = _game_state
+	var dm: Node = _delivery
+	var places: Node = dm.place_builder
+	dm.special_chance = GameConfig.SPECIAL_ORDER_CHANCE
+	dm.regular_chance = GameConfig.REGULAR_ORDER_CHANCE
+	if _on_foot != null and _on_foot.on_foot:
+		_on_foot.get_on()
+	gs.reset()
+	var homes: Array = places.villas.filter(func(v): return v.get("kind", "") != "spot")
+	var home: int = homes[0]["number"]
+	# About 1 in 6 orders is special, and never more than one kind at once.
+	dm.regular_chance = 0.0
+	var specials := 0
+	var kinds_ok := true
+	for i in 600:
+		var order: Object = dm.make_order()
+		if order.special != "":
+			specials += 1
+			kinds_ok = kinds_ok and order.special in GameConfig.SPECIAL_KINDS
+	dm.regular_chance = GameConfig.REGULAR_ORDER_CHANCE
+	_check("about 1 in 6 orders is special", specials > 60 and specials < 150 and kinds_ok, "%d of 600" % specials)
+	# Rush: 70% of the target time, 50% more pay.
+	var plain: Object = dm.make_order("pizza", home)
+	var rush: Object = dm.make_order("pizza", home, "rush")
+	_check("a rush order pays 50% more", rush.pay == roundi(rush.base_pay * GameConfig.RUSH_PAY_SHARE)
+			and rush.base_pay == plain.base_pay and rush.base_pay >= GameConfig.ORDER_PAY_MIN, "%d Dh (normal %d)" % [rush.pay, rush.base_pay])
+	var normal_target: float = _meters.target_time_for(places.restaurant_door("pizza"), places.villa_door(home))
+	_start_order(rush)
+	_check("a rush order has 70% of the normal time", absf(gs.target_time - normal_target * GameConfig.RUSH_TIME_SHARE) < 0.01,
+			"%.0f s instead of %.0f s" % [gs.target_time, normal_target])
+	var phone := _main.get_node("Phone")
+	phone._process(0.0)
+	var chip: Label = phone._chips["special"]
+	_check("the phone shows a coloured Rush chip", chip.visible and chip.text == "Rush", chip.text)
+	var money: int = gs.money
+	gs.deliver()
+	var got: int = gs.money - money - gs.last_result["tip"]
+	_check("a rush delivery pays the extra", got == rush.pay - GameConfig.INSURANCE_PER_DELIVERY
+			and gs.last_result["special"] == "rush", "+%d Dh" % got)
+	_close_card()
+	# Fragile cake: from Sunrise Bakery, double damage, 60% tip chance.
+	if places.restaurants.any(func(r): return r["id"] == GameConfig.FRAGILE_SHOP):
+		var cake: Object = dm.make_order("", 0, "fragile")
+		_check("a fragile order is a cake from Sunrise Bakery", cake.restaurant_id == GameConfig.FRAGILE_SHOP and cake.food == "cake", cake.describe())
+		_start_order(cake)
+		_meters.hurt_food(10.0)
+		_check("bumps do double damage to a fragile cake", absf(gs.meter_damage - (100.0 - 10.0 * GameConfig.FRAGILE_DAMAGE_TIMES)) < 0.01, "%.0f%%" % gs.meter_damage)
+		_check("a fragile cake tips more often (60%)", gs.tip_chance(cake) == GameConfig.FRAGILE_TIP_CHANCE and gs.tip_chance(plain) == GameConfig.TIP_CHANCE, "")
+		gs.deliver()
+		_close_card()
+	else:
+		print("      no Sunrise Bakery here, fragile cakes skipped")
+	# Neighbour: at the door "Not home!", on to another home in the same cluster, clock running, +5 Dh.
+	var next_door: Object = dm.make_order("", home, "neighbour")
+	_check("a neighbour order pays 5 Dh extra", next_door.pay == next_door.base_pay + GameConfig.NEIGHBOUR_BONUS, "%d Dh" % next_door.pay)
+	_start_order(next_door)
+	gs.ride_time = 12.0
+	_put_actor_at(dm.target_door())
+	var first_cluster: String = next_door.cluster
+	var sent: bool = dm.try_interact()
+	_check("at the door: not home, take it to the neighbour", sent and gs.stage_name() == "TO_VILLA" and next_door.villa_number != home
+			and next_door.cluster == first_cluster and "Not home!" in next_door.note, "%s: %s" % [next_door.address, next_door.note])
+	_check("the clock keeps running for the neighbour", gs.ride_time == 12.0 and gs.target_time > 0.0, "%.0f s" % gs.ride_time)
+	_check("the beam moves to the neighbour's door", dm.target_door().distance_to(places.villa_door(next_door.villa_number)) < 0.01, "")
+	_put_actor_at(dm.target_door())
+	money = gs.money
+	_check("then you can deliver to the neighbour", dm.try_interact() and gs.stage_name() == "NONE"
+			and gs.money - money - gs.last_result["tip"] == next_door.pay - GameConfig.INSURANCE_PER_DELIVERY, "")
+	_close_card()
+	# Big family: two bags (slower, wobblier), double pay.
+	var family: Object = dm.make_order("", home, "family")
+	_check("a big family order pays double", family.pay == family.base_pay * GameConfig.FAMILY_PAY_TIMES, "%d Dh" % family.pay)
+	_start_order(family)
+	var bag: Node3D = _bike.get_node_or_null("Model/Fork/ExtraBag")
+	_check("big family: two bags on the bike", _bike.heavy_load and bag != null and bag.visible, "")
+	_check("big family: lower top speed", _top_speed_ridden(true) < _top_speed_ridden(false) * 0.9, "")
+	_put_actor_at(dm.target_door())
+	dm.try_interact()
+	_close_card()
+	_check("the second bag comes off after the delivery", not _bike.heavy_load and not bag.visible, "")
+	_check_school_orders()
+	_check_regulars()
+	_check_goals()
+	dm.special_chance = GameConfig.SPECIAL_ORDER_CHANCE
+	dm.regular_chance = GameConfig.REGULAR_ORDER_CHANCE
+	gs.rider_name = ""
+	gs.reset()
+	paused = false
+
+
+## Offers, accepts and picks up an order (the meters start, the bags go on the bike).
+func _start_order(order: Object) -> void:
+	_game_state.offer_order(order)
+	_game_state.accept_offer()
+	_game_state.pick_up()
+
+
+## Puts you (on the bike or on foot) right at a door.
+func _put_actor_at(spot: Vector3) -> void:
+	var who: Node3D = _delivery.actor if _delivery.actor != null else _bike
+	who.global_position = spot + Vector3.UP * 0.05
+	if who == _bike:
+		_bike.velocity = Vector3.ZERO
+		_bike.speed = 0.0
+
+
+## Pedals the bike for 4 seconds of physics (by hand, on the spot) and returns the top speed.
+func _top_speed_ridden(heavy: bool) -> float:
+	var keep: Transform3D = _bike.global_transform
+	var was: bool = _bike.heavy_load
+	_bike.heavy_load = heavy
+	_bike.speed = 0.0
+	Input.action_press("move_forward")
+	for i in 240:
+		_bike._update_stamina_and_speed(1.0 / 60.0)
+	Input.action_release("move_forward")
+	var top: float = _bike.speed
+	_bike.speed = 0.0
+	_bike.heavy_load = was
+	_bike.global_transform = keep
+	return top
+
+
+## The shift clock at a given hour (11.5 = 11:30).
+func _set_hour(hour: float) -> void:
+	var share := (hour - GameConfig.SHIFT_START_HOUR) / (GameConfig.SHIFT_END_HOUR - GameConfig.SHIFT_START_HOUR)
+	_game_state.shift_time_left = GameConfig.SHIFT_LENGTH * (1.0 - share)
+
+
+## School orders: never after 15:00, about 1 in 3 at lunch, teachers and kids at the door.
+## Stables orders: riders and grooms. Farm stall: about 1 in 8 pickups.
+func _check_school_orders() -> void:
+	var dm: Node = _delivery
+	var places: Node = dm.place_builder
+	if not places.villas.any(func(v): return v["number"] == GameConfig.SCHOOL_SPOT):
+		print("      no school here, school, stables and farm checks skipped")
+		return
+	var share := func(hour: float) -> float:
+		_set_hour(hour)
+		var count := 0
+		for i in 600:
+			if dm.make_order().villa_number == GameConfig.SCHOOL_SPOT:
+				count += 1
+		return count / 600.0
+	var morning: float = share.call(9.0)
+	var lunch: float = share.call(12.0)
+	var late: float = share.call(15.5)
+	_check("a school order never comes after 15:00", late == 0.0, "%.0f%% at 15:30" % (late * 100.0))
+	_check("lunch rush: about 1 in 3 orders is for the school", lunch > 0.2 and lunch < 0.45 and lunch > morning * 2.0,
+			"%.0f%% at 12:00, %.0f%% at 09:00" % [lunch * 100.0, morning * 100.0])
+	_set_hour(12.0)
+	var who_ok := true
+	var lunch_flag := true
+	var farm := 0
+	for i in 800:
+		var order: Object = dm.make_order()
+		if order.villa_number == GameConfig.SCHOOL_SPOT:
+			who_ok = who_ok and order.who in ["teacher", "kid"]
+			lunch_flag = lunch_flag and order.lunch
+		elif order.villa_number == GameConfig.STABLES_SPOT:
+			who_ok = who_ok and order.who in ["rider", "groom"]
+		if order.restaurant_id == GameConfig.FARM_SHOP:
+			farm += 1
+	_check("teachers and kids order to the school, riders and grooms to the stables", who_ok, "")
+	_check("school orders at lunch count as lunch orders", lunch_flag, "")
+	_check("about 1 in 8 orders is picked up at the farm stall", farm > 60 and farm < 170, "%d of 800" % farm)
+	# Deliver one to the stables: a rider or a groom comes out.
+	var order: Object = dm.make_order("pizza", GameConfig.STABLES_SPOT)
+	order.leave_at_door = false  # this one: someone comes out (not a bag on the step)
+	_start_order(order)
+	_game_state.deliver()
+	var spawner := _main.get_node_or_null("CustomerSpawner")
+	var customer: Node = spawner.last_spawned if spawner != null else null
+	_check("a rider or groom comes out at the stable office", customer != null and order.who in ["rider", "groom"]
+			and customer.get("person") != null, order.who)
+	_close_card()
+	_set_hour(8.0)
+
+
+## The regulars: heart on the phone, their own lines with your name, 60% tips, saved visits.
+func _check_regulars() -> void:
+	var gs: Node = _game_state
+	var dm: Node = _delivery
+	var regulars: Array = dm.place_builder.regulars
+	if regulars.is_empty():
+		print("      no regulars on this map, regular checks skipped")
+		return
+	_check("4 regular customers", regulars.size() == 4, "%d" % regulars.size())
+	gs.rider_name = "Louis"
+	var maker: Object = dm.order_maker()
+	var mariam: Object = maker.make_regular(regulars[0])
+	_check("Auntie Mariam orders bubble tea to Villa 7, Cluster 2", mariam.food == "bubble tea" and mariam.address == "C2 · Villa 7", mariam.describe())
+	gs.offer_order(mariam)
+	var phone := _main.get_node("Phone")
+	phone._process(0.0)
+	var heart: Label = phone._chips["regular"]
+	_check("a regular has a heart on the phone", heart.visible and "♥" in heart.text and "Mariam" in heart.text, heart.text)
+	gs.accept_offer()
+	gs.pick_up()
+	_check("regulars tip more often (60%)", gs.tip_chance(mariam) == GameConfig.REGULAR_TIP_CHANCE, "")
+	gs.deliver()
+	var customer: Node = _main.get_node("CustomerSpawner").last_spawned
+	var lines: Array = load("res://data/customer_lines.gd").REGULAR_LINES["mariam"]
+	var said: String = customer.get("line") if customer != null else ""
+	var own := lines.any(func(l): return l.replace("{name}", "Louis") == said)
+	_check("Auntie Mariam says one of her own lines with your name", own and "Louis" in said, said)
+	_close_card()
+	_check("the regular's visit is counted", gs.regular_visits.get("mariam", 0) == 1, str(gs.regular_visits))
+	gs.save_game()
+	gs.regular_visits.clear()
+	gs.load_game()
+	_check("regulars' visits are saved", gs.regular_visits.get("mariam", 0) == 1, str(gs.regular_visits))
+	# Regulars order more often than anyone else; Ms Dana only while the school is open.
+	var to_mariam := 0
+	var regular_orders := 0
+	for i in 1000:
+		var order: Object = dm.make_order()
+		if order.regular != "":
+			regular_orders += 1
+		if order.villa_number == regulars[0]["villa"]:
+			to_mariam += 1
+	var homes: int = dm.place_builder.villas.size()
+	_check("regulars order more often than anyone else", to_mariam > 1000.0 / homes * 1.5 and regular_orders > 80,
+			"%d to Mariam, %d from regulars" % [to_mariam, regular_orders])
+	_set_hour(16.0)
+	var dana_late := 0
+	for i in 300:
+		if dm.order_maker().pick_regular().get("id", "") == "dana":
+			dana_late += 1
+	_check("Ms Dana (school) never orders after 15:00", dana_late == 0, "%d" % dana_late)
+	_set_hour(8.0)
+
+
+## Shift goals: 2 on the phone, a done goal adds its 15 Dh to the summary and the wallet.
+func _check_goals() -> void:
+	var gs: Node = _game_state
+	var dm: Node = _delivery
+	gs.reset()
+	_check("2 shift goals at the start of the shift", gs.shift_goals.size() == GameConfig.GOALS_PER_SHIFT
+			and gs.shift_goals[0] != gs.shift_goals[1] and gs.shift_goals.all(func(g): return g in gs.goal_pool), str(gs.shift_goals))
+	var phone := _main.get_node("Phone")
+	phone._process(0.0)
+	var goals: Label = phone.get_node("Panel/Margin/Rows/Goals")
+	_check("the phone shows the shift goals", goals.visible and goals.text.count("\n") == GameConfig.GOALS_PER_SHIFT, goals.text.replace("\n", " | "))
+	var places: Node = dm.place_builder
+	var has_school: bool = places.villas.any(func(v): return v["number"] == GameConfig.SCHOOL_SPOT)
+	_check("goals fit the map (no lunch goal without a school)", ("lunch" in gs.goal_pool) == has_school, str(gs.goal_pool))
+	gs.shift_goals.clear()
+	gs.shift_goals.append("streak")
+	gs.shift_goals.append("deliveries")
+	var home: int = places.villas.filter(func(v): return v.get("kind", "") != "spot")[0]["number"]
+	for i in GameConfig.GOAL_FIVE_STAR_STREAK:
+		_start_order(dm.make_order("pizza", home))
+		gs.set_meters(100.0, 100.0, 100.0)
+		gs.deliver()
+		_close_card()
+	_check("the Delivered card says when a goal is done", gs.last_goals_done.size() == 1 and gs.last_goals_done[0] == "streak", str(gs.last_goals_done))
+	_check("No crashes is done until you crash", _goal_done("no_crashes"), "")
+	gs.note_crash()
+	_check("a crash breaks the No crashes goal", not _goal_done("no_crashes"), "")
+	var summary: Dictionary = gs.shift_summary()
+	var want: int = summary["pay"] + summary["tips"] + GameConfig.GOAL_BONUS - summary["insurance"] - summary["bills"]
+	_check("a done goal adds 15 Dh to the summary", summary["goal_bonus"] == GameConfig.GOAL_BONUS and summary["earned"] == want
+			and summary["goals"][0]["done"] and not summary["goals"][1]["done"], "bonus %d, earned %d" % [summary["goal_bonus"], summary["earned"]])
+	var money: int = gs.money
+	var ended: Dictionary = gs.end_shift()
+	_check("the goal bonus goes into the wallet once", gs.money == money + GameConfig.GOAL_BONUS and ended["goal_bonus"] == GameConfig.GOAL_BONUS, "Dh %d" % gs.money)
+	var screen := _main.get_node_or_null("ShiftScreen")
+	if screen != null:
+		screen.show_summary(ended)
+		var texts: Array = screen._table.get_children().map(func(n): return n.text)
+		_check("the shift summary lists the goals", texts.any(func(t): return "in a row" in t), "")
+		screen._next_shift()
+
+
+## ShiftGoals.is_done for this shift (reached through a script load, not the class name).
+func _goal_done(id: String) -> bool:
+	var goals: Script = load("res://scripts/shift_goals.gd")
+	return goals.is_done(id, _game_state.history.slice(_game_state.shift_start_index), _game_state.shift_crashes)

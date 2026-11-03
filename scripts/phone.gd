@@ -23,8 +23,9 @@ const HINT_DIM := SOFT    # not there yet
 const HINT_LIT := ORANGE  # do it now
 
 var _flash_left := 0.0
-var _chips: Dictionary = {}  # "food", "pay", "time" -> Label
+var _chips: Dictionary = {}  # "food", "pay", "time", "special", "regular" -> Label
 var _event_banner: Label  # Session 33: road works / horses warning
+var _goals: Label  # Session 32: this shift's 2 goals, shown while you wait for an order
 
 @onready var _wallet: Label = $Panel/Margin/Rows/Header/Wallet
 @onready var _pill: Label = $Panel/Margin/Rows/Pill
@@ -47,9 +48,10 @@ var _event_banner: Label  # Session 33: road works / horses warning
 
 
 func _ready() -> void:
-	for key in ["food", "pay", "time"]:
+	for key in ["food", "pay", "time", "special", "regular"]:
 		_chips[key] = _make_chip()
 	_make_event_banner()
+	_goals = _make_goals()
 	GameState.money_changed.connect(_on_money_changed)
 	GameState.order_delivered.connect(_on_order_delivered)
 	GameState.stats_changed.connect(_on_stats_changed)
@@ -101,6 +103,7 @@ func _process(delta: float) -> void:
 		_set_pill("WAITING", GREY)
 		_show("Waiting for orders...", "", _walking_hint("Walk back to your bike") if walking else "", walking)
 		_set_order(null, 0)
+	_show_goals(stage == GameState.Stage.NONE)
 
 
 ## The order part of the card: pick-up and drop-off rows (the one you're on now in bold
@@ -120,7 +123,34 @@ func _set_order(order: Order, step: int) -> void:
 	_drop_off.add_theme_color_override("font_color", ORANGE if step == 2 else INK)
 	_set_chip("food", order.food.capitalize(), TEAL)
 	_set_chip("pay", "%d Dh" % order.pay, GREEN)
+	# Session 32: a coloured chip for a special order, a heart for a regular customer.
+	_set_chip("special", GameConfig.SPECIAL_NAMES.get(order.special, ""), GameConfig.SPECIAL_COLOURS.get(order.special, TEAL))
+	_set_chip("regular", "♥ " + order.regular if order.regular != "" else "", GameConfig.REGULAR_COLOUR)
 	_note.text = "\"%s\"" % order.note
+
+
+## This shift's goals (Session 32): a tick when done, otherwise how far along you are.
+func _show_goals(on: bool) -> void:
+	_goals.visible = on and not GameState.shift_goals.is_empty()
+	if not _goals.visible:
+		return
+	var jobs := GameState.history.slice(GameState.shift_start_index)
+	var lines := "Shift goals  (+%d Dh each)" % GameConfig.GOAL_BONUS
+	for id in GameState.shift_goals:
+		var done := ShiftGoals.is_done(id, jobs, GameState.shift_crashes)
+		lines += "\n%s  %s" % ["✓" if done else "•", ShiftGoals.line(id, jobs, GameState.shift_crashes)]
+	_goals.text = lines
+
+
+func _make_goals() -> Label:
+	var label := Label.new()
+	label.name = "Goals"
+	label.add_theme_font_size_override("font_size", 14)
+	label.add_theme_color_override("font_color", TEAL)
+	var rows := _chip_row.get_parent()
+	rows.add_child(label)
+	rows.move_child(label, _insurance.get_index())  # just above the insurance line
+	return label
 
 
 func _set_pill(text: String, colour: Color) -> void:

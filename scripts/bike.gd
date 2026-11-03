@@ -49,6 +49,12 @@ var last_crash := {"what": "a wall", "kmh": 0.0}
 var crank_angle := 0.0
 ## How far the kickstand is down: 0 = folded up (riding), 1 = down (parked).
 var kickstand_down := 0.0
+## Two bags on the bike (Session 32, big family order): top speed is lower and the steering
+## wobbles a bit. The DeliveryManager switches it on at pickup and off at the door.
+var heavy_load := false:
+	set(on):
+		heavy_load = on
+		_show_extra_bag(on)
 
 # Where the wheels meet a speed bump, in metres ridden after the bike's collision box
 # first touches it. The box front is 0.85 m ahead of the bike's middle, the front wheel
@@ -61,6 +67,8 @@ const HOP_WHEEL_RISE := 1.0   # metres a wheel is going up and down (bump + roun
 const WHEEL_BASE := 1.1       # metres between the two wheels
 
 var _steer := 0.0
+var _wobble_time := 0.0      # seconds of riding with a heavy load (for the wobble)
+var _extra_bag: Node3D       # the second bag, on the handlebars (big family orders)
 var _braking := false        # true while a brake key is held (so a long press counts once)
 var _bump_cooldown := 0.0
 var _start_transform: Transform3D
@@ -232,6 +240,8 @@ func _update_stamina_and_speed(delta: float) -> void:
 	_braking = braking_now
 
 	var max_kmh := GameConfig.BIKE_SPRINT_MAX_SPEED_KMH if sprinting else GameConfig.BIKE_MAX_SPEED_KMH
+	if heavy_load:
+		max_kmh *= GameConfig.FAMILY_SPEED_SHARE  # two bags: slower (Session 32)
 	var accel := GameConfig.BIKE_SPRINT_ACCELERATION if sprinting else GameConfig.BIKE_ACCELERATION
 	var max_speed := max_kmh / 3.6
 
@@ -258,9 +268,11 @@ func _update_stamina_and_speed(delta: float) -> void:
 
 func _update_steering(delta: float) -> void:
 	_steer = Input.get_action_strength("steer_left") - Input.get_action_strength("steer_right")
+	var speed_ratio := clampf(absf(speed) / (GameConfig.BIKE_MAX_SPEED_KMH / 3.6), 0.0, 1.0)
+	if heavy_load:
+		_wobble(delta, speed_ratio)
 	if _steer == 0.0:
 		return
-	var speed_ratio := clampf(absf(speed) / (GameConfig.BIKE_MAX_SPEED_KMH / 3.6), 0.0, 1.0)
 	# You can't turn while standing still, and turning is a bit gentler at top speed.
 	var grip := clampf(speed_ratio * 3.0, 0.0, 1.0) * lerpf(1.0, 0.6, speed_ratio)
 	var turn := deg_to_rad(GameConfig.BIKE_STEER_DEG_PER_SEC) * _steer * grip * delta
@@ -320,6 +332,24 @@ func _check_crash(head_on: float, thing: Object) -> bool:
 		fallen_left = GameConfig.CRASH_FALLEN_TIME
 	crashed.emit(big)
 	return true
+
+
+## Heavy load (big family order): the front sways gently left and right while you ride,
+## more the faster you go. FAMILY_WOBBLE_DEG is how far it sways at full speed.
+func _wobble(delta: float, speed_ratio: float) -> void:
+	_wobble_time += delta
+	var sway := TAU * GameConfig.FAMILY_WOBBLE_SPEED
+	rotate_y(deg_to_rad(GameConfig.FAMILY_WOBBLE_DEG) * sway * cos(_wobble_time * sway) * speed_ratio * delta)
+
+
+## The second bag hangs on the handlebars while heavy_load is on.
+func _show_extra_bag(on: bool) -> void:
+	if _extra_bag == null and on and _model != null and _model.has_node("Fork"):
+		_extra_bag = LowPoly.box(_model.get_node("Fork"), Vector3(0.32, 0.3, 0.26),
+				BikeModel.BOX, Vector3(0, 0.86, -0.22))
+		_extra_bag.name = "ExtraBag"
+	if _extra_bag != null:
+		_extra_bag.visible = on
 
 
 ## A few words for what you hit, for the clinic screen ("a parked car").

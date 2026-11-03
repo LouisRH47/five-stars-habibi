@@ -657,6 +657,35 @@ on both Palm Grove and the test area. Nothing needed fixing.
   The crossing horses pop in and out at the ends of their path and their legs don't move.
 - Built by a helper agent in parallel.
 
+### Session 32
+- About 1 in 6 orders is special, with a coloured chip on the phone: **Rush** (red: 70% of the
+  time, +50% pay), **Fragile cake** (pink: from Sunrise Bakery, every knock does double
+  damage, 60% tip chance on 5 stars), **Neighbour** (purple: at the door "Not home! Leave it
+  with the neighbour at C1 · Villa 9", the clock keeps running, +5 Dh) and **Big family**
+  (blue: a second bag on the handlebars, top speed 15% lower, a little sway, double pay).
+  The Delivered card shows the extra pay on its own row.
+- School orders only 08:00 to 15:00; in the 11:30 to 12:30 lunch rush about 1 in 3 orders go
+  to the school gate, where a teacher or a school kid comes out. Stables orders go to the
+  stable office (a rider or groom comes out). About 1 in 8 pickups is at the Farm Stall.
+- 4 regulars order more often: Auntie Mariam (bubble tea, C2 Villa 7), Mr Rashid (shawarma,
+  C5 Villa 3), Ms Dana (cake, school gate, school hours only) and Hamdan (farm juice, stable
+  office). Pink heart chip, their own lines with your name, 60% tip chance on 5 stars, and the
+  save file remembers how many times you've delivered to each.
+- 2 shift goals on the phone at the start of each shift (e.g. "Make 8 deliveries 0/8"); each
+  one done pays 15 Dh, listed on the shift summary. The Delivered card says when a delivery
+  finishes a goal.
+- New files: `scripts/order_maker.gd` (who orders what from where), `scripts/shift_goals.gd`.
+  Numbers in the "Special orders, goals and regulars (Session 32)" block of `game_config.gd`.
+- Palm Grove and the test area leave out what they can't do (no school, no regulars).
+- **Goal numbers to decide (Session 34):** with 5-minute shifts and 4 to 6 deliveries,
+  "Make 8 deliveries" and "2 school lunch orders" (the lunch rush is only 30 real seconds)
+  are effectively impossible, "all 5 clusters" is very unlikely, and "a fragile cake with 5
+  stars" only works in about 1 shift in 5. Kept as in the PRD for now.
+- Fixed while merging: the old "kids on scooters move" check was flaky (the kid could touch
+  the bike after only 0.4 m); the bike now waits 3.5 m ahead instead of 2.5 m.
+- Built by a helper agent in parallel. Smoke checks: each special's rule and reward, no school
+  order after 15:00, lunch rush share, regulars (heart, name, tips, saved), goal bonus once.
+
 ## Known bugs
 - Play-test bot findings on Wahat Al Shams (to tune in Session 34):
   - A careful 5-minute shift gets 5 to 6 deliveries (target 6 to 8). The rides are long
