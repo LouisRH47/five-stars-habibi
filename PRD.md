@@ -91,9 +91,9 @@ Every delivery is a race against three meters: time, heat and damage. How well y
 1. An order pops up on your phone: restaurant, customer address, food type, pay.
 2. Accept it (or skip it). An order you ignore for 30 seconds counts as skipped.
    - **Acceptance rate** is the share of your last 20 orders you accepted. Below 70% the next few orders are the boring short ones (low pay, no tip chance) until it's back above 70%. No other punishment.
-3. Ride to the restaurant and pick up the food.
+3. Ride to the restaurant and pick up the food: stop near the door, press **F** to get off the bike, walk to the door and **hold E for 1.5 seconds** (an orange bar fills on the phone). Walk back and press **F** to get on.
 4. Ride to the customer's villa. The meters start ticking.
-5. Drop it off at the door, then you get stars, pay and maybe a tip.
+5. Park near the villa, press **F** to get off, walk to the door and **hold E for 1.5 seconds** to hand the food over. The meters keep ticking while you walk, so parking close to the door matters. Then the **Delivered!** card shows your stars, pay and maybe a tip (see "Screens").
 
 **The three meters**
 
@@ -167,11 +167,25 @@ Keys are placeholders until the controls are tested. Controller support comes la
 | A / D or Left / Right | Steer (only while moving) |
 | Shift | Sprint (uses stamina) |
 | Space | Handbrake |
-| E | Accept order, pick up, drop off, talk |
+| E | Tap: accept order, Next order on the Delivered card. Hold 1.5 s at the door (on foot): pick up, drop off |
+| F | Get off the bike / get back on (only when nearly stopped) |
+| W A S D (on foot) | Walk. Shift to jog |
 | Q | Skip order |
 | I | Switch crash insurance on or off (shown on the phone) |
 | Esc | Pause (and resume) |
 | R | Put the bike back on the road if you get stuck |
+
+## Screens (look and feel)
+
+The mockup (link at the top) is the look to copy. The game world stays 3D; the cards and panels on top copy the mockup's clean style.
+
+**Fonts and colours (every screen):** Baloo 2 for big titles and numbers, Nunito for everything else, Noto Sans Arabic for Arabic. All three are free under the SIL Open Font License. Colours: deep teal #0F4C5C, orange #F28C28, sun yellow #F2B230, sand #F3E3C3, ink #1B1D22, white cards with rounded corners (about 28 px), dark see-through HUD panels (#0F2026 at 86%).
+
+**Start screen (main menu + rider application):** one layout, like the mockup's "Start: rider application". Left: "AL SARAB · السراب" label, big "Five Stars Habibi" title, orange "Rider to Driver" subtitle and one line about the game, in front of a low-poly 3D desert (sand dunes, a big pale sun, one palm). Right: a phone. On the main menu the phone shows Play (or Continue if you have a save), New game, Settings and Quit. The first time you play, the phone turns into the Snackaroo rider application: name, where you're from, "Pick your look" with 3 cards (Classic, Sporty, Chill), each with its own little 3D rider, and a Submit application button. Then "Reviewing..." and "Congrats, you're hired!" on the same phone.
+
+**Delivered card (after every delivery):** the game pauses (the shift clock too). The camera cuts to a 3D shot of your rider and the customer at the villa door (or the bag on the doorstep for leave-at-the-door orders), with the customer's line in a white speech bubble. On the right, a white card like the mockup: "Delivered!", 1 to 5 stars, the food, villa and ride time, three tiles (Time, Freshness, Damage) each with a word and a colour, then Delivery pay, 5-star tip, Insurance, a bold "You earned" total and XP. A dark teal "Next order · E" button closes it.
+
+**Clinic screen (after a big crash):** like the mockup's "Big crash: clinic bills". A simple 3D clinic room (pale teal walls, a bed with your rider lying in it, a drip stand) behind it. Left: a small red "BIG CRASH" label, the big title "You woke up at Palm Grove Clinic", one sentence saying what you hit and how fast, and a teal Arabic sign "عيادة بستان النخيل". Right: a white "Your bills" card with an "ORDER CANCELLED · 0 STARS" tag, Clinic bill, Bike repair (Snackaroo), Insurance, a bold red "You pay" total, a yellow tip box when insurance was off, a "Big crashes this week" bar (1 of 3), and two buttons: "Turn on insurance" (only when it's off) and "Shift summary". When the boss covers your first big crash, the card says so and You pay is 0 Dh.
 
 ## Crashes, bills and insurance
 
@@ -393,6 +407,9 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 2 Nov 2026 | All music and sounds are made by our own script (tools/make_sounds.py), so they're CC0 and need no downloads. Music: a 53 s loop in maqam Hijaz (oud-like pluck, darbuka maqsum, drone). Volume sliders: Volume, Music, Effects, Ambience |
 | 2 Nov 2026 | Session 17 tuning from a play-test bot that rides whole shifts: the time bar now reaches 60% at the target time and 0% at twice the target (it used to be empty at the target, so even on-time rides were red). Freshness drain lowered to 0.25 / 0.4 / 0.55 % a second (pizza / bubble tea / ice cream). Speed bumps only hurt the food much above 10 km/h. Hard braking starts at 22 km/h. A careful shift now gets about 12 deliveries, 5 stars and 120 Dh; a careless one crashes and earns about half |
 | 2 Nov 2026 | Palm Grove layout: 300 m square with a wall and a closed gate in the south, Palm Grove Avenue from the gate to a central roundabout, three cross streets, 36 villas, restaurant strip just inside the gate |
+| 3 Nov 2026 | Polish pass planned (Sessions 18 to 24): hold E for 1.5 s to pick up and drop off, nearly stopped |
+| 3 Nov 2026 | You get off the bike to pick up and deliver: F gets off and on (only when nearly stopped), you walk to the door yourself, meters keep ticking while you walk |
+| 3 Nov 2026 | Screens copy the mockup: Baloo 2 + Nunito fonts on every screen, start screen with the title left and the phone right, a Delivered card after every delivery (game paused), and the clinic screen as in the mockup with a 3D clinic room |
 
 ## Sources
 

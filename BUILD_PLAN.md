@@ -301,6 +301,173 @@ Done when:
 - [ ] A friend plays for 10 minutes without needing help
 - [ ] They want to keep playing
 
+## The sessions (Polish pass, Sessions 18 to 24)
+
+Tier 1 works end to end. This pass makes it feel and look like the mockup (link at the top
+of PRD.md) and adds two gameplay rules Louis asked for: hold E to pick up and drop off, and
+get off the bike to do it. PRD.md ("Delivery loop", "Controls" and "Screens") and its
+Decisions log already describe all of this, so build from the PRD. Same rules as before:
+one session at a time, run the headless checks and the smoke test, add a check for every new
+system, update PROGRESS.md, commit. The world stays 3D; the cards on top copy the mockup.
+
+### Session 18: Hold E to pick up and drop off (plus a test fix)
+
+```text
+Session 18. Read CLAUDE.md, PRD.md (Delivery loop and Controls) and PROGRESS.md.
+1) Picking up at the restaurant and dropping off at the villa now need E held for
+1.5 seconds while you're at the door and going under 5 km/h. Accepting an order
+stays a quick tap. Show an orange bar on the phone that fills while E is held;
+letting go, moving away or speeding up resets it. If you're at the door but too
+fast, the phone says "Slow down, then hold E". After any E action, E has to be
+let go before the next hold counts. Put the times (PICKUP_HOLD_TIME,
+DROPOFF_HOLD_TIME) and INTERACT_MAX_SPEED_KMH in game_config.gd.
+2) Fix the smoke test check "the customer says a line from the list": it fails
+about 1 run in 4 because the test hires a rider called Sam, but the check fills
+{name} with the default name. Use the real rider name (CustomerSpawner.fill_line).
+Smoke test: a short E press does nothing, a full hold picks up and delivers.
+Run the smoke test 5 times in a row; it must pass every time.
+```
+
+Done when:
+
+- [ ] A quick tap of E at the door does nothing, holding it for 1.5 s picks up or delivers
+- [ ] The orange bar fills on the phone and resets when you let go or ride off
+- [ ] The smoke test passes 5 times in a row
+
+### Session 19: Get off the bike (walk to the door)
+
+```text
+Session 19. Read PRD.md (Delivery loop, Controls). Add getting off the bike.
+F gets off and back on, only when the bike is under 5 km/h. When you get off,
+the bike stays parked where it is (solid, stand down) and you control the rider
+on foot: W A S D to walk (about 5 km/h), Shift to jog (about 9 km/h), the camera
+follows the rider the same way it follows the bike. Picking up and dropping off
+(the hold E from Session 18) only work on foot. Walk back to within 2 m of the
+bike and press F to get on. The meters and the shift clock keep running while you
+walk, so parking near the door is the skill. If you walk more than 40 m from the
+bike the phone says "Your bike is over there" and the mini-map shows the bike.
+On foot you can't sprint into cats or kids hard enough to crash, and R puts both
+you and the bike back on the road. The phone hints change: "Press F to get off"
+near a door on the bike, "Hold E to drop off" at the door on foot, "Press F to
+ride" next to the bike. Smoke test: ride to a villa, F, walk to the door, hold E,
+walk back, F, ride away.
+```
+
+Done when:
+
+- [ ] F gets you off and on, but not while moving fast
+- [ ] You can walk around, and the camera follows you smoothly
+- [ ] You can only pick up and deliver on foot
+- [ ] The bike stays parked and you can't drive it while walking
+- [ ] The smoke test does the full off, walk, deliver, back on run
+
+### Session 20: Fonts, colours and panels like the mockup
+
+```text
+Session 20. Read PRD.md (Screens). Download Baloo 2 and Nunito from Google Fonts'
+GitHub repo (SIL Open Font License), put them in assets/fonts with their OFL
+licence files, and add them to CREDITS.md. Make one Godot Theme (ui/theme.tres)
+with the PRD's fonts and colours and use it everywhere. Restyle the HUD panels,
+the meters panel, the mini-map ring and the phone to match the mockup's
+"Gameplay" artboard: dark see-through rounded panels, Baloo 2 for big numbers,
+Nunito for text, the phone as a white rounded card with the Snackaroo header,
+status pill, pick up / drop off rows, food and pay chips and the customer note.
+Don't change what any screen does, only how it looks. Take screenshots of the
+game and compare them with the mockup.
+```
+
+Done when:
+
+- [ ] Every screen uses Baloo 2 and Nunito, and Arabic still shows joined up
+- [ ] The HUD and phone look like the mockup's gameplay screen
+- [ ] Fonts and their licences are in assets/fonts and CREDITS.md
+
+### Session 21: Start screen like the mockup
+
+```text
+Session 21. Read PRD.md (Screens: start screen) and look at the mockup's
+"Start: rider application" artboard. Rebuild the main menu and the rider
+application as one screen: on the left "AL SARAB · السراب", the big
+"Five Stars Habibi" title, orange "Rider to Driver" and one line about the
+game, in front of a low-poly 3D desert (dunes, a big pale sun, a palm). On the
+right a phone. On the main menu the phone has Play (or Continue), New game,
+Settings and Quit. The first time you play, the phone becomes the Snackaroo
+rider application: name, where you're from, "Pick your look" with 3 cards
+(Classic, Sporty, Chill), each showing its own little 3D rider, and a
+Submit application button. Then "Reviewing..." and "Congrats, you're hired!"
+on the same phone, and "Start riding". Keep everything the application does
+now (saving, 43 countries, the tutorial).
+```
+
+Done when:
+
+- [ ] The start screen looks like the mockup, with the 3D desert behind the title
+- [ ] The 3 look cards each show a little 3D rider, and the picked one is highlighted
+- [ ] Play, Continue, New game, Settings and Quit still work, and saving still works
+
+### Session 22: The Delivered card
+
+```text
+Session 22. Read PRD.md (Screens: Delivered card) and look at the mockup's
+"Delivery complete" artboard. After every delivery: pause the game (and the
+shift clock), cut the camera to a 3D shot of your rider and the customer at the
+villa door (or the bag on the doorstep for leave-at-the-door orders) with the
+customer's line in a white speech bubble. On the right show the white card:
+"Delivered!", the stars, "Ice cream to Villa 14 · 1:58" (food, villa, ride
+time), three tiles Time / Freshness / Damage with a word and a colour each,
+then Delivery pay, 5-star tip (only if you got one), Insurance, a bold
+"You earned" total and the XP. "Next order · E" (button or E) closes it and the
+game carries on. Use the real numbers from GameState. Smoke test: after a
+delivery the card shows, its total matches the money you got, and E closes it.
+```
+
+Done when:
+
+- [ ] The card shows after every delivery and matches the mockup
+- [ ] The 3D shot shows your rider and the customer (or the bag) at the door
+- [ ] The numbers on the card are the real ones, and E carries on
+
+### Session 23: The clinic screen like the mockup
+
+```text
+Session 23. Read PRD.md (Screens: clinic screen) and look at the mockup's
+"Big crash: clinic bills" artboard. Rebuild the clinic screen: a simple 3D
+clinic room behind it (pale teal walls, a bed with your rider lying in it, a
+drip stand), filmed from the side like the mockup. Left: a small red
+"BIG CRASH" label, the big title "You woke up at Palm Grove Clinic", one
+sentence with what you hit and how fast ("You hit a parked car at 27 km/h. The
+ice cream didn't make it, and your shift is over for today.") and a teal Arabic
+sign "عيادة بستان النخيل". Right: the white "Your bills" card from the mockup
+with the ORDER CANCELLED · 0 STARS tag, Clinic bill, Bike repair (Snackaroo),
+Insurance, the red "You pay" total, the yellow insurance tip (only if it was
+off), the "Big crashes this week" bar and the buttons "Turn on insurance" (only
+if it's off) and "Shift summary". Show the "boss covered it" version for your
+first big crash. Keep what it does now (bills, shift ends).
+```
+
+Done when:
+
+- [ ] The clinic screen looks like the mockup, with the 3D room behind it
+- [ ] The bills are the real ones, including the boss-covered first crash
+- [ ] Turn on insurance works, and Shift summary goes to the end-of-shift screen
+
+### Session 24: Play-test the polish pass
+
+```text
+Session 24. Run the play-test bot for a careful and a careless shift and the
+smoke test 5 times. Take screenshots of the gameplay HUD, the start screen, the
+Delivered card and the clinic screen, and list anything that doesn't match the
+mockup. Check that walking to the door doesn't make deliveries too slow: a careful
+shift should still get about 10 deliveries. Tune game_config.gd if not.
+Then I'll play it myself; here's what felt off: [write it here].
+```
+
+Done when:
+
+- [ ] All four screens match the mockup closely
+- [ ] A careful shift still gets about 10 deliveries
+- [ ] Louis has played a full shift and is happy with it
+
 ## When something breaks
 
 Copy one of these and fill in the brackets.
@@ -336,7 +503,7 @@ and what's left in it.
 
 ## After Tier 1
 
-Once Session 17 feels fun, upload it to itch.io for free so friends can play it and give feedback (ask Claude Code to export Mac and Windows versions). After that, the next block of sessions is the motorbike test (yard course, instructor, theory quiz), then the motorbike, Old Town, night shifts and running costs. Ask Claude Code to "write the Tier 2 sessions for BUILD_PLAN.md in the same style as Tier 1" so the plan keeps growing as you go.
+Once the polish pass (Session 24) feels fun, upload it to itch.io for free so friends can play it and give feedback (ask Claude Code to export Mac and Windows versions). After that, the next block of sessions is the motorbike test (yard course, instructor, theory quiz), then the motorbike, Old Town, night shifts and running costs. Ask Claude Code to "write the Tier 2 sessions for BUILD_PLAN.md in the same style as Tier 1" so the plan keeps growing as you go.
 
 ## Confirmed choices
 
