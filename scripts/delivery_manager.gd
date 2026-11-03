@@ -16,6 +16,8 @@ extends Node
 var offer_timeout := GameConfig.ORDER_OFFER_TIMEOUT
 
 var _offer_left := 0.0
+var _hold := 0.0             # seconds E has been held at the door
+var _need_release := false   # after any E action, E must be let go before the next hold counts
 var _wait_left := GameConfig.ORDER_NEXT_DELAY
 var _marker: MeshInstance3D
 
@@ -28,6 +30,7 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	_update_hold(delta)
 	if GameState.tutorial_running:
 		return  # the tutorial hands out its own order, and it never runs out
 	if GameState.stage == GameState.Stage.NONE:
@@ -43,11 +46,11 @@ func _physics_process(delta: float) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("interact"):
+		# A quick tap accepts an order. Picking up and dropping off need E held (_update_hold).
 		if GameState.stage == GameState.Stage.OFFERED:
 			accept()
-		else:
-			try_interact()
-		get_viewport().set_input_as_handled()
+			_need_release = true
+			get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("skip_order"):
 		skip()
 		get_viewport().set_input_as_handled()
@@ -107,7 +110,40 @@ func skip() -> bool:
 	return GameState.skip_offer()
 
 
+## How far the E hold has got, 0.0 to 1.0 (the phone's orange bar).
+func hold_progress() -> float:
+	var need := GameConfig.PICKUP_HOLD_TIME if GameState.stage == GameState.Stage.TO_RESTAURANT else GameConfig.DROPOFF_HOLD_TIME
+	return clampf(_hold / maxf(need, 0.01), 0.0, 1.0)
+
+
+## True when you're at the right door but going too fast to pick up or drop off.
+func too_fast_at_door() -> bool:
+	return is_near_target() and not _slow_enough()
+
+
+## Holding E at the door, slowly, fills the bar; when it's full you pick up or deliver.
+## Letting go, moving away or speeding up resets it.
+func _update_hold(delta: float) -> void:
+	if not Input.is_action_pressed("interact"):
+		_need_release = false
+		_hold = 0.0
+		return
+	if _need_release or not is_near_target() or not _slow_enough():
+		_hold = 0.0
+		return
+	_hold += delta
+	if hold_progress() >= 1.0:
+		_hold = 0.0
+		_need_release = true
+		try_interact()
+
+
+func _slow_enough() -> bool:
+	return bike == null or not "speed" in bike or absf(bike.speed) * 3.6 <= GameConfig.INTERACT_MAX_SPEED_KMH
+
+
 ## E near the restaurant picks up; E near the villa delivers.
+## The keys call this after a full hold (_update_hold); tests and the bot may call it directly.
 ## Returns false if you're not close enough to the right door.
 func try_interact() -> bool:
 	if not is_near_target():

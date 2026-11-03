@@ -23,6 +23,7 @@ var _flash_left := 0.0
 @onready var _result: StarRow = $Panel/Margin/Rows/Result
 @onready var _insurance: Label = $Panel/Margin/Rows/Insurance
 @onready var _rider: Label = $Panel/Margin/Rows/Rider
+@onready var _hold_bar: ProgressBar = $Panel/Margin/Rows/HoldBar
 
 
 func _ready() -> void:
@@ -50,11 +51,11 @@ func _process(delta: float) -> void:
 				"E accept   Q skip" + ("" if GameState.tutorial_running else "   %d s" % secs), true)
 	elif stage == GameState.Stage.TO_RESTAURANT:
 		var order := GameState.current_order
-		_show("Ride to %s" % order.restaurant_name, "Pick up the %s" % order.food, "E to pick up", near)
+		_show("Ride to %s" % order.restaurant_name, "Pick up the %s" % order.food, _hold_hint("pick up"), near)
 	elif stage == GameState.Stage.TO_VILLA:
 		var order := GameState.current_order
 		_show("Deliver to villa %d" % order.villa_number,
-				"%s, %d Dh%s" % [order.food.capitalize(), order.pay, _note(order)], "E to drop off", near)
+				"%s, %d Dh%s" % [order.food.capitalize(), order.pay, _note(order)], _hold_hint("drop off"), near)
 	elif _flash_left > 0.0 and not GameState.last_result.is_empty():
 		var job := GameState.last_result
 		var lines := "+%d Dh pay" % job["pay"]
@@ -69,7 +70,18 @@ func _process(delta: float) -> void:
 		_show("Waiting for orders...", "", "", false)
 
 
+## The hint at the door: hold E (or slow down first).
+func _hold_hint(action: String) -> String:
+	if delivery_manager != null and delivery_manager.too_fast_at_door():
+		return "Slow down, then hold E"
+	return "Hold E to " + action
+
+
 func _show(status: String, detail: String, hint: String, hint_lit: bool) -> void:
+	var holding := delivery_manager != null and delivery_manager.hold_progress() > 0.0
+	_hold_bar.visible = holding
+	if holding:
+		_hold_bar.value = delivery_manager.hold_progress() * 100.0
 	_result.visible = _flash_left > 0.0 and GameState.stage == GameState.Stage.NONE \
 			and not GameState.last_result.is_empty()
 	if _result.visible:

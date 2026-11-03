@@ -63,6 +63,10 @@ const ORDER_ACCEPT_HISTORY := 20      # acceptance rate looks at your last 20 ac
 const ORDER_LOW_ACCEPTANCE := 0.7     # below 70% you get boring orders: short ride, lowest pay
 const ORDER_BORING_CHOICES := 2       # a boring order goes to one of the 2 villas closest to the restaurant
 const INTERACT_RADIUS := 3.5          # metres from a door where E picks up or drops off
+# Session 18: picking up and dropping off need E held at the door while going slowly.
+const PICKUP_HOLD_TIME := 1.5         # seconds to hold E at the restaurant
+const DROPOFF_HOLD_TIME := 1.5        # seconds to hold E at the villa
+const INTERACT_MAX_SPEED_KMH := 5.0   # faster than this at the door: "Slow down, then hold E"
 const DOOR_DISTANCE := 2.5            # the door spot is this many metres in front of a building
 const MARKER_RADIUS := 1.2            # the glowing beam over the next stop
 const MARKER_HEIGHT := 4.0            # lower than every roof (5 m and up), so the beam never covers a sign

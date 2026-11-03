@@ -15,6 +15,20 @@ corner_radius_top_right = 28
 corner_radius_bottom_right = 28
 corner_radius_bottom_left = 28
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hold_fill"]
+bg_color = Color(0.9490196, 0.54901963, 0.15686275, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hold_back"]
+bg_color = Color(0.18039216, 0.2901961, 0.32156864, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
 [node name="Phone" type="CanvasLayer" unique_id=1507245101]
 script = ExtResource("1_phone")
 
@@ -127,6 +141,14 @@ visible = false
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(1, 1, 1, 1)
+
+[node name="HoldBar" type="ProgressBar" parent="Panel/Margin/Rows"]
+visible = false
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_hold_fill")
+theme_override_styles/background = SubResource("StyleBoxFlat_hold_back")
+show_percentage = false
 
 [node name="Insurance" type="Label" parent="Panel/Margin/Rows"]
 layout_mode = 2

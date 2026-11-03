@@ -19,6 +19,8 @@ const STEPS := {
 	"sprint": 180,
 	"brake": 240,
 	"settle": 3,       # frames to wait after moving the bike to a door
+	"tap": 12,         # a quick tap of E (0.2 s): must do nothing at the door
+	"hold": 100,       # holding E for 1.67 s: longer than the 1.5 s pick-up / drop-off hold
 	"timeout": 30,     # half a second, longer than TEST_OFFER_TIMEOUT
 	"bump_ride": 300,  # 5 seconds of pedalling from a standstill, over a speed bump
 	"critters": 120,   # 2 seconds for a kid on a scooter to ride into the bike
@@ -125,7 +127,23 @@ func _physics_process(_delta: float) -> bool:
 			if _frame >= STEPS.settle:
 				_check("bike is near the restaurant door", _delivery.is_near_target(), "")
 				_check_minimap_pin(_order.restaurant_name)
-				_check("E at the restaurant picks up the food", _delivery.try_interact(), "")
+				Input.action_press("interact")
+				_frame = 0
+				_phase = "pickup_tap"
+		"pickup_tap":
+			if _frame == STEPS.tap - 2:
+				_check("the orange bar fills while E is held", _delivery.hold_progress() > 0.0
+						and _main.get_node("Phone/Panel/Margin/Rows/HoldBar").visible, "%.0f%%" % (_delivery.hold_progress() * 100.0))
+			if _frame >= STEPS.tap:
+				Input.action_release("interact")
+				_check("a quick tap of E at the restaurant does nothing", _game_state.stage_name() == "TO_RESTAURANT", "")
+				Input.action_press("interact")
+				_frame = 0
+				_phase = "pickup_hold"
+		"pickup_hold":
+			if _frame >= STEPS.hold:
+				Input.action_release("interact")
+				_check("holding E for 1.5 s at the restaurant picks up the food", _game_state.stage_name() == "TO_VILLA", "")
 				_check_stage("TO_VILLA")
 				# Still at the restaurant, so the villa may be off the map: the pin must stay on it.
 				_check_minimap_pin(str(_order.villa_number))
@@ -143,7 +161,20 @@ func _physics_process(_delta: float) -> bool:
 				_check("at the villa the pin is right next to you", spot.distance_to(middle) < 10.0,
 						"%.1f px from the middle" % spot.distance_to(middle))
 				_order.leave_at_door = false  # this one: the customer comes out
-				_check("E at the villa delivers", _delivery.try_interact(), "")
+				Input.action_press("interact")
+				_frame = 0
+				_phase = "dropoff_tap"
+		"dropoff_tap":
+			if _frame >= STEPS.tap:
+				Input.action_release("interact")
+				_check("a quick tap of E at the villa does nothing", _game_state.stage_name() == "TO_VILLA", "")
+				Input.action_press("interact")
+				_frame = 0
+				_phase = "dropoff_hold"
+		"dropoff_hold":
+			if _frame >= STEPS.hold:
+				Input.action_release("interact")
+				_check("holding E for 1.5 s at the villa delivers", _game_state.stage_name() == "NONE", "")
 				_check_customer()
 				_check("money goes up by the pay, minus 2 Dh insurance", _game_state.money == _money_before + _order.pay - GameConfig.INSURANCE_PER_DELIVERY, "Dh %d" % _game_state.money)
 				_check("delivery is saved in the history", _game_state.history.size() == 1, "%d in history" % _game_state.history.size())
@@ -441,7 +472,7 @@ func _check_customer() -> void:
 	print("      customer says: ", said)
 	var known := false
 	for line in lines:
-		known = known or line.replace("{name}", GameConfig.DEFAULT_RIDER_NAME) == said
+		known = known or spawner.fill_line(line, _game_state.rider_name) == said
 	_check("the customer says a line from the list", known, "")
 	var different := {}
 	for i in 60:
@@ -578,7 +609,7 @@ func _check_tutorial() -> void:
 	_check("tip: ride to the pizza place with the mini-map", "Ride to Pizza" in tutorial.tip and "mini-map" in tutorial.tip, "")
 	_move_bike_to(_delivery.target_door())
 	tutorial._process(0.0)
-	_check("tip at the door: press E to pick up", "pick up" in tutorial.tip, tutorial.tip)
+	_check("tip at the door: hold E to pick up", "hold E to pick up" in tutorial.tip, tutorial.tip)
 	gs.pick_up()
 	_move_bike_to(Vector3(2.0, 0.05, 140.0))
 	tutorial._process(0.0)
@@ -809,7 +840,7 @@ func _check_meters() -> void:
 	var gs: Node = _game_state
 	var places: Node = _delivery.place_builder
 	var want: float = _meters.target_time_for(places.restaurant_door(_order.restaurant_id), places.villa_door(_order.villa_number))
-	_check("meters are full at pickup", gs.meter_time == 100.0 and gs.meter_freshness == 100.0 and gs.meter_damage == 100.0, "")
+	_check("meters are full at pickup", gs.meter_time >= 99.0 and gs.meter_freshness >= 99.0 and gs.meter_damage == 100.0, "%.1f / %.1f / %.1f" % [gs.meter_time, gs.meter_freshness, gs.meter_damage])
 	_check("the target time follows the PRD rule", absf(gs.target_time - want) < 0.01 and gs.target_time > GameConfig.TIME_TARGET_EXTRA,
 			"%.0f s" % gs.target_time)
 	var panel: Control = _main.get_node("MetersPanel/Panel")

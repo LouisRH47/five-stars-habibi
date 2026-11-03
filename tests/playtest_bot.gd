@@ -94,7 +94,7 @@ func _ride(delta: float) -> void:
 	if _dm.is_near_target():
 		_let_go()
 		if absf(_bike.speed) < 0.5:
-			_dm.try_interact()
+			Input.action_press("interact")  # hold E until the bar is full (Session 18)
 		else:
 			Input.action_press("move_back")
 		return
@@ -235,7 +235,7 @@ func _flat(v: Vector3) -> Vector2:
 
 
 func _let_go() -> void:
-	for action in ["move_forward", "move_back", "steer_left", "steer_right", "sprint", "handbrake"]:
+	for action in ["move_forward", "move_back", "steer_left", "steer_right", "sprint", "handbrake", "interact"]:
 		Input.action_release(action)
 
 
