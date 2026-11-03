@@ -118,8 +118,10 @@
             notice.textContent = 'Game closed. Your saved progress stays in this browser.';
           }
         });
-        document.getElementById('welcome').hidden = true;
-        canvas.focus();
+        if (!failed) {
+          document.getElementById('welcome').hidden = true;
+          canvas.focus();
+        }
       } catch (error) { showFailure(error); }
     });
   </script>
