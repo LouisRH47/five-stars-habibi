@@ -594,6 +594,24 @@ on both Palm Grove and the test area. Nothing needed fixing.
   handlebars turn, kickstand down when parked, B rings the bell and scares a cat, every people
   type can walk, wave and stand, cars are the CC0 models.
 
+### Session 31
+- Dust puffs come off the back tyre when you ride on sand, and when you brake hard on any
+  ground (`scripts/tyre_dust.gd`; where the sand is comes from the map's data list,
+  `scripts/ground_type.gd`). Fewer puffs on Low graphics, more on High.
+- While you sprint (Shift) the view widens by 7 degrees and thin white speed lines rush out at
+  the screen edges (`scripts/speed_lines.gd`); both fade back when you stop.
+- On the Delivered card the stars fill in one at a time, each with sparkles and a blip that
+  gets higher each time; then gold coins fly out of "You earned" with a coin jingle and the
+  total bounces (`scripts/pop_icon.gd`).
+- A new order makes the phone shake for a moment and go "bzz-bzz" (plus the old ping).
+- 3 new home-made sounds (buzz, pop, coins) from `tools/make_sounds.py`, in CREDITS.md.
+- Sound effects now keep playing while the game is paused (the "ka-ching" used to be cut off
+  when the Delivered card paused the game).
+- No measurable effect on frame rate. Numbers in the "Juice (Session 31)" block of
+  `game_config.gd` (SPEED_LINES_ALPHA if the speed lines should be stronger).
+- Built by a helper agent in parallel; the smoke test checks the wider view while sprinting,
+  the buzz, the pops, the dust and fewer particles on Low.
+
 ## Known bugs
 - Play-test bot findings on Wahat Al Shams (to tune in Session 34):
   - A careful 5-minute shift gets 5 to 6 deliveries (target 6 to 8). The rides are long

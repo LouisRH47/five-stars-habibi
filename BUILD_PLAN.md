@@ -623,8 +623,7 @@ Done when:
 - [ ] Buggies stop for you, and nothing walks through walls
 - [ ] Still 60 fps on Medium
 
-### Session 31: Juice
-
+### Session 31: Juice (built, needs testing)
 ```text
 Session 31. Read PRD.md (Graphics and feel: Juice). Add: dust puffs from the
 tyres on sand and when braking hard (GPUParticles3D, fewer on Low), speed lines
