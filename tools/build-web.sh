@@ -20,7 +20,6 @@ fi
 export GODOT_BIN
 
 python3 - <<'PY'
-import json
 import os
 from pathlib import Path
 import re
@@ -98,17 +97,9 @@ run("import", ["--import"], timeout=300)
 # player progress but does not modify it. All logs are redirected into build/logs.
 run("startup", ["--quit"])
 with tempfile.TemporaryDirectory(prefix="habibi-web-check-") as temporary:
-    temporary = Path(temporary)
-    original = (root / "tests" / "smoke_test.gd").read_text()
-    marker = 'const TEST_SAVE := "user://smoke_test_save.json"'
-    if original.count(marker) != 1:
-        raise SystemExit("Smoke test save setup changed; update build-web.sh before running tests")
-    test = temporary / "smoke_test.gd"
-    # Same test logic, isolated save: local builds cannot overwrite player progress
-    # and work even when macOS's user data directory isn't writable by the sandbox.
-    save_path = json.dumps((temporary / "save.json").as_posix())
-    test.write_text(original.replace(marker, f"const TEST_SAVE := {save_path}"))
-    run("smoke", ["--fixed-fps", "60", "-s", str(test)], timeout=900, require_pass=True)
+    # Keep the smoke save writable even when macOS user data is sandboxed.
+    run("smoke", ["--fixed-fps", "60", "-s", "tests/smoke_test.gd",
+                  "--", f"--save-dir={temporary}"], timeout=900, require_pass=True)
 run("touch", ["-s", "tests/touch_controls_test.gd"], require_pass=True)
 
 web = root / "build" / "web"

@@ -57,6 +57,8 @@ static func build(model: Node3D) -> void:
 static func tube(parent: Node3D, a: Vector3, b: Vector3, radius: float, colour: Color) -> MeshInstance3D:
 	var part := LowPoly.cylinder(parent, radius, radius, a.distance_to(b), colour, (a + b) * 0.5)
 	part.basis = Basis(Quaternion(Vector3.UP, (b - a).normalized()))
+	if colour == FRAME:
+		part.set_meta("bike_paint", true)
 	return part
 
 

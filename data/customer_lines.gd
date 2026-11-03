@@ -56,8 +56,34 @@ const REGULAR_LINES := {
 }
 ## What a teacher, a kid, a rider or a groom says at the school or stables (Session 32).
 const SPOT_LINES := {
+	"institute": ["Thanks, {name}! Reception will take it from here.", "Perfect timing, {name}. Our students needed a study break."],
+	"gym": ["Thanks, {name}! Refuelling counts as training, right?", "Nice ride, {name}! That delivery was your cardio for the day."],
 	"teacher": ["Thanks, {name}! Just in time for the break.", "Lovely! The kids are so loud today."],
 	"kid": ["Yes! My lunch! Thanks, {name}!", "Don't tell my teacher it's ice cream."],
 	"rider": ["Thanks! Hungry work, riding horses.", "Perfect, {name}, I've just finished my lesson."],
 	"groom": ["Shukran, {name}! The horses are jealous.", "Thanks! Mind the hay on your way out."],
+}
+
+## Visits 1–2, 3–7 and 8+ have distinct dialogue: familiarity is earned in play.
+const REGULAR_STAGES := {
+	"mariam": {
+		"first": ["Shukran, {name}. I'm Mariam. Extra pearls, please!", "First time here, {name}? Mind my cat on your way out."],
+		"friendly": ["{name}, habibi! You remembered my extra pearls.", "Three visits already, {name}! Come, take a date for the road."],
+		"best_friends": ["My favourite rider, {name}! There's always a seat for you here.", "{name}, you're family now. I saved you the best dates."],
+	},
+	"rashid": {
+		"first": ["You must be {name}. I'm Rashid. Garlic sauce inside?", "Shukran, {name}. The gate sticks, give it a little push."],
+		"friendly": ["{name}! I know that orange bag anywhere.", "Back again, {name}! You know my usual better than my sons."],
+		"best_friends": ["My friend {name}! Stay for the match when your shift is over.", "{name}, a tip for you. Don't tell my sons you're my favourite."],
+	},
+	"dana": {
+		"first": ["Hello, {name}! I'm Ms Dana. The staff room is this way.", "Thank you, {name}. I hope the cake survived those bumps."],
+		"friendly": ["{name}! The class recognised your bike before I did.", "Gold star, {name}! You're becoming part of our lunch break."],
+		"best_friends": ["Our honorary teacher, {name}! The children made you a thank-you card.", "{name}, we saved you a slice. Best delivery friend in the school!"],
+	},
+	"hamdan": {
+		"first": ["Welcome, {name}. I'm Hamdan. Mind the hay by the office.", "Shukran, {name}! Hungry work, looking after horses."],
+		"friendly": ["{name}! Even the horses recognise your bell now.", "Good to see you, {name}. Come meet the new foal sometime."],
+		"best_friends": ["Yalla, {name}! Your favourite horse has been waiting for you.", "My friend {name}! There's always a cold juice here for you."],
+	},
 }

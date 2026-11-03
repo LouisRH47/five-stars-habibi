@@ -19,6 +19,8 @@ const VILLA_SCENE := preload("res://scenes/villa.tscn")
 const RESTAURANT_SCENE := preload("res://scenes/restaurant.tscn")
 const MARKET_SCENE := preload("res://scenes/supermarket.tscn")
 const STALL_SCRIPT := preload("res://scripts/farm_stall.gd")
+const VENUE_ANIMATION_RESUME_M := 70.0
+const VENUE_ANIMATION_PAUSE_M := 85.0
 
 
 ## The lists read from the data script. Other scripts (the DeliveryManager) use these.
@@ -28,6 +30,8 @@ var restaurant_size := Vector3.ONE
 var villa_size := Vector3.ONE
 ## The regular customers (REGULARS in the data list), empty on maps without them.
 var regulars: Array = []
+var _venue_people: Array[Person] = []
+var _venue_check_left := 0.25
 
 
 func _enter_tree() -> void:
@@ -50,7 +54,26 @@ func _ready() -> void:
 		shop.position = place["position"]
 		shop.rotation_degrees = Vector3(0.0, place["facing"], 0.0)
 		add_child(shop)
+	var joined: Array = []
 	for place in villas:
+		if place.get("row_mode", false):
+			joined.append(place)
+	if not joined.is_empty():
+		add_child(HousingRows.build(joined, villa_size))
+	for place in villas:
+		if place.get("row_mode", false):
+			continue
+		if place.get("interior", false):
+			var room_data: Dictionary = place.duplicate()
+			room_data["name"] = "C Institute" if place["number"] == 903 else "Wahat Gym"
+			room_data["arabic"] = "معهد سي" if place["number"] == 903 else "نادي الواحة الرياضي"
+			room_data["venue_type"] = "institute" if place["number"] == 903 else "gym"
+			var room := VenueBuilder.build(room_data, villa_size_of(place))
+			room.name = "Institute" if place["number"] == 903 else "Gym"
+			room.position = place["position"]
+			room.rotation_degrees.y = place["facing"]
+			add_child(room)
+			continue
 		if is_spot(place):
 			continue  # the school booth and the stable office are built by LandmarkBuilder
 		if place.has("kind"):
@@ -62,11 +85,57 @@ func _ready() -> void:
 		villa.setup(place.get("house", place["number"]), villa_size)
 		villa.name = "Villa%d" % place["number"]  # unique, even when two clusters both have a Villa 7
 		add_child(villa)
+	var lists := data.get_script_constant_map()
+	for shop_data: Dictionary in lists.get("SHOPS", []):
+		add_child(ShopInterior.build(shop_data))
+	for venue in get_children():
+		if venue.has_meta("walk_in"):
+			for person in venue.get_children():
+				if person is Person:
+					_venue_people.append(person)
+	set_process(not _venue_people.is_empty())
+	if lists.has("SHOPS"):
+		_setup_shops.call_deferred()
+
+
+func _process(delta: float) -> void:
+	_venue_check_left -= delta
+	if _venue_check_left > 0.0:
+		return
+	_venue_check_left = 0.25
+	var camera := get_viewport().get_camera_3d()
+	if camera == null:
+		return
+	# Keep distant staff and diners visible in their last pose, and resume before they are close.
+	for person in _venue_people:
+		var gap := camera.global_position.distance_squared_to(person.global_position)
+		if person.process_mode == Node.PROCESS_MODE_DISABLED:
+			if gap < VENUE_ANIMATION_RESUME_M * VENUE_ANIMATION_RESUME_M:
+				person.process_mode = Node.PROCESS_MODE_INHERIT
+		elif gap > VENUE_ANIMATION_PAUSE_M * VENUE_ANIMATION_PAUSE_M:
+			person.process_mode = Node.PROCESS_MODE_DISABLED
+
+
+func _setup_shops() -> void:
+	var world := get_parent()
+	var controller := ShopController.new()
+	controller.name = "ShopController"
+	controller.bike = world.get_node("Bike")
+	controller.camera = world.get_node("FollowCamera")
+	controller.walker = world.get_node_or_null("Walker")
+	controller.configure(data.get_script_constant_map()["SHOPS"])
+	world.add_child(controller)
+	var counters := Node.new()
+	counters.set_script(load("res://scripts/counter_panel.gd"))
+	counters.name = "CounterPanel"
+	world.add_child(counters)
 
 
 ## A restaurant, the mini market or the farm stall, depending on the shop's "style".
 func _make_shop(place: Dictionary) -> Node3D:
 	var size := restaurant_size_of(place)
+	if place.get("interior", false):
+		return VenueBuilder.build(place, size)
 	var style: String = place.get("style", "")
 	if style == "market":
 		var market: Node3D = MARKET_SCENE.instantiate()
@@ -99,6 +168,10 @@ func villa_size_of(place: Dictionary) -> Vector3:
 
 ## The spot on the ground in front of a restaurant's door.
 func restaurant_door(id: String) -> Vector3:
+	return restaurant_approach(id)
+
+
+func restaurant_approach(id: String) -> Vector3:
 	for place in restaurants:
 		if place["id"] == id:
 			return door_point(place["position"], place["facing"], restaurant_size_of(place))
@@ -106,12 +179,39 @@ func restaurant_door(id: String) -> Vector3:
 	return Vector3.ZERO
 
 
+func restaurant_entrance(id: String) -> Vector3:
+	for place in restaurants:
+		if place["id"] == id:
+			return VenueBuilder.world_point(place, Vector3(0, 0, restaurant_size_of(place).z * 0.5 + 0.7))
+	return Vector3.ZERO
+
+
+func restaurant_counter(id: String) -> Vector3:
+	for place in restaurants:
+		if place["id"] == id:
+			if place.get("interior", false):
+				return VenueBuilder.world_point(place, VenueBuilder.counter_local(restaurant_size_of(place)))
+			return restaurant_approach(id)
+	return Vector3.ZERO
+
+
 ## The spot on the ground in front of a villa's door.
 func villa_door(number: int) -> Vector3:
 	for place in villas:
 		if place["number"] == number:
+			if place.get("interior", false):
+				return VenueBuilder.world_point(place, VenueBuilder.counter_local(villa_size_of(place)))
 			return door_point(place["position"], place["facing"], villa_size_of(place))
 	push_error("No villa number %d" % number)
+	return Vector3.ZERO
+
+
+func villa_approach(number: int) -> Vector3:
+	for place in villas:
+		if place["number"] == number:
+			if place.has("approach"):
+				return place["approach"]
+			return door_point(place["position"], place["facing"], villa_size_of(place))
 	return Vector3.ZERO
 
 

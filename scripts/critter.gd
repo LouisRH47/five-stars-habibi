@@ -23,7 +23,8 @@ func _init() -> void:
 ## The bike rang its bell (Session 29). If it's close, get out of the way for a moment
 ## (cats run off, kids stop and wobble), without hurting the food.
 func hear_bell(bike: Node3D) -> void:
-	if scared_left > 0.0 or global_position.distance_to(bike.global_position) > GameConfig.BELL_HEAR_RANGE:
+	var reach: float = bike.bell_range() if bike.has_method("bell_range") else GameConfig.BELL_HEAR_RANGE
+	if scared_left > 0.0 or global_position.distance_to(bike.global_position) > reach:
 		return
 	scared_left = GameConfig.BELL_SCARE_TIME
 	_on_scared(bike)

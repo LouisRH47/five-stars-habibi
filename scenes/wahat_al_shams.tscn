@@ -30,6 +30,9 @@
 [ext_resource type="Script" path="res://scripts/life_builder.gd" id="30_life"]
 [ext_resource type="Script" path="res://scripts/event_manager.gd" id="33_events"]
 
+[ext_resource type="Script" path="res://scripts/district_detail.gd" id="34_detail"]
+[ext_resource type="Script" path="res://scripts/district_traffic.gd" id="35_traffic"]
+
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_pg"]
 sky_top_color = Color(0.30980393, 0.6627451, 0.8392157, 1)
 sky_horizon_color = Color(0.8039216, 0.92156863, 0.9529412, 1)
@@ -60,6 +63,7 @@ shadow_enabled = true
 script = ExtResource("28_sun")
 sun = NodePath("../Sun")
 world_environment = NodePath("../WorldEnvironment")
+use_smaller_sky_radiance = true
 
 [node name="WahatBuilder" type="Node3D" parent="."]
 script = ExtResource("9_map")
@@ -85,11 +89,19 @@ data = ExtResource("8_data")
 script = ExtResource("5_places")
 data = ExtResource("8_data")
 
+[node name="DistrictDetail" type="Node3D" parent="."]
+script = ExtResource("34_detail")
+data = ExtResource("8_data")
+
+[node name="DistrictTraffic" type="Node3D" parent="."]
+script = ExtResource("35_traffic")
+data = ExtResource("8_data")
+
 [node name="Bike" parent="." instance=ExtResource("1_bike")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -188, 0, 2)
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -281, 0, -168)
 
 [node name="FollowCamera" type="Camera3D" parent="." node_paths=PackedStringArray("target")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -192.5, 2.2, 2)
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -285.5, 2.2, -168)
 fov = 70.0
 script = ExtResource("2_camera")
 target = NodePath("../Bike")

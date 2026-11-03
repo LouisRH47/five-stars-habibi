@@ -19,7 +19,7 @@ const PAVING := Color(0.86, 0.79, 0.66, 1)
 const GRASS := Color(0.47, 0.66, 0.34, 1)
 const WATER := Color(0.3, 0.6, 0.85, 1)
 const HORSE_SAND := Color(0.8, 0.68, 0.5, 1)
-const BIKE_RED := Color(0.72, 0.42, 0.32, 1)
+const BIKE_RED := Color(0.18, 0.48, 0.72, 1)
 const TRUNK := Color(0.5, 0.36, 0.22, 1)
 const LEAVES := Color(0.3, 0.52, 0.26, 1)
 const WALL := Color(0.95, 0.88, 0.74, 1)
@@ -120,18 +120,36 @@ func _build_stream(stream: Dictionary) -> void:
 	holder.name = "Stream"  # Session 30: AmbientMotion gives these pieces moving water
 	add_child(holder)
 	var x: float = stream["from_x"]
-	var step := 8.0
-	while x < stream["to_x"]:
-		var z: float = stream["z"] + sin(x * 0.06) * 3.0
-		var z2: float = stream["z"] + sin((x + step) * 0.06) * 3.0
-		var piece := LowPoly.box(holder, Vector3(stream["width"], 0.02, Vector2(step, z2 - z).length() + 0.8),
-				WATER, Vector3(x + step * 0.5, 0.03, (z + z2) * 0.5))
-		piece.rotation.y = atan2(step, z2 - z)
-		x += step
+	var end_x: float = stream["to_x"]
+	var width: float = stream["width"]
+	var centre_z: float = stream["z"]
+	const STEP := 8.0
+	const PIECES_PER_CHUNK := 6
+	while x < end_x:
+		# Keep the original overlapping pieces in short chunks so distant water can be culled.
+		var origin := Vector3(x, 0.0, centre_z)
+		var chunk := SurfaceTool.new()
+		chunk.begin(Mesh.PRIMITIVE_TRIANGLES)
+		for index in PIECES_PER_CHUNK:
+			if x >= end_x:
+				break
+			var z := centre_z + sin(x * 0.06) * 3.0
+			var z2 := centre_z + sin((x + STEP) * 0.06) * 3.0
+			var piece := BoxMesh.new()
+			piece.size = Vector3(width, 0.02, Vector2(STEP, z2 - z).length() + 0.8)
+			var middle := Vector3(x + STEP * 0.5, 0.03, (z + z2) * 0.5) - origin
+			chunk.append_from(piece, 0, Transform3D(Basis(Vector3.UP, atan2(STEP, z2 - z)), middle))
+			x += STEP
+		chunk.set_material(LowPoly.material(WATER))
+		var view := MeshInstance3D.new()
+		view.mesh = chunk.commit()
+		view.position = origin
+		holder.add_child(view)
 
 
-## Two rows of tall trees all the way round the edge, drawn as one MultiMesh (fast).
+## Two rows of trees around the edge. Spatial batches let the renderer skip distant sections.
 func _build_tree_belt() -> void:
+	const CHUNK_SIZE := 120.0
 	var belt: Dictionary = _map["TREE_BELT"]
 	var inner: Vector2 = belt["inner"]
 	var half: Vector2 = _map["MAP_HALF"]
@@ -141,7 +159,7 @@ func _build_tree_belt() -> void:
 		var z := -half.y
 		while z <= half.y:
 			spots.append(Vector3(row, 0, z))
-			if absf(z) > gap:
+			if _outside_gate_gap(z, gap):
 				spots.append(Vector3(-row, 0, z))  # leave the gate open on the west
 			z += belt["spacing"]
 	for row in [inner.y + 1.5, half.y - 1.5]:
@@ -162,19 +180,34 @@ func _build_tree_belt() -> void:
 	crown.radial_segments = 8
 	crown.rings = 4
 	crown.material = LowPoly.material(LEAVES)
+	var chunks := {}
+	for i in spots.size():
+		var spot := spots[i]
+		var cell := Vector2i(floori(spot.x / CHUNK_SIZE), floori(spot.z / CHUNK_SIZE))
+		if not chunks.has(cell):
+			chunks[cell] = []
+		chunks[cell].append(i)
 	for part in [[trunk, 2.0, "TreeTrunks"], [crown, 5.6, "TreeCrowns"]]:
-		var many := MultiMesh.new()
-		many.transform_format = MultiMesh.TRANSFORM_3D
-		many.mesh = part[0]
-		many.instance_count = spots.size()
-		for i in spots.size():
-			var size := 0.85 + fmod(float(i) * 0.37, 0.4)
-			var basis := Basis().scaled(Vector3.ONE * size)
-			many.set_instance_transform(i, Transform3D(basis, spots[i] + Vector3.UP * part[1] * size))
-		var view := MultiMeshInstance3D.new()
-		view.name = part[2]
-		view.multimesh = many
-		add_child(view)
+		var group := Node3D.new()
+		group.name = part[2]
+		add_child(group)
+		for cell: Vector2i in chunks:
+			var origin := Vector3(cell.x + 0.5, 0.0, cell.y + 0.5) * CHUNK_SIZE
+			var indices: Array = chunks[cell]
+			var many := MultiMesh.new()
+			many.transform_format = MultiMesh.TRANSFORM_3D
+			many.mesh = part[0]
+			many.instance_count = indices.size()
+			for index in indices.size():
+				var i: int = indices[index]
+				var size := 0.85 + fmod(float(i) * 0.37, 0.4)
+				var basis := Basis().scaled(Vector3.ONE * size)
+				var offset: Vector3 = spots[i] - origin + Vector3.UP * part[1] * size
+				many.set_instance_transform(index, Transform3D(basis, offset))
+			var view := MultiMeshInstance3D.new()
+			view.position = origin
+			view.multimesh = many
+			group.add_child(view)
 
 
 ## Invisible walls inside the tree belt (so you can't ride off the map), the gate house and
@@ -189,19 +222,23 @@ func _build_walls_and_gate() -> void:
 	LowPoly.solid_box(walls, Vector3(inner.x * 2.0, 4.0, 1.0), Vector3(0, 2, -inner.y))
 	LowPoly.solid_box(walls, Vector3(inner.x * 2.0, 4.0, 1.0), Vector3(0, 2, inner.y))
 	LowPoly.solid_box(walls, Vector3(1.0, 4.0, inner.y * 2.0), Vector3(inner.x, 2, 0))
-	var piece := inner.y - gap
-	LowPoly.solid_box(walls, Vector3(1.0, 4.0, piece), Vector3(-inner.x, 2, -gap - piece * 0.5) + tall * 0.0)
-	LowPoly.solid_box(walls, Vector3(1.0, 4.0, piece), Vector3(-inner.x, 2, gap + piece * 0.5))
-	# The gate: a little gate house and a closed red bar (Wahat Al Shams is your whole world).
-	var gate := StaticBody3D.new()
-	gate.name = "Gate"
-	gate.position = Vector3(-inner.x - 2.0, 0, 0)
-	add_child(gate)
-	LowPoly.box(gate, Vector3(4.0, 3.2, 4.0), WALL, Vector3(0, 1.6, -gap - 3.0))
-	LowPoly.box(gate, Vector3(4.6, 0.3, 4.6), Color(0.16470589, 0.5568628, 0.6117647, 1), Vector3(0, 3.35, -gap - 3.0))
-	LowPoly.solid_box(gate, Vector3(4.0, 3.2, 4.0), Vector3(0, 1.6, -gap - 3.0))
-	LowPoly.box(gate, Vector3(0.3, 1.2, gap * 2.0), GATE, Vector3(0, 1.0, 0))
-	LowPoly.solid_box(gate, Vector3(0.6, 2.0, gap * 2.0), Vector3(0, 1.0, 0))
+	# Two west-side checkpoints, each with a side gap for bicycles.
+	var cuts: Array[float] = [-inner.y]
+	for entry: Dictionary in _map.get("GATES", [{"position": Vector3(-inner.x, 0, 0)}]):
+		var z: float = entry["position"].z
+		cuts.append(z - gap)
+		cuts.append(z + gap)
+	cuts.append(inner.y)
+	cuts.sort()
+	for i in range(0, cuts.size() - 1, 2):
+		LowPoly.solid_box(walls, Vector3(1, 4, cuts[i+1] - cuts[i]), Vector3(-inner.x, 2, (cuts[i+1] + cuts[i]) * 0.5))
+
+
+func _outside_gate_gap(z: float, gap: float) -> bool:
+	for entry: Dictionary in _map.get("GATES", [{"position": Vector3.ZERO}]):
+		if absf(z - entry["position"].z) <= gap:
+			return false
+	return true
 
 
 ## The big bilingual welcome sign by the gate road.

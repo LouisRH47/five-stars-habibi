@@ -30,6 +30,9 @@ var _offer_left := 0.0
 var _hold := 0.0             # seconds E has been held at the door
 var _need_release := false   # after any E action, E must be let go before the next hold counts
 var _wait_left := GameConfig.ORDER_NEXT_DELAY
+var _goal_fragile_offered := false
+var _goal_lunch_created := false
+var _goal_lunch_order: Order
 var _marker: MeshInstance3D
 
 
@@ -44,16 +47,25 @@ func _ready() -> void:
 	# Session 32: this map's shift goals (no school or clusters here: no goals that need them).
 	GameState.goal_pool = ShiftGoals.allowed(place_builder)
 	GameState.pick_goals()
+	GameState.configure_collections(place_builder.villas)
+	GameState.shift_started.connect(_reset_goal_dispatch)
+	var gps := GPSRoute.new()
+	gps.name = "GPSRoute"
+	gps.delivery_manager = self
+	add_child(gps)
 
 
 func _physics_process(delta: float) -> void:
 	_update_hold(delta)
+	if _marker.visible:
+		_marker.global_position = target_door() + Vector3.UP * GameConfig.MARKER_HEIGHT * 0.5
 	if GameState.tutorial_running:
 		return  # the tutorial hands out its own order, and it never runs out
+	_queue_lunch_contract()
 	if GameState.stage == GameState.Stage.NONE:
 		_wait_left -= delta
 		if _wait_left <= 0.0:
-			_wait_left = GameConfig.ORDER_NEXT_DELAY
+			_wait_left = GameState.order_delay()
 			offer_now()
 	elif GameState.stage == GameState.Stage.OFFERED:
 		_offer_left -= delta
@@ -62,6 +74,12 @@ func _physics_process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if GameState.stage == GameState.Stage.OFFERED and GameState.offered_orders.size() > 1 and event is InputEventKey and event.pressed and not event.echo:
+		if event.physical_keycode in [KEY_1, KEY_2]:
+			choose(0 if event.physical_keycode == KEY_1 else 1)
+			_need_release = true
+			get_viewport().set_input_as_handled()
+			return
 	if event.is_action_pressed("interact"):
 		# A quick tap accepts an order. Picking up and dropping off need E held (_update_hold).
 		if GameState.stage == GameState.Stage.OFFERED:
@@ -78,8 +96,18 @@ func _unhandled_input(event: InputEvent) -> void:
 func offer_now() -> Order:
 	if GameState.stage != GameState.Stage.NONE or place_builder == null or not GameState.shift_open():
 		return null  # also no new orders once the shift clock has run out
-	var order := make_order()
-	GameState.offer_order(order)
+	var order := _goal_order()
+	if order == null:
+		order = make_order()
+	if not GameState.tutorial_running and not order.boring and GameState.rating() >= GameConfig.ORDER_CHOICE_RATING and randf() < GameConfig.ORDER_CHOICE_CHANCE:
+		var better := order_maker().better_than(order)
+		if better != null:
+			var choices: Array[Order] = [order, better]
+			GameState.offer_choices(choices)
+		else:
+			GameState.offer_order(order)
+	else:
+		GameState.offer_order(order)
 	return order
 
 
@@ -98,12 +126,19 @@ func order_maker() -> OrderMaker:
 	var maker := OrderMaker.new(place_builder, GameState.clock_hours())
 	maker.special_chance = special_chance
 	maker.regular_chance = regular_chance
+	maker.day_kind = GameState.day_kind
+	maker.regular_visits = GameState.regular_visits
+	maker.streak = GameState.streak
 	return maker
 
 
 ## E on a new order.
 func accept() -> bool:
-	return GameState.accept_offer()
+	return choose(0)
+
+
+func choose(index: int) -> bool:
+	return GameState.accept_offer(index)
 
 
 ## Q on a new order (also used when the offer runs out of time).
@@ -163,7 +198,7 @@ func try_interact() -> bool:
 		# Nobody home! Take it to the neighbour (the clock keeps running).
 		var next := order_maker().neighbour_for(order.villa_number)
 		if not next.is_empty():
-			return GameState.send_to_neighbour(next["number"], next.get("address", "Villa %d" % next["number"]), next.get("cluster", ""))
+			return GameState.send_to_neighbour(next["number"], next.get("address", "Villa %d" % next["number"]), next.get("cluster", ""), next.get("map_address", ""))
 	return GameState.deliver()
 
 
@@ -173,9 +208,23 @@ func is_near_target() -> bool:
 	var who := actor if actor != null else bike
 	if who == null or (stage != GameState.Stage.TO_RESTAURANT and stage != GameState.Stage.TO_VILLA):
 		return false
-	var gap := who.global_position - target_door()
-	gap.y = 0.0  # only the distance along the ground counts
-	return gap.length() <= GameConfig.INTERACT_RADIUS
+	var target := target_door()
+	var gap := who.global_position - target
+	if absf(gap.y) > GameConfig.INTERACT_RADIUS:
+		return false
+	gap.y = 0.0
+	if gap.length() > GameConfig.INTERACT_RADIUS:
+		return false
+	if needs_walking and on_foot and who.get_world_3d() != null:
+		var query := PhysicsRayQueryParameters3D.create(who.global_position + Vector3.UP * 0.8, target + Vector3.UP * 0.8, 1)
+		var excluded: Array[RID] = []
+		for body in [who, bike]:
+			if body is CollisionObject3D:
+				excluded.append(body.get_rid())
+		query.exclude = excluded
+		if not who.get_world_3d().direct_space_state.intersect_ray(query).is_empty():
+			return false
+	return true
 
 
 ## Where you need to ride next: the restaurant door, then the villa door.
@@ -184,7 +233,12 @@ func target_door() -> Vector3:
 	if order == null or place_builder == null:
 		return Vector3.ZERO
 	if GameState.stage == GameState.Stage.TO_RESTAURANT:
+		var anchor := "restaurant_counter" if on_foot else "restaurant_approach"
+		if place_builder.has_method(anchor):
+			return place_builder.call(anchor, order.restaurant_id)
 		return place_builder.restaurant_door(order.restaurant_id)
+	if not on_foot and place_builder.has_method("villa_approach"):
+		return place_builder.call("villa_approach", order.villa_number)
 	return place_builder.villa_door(order.villa_number)
 
 
@@ -197,7 +251,7 @@ func time_left_on_offer() -> float:
 
 func _on_stage_changed(stage: int) -> void:
 	if stage == GameState.Stage.NONE:
-		_wait_left = GameConfig.ORDER_NEXT_DELAY
+		_wait_left = GameState.order_delay()
 	elif stage == GameState.Stage.OFFERED:
 		_offer_left = offer_timeout
 	# One beam, over the door you need to ride to next.
@@ -229,3 +283,37 @@ func _make_marker() -> MeshInstance3D:
 	beam.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	beam.visible = false
 	return beam
+
+
+func _reset_goal_dispatch() -> void:
+	_goal_fragile_offered = false
+	_goal_lunch_created = false
+	_goal_lunch_order = null
+
+
+## A lunch request is created during the lunch window and kept until the rider is free.
+## Only one order is carried. This gives the announced goal a real opportunity.
+func _queue_lunch_contract() -> void:
+	if _goal_lunch_created or not "lunch" in GameState.shift_goals or "lunch" in GameState.goals_done():
+		return
+	if not OrderMaker.is_lunch(GameState.clock_hours()):
+		return
+	var school := OrderMaker._find(place_builder.villas, "number", GameConfig.SCHOOL_SPOT)
+	if school.is_empty():
+		return
+	_goal_lunch_order = order_maker().make("", GameConfig.SCHOOL_SPOT)
+	_goal_lunch_created = true
+
+
+func _goal_order() -> Order:
+	if GameState.tutorial_running:
+		return null
+	_queue_lunch_contract()
+	if _goal_lunch_order != null and OrderMaker.school_open(GameState.clock_hours()):
+		var lunch := _goal_lunch_order
+		_goal_lunch_order = null
+		return lunch
+	if not _goal_fragile_offered and "fragile" in GameState.shift_goals and not "fragile" in GameState.goals_done():
+		_goal_fragile_offered = true
+		return order_maker().make("", 0, "fragile")
+	return null

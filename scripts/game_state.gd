@@ -26,6 +26,29 @@ signal shift_started
 signal shift_ended(summary: Dictionary)
 ## A neighbour order was sent on to the house next door (Session 32).
 signal order_redirected(order: Order)
+## Replay progress is independent of the rating's rolling delivery history.
+signal collection_changed
+signal offers_changed
+
+var streak := 0
+var day_kind := "normal"
+var tomorrow_kind := "hot_noon"
+var personal_bests: Dictionary = {"earnings": 0, "streak": 0, "deliveries": 0, "routes": {}}
+var shift_new_bests: Array[String] = []
+var visited_homes: Dictionary = {}
+var visited_venues: Dictionary = {}
+var animals_met: Dictionary = {}
+var lines_heard: Dictionary = {}
+var collection_claims: Dictionary = {}
+var owned_collection_rewards: Dictionary = {}
+var home_catalog: Dictionary = {}
+var venue_catalog: Dictionary = {}
+var collection_bonus_this_shift := 0
+var offered_orders: Array[Order] = []
+## Shared equipment state, consumed by the bike and meter systems and saved with progress.
+var upgrade_levels: Dictionary = {}
+var owned_items: Dictionary = {}
+var equipped_cosmetics: Dictionary = {}
 
 ## The three meters for the order you're carrying, 100 (green) to 0 (red). Set by
 ## scripts/meters.gd while you ride from the restaurant to the villa.
@@ -157,6 +180,20 @@ func reset() -> void:
 	boss_paid_crash = false
 	crash_shifts.clear()
 	regular_visits.clear()
+	streak = 0
+	upgrade_levels.clear()
+	owned_items.clear()
+	equipped_cosmetics.clear()
+	day_kind = "normal"
+	tomorrow_kind = "hot_noon"
+	personal_bests = {"earnings": 0, "streak": 0, "deliveries": 0, "routes": {}}
+	visited_homes.clear()
+	visited_venues.clear()
+	animals_met.clear()
+	lines_heard.clear()
+	collection_claims.clear()
+	owned_collection_rewards.clear()
+	offered_orders.clear()
 	shift_number = 0
 	history.clear()
 	start_shift()
@@ -175,17 +212,23 @@ func offer_order(order: Order) -> bool:
 	if stage != Stage.NONE or order == null:
 		return false
 	offered_order = order
+	offered_orders.assign([order])
+	offers_changed.emit()
 	order_offered.emit(order)
 	_set_stage(Stage.OFFERED)
 	return true
 
 
 ## E on a new order: it becomes your current order. Next stop: the restaurant.
-func accept_offer() -> bool:
+func accept_offer(index := 0) -> bool:
 	if stage != Stage.OFFERED:
 		return false
-	current_order = offered_order
+	if index < 0 or index >= offered_orders.size():
+		return false
+	current_order = offered_orders[index]
 	offered_order = null
+	offered_orders.clear()
+	offers_changed.emit()
 	_remember_choice(true)
 	_set_stage(Stage.TO_RESTAURANT)
 	return true
@@ -197,6 +240,8 @@ func skip_offer() -> bool:
 		return false
 	var skipped := offered_order
 	offered_order = null
+	offered_orders.clear()
+	offers_changed.emit()
 	_remember_choice(false)
 	_set_stage(Stage.NONE)
 	order_skipped.emit(skipped)
@@ -218,19 +263,25 @@ func deliver() -> bool:
 	var done := current_order
 	current_order = null
 	var stars := stars_for(meter_time, meter_freshness, meter_damage)
+	# The current five-star job contributes to the shown streak and its tip chance.
+	streak = streak + 1 if stars >= 5.0 else 0
+	if streak > int(personal_bests.get("streak", 0)):
+		personal_bests["streak"] = streak
+		_note_best("Longest five-star streak: %d" % streak)
+	if done.regular_id != "":
+		regular_visits[done.regular_id] = int(regular_visits.get(done.regular_id, 0)) + 1
 	# Tips only on 5-star jobs, and not every time. Boring orders never tip (PRD).
 	var tip := 0
 	if stars >= 5.0 and not done.boring and randf() < tip_chance(done):
 		tip = randi_range(GameConfig.TIP_MIN, GameConfig.TIP_MAX)
 	var goals_before := goals_done()
-	if done.regular_id != "":
-		regular_visits[done.regular_id] = int(regular_visits.get(done.regular_id, 0)) + 1
 	var earned_xp := GameConfig.XP_PER_DELIVERY + roundi(GameConfig.XP_PER_STAR * stars)
 	var insurance := GameConfig.INSURANCE_PER_DELIVERY if insurance_on else 0
 	money += done.pay + tip - insurance
 	xp += earned_xp
 	last_result = {
 		"restaurant": done.restaurant_name,
+		"restaurant_id": done.restaurant_id,
 		"villa": done.villa_number,
 		"address": done.address,
 		"food": done.food,
@@ -250,6 +301,12 @@ func deliver() -> bool:
 		"regular": done.regular,
 		"cluster": done.cluster,
 		"lunch": done.lunch,
+		"regular_id": done.regular_id,
+		"ride_time": ride_time,
+		"streak": streak,
+		"perfect": stars >= 5.0,
+		"new_route_best": _record_route_best(done, ride_time),
+		"collection_bonus": _stamp_delivery(done),
 	}
 	history.append(last_result)
 	last_goals_done.clear()
@@ -266,22 +323,27 @@ func deliver() -> bool:
 
 ## Tip chance on a 5-star job: regulars and fragile cakes tip more often (Session 32).
 func tip_chance(order: Order) -> float:
+	var base := GameConfig.TIP_CHANCE
 	if order.regular != "":
-		return GameConfig.REGULAR_TIP_CHANCE
-	if order.special == "fragile":
-		return GameConfig.FRAGILE_TIP_CHANCE
-	return GameConfig.TIP_CHANCE
+		base = GameConfig.BEST_FRIEND_TIP_CHANCE if regular_visits.get(order.regular_id, 0) >= GameConfig.BEST_FRIEND_VISITS else GameConfig.REGULAR_TIP_CHANCE
+	elif order.special == "fragile":
+		base = GameConfig.FRAGILE_TIP_CHANCE
+	base += minf(streak * GameConfig.STREAK_TIP_STEP, GameConfig.STREAK_TIP_MAX)
+	if day_kind == "shop_special" and order.restaurant_id == "gelato":
+		base *= GameConfig.SHOP_SPECIAL_TIP_MULTIPLIER
+	return clampf(base, 0.0, 1.0)
 
 
 ## A neighbour order at the door: nobody's home, so it goes to another home in the same
 ## cluster. The order, its pay and the clock all carry on (Session 32).
-func send_to_neighbour(number: int, address: String, cluster: String) -> bool:
+func send_to_neighbour(number: int, address: String, cluster: String, compact_address := "") -> bool:
 	var order := current_order
 	if stage != Stage.TO_VILLA or order == null or order.special != "neighbour" or order.neighbour_done:
 		return false
 	order.neighbour_done = true
 	order.villa_number = number
 	order.address = address
+	order.map_address = compact_address if compact_address != "" else address
 	order.cluster = cluster
 	order.note = GameConfig.NEIGHBOUR_NOTE % address
 	order_redirected.emit(order)
@@ -291,6 +353,8 @@ func send_to_neighbour(number: int, address: String, cluster: String) -> bool:
 ## You crashed (small or big). "No crashes" goal (Session 32). The ShiftManager calls this.
 func note_crash() -> void:
 	shift_crashes += 1
+	streak = 0
+	stats_changed.emit()
 
 
 ## Picks this shift's goals from the goals this map can do.
@@ -340,12 +404,17 @@ func set_insurance(on: bool) -> void:
 ## (0 stars, no pay) and the bills come in. The boss pays for your very first one;
 ## with insurance you only pay INSURED_CRASH_COST. Returns what happened, for the clinic
 ## screen: hospital, repair, paid (what came off your wallet), boss, insured, lost_order.
-func big_crash() -> Dictionary:
+func big_crash(impact: Dictionary = {}) -> Dictionary:
+	streak = 0
+	var quote := CrashImpact.quote(impact)
 	var bills := {
-		"hospital": GameConfig.HOSPITAL_BILL,
-		"repair": GameConfig.REPAIR_BILL,
+		"hospital": quote["hospital"],
+		"repair": quote["repair"],
+		"severity": quote.get("severity", "severe"),
+		"impact": impact.duplicate(true),
 		"boss": not boss_paid_crash,
 		"insured": insurance_on,
+		"insured_cap": quote["insured"],
 		"lost_order": current_order != null or offered_order != null,
 		"food": current_order.food if current_order != null else "",
 		"paid": 0,
@@ -354,9 +423,9 @@ func big_crash() -> Dictionary:
 	if not boss_paid_crash:
 		boss_paid_crash = true
 	elif insurance_on:
-		bills["paid"] = GameConfig.INSURED_CRASH_COST
+		bills["paid"] = quote["insured"]
 	else:
-		bills["paid"] = GameConfig.HOSPITAL_BILL + GameConfig.REPAIR_BILL
+		bills["paid"] = bills["hospital"] + bills["repair"]
 	if current_order != null:
 		# Cancelled: counts as a 0-star job in your rating, no pay, no XP.
 		history.append({
@@ -367,6 +436,8 @@ func big_crash() -> Dictionary:
 		})
 	current_order = null
 	offered_order = null
+	offered_orders.clear()
+	offers_changed.emit()
 	money -= bills["paid"]
 	shift_bills += bills["paid"]
 	money_changed.emit(money)
@@ -398,6 +469,11 @@ func crashes_this_week() -> int:
 ## Starts a new shift: a full clock and a fresh summary.
 func start_shift() -> void:
 	shift_number += 1
+	if shift_number > 1:
+		day_kind = tomorrow_kind
+	tomorrow_kind = ReplayCatalog.next_day(day_kind)
+	shift_new_bests.clear()
+	collection_bonus_this_shift = 0
 	shift_time_left = GameConfig.SHIFT_LENGTH
 	shift_clock_out = false
 	shift_start_index = history.size()
@@ -414,10 +490,12 @@ func shift_open() -> bool:
 	return not shift_clock_out
 
 
-## The time on the in-game clock, in hours (8.5 = 08:30).
+## Continuous game time at the fixed rate (one active second = one game minute).
+## The display rounds to whole minutes; schedules and sunlight use this precise value.
 func clock_hours() -> float:
-	var done := 1.0 - shift_time_left / GameConfig.SHIFT_LENGTH
-	return lerpf(GameConfig.SHIFT_START_HOUR, GameConfig.SHIFT_END_HOUR, clampf(done, 0.0, 1.0))
+	var elapsed := clampf(GameConfig.SHIFT_LENGTH - shift_time_left, 0.0, GameConfig.SHIFT_LENGTH)
+	return minf(GameConfig.SHIFT_START_HOUR + elapsed * GameConfig.GAME_MINUTES_PER_REAL_SECOND / 60.0,
+			GameConfig.SHIFT_END_HOUR)
 
 
 ## The shift's numbers for the summary screen: deliveries, cancelled, average stars,
@@ -425,7 +503,9 @@ func clock_hours() -> float:
 func shift_summary() -> Dictionary:
 	var jobs := history.slice(shift_start_index)
 	var summary := {"deliveries": 0, "cancelled": 0, "stars": 0.0, "pay": 0, "tips": 0,
-			"insurance": 0, "bills": shift_bills, "xp": 0, "earned": 0}
+			"insurance": 0, "bills": shift_bills, "xp": 0, "earned": 0,
+			"day": day_kind, "tomorrow": tomorrow_kind, "collection_bonus": collection_bonus_this_shift,
+			"new_bests": shift_new_bests.duplicate()}
 	var star_total := 0.0
 	for job in jobs:
 		if job["cancelled"]:
@@ -447,7 +527,7 @@ func shift_summary() -> Dictionary:
 		summary["goals"].append({"id": id, "text": ShiftGoals.ALL.get(id, id), "done": done})
 		if done:
 			summary["goal_bonus"] += GameConfig.GOAL_BONUS
-	summary["earned"] = summary["pay"] + summary["tips"] + summary["goal_bonus"] - summary["insurance"] - summary["bills"]
+	summary["earned"] = summary["pay"] + summary["tips"] + summary["goal_bonus"] + collection_bonus_this_shift - summary["insurance"] - summary["bills"]
 	return summary
 
 
@@ -456,6 +536,8 @@ func clock_out() -> void:
 	shift_clock_out = true
 	if stage == Stage.OFFERED:
 		offered_order = null
+		offered_orders.clear()
+		offers_changed.emit()
 		_set_stage(Stage.NONE)
 
 
@@ -467,6 +549,13 @@ func end_shift() -> Dictionary:
 		_goal_bonus_paid = true
 		money += summary["goal_bonus"]  # the goal bonus goes into the wallet (Session 32)
 		money_changed.emit(money)
+	if summary["earned"] > int(personal_bests.get("earnings", 0)):
+		personal_bests["earnings"] = summary["earned"]
+		_note_best("Best shift earnings: %d Dh" % summary["earned"])
+	if summary["deliveries"] > int(personal_bests.get("deliveries", 0)):
+		personal_bests["deliveries"] = summary["deliveries"]
+		_note_best("Most deliveries in a shift: %d" % summary["deliveries"])
+	summary["new_bests"] = shift_new_bests.duplicate()
 	shift_ended.emit(summary)
 	return summary
 
@@ -544,3 +633,127 @@ func _remember_choice(accepted: bool) -> void:
 	_choices.append(accepted)
 	while _choices.size() > GameConfig.ORDER_ACCEPT_HISTORY:
 		_choices.pop_front()
+
+
+## A second offer shares the first offer's single countdown and acceptance decision.
+func offer_choices(orders: Array[Order]) -> bool:
+	if orders.is_empty() or not offer_order(orders[0]):
+		return false
+	offered_orders.assign(orders)
+	offers_changed.emit()
+	return true
+
+
+func day_label() -> String:
+	return ReplayCatalog.day_name(day_kind)
+
+
+func freshness_multiplier() -> float:
+	return GameConfig.HOT_NOON_FRESHNESS_MULTIPLIER if day_kind == "hot_noon" else 1.0
+
+
+func order_delay() -> float:
+	return GameConfig.ORDER_NEXT_DELAY * (GameConfig.RUSH_HOUR_ORDER_DELAY_SHARE if day_kind == "rush_hour" else 1.0)
+
+
+func regular_stage(id: String) -> String:
+	var visits := int(regular_visits.get(id, 0))
+	if visits >= GameConfig.BEST_FRIEND_VISITS:
+		return "best_friends"
+	return "friendly" if visits >= GameConfig.FRIENDLY_VISITS else "first"
+
+
+func _note_best(message: String) -> void:
+	if message.begins_with("Longest five-star streak:"):
+		shift_new_bests = shift_new_bests.filter(func(line): return not line.begins_with("Longest five-star streak:"))
+	if not message in shift_new_bests:
+		shift_new_bests.append(message)
+
+
+func _record_route_best(order: Order, seconds: float) -> bool:
+	if seconds <= 0.0:
+		return false
+	var routes: Dictionary = personal_bests.get("routes", {})
+	var key := "%s>%d:%s" % [order.restaurant_id, order.villa_number, order.special]
+	if routes.has(key) and float(routes[key]) <= seconds:
+		return false
+	routes[key] = seconds
+	personal_bests["routes"] = routes
+	var labels: Dictionary = personal_bests.get("route_labels", {})
+	labels[key] = "%s to %s%s" % [order.restaurant_name, order.address, " · " + GameConfig.SPECIAL_NAMES.get(order.special, order.special) if order.special != "" else ""]
+	personal_bests["route_labels"] = labels
+	var whole_seconds := int(seconds)
+	_note_best("Fastest ride: %s · %d:%02d" % [labels[key], whole_seconds / 60, whole_seconds % 60])
+	return true
+
+
+## Catalogues are runtime map data; lifetime stamps and claims are separately saved.
+func configure_collections(villas: Array) -> void:
+	home_catalog.clear()
+	venue_catalog.clear()
+	for villa in villas:
+		var key := str(villa["number"])
+		if villa.get("kind", "") == "spot":
+			venue_catalog[key] = villa.get("address", "Reception")
+		elif villa.get("cluster", "") != "":
+			home_catalog[key] = {"cluster": villa["cluster"], "house": villa.get("house", 0), "address": villa.get("address", key)}
+	collection_changed.emit()
+
+
+func _stamp_delivery(order: Order) -> int:
+	var key := str(order.villa_number)
+	var bonus := 0
+	if order.cluster != "":
+		visited_homes[key] = {"cluster": order.cluster, "address": order.address}
+		var count := cluster_stamps(order.cluster)
+		var paid := int(collection_claims.get(order.cluster, 0))
+		var earned := count / GameConfig.COLLECTION_STAMP_INTERVAL
+		if earned > paid:
+			bonus = (earned - paid) * GameConfig.COLLECTION_STAMP_BONUS
+			collection_claims[order.cluster] = earned
+			money += bonus
+			collection_bonus_this_shift += bonus
+		if count >= GameConfig.COLLECTION_HOMES_PER_CLUSTER:
+			owned_collection_rewards[order.cluster] = "gold_" + order.cluster
+	elif venue_catalog.has(key):
+		visited_venues[key] = order.address
+	collection_changed.emit()
+	return bonus
+
+
+func cluster_stamps(cluster: String) -> int:
+	return visited_homes.values().filter(func(home): return home.get("cluster", "") == cluster).size()
+
+
+func note_animal_met(id: String, animal_name: String) -> void:
+	if id == "" or animals_met.has(id):
+		return
+	animals_met[id] = animal_name
+	collection_changed.emit()
+	save_soon()
+
+
+func note_customer_line(line: String) -> void:
+	if line == "" or lines_heard.has(line):
+		return
+	lines_heard[line] = true
+	collection_changed.emit()
+	save_soon()
+
+
+func upgrade_level(id: String) -> int:
+	return int(upgrade_levels.get(id, 0))
+
+
+## The shop validates its cart; the wallet mutation and save happen atomically here.
+func buy_shop_cart(total: int, levels: Dictionary, owned: Dictionary, equipped: Dictionary) -> bool:
+	if total < 0 or money < total:
+		return false
+	upgrade_levels = levels.duplicate(true)
+	owned_items = owned.duplicate(true)
+	equipped_cosmetics = equipped.duplicate(true)
+	money -= total
+	money_changed.emit(money)
+	stats_changed.emit()
+	save_soon()
+	return true
