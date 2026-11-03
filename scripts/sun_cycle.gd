@@ -57,7 +57,7 @@ func apply_hour(hour: float) -> void:
 			_sky.ground_horizon_color = look["horizon"].lerp(Color(0.91, 0.83, 0.65), 0.5)
 	var heat := shimmer_at(hour)
 	_shimmer_material.set_shader_parameter("strength", heat)
-	_shimmer.visible = heat > 0.01 and Settings.graphics > 0
+	_shimmer.visible = heat > 0.01 and Settings.graphics > 0 and not OS.has_feature("web")
 
 
 ## Blends the two nearest lines of GameConfig.LIGHT_KEYS for this hour.
@@ -89,18 +89,20 @@ func shimmer_at(hour: float) -> float:
 func apply_graphics() -> void:
 	var level: int = Settings.graphics
 	var env := _environment
-	env.ssao_enabled = level > 0
+	var forward_plus := not OS.has_feature("web")
+	env.ssao_enabled = level > 0 and forward_plus
 	env.ssao_radius = GameConfig.SSAO_RADIUS
 	env.ssao_intensity = GameConfig.SSAO_INTENSITY
 	# Medium does the corner shadows at half size, High at full size and better quality.
-	RenderingServer.environment_set_ssao_quality(
-			RenderingServer.ENV_SSAO_QUALITY_HIGH if level == 2 else RenderingServer.ENV_SSAO_QUALITY_MEDIUM,
-			level < 2, 0.5, 2, 50.0, 300.0)
+	if forward_plus:
+		RenderingServer.environment_set_ssao_quality(
+				RenderingServer.ENV_SSAO_QUALITY_HIGH if level == 2 else RenderingServer.ENV_SSAO_QUALITY_MEDIUM,
+				level < 2, 0.5, 2, 50.0, 300.0)
 	env.fog_enabled = level > 0
 	env.fog_density = GameConfig.HAZE_DENSITY
 	env.fog_aerial_perspective = GameConfig.HAZE_SKY_MIX
 	env.fog_sky_affect = 0.0
-	env.glow_enabled = level > 0
+	env.glow_enabled = level > 0 and forward_plus
 	env.glow_intensity = GameConfig.GLOW_STRENGTH
 	env.glow_hdr_threshold = GameConfig.GLOW_THRESHOLD
 	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_SOFTLIGHT
@@ -108,7 +110,7 @@ func apply_graphics() -> void:
 	sun.shadow_blur = 1.0 if level == 0 else 1.5
 	RenderingServer.directional_soft_shadow_filter_set_quality(
 			RenderingServer.SHADOW_QUALITY_SOFT_HIGH if level == 2 else RenderingServer.SHADOW_QUALITY_SOFT_LOW)
-	_shimmer.visible = level > 0 and shimmer_at(hour_now()) > 0.01
+	_shimmer.visible = level > 0 and shimmer_at(hour_now()) > 0.01 and not OS.has_feature("web")
 
 
 ## The see-through sheet over the screen that wobbles the far-away ground (heat shimmer).

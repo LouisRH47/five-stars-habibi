@@ -1,5 +1,16 @@
 # Progress
 
+## Browser distribution — 3 November 2026
+
+- Added a single-threaded browser export, a Play/loading screen, and web-only Low
+  graphics settings. Desktop Forward+ stays enabled for desktop builds.
+- Added multi-touch driving buttons for testing on iPad in landscape.
+- GitHub workflow checks pull requests, deploys successful main builds to
+  `fivestarshabibi.middleleap.com`, and packages tagged releases. Publishing
+  requires the Cloudflare credential described in `docs/WEB_RELEASE.md`.
+- Browser saves stay on the current device. Real iPad performance still needs
+  Louis's test; emulated touch checks are not a physical-device acceptance test.
+
 ## Current session
 **Sessions 18 to 34 are built** (the polish pass and the graphics pass), on branch
 `polish-and-graphics`. Each one passes the Godot checks and the smoke test on all three maps;

@@ -18,6 +18,7 @@ config/features=PackedStringArray("4.7", "Forward Plus")
 
 GameState="*res://scripts/game_state.gd"
 Music="*res://scripts/music.gd"
+TouchControls="*res://scripts/touch_controls.gd"
 
 [gui]
 
@@ -106,3 +107,11 @@ ring_bell={
 [physics]
 
 common/physics_interpolation=true
+
+[rendering]
+
+; Keep Forward+ for desktop. WebGL 2 uses Compatibility for browser exports.
+renderer/rendering_method.web="gl_compatibility"
+; Import both desktop and mobile texture formats for the universal browser build.
+textures/vram_compression/import_etc2_astc=true
+scaling_3d/scale.web=0.75
