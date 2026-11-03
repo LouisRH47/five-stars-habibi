@@ -7,6 +7,12 @@ The corrected clock advances one game minute per active real second, so the
 and a small sun icon; event messages use the same clock. **Next: Session 35B**, the real-size placeholder map, 500 addresses
 and route/pacing checks. The playable map is still the Session 34 layout.
 
+**Planned addition (44A–44B):** rider/bike falls before recovery or hospital, with
+reactions based on collision direction, speed and obstacle hardness, then
+severity-based treatment/repair bills and capped insured payments. Keep the
+boss-covered first major crash and one charge per accident. This is planned
+work after Session 44; the current crash animation and prices are unchanged.
+
 **Sessions 18 to 34 are built** (the polish pass and the graphics pass), on branch
 `polish-and-graphics`. Each one passes the Godot checks and the smoke test on all three maps;
 Wahat Al Shams passes 5 runs out of 5. Sessions 26 to 33 were built by helper agents in

@@ -940,6 +940,54 @@ Done when:
 - [ ] Riding and sprinting feel fast, with no warpy smear
 - [ ] Everyone has a head
 
+### Session 44A: Rider falls and crash presentation (planned)
+
+```text
+Read PRD.md “Crashes, bills and insurance”, Planned crash upgrade.
+Capture the collision before stopping the bike: relative impact speed, direction,
+angle and obstacle category/hardness. Build a short fall sequence for both rider
+and bike: gentle tip/recovery, sideways skid and hard frontal tumble. Match the
+direction/intensity to the impact; keep the rider visible and use suitable sound
+and camera feedback. A major crash must finish its fall before the clinic fade.
+Minor crashes recover back into gameplay. Keep the existing soft-character
+collision policy. Use reliable authored/physics-assisted falls first; full ragdoll
+is optional. Lock normal controls during the fall, guarantee recovery/transition,
+and prevent bounce contacts from creating extra accidents.
+```
+
+Done when:
+
+- [ ] A soft/slow hit, a glancing scrape and a hard frontal collision have visibly different falls
+- [ ] Direction and intensity reflect the captured impact, with readable camera framing
+- [ ] A major crash shows the fall before the hospital; a minor fall returns control safely
+- [ ] Secondary bounce contacts cannot repeat crash counts, cancellation or consequences
+- [ ] Louis watches the reactions at normal speed and likes how they look and feel
+
+### Session 44B: Impact-based crash bills and insurance (planned)
+
+```text
+Use Session 44A's single captured impact record to choose a severity band.
+Replace flat treatment/repair bills with tunable bands based on relative impact
+speed, angle and obstacle hardness. An equally fast glancing wall scrape should
+cost less than a head-on hit; a harder obstacle or a stronger impact should
+increase the bill. Minor recoverable falls have little or no charge. Insurance
+reduces the bill with a severity-dependent, capped contribution; keep the first
+major crash covered by the boss. The clinic explains the obstacle, impact speed,
+severity, treatment, repair, insurance and final amount due. Charge once per
+accident, then preserve the major-crash order-cancellation and shift-ending flow.
+Put all thresholds/prices/caps in game_config.gd and tune against shift earnings.
+Exact amounts are playtest values. When Session 45 adds the rocket, test that its
+forced-major-crash rule uses this same animation and billing flow.
+```
+
+Done when:
+
+- [ ] Representative low/medium/high impacts produce distinct, explainable bills
+- [ ] Head-on versus glancing and soft versus hard obstacle cases follow the intended severity order
+- [ ] First-crash cover and insurance work, including different capped insured payments by severity
+- [ ] One fall creates one bill, one crash count and at most one cancelled order
+- [ ] Tests verify severity boundaries and billing; a playtest checks the costs feel proportionate
+
 ### Session 45: Pedal Point Bikes (upgrades, cart and checkout, rocket booster)
 
 ```text
