@@ -44,6 +44,11 @@ func _run() -> void:
 			if absf(gap.x) > 0.01 and absf(gap.z) > 0.01:
 				safe = false
 		_check("%s uses only ring road and its parking access" % car.name, safe)
+	var blocked_routes: Array[String] = []
+	for vehicle: TrafficVehicle in traffic.cars + traffic.buses:
+		if not _route_clears_restaurants(vehicle):
+			blocked_routes.append(vehicle.name)
+	_check("car and bus bodies clear the walk-in restaurant shells: %s" % [blocked_routes], blocked_routes.is_empty())
 	var first: Node3D = traffic.cars[0]
 	bike.position = first.position + first.heading() * 5.0
 	var before := first.position
@@ -125,6 +130,25 @@ func _ring_distance(point: Vector3) -> float:
 		if road.get("name", "") == "Ring Road":
 			nearest = minf(nearest, Geometry2D.get_closest_point_to_segment(Vector2(point.x, point.z), road["from"], road["to"]).distance_to(Vector2(point.x, point.z)))
 	return nearest
+
+
+func _route_clears_restaurants(vehicle: TrafficVehicle) -> bool:
+	var vehicle_half := Vector2(vehicle.size.x, vehicle.size.z) * 0.5
+	for i in vehicle.points.size():
+		var from := Vector2(vehicle.points[i].x, vehicle.points[i].z)
+		var next := vehicle.points[(i + 1) % vehicle.points.size()]
+		var to := Vector2(next.x, next.z)
+		var body_half := vehicle_half if is_equal_approx(from.x, to.x) else Vector2(vehicle_half.y, vehicle_half.x)
+		for place: Dictionary in WahatAlShams.RESTAURANTS:
+			if not place.get("interior", false):
+				continue
+			var centre: Vector3 = place["position"]
+			var size: Vector3 = place.get("size", WahatAlShams.RESTAURANT_SIZE)
+			# Include half the venue shell thickness and sweep the vehicle's full body.
+			var half := Vector2(size.x, size.z) * 0.5 + Vector2.ONE * 0.125 + body_half
+			if _intersects_box(from, to, Rect2(Vector2(centre.x, centre.z) - half, half * 2.0)):
+				return false
+	return true
 
 
 func _intersects_box(a: Vector2, b: Vector2, box: Rect2) -> bool:

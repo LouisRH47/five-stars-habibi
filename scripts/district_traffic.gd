@@ -65,7 +65,11 @@ func _ring_bounds() -> Rect2:
 				first = false
 			else:
 				bounds = bounds.expand(point)
-	return bounds.grow(-2.2)
+	if first:
+		return bounds
+	var inset := bounds.grow(-2.2)
+	# Keep the north lane centred so buses clear the storefronts' rear walls.
+	return inset.expand(Vector2(inset.position.x, bounds.position.y))
 
 
 func _watch(vehicle: Node3D) -> void:
