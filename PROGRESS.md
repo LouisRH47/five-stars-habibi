@@ -539,6 +539,21 @@ on both Palm Grove and the test area. Nothing needed fixing.
   numbers, the signs and that nothing blocks a door.
 
 ## Known bugs
+- Play-test bot findings on Wahat Al Shams (to tune in Session 34):
+  - A careful 5-minute shift gets 5 to 6 deliveries (target 6 to 8). The rides are long
+    (Plaza to cluster 100 to 250 m), not the bot; target times look generous (time meter
+    ends around 76 to 84%).
+  - At full speed the bike can't make a 90° turn between 4 m lanes: brake to about 12 to 14 km/h
+    before lane corners. Careless riding hits villa corners.
+  - Cats sit in the cluster mini-plaza strips, the natural shortcut, so fast riders hit them
+    a lot (one ice cream lost all its damage to three cat hits).
+  - Doors face the narrow lanes, so every stop ends in a three-point turn (S to reverse):
+    worth a line in the tutorial.
+  - A scooter kid riding head-on can keep bumping a stopped rider until it turns back.
+- The play-test bot (`tests/playtest_bot.gd`, `tests/grid_path.gd`) was rebuilt by a helper
+  agent: it looks ahead on its route, slows for corners, bumps, cats and doors, steers round
+  cats and kids, backs up when blocked. 0 crashes and 0 resets in 11 careful shifts.
+  `-- timeline` prints every step.
 - None found by the checks. Not play-tested by Louis yet.
 - The bot once got stuck nose-to-nose with a kid on a scooter (the kid waits for the bike,
   the bot kept pushing). A person just steers round, but say if it happens to you.
