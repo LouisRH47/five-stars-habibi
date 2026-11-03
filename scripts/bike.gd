@@ -32,6 +32,8 @@ var bumps_taken := 0
 var fallen_left := 0.0
 ## True after a big crash, until the CrashManager puts you back at the start.
 var wrecked := false
+## True while you're walking (Session 19): the bike stands on its stand, no rider, no keys.
+var parked := false
 
 # Where the wheels meet a speed bump, in metres ridden after the bike's collision box
 # first touches it. The box front is 0.85 m ahead of the bike's middle, the front wheel
@@ -74,6 +76,9 @@ func _physics_process(delta: float) -> void:
 	if fallen_left > 0.0 or wrecked:
 		_lie_on_ground(delta)
 		return
+	if parked:
+		_stand(delta)
+		return
 	_update_stamina_and_speed(delta)
 	_update_steering(delta)
 	_move(delta)
@@ -91,10 +96,36 @@ func reset_to_start() -> void:
 	speed = 0.0
 	fallen_left = 0.0
 	wrecked = false
+	if parked:
+		set_parked(false)
 	_model.rotation.z = 0.0
 	_hop_active = false
 	_model.position.y = 0.0
 	_model.rotation.x = 0.0
+
+
+## Parks the bike (true) while you walk, or takes it off the stand (false).
+## Parked: the rider on it disappears (you're the walker now) and it leans on its stand.
+func set_parked(on: bool) -> void:
+	parked = on
+	speed = 0.0
+	velocity = Vector3.ZERO
+	for part in ["RiderBody", "LegLeft", "LegRight", "Helmet", "Look"]:
+		var node := _model.get_node_or_null(part) as Node3D
+		if node != null:
+			node.visible = not on
+	if not on:
+		RiderLook.apply(_model, GameState.rider_look)  # puts the helmet back the way the look wants it
+	_model.rotation.z = deg_to_rad(GameConfig.PARKED_LEAN_DEG) if on else 0.0
+
+
+## Standing still on the stand: only gravity, no keys.
+func _stand(delta: float) -> void:
+	speed = 0.0
+	velocity.x = 0.0
+	velocity.z = 0.0
+	velocity.y = 0.0 if is_on_floor() else velocity.y - GameConfig.GRAVITY * delta
+	move_and_slide()
 
 
 ## A speed bump calls this when the bike rides onto it (scripts/speed_bump.gd).

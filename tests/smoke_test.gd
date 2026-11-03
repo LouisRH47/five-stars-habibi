@@ -20,6 +20,7 @@ const STEPS := {
 	"brake": 240,
 	"settle": 3,       # frames to wait after moving the bike to a door
 	"tap": 12,         # a quick tap of E (0.2 s): must do nothing at the door
+	"walk": 360,       # up to 6 seconds to walk to the door (or back to the bike)
 	"hold": 100,       # holding E for 1.67 s: longer than the 1.5 s pick-up / drop-off hold
 	"timeout": 30,     # half a second, longer than TEST_OFFER_TIMEOUT
 	"bump_ride": 300,  # 5 seconds of pedalling from a standstill, over a speed bump
@@ -34,7 +35,7 @@ const BUMP_RUN_UP := 6.0
 ## A short offer timer for the test, so it doesn't have to wait 30 seconds.
 const TEST_OFFER_TIMEOUT := 0.2
 ## Every action the test might press. All of them are let go at the end.
-const ACTIONS := ["move_forward", "move_back", "sprint", "handbrake", "interact", "skip_order"]
+const ACTIONS := ["move_forward", "move_back", "sprint", "handbrake", "interact", "skip_order", "toggle_bike"]
 const FONT_PATH := "res://assets/fonts/NotoSansArabic.ttf"
 ## The test saves here, never over the real save (user://save.json).
 const TEST_SAVE := "user://smoke_test_save.json"
@@ -57,6 +58,9 @@ var _bump_spot := Vector3.ZERO
 var _bump_direction := Vector3.FORWARD
 var _kid_hits := 0
 var _riding_crashes := 0
+var _on_foot: Node
+var _walk_goal := Vector3.ZERO
+var _parked_at := Vector3.ZERO
 var _kid_start := Vector3.ZERO
 
 
@@ -83,6 +87,7 @@ func _initialize() -> void:
 	_delivery = _main.get_node_or_null("DeliveryManager")
 	_minimap = _main.get_node_or_null("Minimap")
 	_meters = _main.get_node_or_null("Meters")
+	_on_foot = _main.get_node_or_null("OnFoot")
 	# The old test area has boxes straight ahead of the start, and riding into one at sprint
 	# speed is a big crash (Session 12). Do the riding checks in a clear lane instead.
 	if scene_path.ends_with("test_area.tscn"):
@@ -127,6 +132,7 @@ func _physics_process(_delta: float) -> bool:
 			if _frame >= STEPS.settle:
 				_check("bike is near the restaurant door", _delivery.is_near_target(), "")
 				_check_minimap_pin(_order.restaurant_name)
+				_check_get_off()
 				Input.action_press("interact")
 				_frame = 0
 				_phase = "pickup_tap"
@@ -145,6 +151,8 @@ func _physics_process(_delta: float) -> bool:
 				Input.action_release("interact")
 				_check("holding E for 1.5 s at the restaurant picks up the food", _game_state.stage_name() == "TO_VILLA", "")
 				_check_stage("TO_VILLA")
+				if _on_foot != null:
+					_check("F next to the bike gets you back on", _on_foot.get_on() and not _on_foot.on_foot, "")
 				# Still at the restaurant, so the villa may be off the map: the pin must stay on it.
 				_check_minimap_pin(str(_order.villa_number))
 				_check_minimap_turns()
@@ -161,6 +169,7 @@ func _physics_process(_delta: float) -> bool:
 				_check("at the villa the pin is right next to you", spot.distance_to(middle) < 10.0,
 						"%.1f px from the middle" % spot.distance_to(middle))
 				_order.leave_at_door = false  # this one: the customer comes out
+				_check_get_off()
 				Input.action_press("interact")
 				_frame = 0
 				_phase = "dropoff_tap"
@@ -175,6 +184,8 @@ func _physics_process(_delta: float) -> bool:
 			if _frame >= STEPS.hold:
 				Input.action_release("interact")
 				_check("holding E for 1.5 s at the villa delivers", _game_state.stage_name() == "NONE", "")
+				if _on_foot != null:
+					_on_foot.get_on()
 				_check_customer()
 				_check("money goes up by the pay, minus 2 Dh insurance", _game_state.money == _money_before + _order.pay - GameConfig.INSURANCE_PER_DELIVERY, "Dh %d" % _game_state.money)
 				_check("delivery is saved in the history", _game_state.history.size() == 1, "%d in history" % _game_state.history.size())
@@ -187,6 +198,39 @@ func _physics_process(_delta: float) -> bool:
 				_check_stage("NONE")
 				_delivery.offer_timeout = GameConfig.ORDER_OFFER_TIMEOUT
 				_check_scoring()
+				_start_walk_check()
+		"walk_to_door":
+			if _delivery.is_near_target() or _frame >= STEPS.walk:
+				Input.action_release("move_forward")
+				_check("you can walk from the bike to the door", _delivery.is_near_target(), "%.1f m to go" % _flat(_walk_goal - _on_foot.walker.global_position).length())
+				_check("the parked bike stays where it is", _bike.global_position.distance_to(_parked_at) < 0.1, "")
+				Input.action_press("interact")
+				_frame = 0
+				_phase = "walk_hold"
+		"walk_hold":
+			if _frame >= STEPS.hold:
+				Input.action_release("interact")
+				_check("on foot, holding E at the door delivers", _game_state.stage_name() == "NONE", "")
+				_face(_on_foot.walker, _bike.global_position)
+				Input.action_press("move_forward")
+				_frame = 0
+				_phase = "walk_back"
+		"walk_back":
+			if _on_foot.near_bike() or _frame >= STEPS.walk:
+				Input.action_release("move_forward")
+				_check("you can walk back to the bike", _on_foot.near_bike(), "")
+				Input.action_press("toggle_bike")
+				_frame = 0
+				_phase = "press_f"
+		"press_f":
+			if _frame == 2:
+				Input.action_release("toggle_bike")
+				_check("F next to the bike gets you riding again", not _on_foot.on_foot and not _bike.parked, "")
+				_parked_at = _bike.global_position
+				Input.action_press("move_forward")
+			if _frame >= 60:
+				Input.action_release("move_forward")
+				_check("and you can ride away", _bike.global_position.distance_to(_parked_at) > 1.0, "%.1f m" % _bike.global_position.distance_to(_parked_at))
 				_start_crash(false)
 		"crash_small":
 			if _frame >= STEPS.crash_small:
@@ -609,7 +653,7 @@ func _check_tutorial() -> void:
 	_check("tip: ride to the pizza place with the mini-map", "Ride to Pizza" in tutorial.tip and "mini-map" in tutorial.tip, "")
 	_move_bike_to(_delivery.target_door())
 	tutorial._process(0.0)
-	_check("tip at the door: hold E to pick up", "hold E to pick up" in tutorial.tip, tutorial.tip)
+	_check("tip at the door: get off and hold E to pick up", "press F to get off" in tutorial.tip and "hold E" in tutorial.tip, tutorial.tip)
 	gs.pick_up()
 	_move_bike_to(Vector3(2.0, 0.05, 140.0))
 	tutorial._process(0.0)
@@ -766,6 +810,63 @@ func _check_shift_empty() -> void:
 	screen._next_shift()
 	_main.get_node("ShiftManager").shift_length = GameConfig.SHIFT_LENGTH
 	gs.reset()
+
+
+## Session 19: F gets you off the bike only when it's nearly stopped, and you can only pick up
+## and drop off on foot. Called with the bike parked at a door.
+func _check_get_off() -> void:
+	if _on_foot == null:
+		return
+	_bike.speed = 5.0  # 18 km/h: too fast to get off
+	_check("F doesn't get you off while moving fast", not _on_foot.get_off(), "")
+	_bike.speed = 0.0
+	_check("on the bike, holding E at the door does nothing", not _delivery._slow_enough() or _delivery.needs_walking, "")
+	_check("F gets you off when you're stopped", _on_foot.get_off() and _on_foot.on_foot and _bike.parked, "")
+	_check("the camera and the mini-map follow you on foot", _main.get_node("FollowCamera").target == _on_foot.walker
+			and _minimap.bike == _on_foot.walker and _minimap.parked_bike == _bike, "")
+
+
+## Session 19: the full run. Park 6 m from a villa door, F, walk to the door, hold E, walk
+## back, F, ride away.
+func _start_walk_check() -> void:
+	if _on_foot == null:
+		print("      no OnFoot in this scene, walking not checked")
+		_start_crash(false)
+		return
+	var gs: Node = _game_state
+	gs.reset()
+	_delivery.offer_now()
+	_delivery.accept()
+	gs.pick_up()
+	_walk_goal = _delivery.target_door()
+	var villa: Dictionary = {}
+	for place in _delivery.place_builder.villas:
+		if place["number"] == gs.current_order.villa_number:
+			villa = place
+	var angle := deg_to_rad(villa["facing"])
+	var front := Vector3(sin(angle), 0.0, cos(angle))
+	_move_bike_to(_walk_goal + front * 6.0)  # out on the road, 6 m from the door spot
+	_bike.rotation = Vector3(0.0, atan2(front.x, front.z), 0.0)
+	var phone := _main.get_node("Phone")
+	phone._process(0.0)
+	var hint: String = phone.get_node("Panel/Margin/Rows/Hint").text
+	_check("on the bike 6 m from the door the phone says park near the door", hint == "Park near the door", hint)
+	_on_foot.get_off()
+	_parked_at = _bike.global_position
+	_face(_on_foot.walker, _walk_goal)
+	Input.action_press("move_forward")
+	_frame = 0
+	_phase = "walk_to_door"
+
+
+## Turns a body so its front (-Z) points at a spot.
+func _face(body: Node3D, spot: Vector3) -> void:
+	var way := spot - body.global_position
+	body.rotation = Vector3(0.0, atan2(-way.x, -way.z), 0.0)
+
+
+func _flat(v: Vector3) -> Vector2:
+	return Vector2(v.x, v.z)
 
 
 ## Session 10: stars from the meters, tips only on 5-star jobs, XP and Rider Level, and a

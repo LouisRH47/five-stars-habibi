@@ -19,6 +19,8 @@
 [ext_resource type="Script" path="res://scripts/shift_screen.gd" id="18_shift_screen"]
 [ext_resource type="Script" path="res://scripts/shift_manager.gd" id="19_shift"]
 [ext_resource type="Script" path="res://scripts/sounds.gd" id="21_sounds"]
+[ext_resource type="Script" path="res://scripts/walker.gd" id="22_walker"]
+[ext_resource type="Script" path="res://scripts/on_foot.gd" id="23_on_foot"]
 [ext_resource type="Script" path="res://scripts/tutorial.gd" id="20_tutorial"]
 [ext_resource type="Script" path="res://scripts/obstacle_builder.gd" id="15_obstacles"]
 
@@ -126,3 +128,14 @@ delivery_manager = NodePath("../DeliveryManager")
 [node name="Sounds" type="Node" parent="." node_paths=PackedStringArray("bike")]
 script = ExtResource("21_sounds")
 bike = NodePath("../Bike")
+
+[node name="Walker" type="CharacterBody3D" parent="."]
+script = ExtResource("22_walker")
+
+[node name="OnFoot" type="Node" parent="." node_paths=PackedStringArray("bike", "walker", "camera", "delivery_manager", "minimap")]
+script = ExtResource("23_on_foot")
+bike = NodePath("../Bike")
+walker = NodePath("../Walker")
+camera = NodePath("../FollowCamera")
+delivery_manager = NodePath("../DeliveryManager")
+minimap = NodePath("../Minimap")

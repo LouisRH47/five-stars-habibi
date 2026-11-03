@@ -38,6 +38,9 @@ var _last_spot := Vector3.ZERO
 var _resets := 0
 var _done := false
 var _rides: Array = []  # [ride seconds, target seconds] per delivery
+var _on_foot: Node
+var _walk_time := 0.0  # seconds spent walking (Session 19)
+var _walked_for := ""  # the stage the last walk to a door was for (done once it changes)
 var _crashes := {"small": 0, "big": 0}
 var _frames := 0
 
@@ -53,6 +56,7 @@ func _initialize() -> void:
 	root.add_child(_main)
 	_bike = _main.get_node("Bike")
 	_dm = _main.get_node("DeliveryManager")
+	_on_foot = _main.get_node("OnFoot")
 	_gs.shift_ended.connect(_on_shift_ended)
 	_gs.order_delivered.connect(func(_order): _rides.append([_gs.ride_time, _gs.target_time]))
 	_bike.crashed.connect(func(big): _crashes["big" if big else "small"] += 1)
@@ -75,6 +79,9 @@ func _physics_process(delta: float) -> bool:
 	if _bumps.is_empty():
 		for bump in _main.get_node("DecorBuilder").speed_bumps:
 			_bumps.append(Vector2(bump["position"].x, bump["position"].z))
+	if _on_foot.on_foot:
+		_walk(delta)
+		return false
 	match _gs.stage_name():
 		"OFFERED":
 			_dm.accept()
@@ -83,6 +90,34 @@ func _physics_process(delta: float) -> bool:
 		_:
 			_let_go()
 	return false
+
+
+## On foot (Session 19): walk to the door and hold E; once that's done, walk back and F.
+func _walk(delta: float) -> void:
+	_walk_time += delta
+	_let_go()
+	var going_to_door: bool = _gs.stage_name() in ["TO_RESTAURANT", "TO_VILLA"] and _walked_for != _gs.stage_name()
+	if _walked_for == "":
+		_walked_for = "pending " + _gs.stage_name()
+	if _walked_for.begins_with("pending ") and _gs.stage_name() != _walked_for.substr(8):
+		_walked_for = _gs.stage_name()  # picked up or delivered: walk back now
+	going_to_door = _walked_for.begins_with("pending ")
+	if going_to_door and _dm.is_near_target():
+		Input.action_press("interact")  # hold E until the bar is full
+		return
+	if not going_to_door and _on_foot.near_bike():
+		_on_foot.toggle()  # F: back on the bike
+		return
+	var goal: Vector3 = _dm.target_door() if going_to_door else _bike.global_position
+	var walker: Node3D = _on_foot.walker
+	var forward := -walker.global_basis.z
+	var turn := Vector2(forward.x, forward.z).normalized().angle_to(Vector2(goal.x - walker.global_position.x, goal.z - walker.global_position.z).normalized())
+	if turn > 0.1:
+		Input.action_press("steer_right")
+	elif turn < -0.1:
+		Input.action_press("steer_left")
+	if absf(turn) < 0.6:
+		Input.action_press("move_forward")
 
 
 func _ride(delta: float) -> void:
@@ -94,7 +129,8 @@ func _ride(delta: float) -> void:
 	if _dm.is_near_target():
 		_let_go()
 		if absf(_bike.speed) < 0.5:
-			Input.action_press("interact")  # hold E until the bar is full (Session 18)
+			_walked_for = ""
+			_on_foot.toggle()  # F: get off and walk to the door (Session 19)
 		else:
 			Input.action_press("move_back")
 		return
@@ -255,7 +291,7 @@ func _on_shift_ended(summary: Dictionary) -> void:
 	print("\nShift summary: %d deliveries, %d cancelled, %.2f average stars" % [summary["deliveries"], summary["cancelled"], summary["stars"]])
 	print("Pay %d + tips %d - insurance %d - bills %d = earned %d Dh, %d XP (Rider Level %d)" % [
 			summary["pay"], summary["tips"], summary["insurance"], summary["bills"], summary["earned"], summary["xp"], _gs.level()])
-	print("Crashes: %d small, %d big. Times stuck and reset: %d" % [_crashes["small"], _crashes["big"], _resets])
+	print("Crashes: %d small, %d big. Times stuck and reset: %d. Time spent walking: %.0f s" % [_crashes["small"], _crashes["big"], _resets, _walk_time])
 	SaveGame.delete("user://playtest_bot_save.json")
 	_gs.save_path = "user://none/never.json"
 	quit()

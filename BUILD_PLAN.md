@@ -333,8 +333,7 @@ Done when:
 - [ ] The orange bar fills on the phone and resets when you let go or ride off
 - [ ] The smoke test passes 5 times in a row
 
-### Session 19: Get off the bike (walk to the door)
-
+### Session 19: Get off the bike (walk to the door) (built, needs testing)
 ```text
 Session 19. Read PRD.md (Delivery loop, Controls). Add getting off the bike.
 F gets off and back on, only when the bike is under 5 km/h. When you get off,

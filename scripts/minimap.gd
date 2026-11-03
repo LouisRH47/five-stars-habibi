@@ -31,6 +31,9 @@ const NUMBER_SIZE := 12
 const LABEL_SIZE := 15
 const BAR_HEIGHT := 26.0  # the strip along the bottom that names the next stop
 
+## The parked bike while you walk (Session 19), drawn as a little bike; null while riding.
+var parked_bike: Node3D
+
 var _map: Dictionary = {}  # the data list's constants, e.g. _map["ROADS"]
 var _font: Font
 
@@ -125,6 +128,7 @@ func _draw_map() -> void:
 	_draw_villa_numbers(xform)
 	_draw_north(xform)
 	_draw_target(xform)
+	_draw_parked_bike(xform)
 	_draw_player()
 
 
@@ -221,6 +225,16 @@ func _draw_target(xform: Transform2D) -> void:
 	var bar := Rect2(0.0, _view.size.y - BAR_HEIGHT, _view.size.x, BAR_HEIGHT)
 	_view.draw_rect(bar, OUTLINE)
 	_text("%s   %d m" % [name, metres], bar.get_center(), LABEL_SIZE, TARGET)
+
+
+## The parked bike: a teal dot with a white ring (pinned to the edge if it's far away).
+func _draw_parked_bike(xform: Transform2D) -> void:
+	if parked_bike == null:
+		return
+	var spot := pin_spot(xform * Vector2(parked_bike.global_position.x, parked_bike.global_position.z))
+	_view.draw_circle(spot, 8.0, PLAYER)
+	_view.draw_circle(spot, 6.0, Color(0.16470589, 0.5568628, 0.6117647, 1))
+	_text("B", spot, NUMBER_SIZE - 2, PLAYER)
 
 
 ## You: a white arrow in the middle, always pointing up (the way you're riding).

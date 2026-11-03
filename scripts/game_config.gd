@@ -67,6 +67,16 @@ const INTERACT_RADIUS := 3.5          # metres from a door where E picks up or d
 const PICKUP_HOLD_TIME := 1.5         # seconds to hold E at the restaurant
 const DROPOFF_HOLD_TIME := 1.5        # seconds to hold E at the villa
 const INTERACT_MAX_SPEED_KMH := 5.0   # faster than this at the door: "Slow down, then hold E"
+
+# --- On foot (Session 19) ---
+const GET_OFF_MAX_KMH := 5.0          # F only works when the bike is slower than this
+const WALK_SPEED_KMH := 5.0           # W on foot
+const JOG_SPEED_KMH := 9.0            # Shift + W on foot
+const WALK_ACCELERATION := 8.0        # m/s gained per second on foot
+const WALK_TURN_DEG_PER_SEC := 150.0  # A / D on foot
+const GET_ON_DISTANCE := 2.0          # metres from the bike where F gets you back on
+const BIKE_FAR_DISTANCE := 40.0       # further than this: "Your bike is over there"
+const PARKED_LEAN_DEG := 8.0          # the parked bike leans on its stand
 const DOOR_DISTANCE := 2.5            # the door spot is this many metres in front of a building
 const MARKER_RADIUS := 1.2            # the glowing beam over the next stop
 const MARKER_HEIGHT := 4.0            # lower than every roof (5 m and up), so the beam never covers a sign
@@ -121,6 +131,7 @@ const CAT_PAUSE_MIN := 1.5            # seconds a cat sits still between strolls
 const CAT_PAUSE_MAX := 4.0
 const SCOOTER_SPEED := 2.5            # m/s, about 9 km/h
 const SCOOTER_TURN_PAUSE := 1.5       # seconds a kid waits at each end before turning round
+const SCOOTER_GIVE_WAY_TIME := 2.0    # seconds a kid waits for you before turning back
 const CRITTER_SCARED_TIME := 1.5      # seconds a bumped cat runs / a bumped kid stops
 # Extra food damage when you bump a cat or a kid (on top of the crash itself).
 const DAMAGE_CRITTER := {"pizza": 10.0, "bubble tea": 15.0, "ice cream": 12.0}

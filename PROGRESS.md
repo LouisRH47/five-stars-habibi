@@ -350,6 +350,27 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - The smoke test checks a quick tap does nothing and a full hold picks up and delivers,
   and passed 5 runs in a row. The play-test bot holds E too: still 12 deliveries a shift.
 
+### Session 19
+- **F gets off the bike** (only under 5 km/h) and back on (within 2 m of it). The bike
+  stays parked where you left it: solid, leaning on its stand, no rider on it.
+- On foot (`scripts/walker.gd`): W / S walk forward and back (5 km/h), A / D turn, Shift
+  jogs (9 km/h). The legs swing as you walk. The walker wears your look (cap, helmet or
+  bucket hat), using the same `scripts/rider_look.gd` as the rider on the bike.
+- `scripts/on_foot.gd` (the OnFoot node) switches between riding and walking: the camera,
+  the mini-map and the DeliveryManager follow whoever you control.
+- Picking up and dropping off (hold E) **only work on foot**. The meters and the shift clock
+  keep running while you walk, so parking near the door matters.
+- Phone hints: "Park near the door", "Press F to get off", "Walk to the door", "Hold E to
+  drop off", "Press F to ride", and "Your bike is over there" when you're more than 40 m
+  away. The mini-map shows the parked bike as a teal "B".
+- R on foot puts you back on the bike at the start.
+- Kids on scooters wait for you, and turn back after 2 s if you stay in their way (so a
+  parked bike can't block them forever). Cats and kids can't crash into you on foot.
+- Tutorial tips explain F and walking. Numbers: the "On foot" block in `game_config.gd`.
+- The smoke test checks F only works when stopped, and does the full run: park 6 m from a
+  door, F, walk to the door, hold E, walk back, F, ride away. The play-test bot walks too:
+  still 11 deliveries in a 10-minute shift.
+
 ## Known bugs
 - None found by the checks. Not play-tested by Louis yet.
 - The bot once got stuck nose-to-nose with a kid on a scooter (the kid waits for the bike,

@@ -25,7 +25,7 @@ func bike_in_the_way() -> bool:
 	if touch == null:
 		return false
 	for body in touch.get_overlapping_bodies():
-		if body.is_in_group("bike"):
+		if body.is_in_group("bike") or body is Walker:
 			return true
 	return false
 

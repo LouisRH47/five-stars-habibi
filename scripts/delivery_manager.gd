@@ -15,6 +15,13 @@ extends Node
 ## Starts at the GameConfig value. The smoke test shortens it so it doesn't wait 30 s.
 var offer_timeout := GameConfig.ORDER_OFFER_TIMEOUT
 
+## Who you're controlling: the bike, or the walker when you're on foot (set by OnFoot).
+var actor: Node3D
+## True while you're walking. Picking up and dropping off only work on foot (Session 19).
+## Scenes without an OnFoot node never walk, so there you pick up from the bike.
+var on_foot := false
+var needs_walking := false
+
 var _offer_left := 0.0
 var _hold := 0.0             # seconds E has been held at the door
 var _need_release := false   # after any E action, E must be let go before the next hold counts
@@ -23,6 +30,8 @@ var _marker: MeshInstance3D
 
 
 func _ready() -> void:
+	actor = bike
+	needs_walking = get_parent().get_node_or_null("OnFoot") != null
 	_marker = _make_marker()
 	add_child(_marker)
 	GameState.order_stage_changed.connect(_on_stage_changed)
@@ -128,7 +137,7 @@ func _update_hold(delta: float) -> void:
 		_need_release = false
 		_hold = 0.0
 		return
-	if _need_release or not is_near_target() or not _slow_enough():
+	if _need_release or not is_near_target() or not _slow_enough() or (needs_walking and not on_foot):
 		_hold = 0.0
 		return
 	_hold += delta
@@ -139,7 +148,14 @@ func _update_hold(delta: float) -> void:
 
 
 func _slow_enough() -> bool:
-	return bike == null or not "speed" in bike or absf(bike.speed) * 3.6 <= GameConfig.INTERACT_MAX_SPEED_KMH
+	return on_foot or bike == null or absf(bike.speed) * 3.6 <= GameConfig.INTERACT_MAX_SPEED_KMH
+
+
+## How far you've walked from the parked bike (0 while riding).
+func distance_to_bike() -> float:
+	if not on_foot or actor == null or bike == null:
+		return 0.0
+	return Vector2(actor.global_position.x - bike.global_position.x, actor.global_position.z - bike.global_position.z).length()
 
 
 ## E near the restaurant picks up; E near the villa delivers.
@@ -156,9 +172,10 @@ func try_interact() -> bool:
 ## True when the bike is within INTERACT_RADIUS of the door you need to go to next.
 func is_near_target() -> bool:
 	var stage := GameState.stage
-	if bike == null or (stage != GameState.Stage.TO_RESTAURANT and stage != GameState.Stage.TO_VILLA):
+	var who := actor if actor != null else bike
+	if who == null or (stage != GameState.Stage.TO_RESTAURANT and stage != GameState.Stage.TO_VILLA):
 		return false
-	var gap := bike.global_position - target_door()
+	var gap := who.global_position - target_door()
 	gap.y = 0.0  # only the distance along the ground counts
 	return gap.length() <= GameConfig.INTERACT_RADIUS
 

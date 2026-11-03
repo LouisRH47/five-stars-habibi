@@ -67,14 +67,34 @@ func _process(delta: float) -> void:
 		var done := "Left at the door!" if job["left_at_door"] else "Delivered!"
 		_show("%s  %s stars" % [done, _stars_text(job["stars"])], lines, "", false)
 	else:
-		_show("Waiting for orders...", "", "", false)
+		var walking := delivery_manager != null and delivery_manager.on_foot
+		_show("Waiting for orders...", "", _walking_hint("Walk back to your bike") if walking else "", walking)
 
 
-## The hint at the door: hold E (or slow down first).
+## The hint for a stop: park near the door, get off with F, walk over and hold E.
 func _hold_hint(action: String) -> String:
-	if delivery_manager != null and delivery_manager.too_fast_at_door():
+	var dm := delivery_manager
+	if dm == null:
+		return "Hold E to " + action
+	if dm.needs_walking and not dm.on_foot:
+		if dm.is_near_target():
+			return "Slow down, then press F" if dm.too_fast_at_door() else "Press F to get off"
+		return "Park near the door"
+	if dm.too_fast_at_door():
 		return "Slow down, then hold E"
+	if dm.on_foot and not dm.is_near_target():
+		return _walking_hint("Walk to the door")
 	return "Hold E to " + action
+
+
+## On foot and away from the door: where's the bike?
+func _walking_hint(otherwise: String) -> String:
+	var gap := delivery_manager.distance_to_bike()
+	if gap > GameConfig.BIKE_FAR_DISTANCE:
+		return "Your bike is over there (see the map)"
+	if gap <= GameConfig.GET_ON_DISTANCE:
+		return "Press F to ride"
+	return otherwise
 
 
 func _show(status: String, detail: String, hint: String, hint_lit: bool) -> void:
