@@ -249,3 +249,11 @@ The final smoke repeat covered five Wahat runs at 432 assertions each, 309 on Pa
 The five consecutive careful shifts on the integrated candidate completed 27 deliveries, earned 702 Dh net and 539 XP, and reached Level 6. The rider had one minor fall in shift five, zero major crashes and zero resets. Shift one earned 144 Dh, reached Level 2 and bought GPS through the real 50 Dh shop cart. A separate cart replay using the five observed incomes and XP totals bought the aluminium frame in shift four and rejected the rocket below Level 10 or below 10,000 Dh. Repeating the same pattern after those five observed shifts projects the rocket at shift 86. The projection does not model future changes in riding, income or spending. The bot and economy logs are under `/private/tmp/habibi-tomorrow.U5hQg8`.
 
 The display was still locked at the final check. The strict rendered Mac performance gate, physical iPad and Windows play, Louis's school reference photos, and the Louis and friend playtests still require external acceptance.
+
+## Checkpoint and restaurant acceptance follow-up
+
+GitHub main was rechecked at `a2d0dd923a88073ddf22aaa575c323d286401373` and is an ancestor of the exact `ed5ba1a` candidate.
+
+An isolated Wahat run on `ed5ba1a` passed 14 checkpoint checks. Both guards switched to the wave action when the bike approached. The closed centre blocked a sweep using the production bike collision body, and the side gap cleared it. A test moved a production traffic car within activation range. The boom rotated upward, released centre collision and returned to its closed position when the car moved away. The fixture positions the car to exercise the barrier without changing the shipped traffic routes. Evidence is in `/private/tmp/habibi-checkpoint-acceptance.WN4NJ1/checks.log`.
+
+The Sessions 39–40 pickup fixture ran against the archived `3e103a7` tree, with runtime files from `ed5ba1a`. All 61 checks passed across ten restaurants. The fixture parked the bike at each authored approach, then used normal inputs to accept, dismount, walk in, view the matching staffed panel, hold E to collect, walk out and remount. Mounted pickup was rejected at every counter. The test log and isolated fixture are under `/private/tmp/habibi-all-counters.UFbOYT`. The previous normal-input browser ride covers the full pizza route and handoff.

@@ -699,6 +699,8 @@ Done when:
 
 ## The sessions (Detail pass, Sessions 35 to 46)
 
+See the [implementation and acceptance ledger](docs/implementation-status.md) for the current evidence and open gates for Sessions 35–51.
+
 Louis played the graphics pass. The houses, playgrounds, stables and NPCs are good. What he wants
 changed: the map should copy the real community at real size, the homes should be joined rows,
 there are too many blank spaces and plain surfaces, the restaurants need insides, the school is
@@ -716,9 +718,9 @@ simpler far-away versions (visibility ranges) to keep it at 60 fps.
 **35A clock rule:** one real gameplay second equals one game minute. The 8:00 AM–6:00 PM
 shift lasts ten active real minutes, and the AM/PM display advances every minute.
 Keep the sun icon and matching event times, with pause/tutorial/final-delivery/save checks.
-**Next: 35B**, the real-size placeholder map and its addresses/routes; the map is still
-the Session 34 version. Measure route times and earnings on the full placeholder map
-before adding detailed buildings. See PROGRESS.md for the 35A results and manual test.
+**35B** covers the real-size map, addresses and routes. The original sequence called for
+measuring route times and earnings on the full placeholder map before adding detailed
+buildings. See PROGRESS.md for the 35A results and manual test.
 
 ```text
 Session 35. Read CLAUDE.md, PRD.md ("Wahat Al Shams" in the city map section,
