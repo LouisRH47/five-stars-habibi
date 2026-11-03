@@ -13,7 +13,8 @@ clearing website data removes it. Saves do not sync between MacBook and iPad.
    checks, exports the game, and saves a downloadable `browser-build` artifact.
    Pull requests cannot deploy and receive no Cloudflare credential.
 3. Merge into `main`. A successful build deploys automatically to the address above.
-   The workflow verifies `version.json` against the exact source commit.
+   The workflow verifies `version.json` against the exact source commit and checks
+   that the hosted engine decodes as valid WebAssembly.
 
 The publishing credential must be configured before automatic deployments work:
 repository **Settings → Secrets and variables → Actions → New repository secret**,
@@ -37,22 +38,27 @@ After tests and deployment pass, GitHub creates the named release with generated
 notes, a browser ZIP, and its SHA-256 checksum. Tags are intended to stay fixed.
 A rerun preserves an already published release's assets.
 
-The ZIP is prepared for a web server that applies the included `_headers` and
-`_redirects` files. `index.wasm.gz` contains the compressed engine; a 200 proxy
-rule serves it at Godot's original `/index.wasm` URL with `Content-Encoding: gzip`
-and `Content-Type: application/wasm`. Keeping the stored `.gz` extension and
-`Cache-Control: no-transform` avoids compressing the engine twice. After one HTTP
-gzip decode, the response must begin with the WebAssembly bytes `00 61 73 6d`.
+The ZIP is prepared for Cloudflare Pages, including `_headers`, `_routes.json`,
+and the small `_worker.js` handler. Only `/index.wasm` uses the handler; other
+files remain static. `index.wasm.gz` is stored without a Content-Encoding header.
+The handler fetches its raw bytes and returns them as `application/wasm` with
+`Content-Encoding: gzip` and the Workers `encodeBody: "manual"` option, so the
+runtime does not compress the engine twice. After one HTTP gzip decode, the
+response must begin with the WebAssembly bytes `00 61 73 6d`.
 It is not a desktop executable or a file
 to open directly in Finder. The uncompressed export is in `build/web` locally.
 
 ## Roll back or deploy a specific version
 
 In **Actions → Browser build and release → Run workflow**, keep the workflow
-branch on `main`, and set `source_ref` to a previous release tag or commit that
+branch on `main`, choose **production**, and set `source_ref` to a previous release tag or commit that
 contains the browser build scripts. This rebuilds, checks, and deploys that
 version. The next merge to `main` resumes normal updates. Cloudflare Pages also
 keeps previous successful production deployments for an immediate dashboard rollback.
+
+For a test deployment, choose **preview** and set `source_ref` to the branch or
+commit to test. Its address is https://preview.five-stars-habibi.pages.dev;
+this leaves Louis's production address unchanged.
 
 ## Local checks
 

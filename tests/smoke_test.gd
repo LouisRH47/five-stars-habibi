@@ -1658,6 +1658,18 @@ func _check_session30() -> void:
 	_move_bike_to(data["START"]["position"])
 	# A buggy drives along its route.
 	var buggy: Node3D = life.get_node("Buggy_0")
+	# Live traffic starts at random points. A buggy near an endpoint can correctly
+	# spend this whole two-second probe in LIFE_END_PAUSE. Start on a long straight,
+	# and test only the bike obstacle we place, not unrelated random traffic/walkers.
+	var keep_watch: Array[Node3D] = buggy.watch.duplicate()
+	var keep_exclude: Array[RID] = buggy._ahead.exclude.duplicate()
+	var probe_exclude: Array[RID] = keep_exclude.duplicate()
+	for other in get_nodes_in_group("critter") + get_nodes_in_group("road_works"):
+		if other is CollisionObject3D and other != buggy:
+			probe_exclude.append(other.get_rid())
+	buggy.watch = [_bike]
+	buggy._ahead.exclude = probe_exclude
+	buggy.start_at(0, 0.5, true)
 	buggy.scared_left = 0.0
 	buggy._pause_left = 0.0
 	buggy._blocked = 0.0
@@ -1681,6 +1693,8 @@ func _check_session30() -> void:
 		buggy._physics_process(1.0 / 30.0)
 	_check("if the bike stays, the buggy turns round and drives off", buggy.position.distance_to(_bike.global_position) > at.distance_to(bike_spot) + 1.0
 			and _bike.global_position.distance_to(bike_spot) < 0.01, "%.1f m away" % buggy.position.distance_to(_bike.global_position))
+	buggy.watch = keep_watch
+	buggy._ahead.exclude = keep_exclude
 	_move_bike_to(data["START"]["position"])
 	# Horses, walkers, kids and ducks move too.
 	var still := []

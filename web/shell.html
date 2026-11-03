@@ -53,11 +53,19 @@
     function showFailure(error) {
       console.error(error);
       failed = true;
+      document.getElementById('welcome').hidden = false;
       notice.textContent = 'The game could not start. Try an up-to-date Safari or Chrome browser.\n' + (error.message || String(error));
       progress.hidden = true;
       play.textContent = 'Try again';
       play.disabled = false;
     }
+
+    window.addEventListener('unhandledrejection', (event) => {
+      showFailure(event.reason || new Error('The game stopped unexpectedly.'));
+    });
+    window.addEventListener('error', (event) => {
+      if (event.error) showFailure(event.error);
+    });
 
     play.addEventListener('click', async () => {
       if (failed) { window.location.reload(); return; }

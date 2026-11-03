@@ -8,6 +8,11 @@
 - GitHub workflow checks pull requests, deploys successful main builds to
   `fivestarshabibi.middleleap.com`, and packages tagged releases. Publishing
   requires the Cloudflare credential described in `docs/WEB_RELEASE.md`.
+- Added a separate preview deployment and a live WebAssembly decoding check.
+  A small Pages Worker serves the compressed engine with manual encoding to
+  prevent Cloudflare from compressing it twice. Other assets remain static.
+- Made the traffic smoke probe start from a fixed route position, so a randomly
+  spawned buggy's normal endpoint pause cannot fail the deployment checks.
 - Browser saves stay on the current device. Real iPad performance still needs
   Louis's test; emulated touch checks are not a physical-device acceptance test.
 

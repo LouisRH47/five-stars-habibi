@@ -49,15 +49,17 @@ class PrepareWebTest(unittest.TestCase):
         self.assertEqual((self.site / "index.wasm.gz").read_bytes(), compressed)
         self.assertEqual(json.loads((self.site / "version.json").read_text())["version"], SHA)
 
-    def test_proxy_and_headers_preserve_original_url_without_recompression(self):
+    def test_worker_owns_encoding_and_only_handles_the_engine_url(self):
         self.prepare()
         headers = (self.site / "_headers").read_text()
         self.assertTrue(headers.startswith("/*\n  Cache-Control: no-cache, no-transform\n"))
         self.assertIn("  X-Content-Type-Options: nosniff\n", headers)
         self.assertIn("  Referrer-Policy: strict-origin-when-cross-origin\n", headers)
-        self.assertIn("/index.wasm\n  Content-Encoding: gzip\n  Content-Type: application/wasm\n", headers)
-        self.assertIn("/index.wasm.gz\n  Content-Encoding: gzip\n  Content-Type: application/wasm\n", headers)
-        self.assertEqual((self.site / "_redirects").read_text(), "/index.wasm /index.wasm.gz 200\n")
+        self.assertNotIn("Content-Encoding", headers)
+        self.assertFalse((self.site / "_redirects").exists())
+        self.assertEqual((self.site / "_worker.js").read_bytes(), MODULE.ASSET_WORKER.read_bytes())
+        self.assertEqual(json.loads((self.site / "_routes.json").read_text()),
+                         {"version": 1, "include": ["/index.wasm"], "exclude": []})
 
     def test_rejects_preexisting_compressed_sibling(self):
         (self.source / "index.wasm.gz").write_bytes(b"would overwrite prepared bytes")
@@ -77,8 +79,10 @@ class PrepareWebTest(unittest.TestCase):
     def test_success_cleans_stale_output(self):
         self.site.mkdir()
         (self.site / "old-service-worker.js").write_text("stale")
+        (self.source / "_redirects").write_text("/index.wasm /index.wasm.gz 200\n")
         self.prepare()
         self.assertFalse((self.site / "old-service-worker.js").exists())
+        self.assertFalse((self.site / "_redirects").exists())
 
     def test_rejects_overlap_and_symlinks(self):
         with self.assertRaisesRegex(ValueError, "must not overlap"):
