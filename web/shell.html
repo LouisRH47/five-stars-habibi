@@ -56,10 +56,11 @@
     let failed = false;
 
     // Godot's full-window resize policy ignores iPad safe-area insets. Size the
-    // backing buffer from the usable frame instead, including Retina scaling.
+    // backing buffer from the usable frame instead. Cap Retina rendering to one
+    // pixel per CSS pixel: larger buffers made Safari/WebKit lose graphics.
     function resizeCanvas() {
       const bounds = gameFrame.getBoundingClientRect();
-      const ratio = window.devicePixelRatio || 1;
+      const ratio = Math.min(window.devicePixelRatio || 1, 1);
       const width = Math.max(1, Math.round(bounds.width * ratio));
       const height = Math.max(1, Math.round(bounds.height * ratio));
       if (canvas.width !== width) canvas.width = width;
@@ -69,15 +70,19 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    function showFailure(error) {
+    function showFailure(error, message = 'The game could not start. Try an up-to-date Safari or Chrome browser.') {
       console.error(error);
       failed = true;
       document.getElementById('welcome').hidden = false;
-      notice.textContent = 'The game could not start. Try an up-to-date Safari or Chrome browser.\n' + (error.message || String(error));
+      notice.textContent = message + '\n' + (error.message || String(error));
       progress.hidden = true;
       play.textContent = 'Try again';
       play.disabled = false;
     }
+
+    canvas.addEventListener('webglcontextlost', () => {
+      showFailure(new Error('Tap Try again to reload.'), 'The browser interrupted the game’s graphics.');
+    });
 
     window.addEventListener('unhandledrejection', (event) => {
       showFailure(event.reason || new Error('The game stopped unexpectedly.'));

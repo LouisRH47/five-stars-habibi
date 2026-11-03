@@ -84,6 +84,8 @@ desktop Forward+.
 - Single-threaded export; Compatibility renderer; Low graphics by default.
 - Touch menus and form fields have at least 44 CSS-pixel targets; gameplay labels
   use plain actions. Layout recalculates on rotation and respects screen safe areas.
+- Rendering is capped at one backing pixel per CSS pixel to reduce Retina GPU
+  load. A graphics-context interruption shows a reload action instead of a frozen game.
 - No service worker in this first release, so refreshing checks for updates.
 - Test Safari on a real MacBook and iPad, including a complete shift, save and
   reload, sound, multi-touch steering, and landscape layout. Browser emulation
