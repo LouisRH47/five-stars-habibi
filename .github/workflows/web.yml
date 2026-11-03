@@ -1,0 +1,144 @@
+name: Browser build and release
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: 'Branch, tag, or commit to deploy (use a previous tag to roll back)'
+        required: true
+        default: main
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    outputs:
+      sha: ${{ steps.source.outputs.sha }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ inputs.source_ref || github.sha }}
+          persist-credentials: false
+      - name: Record source
+        id: source
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Install pinned Godot
+        run: bash tools/install-godot.sh
+      - name: Check packaging
+        run: python3 -m unittest discover -s tests -p 'test_prepare_web.py'
+      - name: Test and export game
+        env:
+          BUILD_SHA: ${{ steps.source.outputs.sha }}
+          BUILD_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || steps.source.outputs.sha }}
+        run: bash tools/build-web.sh
+      - name: Save browser build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: browser-build
+          path: build/site/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Save validation logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: validation-logs
+          path: build/logs/
+          if-no-files-found: ignore
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: browser-production
+      cancel-in-progress: false
+    environment:
+      name: browser
+      url: https://fivestarshabibi.middleleap.com
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: browser-build
+          path: site
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Check deployment credentials
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo '::error::Set the repository CLOUDFLARE_API_TOKEN secret before deploying. See docs/WEB_RELEASE.md.'
+            exit 1
+          fi
+      - name: Check latest main build
+        id: latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ needs.build.outputs.sha }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = push ] && [ "$GITHUB_REF" = refs/heads/main ]; then
+            latest=$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)
+            if [ "$latest" != "$SOURCE_SHA" ]; then
+              echo 'skip=true' >> "$GITHUB_OUTPUT"
+              echo 'A newer main commit exists; leaving deployment to that build.'
+            fi
+          fi
+      - name: Deploy to Cloudflare Pages
+        if: steps.latest.outputs.skip != 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: '33ea51185c20d9edd77e09be3690fc77'
+          SOURCE_SHA: ${{ needs.build.outputs.sha }}
+        run: npx --yes wrangler@4.157.0 pages deploy site --project-name=five-stars-habibi --branch=main --commit-hash="$SOURCE_SHA"
+      - name: Verify live version
+        if: steps.latest.outputs.skip != 'true'
+        env:
+          SOURCE_SHA: ${{ needs.build.outputs.sha }}
+        run: |
+          for attempt in $(seq 1 12); do
+            actual=$(curl --fail --silent --show-error "https://fivestarshabibi.middleleap.com/version.json?check=$SOURCE_SHA-$attempt" | jq -r .sha) || actual=''
+            if [ "$actual" = "$SOURCE_SHA" ]; then
+              echo "Live: https://fivestarshabibi.middleleap.com ($SOURCE_SHA)"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo '::error::The custom domain did not serve the expected build.'
+          exit 1
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v') && github.event_name == 'push'
+    needs: [build, deploy]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: browser-build
+          path: site
+      - name: Package and publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          asset="five-stars-habibi-${RELEASE_TAG}-web.zip"
+          (cd site && zip -r "../$asset" .)
+          sha256sum "$asset" > "$asset.sha256"
+          if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release create "$RELEASE_TAG" "$asset" "$asset.sha256" --verify-tag --generate-notes --title "Five Stars Habibi $RELEASE_TAG"
+          else
+            echo 'Release already exists; preserving its published assets.'
+          fi

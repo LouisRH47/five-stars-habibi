@@ -9,3 +9,8 @@
 
 # macOS
 .DS_Store
+
+# Reproducible build SDK and Python tooling
+/.cache/
+__pycache__/
+*.pyc

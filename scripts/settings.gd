@@ -14,8 +14,8 @@ const BUSES := ["Master", "Music", "Effects", "Ambience"]
 const GRAPHICS_NAMES := ["Low", "Medium", "High"]
 
 static var fullscreen := false
-## 0 Low, 1 Medium (the default), 2 High. scripts/sun_cycle.gd does what each one means.
-static var graphics := 1
+## 0 Low (browser default), 1 Medium (desktop default), 2 High. scripts/sun_cycle.gd does what each one means.
+static var graphics := 0 if OS.has_feature("web") else 1
 static var volumes := {"Master": 0.8, "Music": 0.6, "Effects": 0.8, "Ambience": 0.5}
 static var _loaded := false
 
@@ -32,6 +32,8 @@ static func load_once() -> void:
 		graphics = clampi(file.get_value("video", "graphics", graphics), 0, GRAPHICS_NAMES.size() - 1)
 		for bus in BUSES:
 			volumes[bus] = clampf(file.get_value("audio", bus, volumes[bus]), 0.0, 1.0)
+	if OS.has_feature("web"):
+		fullscreen = false
 	apply()
 
 

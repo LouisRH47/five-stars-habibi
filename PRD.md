@@ -597,6 +597,8 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 3 Nov 2026 | Spine gets grass texture, flowers and gentle hills (0.5 to 1.5 m), and one path linking all the domes. Textures and props everywhere. Camera never goes inside houses. Heat shimmer removed. Top speed 28, sprint 36 km/h with stronger speed lines and wind sound. Fix people with no head and the glitchy dome doors |
 | 3 Nov 2026 | Shops: Pedal Point Bikes (upgrades, stamina +10% buyable up to 10 times, aluminium then carbon frame, a 10,000 Dh rocket booster on X at Level 10, paint and box colours) and Dune Drip (clothes, try on in front of a mirror like GTA). Menu on the left while you stay in the 3D shop, with a cart and checkout. Same side-panel style at every walk-in place |
 
+| 3 Nov 2026 | Browser distribution requested by Michael: publish the current game at fivestarshabibi.middleleap.com for Louis to test on MacBook and potentially iPad, with GitHub deployment and releases. Keep desktop Forward+; use Compatibility/Low for web and add landscape touch controls. Browser saves stay on each device. |
+
 ## Sources
 
 Wahat Al Shams layout and houses (the idea only, every name in the game is made up):

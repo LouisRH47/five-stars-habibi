@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#102329">
+  <meta name="description" content="Play Five Stars Habibi in your browser. Ride, deliver, and build your career in Al Sarab.">
+  <title>$GODOT_PROJECT_NAME</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #102329; color: #fff2dd; font-family: system-ui, sans-serif; }
+    #canvas { display: block; width: 100%; height: 100%; touch-action: none; outline: none; }
+    #welcome { position: fixed; inset: 0; display: grid; place-items: center; padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left)); overflow-y: auto; background: #102329; }
+    .card { width: min(100%, 480px); text-align: center; }
+    .stars { color: #f28c28; font-size: 30px; letter-spacing: 6px; }
+    h1 { font-size: clamp(32px, 7vw, 52px); line-height: 1.05; margin: 14px 0; }
+    p { line-height: 1.6; color: #cfddd8; }
+    button { min-height: 52px; padding: 14px 30px; border: 0; border-radius: 12px; background: #f28c28; color: #102329; font: inherit; font-weight: 700; cursor: pointer; }
+    button:focus-visible { outline: 3px solid #fff2dd; outline-offset: 5px; }
+    button:disabled { opacity: .65; cursor: wait; }
+    .hint { font-size: 14px; }
+    progress { width: 100%; height: 12px; accent-color: #f28c28; }
+    #notice { white-space: pre-line; }
+    [hidden] { display: none !important; }
+  </style>
+  $GODOT_HEAD_INCLUDE
+</head>
+<body>
+  <canvas id="canvas" tabindex="0" aria-label="Five Stars Habibi game"></canvas>
+  <main id="welcome">
+    <div class="card">
+      <div class="stars" aria-hidden="true">★★★★★</div>
+      <h1>Five Stars Habibi</h1>
+      <p>Rider to Driver<br>Your next shift starts here.</p>
+      <button id="play" type="button">Play in browser</button>
+      <p id="notice" role="status" aria-live="polite">The first load may take a little longer.</p>
+      <progress id="progress" aria-label="Loading game" hidden></progress>
+      <p class="hint">MacBook: use WASD or the arrow keys to move.<br>iPad: turn sideways and use the touch controls.</p>
+      <p class="hint">Progress saves in this browser. Clearing website data removes it.</p>
+      <noscript><p>Turn on JavaScript to play.</p></noscript>
+    </div>
+  </main>
+  <script src="$GODOT_URL"></script>
+  <script>
+    const GODOT_CONFIG = $GODOT_CONFIG;
+    const GODOT_THREADS_ENABLED = $GODOT_THREADS_ENABLED;
+    const play = document.getElementById('play');
+    const notice = document.getElementById('notice');
+    const progress = document.getElementById('progress');
+    const canvas = document.getElementById('canvas');
+    let failed = false;
+
+    function showFailure(error) {
+      console.error(error);
+      failed = true;
+      notice.textContent = 'The game could not start. Try an up-to-date Safari or Chrome browser.\n' + (error.message || String(error));
+      progress.hidden = true;
+      play.textContent = 'Try again';
+      play.disabled = false;
+    }
+
+    play.addEventListener('click', async () => {
+      if (failed) { window.location.reload(); return; }
+      play.disabled = true;
+      notice.textContent = 'Loading your shift…';
+      progress.hidden = false;
+      try {
+        const missing = Engine.getMissingFeatures({ threads: GODOT_THREADS_ENABLED });
+        if (missing.length) throw new Error('Required browser features: ' + missing.join(', '));
+        const engine = new Engine(GODOT_CONFIG);
+        await engine.startGame({
+          canvas,
+          onProgress(current, total) {
+            if (total > 0) { progress.max = total; progress.value = current; }
+            else progress.removeAttribute('value');
+            if (total > 0 && current >= total) notice.textContent = 'Starting the game…';
+          },
+          onExit(code) {
+            document.getElementById('welcome').hidden = false;
+            if (code !== 0) { showFailure(new Error('Game closed (code ' + code + ').')); return; }
+            failed = true;
+            progress.hidden = true;
+            play.textContent = 'Play again';
+            play.disabled = false;
+            notice.textContent = 'Game closed. Your saved progress stays in this browser.';
+          }
+        });
+        document.getElementById('welcome').hidden = true;
+        canvas.focus();
+      } catch (error) { showFailure(error); }
+    });
+  </script>
+</body>
+</html>
