@@ -53,7 +53,7 @@ Completion requires code, automated checks, rendered evidence and the listed hum
 | 50 Collections, regulars and the profile page — You can see how much of Wahat Al Shams you've collected | Implemented and checked | Source + targeted check + visible acceptance |
 | 50 Collections, regulars and the profile page — The regulars feel like they know you | Implemented and checked | Source + targeted check + visible acceptance |
 | 51 Final play-test, then itch.io — A friend plays for 10 minutes and wants to keep going | Awaiting human / release | Source + targeted check + visible acceptance |
-| 51 Final play-test, then itch.io — It's on itch.io | Awaiting human / release | Source + targeted check + visible acceptance |
+| 51 Final play-test, then itch.io — It's on itch.io | On hold at the user's request | The separate MiddleLeap web deployment is live. See release notes below. |
 
 ## Cross-cutting invariants
 
@@ -64,7 +64,7 @@ Completion requires code, automated checks, rendered evidence and the listed hum
 - One accident and one bill; show the fall before the clinic; preserve insurance, first-crash and rocket rules.
 - Validation snapshots redirect every user:// script path and the engine log into /private/tmp.
 - No diagnostic banners in ordinary gameplay.
-- Mac/Windows exports and itch.io release remain open until actual artifacts and hosting are verified.
+- Mac and Windows exports have separate verification evidence. The itch.io release is on hold at the user's request.
 
 ## Execution log
 
@@ -141,4 +141,6 @@ The focus-guarded moving benchmark rejected both spine warmups after window focu
 - Louis can use Continue in the Mac review app for a ten-minute active shift. Record whether the shift feels busy enough and whether he would play another. Review the soft hit, glancing scrape and hard frontal fall at normal speed, including the transition to the clinic and whether the resulting bills feel proportionate. Compare the school against Louis's photos.
 - Give the friend the portable build to try from New Game. After ten minutes, record whether they want to keep playing and where they hesitated or stopped.
 - On a native Windows x64 machine, extract the portable ZIP, launch the executable, start a shift and verify movement and a pickup and delivery. The archive and executable structure have already been checked on Mac.
-- Record the itch.io project URL and publishing approval, upload both platform builds, then verify the downloads from the published page.
+- The user put itch.io on hold. The separate [MiddleLeap web deployment](https://fivestarshabibi.middleleap.com) serves v0.1.0 from main commit `85c116a6282d986b8b1916c88eab7cb8d050f7a4`. The [live manifest](https://fivestarshabibi.middleleap.com/version.json) and Cloudflare production deployment agree. The live game package matches the v0.1.0 release ZIP by SHA-256.
+- In a fresh desktop browser context, the live build loaded from Play in browser, hired a test rider, entered Wahat, accepted the tutorial pizza order and responded to pedal input. After reload, Continue restored the same test rider in Wahat. The browser reported zero console errors. Scope was first-run gameplay and browser rider persistence. Full delivery, iPad touch, the friend playtest and the native desktop gates remain separate.
+- The live revision uses a five-minute 8 AM–6 PM shift, a generic tip for minor crashes and fixed major-crash charges. The local detail branch contains the requested ten-minute shift, separate rider fall reactions and impact-based charges. The web smoke applies to the deployed revision.
