@@ -119,6 +119,10 @@ The tree-batch revision passed all 416 Wahat smoke checks. The current desktop a
 
 The moving release probe sampled three 14-second routes at Medium, 1920×1080, with the normal HUD and an active order. All samples kept window focus, ran at 28 km/h, and had zero crashes. On the shared M3 Mac, averages were 36.3 FPS on the spine, 29.9 from plaza to C1, and 23.6 on the north ring. The p95 frame times were 52.5, 67.4 and 97.4 ms. The host had heavy background activity and memory pressure, and the run fell short of the 60 FPS target. Evidence: /private/tmp/habibi-tree-moving/fixed-input-results.json.
 
+Wahat now uses a 64-pixel sky radiance texture on Low and Medium and the existing 256 on High. The two fully focused fixed-view pairs at Medium and 1080p with the clock active averaged 24.6 to 34.2 FPS and 29.1 to 31.0 FPS. The p95 improved in one pair and worsened in the other. A third pair lost focus. The three matched lighting captures showed no material visual change in the sampled sky, stream and nearby buildings. A focused settings check verified Low, Medium, High and back to Medium, with the original shadow distances and sky settings on the other maps. Evidence: /private/tmp/habibi-sky-native/native.log and /private/tmp/habibi-sky-check/quality.log.
+
+All 416 Wahat smoke checks passed on the sky revision. The current portable archives at /private/tmp/habibi-sky-export-check/distribution match fingerprint ef5861d81ee1be168a0cf36bcb07bdfd3732b7002dda32c80180d1114396ce1c and passed integrity, architecture and Mac signature checks. The matched 14-second moving spine route averaged 52.5 FPS at Medium and 1080p with the 64-pixel setting active, 28 km/h throughout, no focus loss, and p95 frame time 31.5 ms. The plaza and north-ring samples lost focus during the combined run. A separate north-ring run reached 70.7 FPS with p95 18.5 ms, but never held focus and was excluded. Results: /private/tmp/habibi-sky-moving/three-route-results.json and north-native.log.
+
 ## Remaining acceptance
 
 - Establish at least 60 FPS during representative moving gameplay at Medium. Repeat the Mac release probe with sustained foreground focus and the full HUD.

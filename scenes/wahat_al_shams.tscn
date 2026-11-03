@@ -63,6 +63,7 @@ shadow_enabled = true
 script = ExtResource("28_sun")
 sun = NodePath("../Sun")
 world_environment = NodePath("../WorldEnvironment")
+use_smaller_sky_radiance = true
 
 [node name="WahatBuilder" type="Node3D" parent="."]
 script = ExtResource("9_map")

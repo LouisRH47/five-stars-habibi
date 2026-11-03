@@ -7,6 +7,7 @@ extends Node
 
 @export var sun: DirectionalLight3D
 @export var world_environment: WorldEnvironment
+@export var use_smaller_sky_radiance := false
 
 var _environment: Environment
 var _sky: ProceduralSkyMaterial
@@ -74,6 +75,11 @@ func light_at(hour: float) -> Dictionary:
 func apply_graphics() -> void:
 	var level: int = Settings.graphics
 	var env := _environment
+	if use_smaller_sky_radiance and env.sky != null:
+		# Keep the visible procedural sky and shadows while reducing the lighting texture.
+		var size := Sky.RADIANCE_SIZE_256 if level == 2 else Sky.RADIANCE_SIZE_64
+		if env.sky.radiance_size != size:
+			env.sky.radiance_size = size
 	env.ssao_enabled = level > 0
 	env.ssao_radius = GameConfig.SSAO_RADIUS
 	env.ssao_intensity = GameConfig.SSAO_INTENSITY
