@@ -186,7 +186,7 @@ These stop deliveries from feeling the same after a few. All numbers are startin
 | Ms Dana (teacher) | School gate | Cake from Sunrise Bakery |
 | Hamdan (groom) | Stable office | Farm juice |
 
-**Shift goals:** at the start of each shift the phone shows 2 goals picked from a list. Each done goal pays a 15 Dh bonus, shown on the shift summary. List: make 8 deliveries; 3 five-star deliveries in a row; no crashes; 2 school lunch orders; a fragile cake with 5 stars; deliver to all 5 clusters.
+**Shift goals:** at the start of each shift the phone shows 2 goals picked from a list. Each done goal pays a 15 Dh bonus, shown on the shift summary. List: make 6 deliveries; 3 five-star deliveries in a row; no crashes; a school lunch order; a fragile cake with 5 stars; deliver to 3 different clusters.
 
 **Random events** (at most 2 per shift, one at a time, the phone warns you):
 - **Road works:** cones, a barrier and a small digger close one cluster lane or one part of the ring road for 1 to 2 in-game hours. The mini-map shows a cone icon. You find another way.
@@ -512,6 +512,7 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 3 Nov 2026 | School orders (teachers and kids) only to the gate security booth, 08:00 to 15:00, lunch rush 11:30 to 12:30. Stables: look at the horses, orders only to the stable office. The mosque is scenery only, never an order |
 | 3 Nov 2026 | Special orders (rush, fragile cake, neighbour, big family order), 4 regular customers, 2 shift goals worth 15 Dh each, and 2 random events (road works, horses crossing). The dust gust event was dropped |
 | 3 Nov 2026 | Graphics: polished low-poly with CC0 packs (Kenney, Quaternius) for people, cars and props; animated people; a real bike model with turning pedals, steering, kickstand and a bell on B; sun moving with the shift clock, SSAO, haze, glow, heat shimmer; juice (dust, speed lines and FOV, coin and star pops, phone buzz); life on the map (buggies on fixed routes, horses, joggers, gardeners, kids, birds, palms, ducks, donkeys); Low/Medium/High graphics setting |
+| 3 Nov 2026 | Session 34 play-test tuning (for Louis to confirm): a careful bot gets 5 to 6 deliveries a 5-minute shift (without sprinting), so the goals are now make 6 deliveries (was 8), a school lunch order (was 2: the lunch rush is only 30 real seconds) and deliver to 3 different clusters (was all 5). 7 in 10 orders now go to the nearer half of homes from the shop, so trips are shorter and a shift is busier; pay per shift stays about the same |
 
 ## Sources
 

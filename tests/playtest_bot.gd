@@ -16,6 +16,7 @@ extends SceneTree
 
 const GRID := preload("res://tests/grid_path.gd")
 const BUMP_KMH := 9.0       # slow to this for speed bumps (careful rider)
+const RIDE_INSTEAD_M := 12.0  # a door further than this from where we got off: ride there
 const CRITTER_KMH := 7.0    # slow to this near cats and kids (under CRASH_SMALL_KMH)
 const LOOK_AHEAD := 2.5     # metres: aim this far ahead on the route (more when faster)
 const CORNER_ROOM := 4.0    # metres of route a corner is spread over (bigger = faster corners)
@@ -48,6 +49,7 @@ var _walked_for := ""  # the stage the last walk to a door was for (done once it
 var _walk_route: Array[Vector2] = []
 var _walk_last := Vector2.ZERO
 var _walk_stuck := 0.0
+var _this_walk := 0.0   # seconds this walk has taken (to say when one takes too long)
 var _crashes := {"small": 0, "big": 0}
 var _frames := 0
 var _grid: RefCounted
@@ -159,6 +161,15 @@ func _walk(delta: float) -> void:
 	var walker: Node3D = _on_foot.walker
 	var here := _flat(walker.global_position)
 	var goal := _flat(_dm.target_door() if going_to_door else _bike.global_position)
+	if going_to_door and here.distance_to(goal) > RIDE_INSTEAD_M:
+		# The door moved far away ("leave it with the neighbour"): ride there, like a player.
+		if _on_foot.near_bike():
+			_on_foot.toggle()
+			return
+		goal = _flat(_bike.global_position)
+	_this_walk += delta
+	if int(_this_walk / 20.0) != int((_this_walk - delta) / 20.0):
+		_say_walk_trouble(here, goal, going_to_door)
 	# Walk round things too: a route from the grid, found again if we stop moving.
 	_walk_stuck = _walk_stuck + delta if here.distance_to(_walk_last) < 0.01 else 0.0
 	_walk_last = here
@@ -207,6 +218,7 @@ func _ride(delta: float) -> void:
 		_let_go()
 		if absf(_bike.speed) < 0.5:
 			_walked_for = ""
+			_this_walk = 0.0
 			_on_foot.toggle()  # F: get off and walk to the door (Session 19)
 		else:
 			Input.action_press("move_back")
@@ -508,3 +520,15 @@ func _on_shift_ended(summary: Dictionary) -> void:
 	SaveGame.delete("user://playtest_bot_save.json")
 	_gs.save_path = "user://none/never.json"
 	quit()
+
+
+## A walk is taking long (every 20 s of it): say where we are, where to, and what's close by.
+func _say_walk_trouble(here: Vector2, goal: Vector2, to_door: bool) -> void:
+	var near := []
+	for node in get_nodes_in_group("critter"):
+		var n := node as Node3D
+		if n != null and _flat(n.global_position).distance_to(here) < 4.0:
+			near.append("%s %.1f m" % [n.name, _flat(n.global_position).distance_to(here)])
+	print("  walk taking long: %.0f s at %s, going to %s (%s, %.1f m away), near: %s" % [_this_walk, here,
+			"the door" if to_door else "the bike", goal, here.distance_to(goal), ", ".join(near)])
+

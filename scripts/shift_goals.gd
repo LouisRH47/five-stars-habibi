@@ -10,9 +10,9 @@ const ALL := {
 	"deliveries": "Make %d deliveries" % GameConfig.GOAL_DELIVERIES,
 	"streak": "%d five-star deliveries in a row" % GameConfig.GOAL_FIVE_STAR_STREAK,
 	"no_crashes": "No crashes",
-	"lunch": "%d school lunch orders" % GameConfig.GOAL_LUNCH_ORDERS,
+	"lunch": "A school lunch order" if GameConfig.GOAL_LUNCH_ORDERS == 1 else "%d school lunch orders" % GameConfig.GOAL_LUNCH_ORDERS,
 	"fragile": "A fragile cake with 5 stars",
-	"clusters": "Deliver to all %d clusters" % GameConfig.GOAL_CLUSTERS,
+	"clusters": "Deliver to %d different clusters" % GameConfig.GOAL_CLUSTERS,
 }
 
 

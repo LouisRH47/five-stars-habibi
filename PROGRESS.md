@@ -686,6 +686,31 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - Built by a helper agent in parallel. Smoke checks: each special's rule and reward, no school
   order after 15:00, lunch rush share, regulars (heart, name, tips, saved), goal bonus once.
 
+### Session 34
+- Play-test bot on Wahat Al Shams. Before tuning, a careful 5-minute shift got 5 deliveries:
+  riding to the shop took almost half the shift (the shops are in the Plaza at the west end).
+  Now 7 in 10 orders go to the nearer half of homes from the shop (ORDER_NEARBY_HOME_CHANCE
+  in `game_config.gd`), so trips are shorter. A careful bot (which never sprints) now gets 5
+  to 7 deliveries, about 6; a player who sprints should get 6 to 7. Pay per shift stayed about
+  the same (54 to 74 Dh before tips and goals).
+- Final shifts: careful 6 deliveries, 5.00 stars, 0 crashes, 69 Dh. Careless 6 deliveries,
+  4.67 stars, 9 small crashes, 84 Dh (lucky tips and a goal). Small crashes are cheap now,
+  so being careless doesn't cost enough yet: something to look at after Louis plays.
+- Shift goals changed to fit 5 minutes (PRD Decisions log, for Louis to confirm): make 6
+  deliveries (was 8), a school lunch order (was 2: the lunch rush is only 30 real seconds),
+  deliver to 3 different clusters (was all 5).
+- Frame rate at the Plaza and the spine (1280x720, vsync off): Low 60 fps, Medium 60 to 67,
+  High 70 to 72. 60 fps on Medium: yes.
+- Screenshots of the gate, the Plaza, a cluster lane, the spine, the school gate, the stables
+  and the sunset all look right.
+- Smoke test 5 times on Wahat: 5 of 5 PASS (362 checks each). Palm Grove and the test area
+  pass too.
+- The play-test bot now rides (instead of walking) when a "leave it with the neighbour" order
+  sends it to a far door, and says when a walk takes longer than 20 seconds.
+- Not done yet: removing the old Palm Grove map. It's still the smoke test's second map; remove
+  it once Louis has played Wahat Al Shams and is happy.
+- **Louis's turn:** play a full shift and write down what felt off.
+
 ## Known bugs
 - Play-test bot findings on Wahat Al Shams (to tune in Session 34):
   - A careful 5-minute shift gets 5 to 6 deliveries (target 6 to 8). The rides are long

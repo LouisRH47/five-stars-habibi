@@ -38,7 +38,7 @@ func make(restaurant_id := "", villa_number := 0, special := "", boring := false
 	var from := places.restaurant_door(restaurant["id"])
 	var villa := _find(places.villas, "number", villa_number)
 	if villa.is_empty():
-		villa = _short_ride_villa(from) if boring else _pick_drop_off(special != "neighbour")
+		villa = _short_ride_villa(from) if boring else _pick_drop_off(special != "neighbour", from)
 	var order := _order_for(restaurant, villa)
 	order.food = restaurant.get("foods", [restaurant["food"]]).pick_random()  # the farm stall sells two
 	order.boring = boring
@@ -148,8 +148,8 @@ func _pick_shop() -> Dictionary:
 
 
 ## Where it goes: sometimes the school (only while it's open, lots at lunch) or the stables,
-## otherwise a home. spots_ok = false: always a home (neighbour orders).
-func _pick_drop_off(spots_ok: bool) -> Dictionary:
+## otherwise a home. spots_ok = false: always a home (neighbour orders). from: the shop door.
+func _pick_drop_off(spots_ok: bool, from: Vector3) -> Dictionary:
 	var school := _find(places.villas, "number", GameConfig.SCHOOL_SPOT)
 	var stables := _find(places.villas, "number", GameConfig.STABLES_SPOT)
 	if spots_ok and not school.is_empty() and school_open(hour):
@@ -158,7 +158,12 @@ func _pick_drop_off(spots_ok: bool) -> Dictionary:
 			return school
 	if spots_ok and not stables.is_empty() and randf() < GameConfig.STABLES_ORDER_CHANCE:
 		return stables
-	return _homes().pick_random()
+	var homes := _homes()
+	if randf() < GameConfig.ORDER_NEARBY_HOME_CHANCE:
+		# Like a real delivery app: many orders are for homes not far from the shop.
+		homes.sort_custom(func(a, b): return places.villa_door(a["number"]).distance_to(from) < places.villa_door(b["number"]).distance_to(from))
+		homes = homes.slice(0, maxi(1, homes.size() / 2))
+	return homes.pick_random()
 
 
 ## Who comes to the door, the address and the cluster for a shop and a home.

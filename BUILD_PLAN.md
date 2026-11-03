@@ -678,8 +678,7 @@ Done when:
 - [ ] Road works and horses crossing both happen and the phone warns you
 - [ ] You can always still reach every home
 
-### Session 34: Play-test the graphics pass
-
+### Session 34: Play-test the graphics pass (built, needs testing)
 ```text
 Session 34. Run the play-test bot for a careful and a careless shift on
 Wahat Al Shams, and the smoke test 5 times. A careful 5-minute shift should get

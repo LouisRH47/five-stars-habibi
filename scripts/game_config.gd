@@ -62,6 +62,7 @@ const ORDER_PAY_PER_METRE := 0.03     # Dh extra per metre, straight line restau
 const ORDER_ACCEPT_HISTORY := 20      # acceptance rate looks at your last 20 accept/skip choices
 const ORDER_LOW_ACCEPTANCE := 0.7     # below 70% you get boring orders: short ride, lowest pay
 const ORDER_BORING_CHOICES := 2       # a boring order goes to one of the 2 villas closest to the restaurant
+const ORDER_NEARBY_HOME_CHANCE := 0.7  # share of orders that go to the nearer half of homes (Session 34: more, shorter trips)
 const INTERACT_RADIUS := 3.5          # metres from a door where E picks up or drops off
 # Session 18: picking up and dropping off need E held at the door while going slowly.
 const PICKUP_HOLD_TIME := 1.5         # seconds to hold E at the restaurant
@@ -370,8 +371,8 @@ const REGULAR_COLOUR := Color(0.86, 0.25, 0.42, 1)  # the heart chip on the phon
 # Shift goals: 2 picked at the start of each shift, 15 Dh each when done (paid at the end).
 const GOALS_PER_SHIFT := 2
 const GOAL_BONUS := 15                # Dh per goal done
-const GOAL_DELIVERIES := 8            # "Make 8 deliveries"
+const GOAL_DELIVERIES := 6            # "Make 6 deliveries" (PRD said 8: too many for a 5-minute shift)
 const GOAL_FIVE_STAR_STREAK := 3      # "3 five-star deliveries in a row"
-const GOAL_LUNCH_ORDERS := 2          # "2 school lunch orders"
-const GOAL_CLUSTERS := 5              # "Deliver to all 5 clusters"
+const GOAL_LUNCH_ORDERS := 1          # "A school lunch order" (PRD said 2: the lunch rush is only 30 real seconds)
+const GOAL_CLUSTERS := 3              # "Deliver to 3 different clusters" (PRD said all 5: too many for 5 minutes)
 const GOAL_NO_CRASH_MIN_DELIVERIES := 1  # "No crashes" also needs at least this many deliveries
