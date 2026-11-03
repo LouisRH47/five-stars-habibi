@@ -11,10 +11,17 @@ var cell := 1.0
 var clearance := 0.5
 ## How many squares the last scan found blocked (0 means the physics world wasn't ready).
 var solid_count := 0
+## Keep away from walls (play-test bot): squares closer than keep_away to something solid
+## cost up to (1 + wall_cost) times more to ride through, so routes run down the middle
+## of lanes, and smoothing never cuts closer to a wall than the route already was.
+## 0 = off (plain shortest route, the smoke test uses that).
+var wall_cost := 0.0
+var keep_away := 3
 
 var _astar := AStarGrid2D.new()
 var _origin := Vector2.ZERO
 var _size := Vector2i.ZERO
+var _dist := PackedInt32Array()  # squares to the nearest solid square (capped at keep_away + 1)
 
 
 ## Scans the map. world: the 3D world. half: half the map size (x, z). ignore: bodies to skip.
@@ -49,6 +56,50 @@ func build(world: World3D, half: Vector2, ignore: Array = []) -> void:
 				_astar.set_point_solid(Vector2i(x, y), true)
 				solid_count += 1
 				break
+	_measure_wall_distance()
+
+
+## For every square, how many squares away the nearest solid one is (a flood fill
+## outwards from all solid squares), then makes squares near walls cost more.
+func _measure_wall_distance() -> void:
+	var cap := keep_away + 1
+	_dist = PackedInt32Array()
+	_dist.resize(_size.x * _size.y)
+	_dist.fill(cap)
+	if wall_cost <= 0.0:
+		return
+	var front: Array[Vector2i] = []
+	for x in _size.x:
+		for y in _size.y:
+			if _astar.is_point_solid(Vector2i(x, y)):
+				_dist[x * _size.y + y] = 0
+				front.append(Vector2i(x, y))
+	for d in range(1, cap):
+		var next: Array[Vector2i] = []
+		for square in front:
+			for dx in range(-1, 2):
+				for dy in range(-1, 2):
+					var near := square + Vector2i(dx, dy)
+					if near.x < 0 or near.y < 0 or near.x >= _size.x or near.y >= _size.y:
+						continue
+					var i := near.x * _size.y + near.y
+					if _dist[i] > d:
+						_dist[i] = d
+						next.append(near)
+		front = next
+	for x in _size.x:
+		for y in _size.y:
+			var d := _dist[x * _size.y + y]
+			if d > 0 and d < cap:
+				_astar.set_point_weight_scale(Vector2i(x, y), 1.0 + wall_cost * float(cap - d) / float(keep_away))
+
+
+## Squares from this spot (x, z) to the nearest solid square (keep_away + 1 if far away).
+func wall_distance(spot: Vector2) -> int:
+	var square := _square(spot)
+	if not _astar.is_in_boundsv(square) or _dist.is_empty():
+		return 0
+	return _dist[square.x * _size.y + square.y]
 
 
 ## True if the square at this spot (x, z) is free for the bike.
@@ -89,9 +140,13 @@ func _smooth(points: Array[Vector2]) -> Array[Vector2]:
 
 
 func _clear(a: Vector2, b: Vector2) -> bool:
+	var need := 0
+	if wall_cost > 0.0:
+		need = mini(mini(wall_distance(a), wall_distance(b)), keep_away)
 	var steps := ceili(a.distance_to(b) / (cell * 0.5))
 	for k in steps + 1:
-		if not is_free(a.lerp(b, float(k) / maxf(steps, 1))):
+		var spot := a.lerp(b, float(k) / maxf(steps, 1))
+		if not is_free(spot) or (need > 0 and wall_distance(spot) < need):
 			return false
 	return true
 
