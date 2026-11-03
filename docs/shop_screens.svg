@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="770" viewBox="0 0 680 770" font-family="Nunito, sans-serif">
+<rect width="680" height="770" fill="#FFFFFF"/>
+<g>
+<rect width="680" height="360" rx="14" fill="#E9DCC4"/>
+<rect x="0" y="262" width="680" height="98" fill="#C9A46A"/>
+<ellipse cx="376" cy="300" rx="120" ry="22" fill="#B98F55"/>
+<rect x="296" y="56" width="150" height="8" rx="3" fill="#8A6A3A"/>
+<path d="M308 64 l8 -10 l8 10 Z M340 64 l8 -10 l8 10 Z M372 64 l8 -10 l8 10 Z M404 64 l8 -10 l8 10 Z" fill="#0F4C5C"/>
+<rect x="470" y="70" width="180" height="5" rx="2" fill="#6B6B66"/>
+<rect x="478" y="76" width="22" height="58" rx="4" fill="#E24B4A"/><rect x="504" y="76" width="22" height="58" rx="4" fill="#F2B230"/><rect x="530" y="76" width="22" height="58" rx="4" fill="#0F4C5C"/><rect x="556" y="76" width="22" height="58" rx="4" fill="#F3F3F3"/><rect x="582" y="76" width="22" height="58" rx="4" fill="#639922"/><rect x="608" y="76" width="22" height="58" rx="4" fill="#D4537E"/>
+<rect x="520" y="152" width="130" height="22" rx="4" fill="#0F4C5C"/>
+<text x="585" y="167" text-anchor="middle" font-size="13" fill="#F2B230">Dune Drip · ديون دريب</text>
+<circle cx="586" cy="196" r="14" fill="#8D5A3B"/><rect x="568" y="210" width="36" height="40" rx="10" fill="#F28C28"/>
+<rect x="520" y="226" width="134" height="48" rx="4" fill="#5A3E26"/><rect x="530" y="232" width="30" height="16" rx="2" fill="#1B1D22"/>
+<rect x="334" y="118" width="84" height="80" rx="16" fill="#F28C28"/>
+<rect x="354" y="200" width="18" height="90" rx="6" fill="#33415C"/><rect x="382" y="200" width="18" height="90" rx="6" fill="#33415C"/>
+<rect x="348" y="284" width="26" height="12" rx="5" fill="#F3F3F3"/><rect x="380" y="284" width="26" height="12" rx="5" fill="#F3F3F3"/>
+<rect x="326" y="128" width="16" height="72" rx="8" fill="#0F4C5C"/><rect x="410" y="128" width="16" height="72" rx="8" fill="#0F4C5C"/>
+<rect x="340" y="120" width="72" height="92" rx="16" fill="#0F4C5C"/>
+<circle cx="334" cy="204" r="7" fill="#C98E62"/><circle cx="418" cy="204" r="7" fill="#C98E62"/>
+<rect x="366" y="102" width="20" height="20" fill="#C98E62"/>
+<circle cx="376" cy="82" r="28" fill="#C98E62"/>
+<rect x="356" y="76" width="40" height="9" rx="4" fill="#1B1D22"/>
+<path d="M346 72 Q376 36 406 72 Z M400 68 H430 V75 H400 Z" fill="#E24B4A"/>
+<rect x="20" y="20" width="240" height="292" rx="14" fill="#0F2026" opacity="0.94"/>
+<rect x="20" y="20" width="240" height="46" rx="14" fill="#F28C28"/>
+<text x="36" y="50" font-size="21" font-weight="600" fill="#1B1D22">Dune Drip</text>
+<text x="244" y="49" text-anchor="end" font-size="13" fill="#1B1D22">ديون دريب</text>
+<text x="38" y="88" font-size="18" fill="#F2B230">‹</text>
+<text x="140" y="87" text-anchor="middle" font-size="15" fill="#F3E3C3">Caps · 1 of 6</text>
+<text x="240" y="88" font-size="18" fill="#F2B230" text-anchor="end">›</text>
+<g font-size="12">
+<rect x="28" y="98" width="224" height="26" rx="6" fill="#16303A"/><text x="40" y="115" fill="#F3E3C3">Sun cap</text><text x="244" y="115" text-anchor="end" fill="#5DCAA5">Owned</text>
+<rect x="28" y="128" width="224" height="26" rx="6" fill="#16303A"/><text x="40" y="145" fill="#F3E3C3">Teal cap</text><text x="244" y="145" text-anchor="end" fill="#F3E3C3">20 Dh</text>
+<rect x="28" y="158" width="224" height="26" rx="6" fill="#F2B230"/><text x="40" y="175" fill="#1B1D22">Red cap</text><text x="180" y="175" font-size="11" fill="#A32D2D">NEW</text><text x="244" y="175" text-anchor="end" fill="#1B1D22">20 Dh</text>
+<rect x="28" y="188" width="224" height="26" rx="6" fill="#16303A"/><text x="40" y="205" fill="#F3E3C3">Sand bucket hat</text><text x="244" y="205" text-anchor="end" fill="#F3E3C3">25 Dh</text>
+<rect x="28" y="218" width="224" height="26" rx="6" fill="#16303A"/><text x="40" y="235" fill="#F3E3C3">White cap</text><text x="244" y="235" text-anchor="end" fill="#F3E3C3">20 Dh</text>
+</g>
+<rect x="28" y="252" width="224" height="26" rx="6" fill="none" stroke="#F28C28"/>
+<text x="40" y="269" font-size="12" fill="#F3E3C3">Cart: 2 items · 45 Dh</text><text x="244" y="269" text-anchor="end" font-size="12" fill="#F28C28">C checkout</text>
+<text x="36" y="298" font-size="12" fill="#B8C7C9">Wallet</text>
+<text x="244" y="299" text-anchor="end" font-size="16" font-weight="600" fill="#F2B230">340 Dh</text>
+<rect x="372" y="322" width="288" height="26" rx="13" fill="#0F2026" opacity="0.9"/>
+<text x="516" y="339" text-anchor="middle" font-size="11" fill="#F3E3C3">A/D try on · ‹ › type · drag to turn · E cart · C checkout</text>
+</g>
+<text x="20" y="384" font-size="12" fill="#5F5E5A">Dune Drip: you stand on the rug, the camera faces you like a mirror, the cashier waits at the counter.</text>
+<g transform="translate(0,400)">
+<rect width="680" height="360" rx="14" fill="#DCE6E4"/>
+<rect x="290" y="40" width="370" height="110" rx="6" fill="#B4B2A9"/>
+<path d="M310 60 v40 M330 60 l14 30 M370 60 h40 M440 70 a10 10 0 1 0 0.1 0 M480 60 v50 M520 62 l20 20 l-20 20 M580 60 h50 v10 h-50 Z" stroke="#444441" stroke-width="4" fill="none"/>
+<rect x="0" y="262" width="680" height="98" fill="#9A9890"/>
+<rect x="540" y="104" width="120" height="22" rx="4" fill="#F28C28"/>
+<text x="600" y="119" text-anchor="middle" font-size="12" fill="#1B1D22">Pedal Point · بيدال بوينت</text>
+<line x1="390" y1="290" x2="360" y2="312" stroke="#444441" stroke-width="5"/><line x1="390" y1="290" x2="420" y2="312" stroke="#444441" stroke-width="5"/><line x1="390" y1="236" x2="390" y2="290" stroke="#444441" stroke-width="5"/>
+<circle cx="330" cy="236" r="40" fill="none" stroke="#1B1D22" stroke-width="7"/><circle cx="456" cy="236" r="40" fill="none" stroke="#1B1D22" stroke-width="7"/>
+<path d="M330 236 L372 188 L438 188 L456 236 M372 188 L392 236 L438 188 M392 236 L330 236" stroke="#0F4C5C" stroke-width="7" fill="none" stroke-linejoin="round"/>
+<path d="M438 188 L446 162 L466 160" stroke="#1B1D22" stroke-width="5" fill="none"/>
+<rect x="358" y="172" width="30" height="8" rx="4" fill="#1B1D22"/>
+<rect x="300" y="160" width="46" height="36" rx="5" fill="#F28C28"/>
+<circle cx="392" cy="236" r="9" fill="#888780"/>
+<rect x="510" y="214" width="150" height="14" rx="3" fill="#7A5A3A"/><rect x="520" y="228" width="8" height="48" fill="#7A5A3A"/><rect x="642" y="228" width="8" height="48" fill="#7A5A3A"/>
+<circle cx="590" cy="160" r="14" fill="#C98E62"/><rect x="572" y="174" width="36" height="42" rx="10" fill="#378ADD"/>
+<rect x="20" y="20" width="250" height="292" rx="14" fill="#0F2026" opacity="0.94"/>
+<rect x="20" y="20" width="250" height="46" rx="14" fill="#F28C28"/>
+<text x="36" y="50" font-size="21" font-weight="600" fill="#1B1D22">Pedal Point Bikes</text>
+<text x="145" y="87" text-anchor="middle" font-size="15" fill="#F3E3C3">Upgrades · Level 4</text>
+<g font-size="12">
+<rect x="28" y="96" width="234" height="24" rx="6" fill="#16303A"/><text x="38" y="112" fill="#F3E3C3">GPS route</text><text x="254" y="112" text-anchor="end" fill="#5DCAA5">Owned</text>
+<rect x="28" y="124" width="234" height="24" rx="6" fill="#16303A"/><text x="38" y="140" fill="#F3E3C3">Louder bell</text><text x="254" y="140" text-anchor="end" fill="#5DCAA5">Owned</text>
+<rect x="28" y="152" width="234" height="24" rx="6" fill="#F2B230"/><text x="38" y="168" fill="#1B1D22">Stamina +10% (3 of 10)</text><text x="254" y="168" text-anchor="end" fill="#1B1D22">80 Dh</text>
+<rect x="28" y="180" width="234" height="24" rx="6" fill="#16303A"/><text x="38" y="196" fill="#F3E3C3">Insulated bag</text><text x="254" y="196" text-anchor="end" fill="#F3E3C3">70 Dh</text>
+<rect x="28" y="208" width="234" height="24" rx="6" fill="#16303A"/><text x="38" y="224" fill="#888780">Carbon frame</text><text x="254" y="224" text-anchor="end" fill="#888780">Level 7</text>
+<rect x="28" y="236" width="234" height="24" rx="6" fill="#16303A" stroke="#E24B4A" stroke-width="1.5"/><text x="38" y="252" fill="#F09595">Rocket booster</text><text x="254" y="252" text-anchor="end" fill="#F09595">Lv 10 · 10,000 Dh</text>
+</g>
+<text x="36" y="279" font-size="11" fill="#B8C7C9">Cart: Stamina +10% · 80 Dh · C checkout</text>
+<text x="36" y="298" font-size="12" fill="#B8C7C9">Wallet</text><text x="254" y="299" text-anchor="end" font-size="16" font-weight="600" fill="#F2B230">340 Dh</text>
+<rect x="372" y="322" width="288" height="26" rx="13" fill="#0F2026" opacity="0.9"/>
+<text x="516" y="339" text-anchor="middle" font-size="11" fill="#F3E3C3">W/S choose · drag to turn · E cart · C checkout</text>
+</g>
+</svg>

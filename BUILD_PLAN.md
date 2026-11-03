@@ -697,30 +697,301 @@ Done when:
 - [ ] 60 fps on Medium
 - [ ] Louis has played a full shift and is happy with it
 
-## Reasons to come back (Sessions 35 to 40)
+## The sessions (Detail pass, Sessions 35 to 46)
 
-Players come back when they always have a next goal, every delivery feels good, skill pays off, and there are characters they care about. Right now money and XP don't buy anything, so these sessions come before the itch.io release. The design is in PRD.md, "Reasons to come back". These are ideas, not orders: cross out any you don't want. Same rules as before: one session at a time, play it before the next one.
+Louis played the graphics pass. The houses, playgrounds, stables and NPCs are good. What he wants
+changed: the map should copy the real community at real size, the homes should be joined rows,
+there are too many blank spaces and plain surfaces, the restaurants need insides, the school is
+hard to find, and money should buy upgrades and clothes. Everything is in PRD.md: "Wahat Al Shams,
+the Tier 1 community" (city map section), "Shops and upgrades", "Shifts", "Controls" and
+"Graphics and feel". Sketches: docs/wahat_al_shams_map.svg (layout), docs/villa_types.svg
+(houses, unchanged), docs/shop_screens.svg (shop screens). Same rules as before: one session at a
+time, headless checks, smoke test and play-test bot, a smoke test check for every new system,
+PROGRESS.md, commit. The map is now about 5 times bigger and has 500 homes: check the frame time
+on Medium after every session that adds things to the map, and use merged meshes, MultiMesh and
+simpler far-away versions (visibility ranges) to keep it at 60 fps.
 
-### Session 35: Gear shop and the next goal
+### Session 35: Real-size map, the new layout, 8-minute shifts and the AM/PM clock
 
 ```text
-Session 35. Read PRD.md "Reasons to come back", Gear shop. Add a Shop page
-to the phone (Tab opens it, the game pauses while it's open) with the louder
-bell, the GPS line, the bigger stamina bar and a few cosmetics (box colours,
-bike paint, hats). Gear needs money and a Rider Level. Show the next goal with
-a progress bar on the phone and on the shift summary. Prices go in
-game_config.gd, the item list in a data file. Save what you own.
+Session 35. Read CLAUDE.md, PRD.md ("Wahat Al Shams" in the city map section,
+Shifts) and PROGRESS.md, and look at docs/wahat_al_shams_map.svg.
+1) Shifts are now 8 minutes: SHIFT_LENGTH = 480 in game_config.gd (08:00 to
+18:00, 48 s per in-game hour). The clock reads "9:40 AM" and moves in
+10-minute steps, with a small sun icon. Fix anything that assumed 5 minutes
+(goals, lunch rush, events, the bot).
+2) Rebuild data/wahat_al_shams.gd at real size, about 940 m west to east and
+500 m north to south, following the sketch: highway on the west with two
+entrances (north-west and south-west), tree belt, horse track, blue run and
+cycle track, ring road, then mosque, bus station (with its own short road to
+the ring road) and a bigger Plaza area in the north-west; school, C Institute,
+jumping arena and stables plots in the south-west; the green spine west to
+east; 5 cluster plots (C1 to C3 north, C4 and C5 south) with their lanes;
+solar car park plots in the gaps between clusters; building site plots on the
+empty patches. Plain shapes are fine for now; later sessions dress them.
+3) 500 door spots (100 per cluster) on placeholder blocks, numbered 1 to 100
+per cluster: "Villa 45, Cluster 1" on the phone, "C1 · Villa 45" on the
+mini-map. Each shift starts in front of the bus station. Move the shops' door
+spots to the new Plaza so deliveries still work.
+4) The mini-map and route finder work on the bigger map. Smoke test and
+play-test bot run on the new map. Take a top-down screenshot and compare it
+with the sketch.
 ```
 
 Done when:
 
-- [ ] You can buy the louder bell after about one good shift and the GPS line after about two
-- [ ] You always know what you're saving up for
+- [ ] The map is real size and laid out like the sketch, with nothing big left blank
+- [ ] A shift lasts 8 minutes and the clock says AM and PM
+- [ ] You start in front of the bus station and a full delivery works
 
-### Session 36: Streaks, personal bests and PERFECT!
+### Session 36: Joined rows of homes and the camera fix
 
 ```text
-Session 36. Read PRD.md "Reasons to come back", 5-star streak and personal
+Session 36. Read PRD.md ("The homes" and "Addresses" in the Wahat Al Shams
+section). Replace the placeholder blocks with the Session 26 house kit, but
+joined like the real ones: homes side by side in long rows with no gaps, two
+rows back to back with a wall between, a lane on both sides so every front
+door faces a lane, and now and then a small alley through a row. 4 double
+rows of 12 to 13 homes a side per cluster: 90 courtyard, 8 garden and 2
+signature villas per cluster (signature villas on corners). Keep the small
+details per home (door colour, plants, bikes, AC units...). Build each double
+row as one merged mesh, with a simpler version far away. Keep the cluster
+mini-plazas. Camera fix: cast a ray (or use a SpringArm3D) from the rider to
+the camera and pull the camera in front of any wall, so it never ends up
+inside a house; ease it back out smoothly.
+Smoke test: every door spot can be reached; the camera never ends inside a
+house collider while riding a lane.
+```
+
+Done when:
+
+- [ ] Clusters look like the real ones from above: long joined rows with lanes between
+- [ ] The camera never goes inside a house
+- [ ] Still 60 fps on Medium with all 500 homes
+
+### Session 37: Car parks with solar roofs, cars, buggies and buses
+
+```text
+Session 37. Read PRD.md (Solar car parks, "Who drives where", Bus station).
+Build the solar car parks in the gaps between clusters (not behind homes): a
+short road off the ring road, car bays, and a solar panel roof over every bay,
+with parked cars. Cars drive slowly round the ring road on set routes and pull
+in and out of the car parks; they never enter the lanes (bollards). Move the
+golf buggies off the ring road: they only drive the cluster lanes and spine
+paths, and stop for you. People walk, and kids ride bikes and scooters, on the
+lanes and paths. A bus drives round the ring road into the bus station every
+in-game hour, waits, and leaves. No real traffic AI: everything follows its
+own path from the data list. Smoke test: no buggy on the ring road, no car in
+a lane, cars and buggies stop for the bike.
+```
+
+Done when:
+
+- [ ] Every car park has solar roofs and sits between clusters
+- [ ] Cars only on the ring road, buggies only inside, and the bus comes and goes
+
+### Session 38: Horse track, run and cycle track, jumping arena and stables
+
+```text
+Session 38. Read PRD.md (Horse track, Run and cycle track, Horse jumping
+arena, Stables). Make the edge horse track dirt and sand with white horse rails
+on both sides, with gaps where the gate roads cross. Horses with riders walk
+and trot round it; nobody else can get on it (the rails block the bike). Make
+the run and cycle track beside it blue, for runners, cyclists and you, never
+buggies or cars. Build the jumping arena next to the school: sand, white horse
+rails, a few jumps, and a horse with a rider that jumps now and then. Move the
+stables (stable block, paddock, stable office drop-off spot) next to it.
+```
+
+Done when:
+
+- [ ] Horses go round the edge on their own track, and you ride the blue track beside it
+- [ ] The jumping arena has horses jumping
+
+### Session 39: The Plaza, restaurant fronts, mosque, bus station and checkpoints
+
+```text
+Session 39. Read PRD.md (The Plaza, the restaurant table, Mosque, Bus
+station, Highway and 2 checkpoints). Build the bigger Plaza: five low-rise
+blocks with flats and offices above and shop fronts below, round the sunken
+square (fountain, date palms, shade sails, benches). 12 shop fronts, each
+different (awning colour, sign shape, outside seats) with a bilingual sign:
+the 10 restaurants from the PRD table plus Pedal Point Bikes and Dune Drip.
+Rename the old shops (Pizza to 1000 Pizza, Boba Oasis to Spill the Tea,
+Sunrise Bakery to Bread & Zaatar, the mini market to Grand Groceries) and add
+the new foods to game_config.gd (pad thai, sushi, tacos, burgers, coffee,
+manakish) with freshness and damage numbers like the PRD table. Put the
+mosque in front of the Plaza and the bus station between them (shelter, bay,
+bus, "Coming soon: travel to other districts"). Build the two checkpoints:
+booth, red-and-white barrier and one guard who waves; the barrier lifts for
+cars and the bike rides through a side gap. Smoke test: an order from each of
+the 10 restaurants can be picked up.
+```
+
+Done when:
+
+- [ ] The Plaza feels like a real little town centre with 12 different shop fronts
+- [ ] Mosque, bus station and checkpoints look right, and the guard waves
+
+### Session 40: Restaurant insides and the side-panel style
+
+```text
+Session 40. Read PRD.md ("Restaurant fronts and interiors" and "Shop
+screens"). Give every restaurant a walk-in inside, each different (the PRD
+lists what's in each): a counter with a staff member, 2 to 4 tables with a few
+customers, a menu board, decor. Picking up now happens inside: walk in, hold E
+at the counter, the staff member hands you the bag. Make one reusable side
+panel (ui/side_panel) in the game style (dark see-through, orange header,
+Baloo 2 and Nunito) that shows the order while you're at the counter; the
+shops, the C Institute and the gym will use it too. The camera works indoors
+(no walls in the way). Smoke test: walk into each restaurant, hold E at the
+counter, walk out.
+```
+
+Done when:
+
+- [ ] Every restaurant has its own inside, and no two look the same
+- [ ] Picking up at the counter works and the side panel shows the order
+
+### Session 41: Fair Grade International School and the C Institute
+
+```text
+Session 41. Read PRD.md (Fair Grade International School, C Institute). Build
+the school from the PRD description: a 3-storey sand building with curving
+wings, white rounded balcony bands, flat white roofs with AC boxes, railings
+and a rooftop garden; a big boxy sports hall with a dark window strip and the
+bilingual sign along the top, flags at the entrance; long solar roofs over the
+school car park; a fenced football pitch, two shaded pools, basketball and
+tennis courts, two shaded playgrounds; a low white wall and the gate security
+booth (the only drop-off spot). Make it easy to see from far away. Build the C
+Institute beside it, with its huge glass front and wide stepped seats facing
+the spine (people sitting on them) and a small car park behind; inside, one
+tall modern lobby up to the roof with a reception desk and a receptionist.
+Walk in and hold E at reception to deliver (side panel). Add teachers, kids and
+institute staff as customers. Smoke test: a school order and a C Institute
+order both work.
+```
+
+Done when:
+
+- [ ] You can spot the school from across the map, and it looks like Louis's photos
+- [ ] The C Institute faces the spine, and you can walk in and hand food to the receptionist
+
+### Session 42: The green spine: hills, grass, domes path, gym and pools
+
+```text
+Session 42. Read PRD.md ("The green spine"). Give the spine a real grass
+texture with tufts and flowers, gentle hills between 0.5 and 1.5 m that the
+bike rolls over smoothly (no hill steeper than the bike can ride), and more
+trees. Space the domes evenly along one path that links them all, with no big
+gaps. Fix the glitchy dome doors (z-fighting: move the door a little in front
+of the dome or cut a hole). Build the gym in the middle: a small box rounded at
+the back, glass front with treadmills inside, a lap pool along its side, and
+the gym reception drop-off spot (side panel). Build the community pool a
+little way off: sunbeds, umbrellas, a kids' area and people swimming. Smoke
+test: the bike rides over the hills without getting stuck; a gym order works.
+```
+
+Done when:
+
+- [ ] The spine looks green and alive, with little hills and no big gaps between domes
+- [ ] The gym, lap pool and community pool are there, and the dome doors look right
+
+### Session 43: Textures, details and building sites everywhere
+
+```text
+Session 43. Read PRD.md ("Details everywhere", Building sites). Add real-looking
+textures (free CC0, e.g. ambientCG or Poly Haven, credited in CREDITS.md) for
+grass, sand, paving patterns and asphalt, with road lines and kerbs. Add props
+so nothing looks plain: lamp posts, bins, recycling points, bike racks,
+electric car chargers, planters, benches and signs. Fill every empty patch with
+a building site: fence with a bilingual "Coming soon" banner, a crane, sand
+piles, a site cabin and a couple of workers. Take screenshots from 10 places
+and fix anything that still looks blank.
+```
+
+Done when:
+
+- [ ] No big blank or plain areas anywhere on the map
+- [ ] Textures and props make it feel like a real place, still 60 fps on Medium
+
+### Session 44: Speed feel and fixes
+
+```text
+Session 44. Read PRD.md ("Graphics and feel": Speed, Camera). Top speed 28
+km/h, sprint 36 km/h (game_config.gd). Stronger speed lines, a bigger camera
+stretch while sprinting and a wind sound (tools/make_sounds.py). Remove the
+heat shimmer completely (it looked like a warpy smear in front of the bike).
+Find and fix the people with no head (check every outfit and pack model).
+Re-tune the play-test bot for the new speeds. Smoke test: no person model is
+missing a head mesh.
+```
+
+Done when:
+
+- [ ] Riding and sprinting feel fast, with no warpy smear
+- [ ] Everyone has a head
+
+### Session 45: Pedal Point Bikes (upgrades, cart and checkout, rocket booster)
+
+```text
+Session 45. Read PRD.md ("Shops and upgrades": shop screens and Pedal Point
+Bikes) and look at docs/shop_screens.svg. This replaces the old gear shop
+session. Build the bike shop inside (bikes on the wall, tool pegboard, a
+mechanic at the workbench) and the shop screen: walk in, hold E at the
+mechanic, the camera turns to your bike on a stand (it turns slowly, drag to
+turn it) and the side panel opens on the left with the upgrade list: level,
+price, Owned, locked, NEW. Cart and checkout: E adds to the cart, C buys
+everything in it. Make every upgrade work (GPS route line on the road and
+mini-map, louder bell, insulated bag, anti-spill box, stamina +10% up to 10
+times, better brakes, comfy tyres, aluminium and carbon frames, bike paint and
+box colours). The rocket booster: Level 10, 10,000 Dh, X fires it for 4 s at
+80 km/h with flames, 30 s to recharge, triple bump damage, any crash is a big
+crash. Show the next goal with a progress bar on the phone and the shift
+summary. Items in a data file, prices in game_config.gd, save what you own.
+Smoke test: buy two upgrades through the cart, check they work and are saved.
+```
+
+Done when:
+
+- [ ] The bike shop looks like the mockup, and you see your bike while you shop
+- [ ] Cart and checkout work, and every upgrade does what it says
+- [ ] The rocket booster is crazy fast and only for late game
+
+### Session 46: Dune Drip clothes shop, then play-test the detail pass
+
+```text
+Session 46. Read PRD.md ("Shops and upgrades": Dune Drip) and look at
+docs/shop_screens.svg. Build the clothes shop inside (racks, a shelf of caps and
+glasses, a rug in front of a big mirror, a cashier at the counter). Hold E at
+the cashier: the camera turns to face your rider standing on the rug, like in
+GTA's clothes shops, and the side panel opens with types (caps, glasses,
+helmets, tops, shoes, bags). A/D or a click tries items on straight away, drag
+turns your rider, E adds to the cart, C checks out, Esc leaves and puts your
+old look back if you didn't buy. Clothes show on your rider everywhere. Make
+the clothes from the CC0 character pack's parts or simple shapes. Save them.
+Then play-test: run the bot for a careful and a careless 8-minute shift and the
+smoke test 5 times; a careful shift should feel busy and earn enough to buy the
+GPS route after about one shift. Tune game_config.gd. Screenshots: checkpoints,
+bus station, Plaza, a restaurant inside, a cluster row, the spine with the gym,
+the school, the C Institute, the jumping arena, both shops. Then I'll play it
+myself; here's what felt off: [write it here].
+```
+
+Done when:
+
+- [ ] Trying on clothes feels like a real game shop, and what you buy shows everywhere
+- [ ] A careful 8-minute shift feels busy and pays for the first upgrade in about one shift
+- [ ] Louis has played a full shift and is happy with it
+
+## Reasons to come back (Sessions 47 to 51)
+
+Players come back when they always have a next goal, every delivery feels good, skill pays off, and there are characters they care about. Right now money and XP don't buy anything, so these sessions come before the itch.io release. The design is in PRD.md, "Reasons to come back". These are ideas, not orders: cross out any you don't want. The old gear shop session is now Session 45 (Pedal Point Bikes). Same rules as before: one session at a time, play it before the next one.
+
+### Session 47: Streaks, personal bests and PERFECT!
+
+```text
+Session 47. Read PRD.md "Reasons to come back", 5-star streak and personal
 bests, and "A perfect delivery feels special". Each 5-star delivery in a row
 adds +5% tip chance (max +30%); a crash or a delivery under 5 stars resets it.
 Show the streak on the phone. Track personal bests (best shift earnings,
@@ -735,10 +1006,10 @@ Done when:
 - [ ] A streak makes you ride more carefully, and losing it stings a little
 - [ ] A perfect delivery and a new best feel good
 
-### Session 37: Choosing orders
+### Session 48: Choosing orders
 
 ```text
-Session 37. Read PRD.md "Reasons to come back", Choosing orders, and the
+Session 48. Read PRD.md "Reasons to come back", Choosing orders, and the
 "better order" rule in Stars. At a rating of 4.5 or more, half the time show
 two orders side by side on the phone: 1 or 2 picks one, Q skips both (counts
 as one skip). One of the two is a better order. Keep the 30-second timer.
@@ -750,10 +1021,10 @@ Done when:
 - [ ] Choosing between two orders is a real decision
 - [ ] A high rating feels worth having
 
-### Session 38: Tomorrow's special
+### Session 49: Tomorrow's special
 
 ```text
-Session 38. Read PRD.md "Reasons to come back", Tomorrow's special. Each shift
+Session 49. Read PRD.md "Reasons to come back", Tomorrow's special. Each shift
 is a kind of day: normal, Hot Noon, Rush Hour or a shop special. Show today's
 kind of day by the clock and tomorrow's on the shift summary. It must work with
 the lunch rush, the shift goals and the random events. Numbers in
@@ -765,13 +1036,14 @@ Done when:
 - [ ] Shifts feel different from each other
 - [ ] Seeing tomorrow's special makes you want one more shift
 
-### Session 39: Collections, regulars and the profile page
+### Session 50: Collections, regulars and the profile page
 
 ```text
-Session 39. Read PRD.md "Reasons to come back", Collections and "Regulars get
+Session 50. Read PRD.md "Reasons to come back", Collections and "Regulars get
 to know you". Add a Profile page to the phone: the Wahat Al Shams stamp card
-(a stamp for each of the 60 homes, grouped by cluster, plus the school gate
-and the stable office; 20 Dh for a full cluster, a gold box for all 60), the
+(a stamp for each of the 500 homes, grouped by cluster, plus the school gate,
+the stable office, the C Institute and the gym; 20 Dh for every 25 homes in a
+cluster, a gold box colour for a full cluster), the
 cats and horses you've met (give each a name in the data file) and the
 customer lines you've heard. Give each regular lines for a first visit,
 getting friendly and best friends. Save it all.
@@ -782,12 +1054,13 @@ Done when:
 - [ ] You can see how much of Wahat Al Shams you've collected
 - [ ] The regulars feel like they know you
 
-### Session 40: Final play-test, then itch.io
+### Session 51: Final play-test, then itch.io
 
 ```text
-Session 40. Run the play-test bot for 5 shifts in a row (careful) and check
-money, XP and gear come at a good pace: the bell after about one shift, the GPS
-line after about two, the stamina bar after about a week of play. Tune
+Session 51. Run the play-test bot for 5 shifts in a row (careful) and check
+money, XP and upgrades come at a good pace: the GPS route after about one
+shift, the first frame after about a week of play, the rocket booster only
+after a long time. Tune
 game_config.gd if not. Run the smoke test 5 times. Then export Mac and Windows
 versions for itch.io. Here's what felt off when I played: [write it here].
 ```
@@ -832,7 +1105,7 @@ and what's left in it.
 
 ## After Tier 1
 
-Once Sessions 35 to 40 feel fun and the game is on itch.io (Session 40), friends can play it and give feedback. After that, the next block of sessions is the motorbike test (yard course, instructor, theory quiz), then the motorbike, Old Town, night shifts and running costs. Ask Claude Code to "write the Tier 2 sessions for BUILD_PLAN.md in the same style as Tier 1" so the plan keeps growing as you go.
+Once Sessions 47 to 51 feel fun and the game is on itch.io (Session 51), friends can play it and give feedback. After that, the next block of sessions is the motorbike test (yard course, instructor, theory quiz), then the motorbike, Old Town, night shifts and running costs. Ask Claude Code to "write the Tier 2 sessions for BUILD_PLAN.md in the same style as Tier 1" so the plan keeps growing as you go.
 
 ## Confirmed choices
 

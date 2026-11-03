@@ -6,10 +6,20 @@
 Wahat Al Shams passes 5 runs out of 5. Sessions 26 to 33 were built by helper agents in
 parallel and merged together. They still need Louis's own play-test on the Mac.
 
-**Next: Louis plays a full shift** (open the game with F5, New game, the application, the
-tutorial, then shifts) and writes down what felt off. Then **Sessions 35 to 40**, "Reasons to
-come back" (gear shop, streaks and PERFECT!, choosing orders, tomorrow's special, collections,
-final play-test and itch.io), in BUILD_PLAN.md. These are ideas: cross out any you don't want.
+**Louis played the graphics pass (3 Nov).** He likes the houses, playgrounds, stables and the
+number of NPCs. **Next: Sessions 35 to 46, the Detail pass**, in BUILD_PLAN.md: Wahat Al Shams at
+real size copied from the real community (joined rows of 500 homes, solar car parks between
+clusters, horse and cycle tracks, checkpoints, bus station), 8-minute shifts with an AM/PM clock,
+walk-in restaurants with spoof names, Fair Grade International School, the C Institute, the gym
+and pools, hills and textures, building sites on the empty patches, a faster-feeling bike, the
+camera fix, and two shops (Pedal Point Bikes with upgrades and a rocket booster, Dune Drip
+clothes) with a cart and checkout. Sketches are in docs/. Then Sessions 47 to 51, "Reasons to
+come back" (the old Sessions 36 to 40; the old gear shop Session 35 is now Session 45).
+
+Things Louis noticed that the Detail pass fixes: the clock looks like a sped-up timer, the camera
+goes inside houses, villas should be joined rows, a warpy smear in front of the bike (the heat
+shimmer), some NPCs have no head, the dome doors flicker, the school is hard to find, buggies
+drive on the ring road, and riding feels slow.
 
 Sessions 7 to 17 are built (all of Tier 1), each checked with the Godot headless checks,
 the smoke test and screenshots, on branch `sessions-8-17` (Session 7 on `session-7-minimap`).
@@ -751,4 +761,4 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - Merge `polish-and-graphics` into main (pull request on GitHub).
 - Remove the old Palm Grove map once Wahat Al Shams feels right (Session 34 left it in,
   because the smoke test still uses it as a second map).
-- Then Sessions 35 to 40 (Reasons to come back), ending with itch.io.
+- Then the Detail pass (Sessions 35 to 46), then Reasons to come back (Sessions 47 to 51), ending with itch.io.

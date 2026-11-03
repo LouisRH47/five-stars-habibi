@@ -29,7 +29,7 @@ Five Stars Habibi is a job-sim driving game set in Al Sarab, a made-up desert ci
 - All brands are made up (no real company names).
 - Game text is English only. Signs in the world are Arabic + English, like Dubai.
 - Chill Arabic-style background music (free-to-use tracks only).
-- Tier 1 happens in Wahat Al Shams, a made-up car-free eco community with a Plaza, a green park through the middle, 5 clusters of homes, a school and stables. Shifts are 5 minutes.
+- Tier 1 happens in Wahat Al Shams, a made-up car-free eco community at real size (about 940 by 500 m): a Plaza with 10 restaurants, a bike shop and a clothes shop, a green park through the middle, 5 clusters of 100 joined homes, a school, an institute and stables. Shifts are 8 minutes.
 
 ## The career ladder (NOT NOW, vision only)
 
@@ -137,11 +137,12 @@ Every delivery is a race against three meters: time, heat and damage. How well y
 - Pizza: easy, good for the tutorial
 - Ice cream: melts fast
 - Bubble tea: spills on bumps
-- From the graphics pass: shawarma, cake, groceries and farm juice/salad too (see "Wahat Al Shams" in the city map section)
+- From the graphics pass: shawarma, cake, groceries and farm juice/salad
+- From the detail pass: coffee, manakish, pad thai, sushi, tacos and burgers (see the restaurant table in "Wahat Al Shams")
 
 **Shifts**
 
-- One shift is 5 real minutes (one in-game day, 08:00 to 18:00, so one in-game hour is 30 seconds). It ends with a golden sunset. Tier 1 is day shift only. Night shifts unlock at Tier 2.
+- One shift is 8 real minutes (one in-game day, 08:00 to 18:00, so one in-game hour is 48 seconds). It ends with a golden sunset. The clock reads like a real clock, "9:40 AM", and moves in 10-minute steps (one step every 8 real seconds) with a small sun icon, so it doesn't look like a sped-up timer. Tier 1 is day shift only. Night shifts unlock at Tier 2.
 - If the clock runs out while you're carrying an order, you still finish that delivery. The shift ends right after you drop it off. No new orders pop up once the clock is out.
 - At the end you get a summary screen: deliveries, stars, money earned, XP.
 
@@ -154,7 +155,7 @@ Every delivery is a race against three meters: time, heat and damage. How well y
 - Every villa has a readable house number.
 - A mini-map in the bottom left shows the exact drop-off spot and the villa number.
 - Some orders come with notes, like "leave it at the door" or, in Downtown, "leave it in the lobby".
-- A GPS line on the road is a cheap upgrade you buy, not there from the start.
+- A GPS route (a line on the road and the mini-map) is an upgrade you buy at Pedal Point Bikes, not there from the start.
 
 **Customers at the door:** the customer comes out with a short animation and one line of speech. Some ask you to leave it at the door. More customer types get added later.
 
@@ -167,11 +168,11 @@ These stop deliveries from feeling the same after a few. All numbers are startin
 | Order | What's different | Reward |
 | --- | --- | --- |
 | Rush | Target time is 70% of normal | +50% pay |
-| Fragile cake | From Sunrise Bakery. Bumps do double damage | Tip chance 60% instead of 40% on 5 stars |
+| Fragile cake | From Bread & Zaatar. Bumps do double damage | Tip chance 60% instead of 40% on 5 stars |
 | Neighbour | When you get to the door: "Not home! Leave it with the neighbour at Villa X" (a home in the same cluster). The clock keeps running | Normal pay, +5 Dh |
 | Big family order | Two bags on the bike: top speed 15% lower and steering a bit wobblier | Double pay |
 
-**School orders:** teachers and kids order to the school, always to the security booth at the main gate. They only come in between 08:00 and 15:00 on the shift clock. Lunch rush from 11:30 to 12:30: about 1 in 3 orders is for the school.
+**School orders:** teachers and kids order to Fair Grade International School, always to the security booth at the school gate. They only come in between 08:00 and 15:00 on the shift clock. Lunch rush from 11:30 to 12:30: about 1 in 3 orders is for the school.
 
 **Stables orders:** riders and grooms order to the stable office. Horses in the paddock are just for looking at.
 
@@ -183,7 +184,7 @@ These stop deliveries from feeling the same after a few. All numbers are startin
 | --- | --- | --- |
 | Auntie Mariam | Villa 7, Cluster 2 | Bubble tea |
 | Mr Rashid | Villa 3, Cluster 5 | Shawarma |
-| Ms Dana (teacher) | School gate | Cake from Sunrise Bakery |
+| Ms Dana (teacher) | Fair Grade school gate | Cake from Bread & Zaatar |
 | Hamdan (groom) | Stable office | Farm juice |
 
 **Shift goals:** at the start of each shift the phone shows 2 goals picked from a list. Each done goal pays a 15 Dh bonus, shown on the shift summary. List: make 6 deliveries; 3 five-star deliveries in a row; no crashes; a school lunch order; a fragile cake with 5 stars; deliver to 3 different clusters.
@@ -209,6 +210,8 @@ Keys are placeholders until the controls are tested. Controller support comes la
 | W A S D (on foot) | Walk. Shift to jog |
 | Q | Skip order |
 | I | Switch crash insurance on or off (shown on the phone) |
+| X | Rocket booster (once you own it, see "Shops and upgrades") |
+| In a shop | ‹ › or W/S: type, A/D or click: try on, E: add to cart, C: checkout, drag: turn, Esc: leave |
 | Esc | Pause (and resume) |
 | R | Put the bike back on the road if you get stuck |
 
@@ -231,27 +234,20 @@ Polished low-poly: still simple shapes, but with nicer light, moving people and 
 - **Art:** the houses, Plaza, school, mosque, stables and domes are built in code from our own kit of parts. People, cars, plants and small props come from free CC0 packs (Kenney, Quaternius), credited in CREDITS.md. Never paid or copyrighted assets.
 - **People move:** customers, walkers, gardeners, kids, teachers and grooms have idle, walk and wave animations. Your rider too, on the bike (pedalling) and on foot.
 - **The bike:** a proper low-poly bicycle. The pedals turn with speed, the handlebars turn when you steer, the kickstand drops when you get off, and B rings the bell.
-- **Light:** the sun moves with the shift clock: low and warm in the morning, high and white at noon, a golden sunset from 17:00. Soft shadows in corners (SSAO), a light haze towards the desert, a gentle glow on bright things, and heat shimmer above the roads at noon.
+- **Light:** the sun moves with the shift clock: low and warm in the morning, high and white at noon, a golden sunset from 17:00. Soft shadows in corners (SSAO), a light haze towards the desert, and a gentle glow on bright things. (The heat shimmer was removed in the detail pass: it looked like a warpy smear in front of you.)
 - **Juice:** dust puffs from the tyres on sand and when braking hard, speed lines and a wider camera when sprinting, coin and star pops when you deliver, and the phone buzzes (shakes with a sound) when a new order comes in.
 - **Life on the map:** golf buggies driving slowly on fixed routes (they stop and wait if you're in the way), horses with riders on the edge track, joggers and walkers, gardeners watering, kids at the cluster playgrounds, birds flying over, palms swaying, the stream and fountain moving, ducks on the stream and donkeys in the spine. No real traffic AI until Tier 2.
-- **Graphics setting:** Low, Medium (default) or High in Settings. Low turns off SSAO, shimmer and haze and shows fewer people; High shows everything.
+- **Graphics setting:** Low, Medium (default) or High in Settings. Low turns off SSAO and haze and shows fewer people; High shows everything.
+- **Camera:** it moves in closer when a wall comes between it and your rider, so it never ends up inside a house.
+- **Speed (detail pass):** top speed 28 km/h, sprint 36 km/h. Sprinting shows strong speed lines, a bigger camera stretch and a wind sound, so it feels fast.
 
-## Reasons to come back (Sessions 35 to 40)
+## Reasons to come back (Sessions 47 to 51)
 
 Research on games like Crazy Taxi, PowerWash Simulator, Stardew Valley, Euro Truck Simulator 2 and Death Stranding (Nov 2026) says players return when they always have a clear next goal, every action feels satisfying, their skill pays off, and there are characters they care about. Right now money and XP don't buy anything, so these come before the itch.io release. Rule for all of them: the reasons to come back must be fun, never fear of missing out. No daily login rewards, no streaks you lose by not playing, no countdowns that nag you to come back.
 
 **A perfect delivery feels special.** The Delivered card already pops the stars and coins (Session 31). On top of that: all three meters green shows a big "PERFECT!" with a happy jingle, and a tip gets its own little jingle.
 
-**Gear shop and the next goal.** The phone gets a Shop page (Tab opens it, the game pauses). Gear costs money and a Rider Level. Prices fit 5-minute shifts (a careful shift earns about 70 Dh):
-
-| Gear | Level | Price | What it does |
-| --- | --- | --- | --- |
-| Louder bell | 2 | 25 Dh | B reaches twice as far: cats, kids and buggies get out of the way sooner |
-| GPS line | 3 | 60 Dh | A line on the road to the next stop |
-| Bigger stamina bar | 5 | 120 Dh | 30% more sprint |
-
-- Cosmetics (no level needed, 15 to 40 Dh): delivery box colours, bike paint, a few hats. Only the look changes.
-- The phone and the shift summary always show the next goal with a progress bar, e.g. "GPS line: 40 Dh and Level 3 to go".
+**Gear shop and the next goal:** moved to "Shops and upgrades" (the Pedal Point bike shop, detail pass).
 
 **5-star streak and personal bests.** Each 5-star delivery in a row adds +5% to your tip chance, up to +30%. A crash or a delivery under 5 stars resets it (stopping playing never does). The phone shows "4 in a row". Personal bests, shown on the shift summary when you beat them: best shift earnings, longest streak, most deliveries in a shift, fastest ride to each home.
 
@@ -261,7 +257,38 @@ Research on games like Crazy Taxi, PowerWash Simulator, Stardew Valley, Euro Tru
 
 **Tomorrow's special.** Each shift is a kind of day: a normal day, Hot Noon (food spoils faster in the sun), Rush Hour (orders come quicker, 10% more pay) or a shop special ("2-for-1 at Brain Freeze": double tip chance on that shop's food). The clock shows today's, and the shift summary says what tomorrow will be.
 
-**Collections.** A Wahat Al Shams stamp card: a stamp for every home you've delivered to (60 homes in 5 clusters, plus the school gate and the stable office). A full cluster pays a small 20 Dh bonus; all 60 unlocks a gold delivery box. Also the cats and horses you've met (each gets a name) and the customer lines you've heard. All on a Profile page on the phone.
+**Collections.** A Wahat Al Shams stamp card: a stamp for every home you've delivered to (500 homes in 5 clusters, plus the school gate, the stable office, the C Institute and the gym). Every 25 homes in a cluster pays a small 20 Dh bonus; a full cluster unlocks a gold delivery box colour. Also the cats and horses you've met (each gets a name) and the customer lines you've heard. All on a Profile page on the phone.
+
+## Shops and upgrades (detail pass)
+
+Money and Rider Level finally buy things. Two shops in the Plaza, both walk-in like the restaurants.
+
+**Shop screens (the same style for every walk-in place):** you stay in the 3D shop and see yourself, like in GTA's clothes shops. The camera turns to face your rider, and the menu sits on the left as a dark see-through panel with an orange header (the game's own fonts and colours), so you can still see the shop, the racks and the cashier or mechanic. Mockups: docs/shop_screens.svg.
+- Arrows ‹ › (or W/S) switch the type, A/D or a click tries the next item on straight away, and you can drag to turn your rider or bike round.
+- **Cart and checkout:** E adds the item to your cart. The cart shows what's in it and the total. "Checkout" (C) buys everything in the cart at once if you have the money and the level. Esc leaves the shop; anything not bought goes back on the shelf and you keep your old look.
+- Owned items say "Owned", locked ones show the level they need, new ones have a "NEW" tag.
+- Restaurant counters, the C Institute reception and the gym reception use the same side panel, smaller: it shows the order while the person hands you the bag or takes it.
+
+**Pedal Point Bikes (بيدال بوينت)**, the bike shop and mechanic. Bikes hang on the wall, tools on a pegboard, and a mechanic stands at the workbench. Your bike turns slowly on a stand while you shop. Prices are starting ideas for 8-minute shifts; tune them in the play-test.
+
+| Upgrade | Level | Price | What it does |
+| --- | --- | --- | --- |
+| GPS route | 2 | 50 Dh | A glowing line on the road and the mini-map showing the way to the next stop |
+| Louder bell | 2 | 25 Dh | B reaches twice as far: cats, kids and buggies move out of the way sooner |
+| Insulated bag | 3 | 70 Dh | Food loses freshness 25% slower |
+| Anti-spill box | 3 | 70 Dh | Bumps damage the food 30% less |
+| Stamina +10% | 3 | 40 Dh, then 20 Dh more each time | Sprint lasts 10% longer. Buy it again and again, up to 10 times (+100%) |
+| Better brakes | 4 | 90 Dh | You stop faster, and hard braking hurts the food less |
+| Comfy tyres | 4 | 90 Dh | Speed bumps hurt less, and the spine's hills are smoother |
+| Aluminium frame | 4 | 90 Dh | +1 km/h top speed |
+| Carbon frame | 7 | 200 Dh | +2 km/h more (needs the aluminium frame) |
+| **Rocket booster** | 10 | **10,000 Dh** | Press X: 4 seconds at 80 km/h with flames out the back, then 30 seconds to recharge. While it fires, bumps hurt the food 3 times as much, and any crash is a big crash. Late-game fun |
+
+Also bike paint and delivery box colours (no level needed, 15 to 40 Dh, looks only).
+
+**Dune Drip (ديون دريب)**, the clothes shop. Racks of clothes, a shelf of caps and glasses, a rug in front of a big mirror, and a cashier behind the counter. Caps, sunglasses, helmets, hoodies and tops, cycling jerseys, trainers and backpacks, 15 to 60 Dh, looks only, no level needed. What you wear shows on your rider everywhere (on the bike, on foot, on the Delivered card).
+
+**The next goal:** the phone and the shift summary always show what you're saving up for with a progress bar, like "Carbon frame: Level 7 and 60 Dh to go".
 
 ## Crashes, bills and insurance
 
@@ -391,7 +418,7 @@ Every brand is made up so the game never uses a real company's name or logo. Eac
 | Al Sarab Riding School | Where you take your tests | Driving schools |
 | Al Sarab | The city ("sarab" means mirage in Arabic) | Dubai |
 
-Restaurants get funny made-up names too, like Shawarma Supreme, Brain Freeze Gelato and Boba Oasis.
+Restaurants get funny made-up names too, like Shawarma Supreme and Brain Freeze Gelato. In Wahat Al Shams most are spoofs of the real eco community's restaurants: 1000 Pizza, Tok Tok Thai, Sushi You, Mario Bonito, Burgerology, Bread & Zaatar, Spill the Tea and Grand Groceries. Places get spoof names too: Fair Grade International School, the C Institute, Pedal Point Bikes and Dune Drip.
 
 ## City map and districts
 
@@ -406,57 +433,72 @@ Al Sarab is one map. Districts sit behind barriers or a "not in your zone yet" m
 | Downtown | Tier 3 | Skyscrapers, traffic jams | Lifts to high floors eat your time, and notes like "leave it in the lobby" |
 | Highway and airport | Tier 4 | Fast roads, terminals | Fast travel, airport pickups |
 
-**Wahat Al Shams, the Tier 1 community (replaces Palm Grove)**
+**Wahat Al Shams, the Tier 1 community (real size since the detail pass)**
 
-Wahat Al Shams (واحة الشمس, "Sun Oasis") is a made-up eco community. Its layout copies the idea of a real car-free eco community in Dubai (see Sources), scaled down for the game and with every name made up. The old Palm Grove map stays as a test map until Wahat Al Shams works, then it's removed. Built from a data list (data/wahat_al_shams.gd) plus builder scripts, like Palm Grove.
+Wahat Al Shams (واحة الشمس, "Sun Oasis") is a made-up eco community. Its layout copies a real car-free eco community in Dubai (see Sources) as closely as we can, at **real size**, with every name made up. Built from a data list (data/wahat_al_shams.gd) plus builder scripts. Map sketch: docs/wahat_al_shams_map.svg. House sketch: docs/villa_types.svg.
 
-*Layout (about 400 m east to west, 300 m north to south). Map sketch: docs/wahat_al_shams_map.svg. House sketch: docs/villa_types.svg.*
+*Size:* about **940 m west to east and 500 m north to south** (the real one is about 469,000 m² with a 2.9 km edge, measured by Louis on Google Earth). The long side runs west to east. The highway runs along the west end.
+
+*Layout (west to east, see the sketch):*
 
 | Part | Where | What's there |
 | --- | --- | --- |
-| Tree belt and horse track | All the way round the edge | A thick belt of tall trees, with a sandy horse track and a bike track inside it. Riders on horses use it. You can ride the bike track |
-| Ring road | Inside the tree belt | The only road for cars. Parked cars and golf buggies only, no traffic driving around in Tier 1 |
-| Main gate | Middle of the west side | Gate house with a barrier and a big bilingual "Welcome to Wahat Al Shams" sign |
-| The Plaza | Just inside the gate | The hub. A sunken round square in the middle (steps down, a fountain, date palms, shade sails, benches) with 6 shops around it (see below). Every order is picked up here, except farm orders |
-| Green spine | Through the middle, west to east | A long park: a winding stream, 6 white dome greenhouses, farm beds, beehives, donkeys in a pen, a basketball court and a playground. Paths through it are the main shortcut for the bike. The Farm Stall by the domes is the 7th pickup spot |
-| 5 clusters | 3 north of the spine (C1, C2, C3), 2 south (C4, C5) | 12 homes each, 60 in total. No cars inside. Narrow shady lanes (about 4 m wide) for bikes, people and buggies. A mini-plaza in the middle of each cluster with a cooling tower, a small playground and benches |
-| Solar car parks | On the ring road next to each cluster | Car bays under a roof of solar panels. No door is more than about 40 m from its car park. Bollards stop cars going into the clusters |
-| School | South side, east of C5 | Al Shams School, a low building with a fenced yard. Orders go to one spot only: the security booth at the main gate |
-| Mosque | South side, between C5 and the school | A mosque with a minaret. Scenery only: no orders ever go there |
-| Stables | East end of the spine | Stable block, a paddock with horses you can stop and watch, and a small office. Orders go to one spot only: the stable office |
-| Building site | South-east corner | A fenced plot with a crane and a "Phase 2 coming soon" sign. Scenery and a landmark for addresses |
+| Highway and 2 checkpoints | Along the west end | The highway outside the wall. Two entrances off it, one at the north-west and one at the south-west. Each has a security booth, a red-and-white barrier and **one guard** who waves. The barrier lifts for cars; your bike rides through a gap at the side. Real ID checks come later with motorbikes and cars (Tier 2) |
+| Tree belt | All the way round the edge | Thick belt of tall trees and date palms |
+| Horse track | Just inside the tree belt, all the way round | Dirt and sand, white horse rails on both sides. **Horses only**: nobody else goes on it. Gaps in the rails where the gate roads cross it |
+| Run and cycle track | Right beside the horse track, all the way round | A **blue** rubber track for runners, cyclists and you. No buggies, no cars |
+| Ring road | Inside the tracks, all the way round | The only road for cars. Cars drive slowly round it on set routes and pull in and out of the car parks. **No buggies on the ring road** |
+| Mosque | North-west, just inside the north checkpoint, in front of the Plaza | A mosque with a minaret. Scenery only: no orders ever go there |
+| Bus station | North-west, between the mosque and the Plaza | A bus bay with a shelter and a parked bus, joined to the ring road by its own short road so it looks real. A bus drives round the ring road and into the bay every in-game hour. A sign says "Coming soon: travel to other districts". **Each shift starts in front of the bus station.** Later (Tier 2) it becomes the way to travel to Downtown and other districts |
+| The Plaza | North-west, from the bus station to Cluster 1 (a bigger area than before) | The hub: five low-rise blocks (flats and offices above, shops below) round a sunken square with a fountain, date palms, shade sails and benches. 10 restaurants, the bike shop and the clothes shop (see "Shops and upgrades"). A solar car park in the gap between the Plaza and Cluster 1 |
+| Fair Grade International School | South-west | Copies the real school next door (photos Louis sent, described below). Orders only go to the security booth at the school gate |
+| Horse jumping arena | Next to the school, south-west | A sand arena with white horse rails and jumps. Horses with riders jump now and then. Scenery |
+| C Institute | Beside the school, between the school and the spine | A modern institute building (see below). Its big glass front and stepped seats face the spine. A small car park behind it. Drop-off: the receptionist inside |
+| Stables | South-west, by the jumping arena | Stable block, a paddock with horses you can watch, and the stable office (drop-off spot) |
+| Green spine | Through the middle, west to east | The long park (see below) with the domes, the farm, the gym, the lap pool and the community pool. Its paths are the main bike shortcut |
+| 5 clusters | 3 north of the spine (C1, C2, C3), 2 south (C4, C5) | **100 homes each, 500 in total**, in joined rows (see below). No cars inside |
+| Solar car parks | **In the gaps between clusters** (Plaza and C1, C1 and C2, C2 and C3, C4 and C5) | A short road off the ring road with car bays, every bay under a **solar panel roof**. Parked cars. Not behind the houses: homes go there instead |
+| Building sites | Where there's nothing yet: south of the spine's west end (where the horse ring was), the south-east block where a sixth cluster could go, and any other empty patch | Fence with a bilingual "Coming soon" banner, a crane, sand piles, a site cabin and a couple of workers. Later we can swap them for real buildings |
 
-*Addresses:* homes are numbered 1 to 12 inside each cluster, so an address reads "Villa 7, Cluster 3" (phone and mini-map: "C3 · Villa 7"). Each cluster has a bilingual sign at both lane entrances.
+*Who drives where:* cars only on the ring road and in the car parks, never in the lanes. Golf buggies only on the lanes inside the clusters and the spine paths, never on the ring road. People walk, and kids ride bikes and scooters, on the lanes and paths. Your bike can go everywhere except the horse track.
 
-*The houses:* one style for the whole community, built in code from our own kit of parts (no free pack has houses like these). Cream or sand walls, two storeys, L-shaped, flat roof with a roof terrace shaded by tilted solar panels, a small wind tower (barjeel), small deep windows, a wooden door and a low courtyard wall. Three types, as in the real place:
+*The homes (joined rows, like the real ones):* homes are joined side by side in long rows with no gaps. Two rows sit back to back with just a wall between them, so each double row has a lane on both sides and every front door faces a lane. Now and then a small alley cuts through a row. Each cluster has 4 of these double rows of about 12 to 13 homes a side. Same 3 types as the real place: **90 courtyard villas, 8 garden villas and 2 signature villas per cluster** (the house kit from Session 26 stays: Louis likes the houses). Each double row is built as one merged mesh, and far-away rows use a simpler version, so 500 homes stay fast. The cluster mini-plazas (cooling tower, playground, benches) stay.
 
-| Type | Per cluster | Look |
-| --- | --- | --- |
-| Courtyard villa | 10 | The normal L-shaped home with a small walled courtyard |
-| Garden villa | 1 | Same house with a big lawn and a tree |
-| Signature villa | 1 | Bigger corner home with a wooden mashrabiya screen on the front |
+*Addresses:* homes are numbered 1 to 100 inside each cluster, like the real ones, so an address reads "Villa 45, Cluster 1" (phone and mini-map: "C1 · Villa 45").
 
-To make every home easy to tell apart: door colour, plants, a golf buggy or bikes outside, toys, AC units, a satellite dish, and on garden and signature villas a small pool or a trampoline. Picked from the villa's number so it's always the same.
+*Fair Grade International School (from Louis's photos of the real school):* a 3-storey sand-coloured building whose wings curve in and out, with white rounded balcony bands on every floor, flat white roofs with AC boxes and white railings, and a rooftop garden. A big boxy sports hall at one end, sand-coloured with a dark strip of windows and the bilingual sign "FAIR GRADE INTERNATIONAL SCHOOL · مدرسة فير جريد الدولية" along the top, with tall flags at the entrance. Long solar panel roofs over the school car park. A fenced football pitch with green turf, two shaded pools, basketball and tennis courts, two shaded playgrounds. A low white wall round it all and a security booth at the gate. Big enough that you see it from far away.
 
-*The 6 Plaza shops plus the Farm Stall (pickup spots):*
+*C Institute:* a modern low building with a huge glass front and wide stepped seats in front of it, like big stairs you can sit on, with a few people sitting there. Inside: one tall open lobby up to the roof, very modern (light wood, plants, glass), with a reception desk and a receptionist. You walk in and hold E at reception to hand over the food. A small car park behind it.
 
-| Shop | Arabic sign | Food | What the food cares about |
+*The green spine:* grass with a real grass texture, tufts and flowers, gentle hills between 0.5 and 1.5 m high that you roll over, more trees, the stream, the farm beds, beehives, donkeys, the basketball court and the playground. One path links all the domes, evenly spaced along the spine, with no big gaps. In the middle: the **gym**, a small box that's rounded at the back with a glass front (treadmills you can see inside), with a **lap pool** along its side; a little way off, the **community pool**, a chill place with sunbeds, umbrellas, a kids' area and people swimming. The gym reception is a drop-off spot.
+
+*Pickup spots:* the 10 restaurants in the Plaza (inside, at the counter) and the Wahat Farm Stall in the spine.
+
+| Restaurant | Arabic sign | Food | What the food cares about |
 | --- | --- | --- | --- |
-| Pizza | بيتزا | Pizza | Easy |
+| 1000 Pizza | ١٠٠٠ بيتزا | Pizza | Easy |
 | Brain Freeze Gelato | برين فريز جيلاتو | Ice cream | Melts fast |
-| Boba Oasis | واحة البوبا | Bubble tea | Spills on bumps |
+| Spill the Tea | سبيل ذا تي | Bubble tea and coffee | Spills on bumps |
 | Shawarma Supreme | شاورما سوبريم | Shawarma | Goes cold, medium |
-| Sunrise Bakery | مخبز الشروق | Cake | Breaks on bumps (fragile) |
-| Al Sarab Mini Market | ميني ماركت السراب | Groceries bag | Slow to spoil, bit heavy |
+| Bread & Zaatar | خبز وزعتر | Manakish and cakes | Cakes break on bumps (the fragile cake orders) |
+| Grand Groceries | جراند جروسريز | Groceries bag | Slow to spoil, a bit heavy |
+| Tok Tok Thai | توك توك تاي | Pad thai | Goes cold, spills a little |
+| Sushi You | سوشي يو | Sushi | Must stay cool, a bit fragile |
+| Mario Bonito | ماريو بونيتو | Tacos | Fall apart on bumps |
+| Burgerology | برجرولوجي | Burgers | Goes cold |
 | Wahat Farm Stall | كشك مزرعة الواحة | Fresh juice and salad box | Spoils in the sun |
 
-*Drop-off spots:* the 60 home doors, the school gate booth and the stable office. Never the mosque or the shops.
+The names are made-up spoofs of the real Plaza's restaurants (Louis's picks), so no real brand name is used.
 
-*Who orders:* residents (the 5 outfits we have), teachers (lanyard, folder) and school kids (uniform) at the school, riders and grooms (riding helmet, boots) at the stables.
+*Restaurant fronts and interiors:* every restaurant looks different outside (awning colour, sign shape, outside seats) and inside. You get off the bike, walk in, and hold E at the counter; a staff member hands you the bag. Each has 2 to 4 tables with a few customers and a menu board. Insides: 1000 Pizza a brick oven, Brain Freeze a glass freezer with colourful tubs, Spill the Tea tea taps and cups, Shawarma Supreme a spinning grill, Bread & Zaatar a cake display and a bread oven, Grand Groceries shelves and fridges, Tok Tok Thai woks and lanterns, Sushi You a sushi bar with a conveyor, Mario Bonito colourful tiles and a taco counter, Burgerology a grill and neon menu. No two insides are the same.
 
-*Obstacles:* speed bumps on the ring road, the loose cats and the kids on scooters (now also in the cluster lanes and mini-plazas), golf buggies, and horses when they cross.
+*Drop-off spots:* the 500 home doors, the school gate booth, the stable office, the C Institute reception and the gym reception. Never the mosque, the bus station or the shops.
 
-*Size:* the bike can cut through the spine, so most rides are 30 to 60 seconds and the far corners about 90 seconds.
+*Who orders:* residents (the 5 outfits), teachers and school kids at the school, riders and grooms at the stables, staff and visitors at the C Institute, and gym-goers at the gym.
+
+*Obstacles:* speed bumps on the ring road, cats, kids on scooters and bikes, golf buggies, and horses when they cross a path.
+
+*Details everywhere:* real-looking textures (grass, sand, paving patterns, asphalt with road lines, kerbs) and small props so nothing looks plain: lamp posts, bins, recycling points, bike racks, electric car chargers, planters, benches and signs.
 
 **Language and signs:** the game itself (menus, phone, customers) is in English only. Signs on buildings, shops, restaurants and roads show both Arabic and English, like real signs in Dubai.
 
@@ -474,8 +516,10 @@ Build it in milestones and play-test at the end of each one. Only move on when t
 6. **Crashes and shifts:** small and big crashes, insurance, the shift and the summary screen.
 7. **Start screen and polish:** application form and the 3 presets, menu, saving, sounds and music, then the polish pass (hold E, get off the bike, screens like the mockup).
 8. **Graphics pass:** the Wahat Al Shams community, the house kit, light and weather, animated people, the real bike, juice, life on the map, special orders, goals and events.
-9. **Motorbike test:** yard course, instructor, theory quiz, fail and retake rules.
-10. **Tier 2 and beyond:** motorbike, Old Town, then the next tiers one by one.
+9. **Detail pass:** real-size Wahat Al Shams with joined rows of homes, walk-in restaurants, Fair Grade School, the C Institute, gym and pools, horse tracks, textures, the bike shop and the clothes shop.
+10. **Reasons to come back:** streaks, choosing orders, tomorrow's special, collections, then itch.io.
+11. **Motorbike test:** yard course, instructor, theory quiz, fail and retake rules.
+12. **Tier 2 and beyond:** motorbike, Old Town, then the next tiers one by one.
 
 ## Still open
 
@@ -484,6 +528,8 @@ Build it in milestones and play-test at the end of each one. Only move on when t
 - Whether the motorbike can carry several orders at once, later on
 - Exact keys for the taxi requests
 - Pay for the new foods, special orders and goal bonuses: starting ideas are in the PRD, tune them after the graphics pass play-test
+- Upgrade prices and how much a shift pays at real size and 8 minutes: tune in the detail pass play-test
+- What goes on the building sites later (a sixth cluster, a hotel, something else)
 
 ## Decisions log
 
@@ -541,6 +587,15 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 3 Nov 2026 | Graphics: polished low-poly with CC0 packs (Kenney, Quaternius) for people, cars and props; animated people; a real bike model with turning pedals, steering, kickstand and a bell on B; sun moving with the shift clock, SSAO, haze, glow, heat shimmer; juice (dust, speed lines and FOV, coin and star pops, phone buzz); life on the map (buggies on fixed routes, horses, joggers, gardeners, kids, birds, palms, ducks, donkeys); Low/Medium/High graphics setting |
 | 3 Nov 2026 | Session 34 play-test tuning (for Louis to confirm): a careful bot gets 5 to 6 deliveries a 5-minute shift (without sprinting), so the goals are now make 6 deliveries (was 8), a school lunch order (was 2: the lunch rush is only 30 real seconds) and deliver to 3 different clusters (was all 5). 7 in 10 orders now go to the nearer half of homes from the shop, so trips are shorter and a shift is busier; pay per shift stays about the same |
 | 3 Nov 2026 | Reasons to come back planned as Sessions 35 to 40, after the graphics pass so Louis's Sessions 18 to 34 keep their numbers (replaces PR #7): gear shop with prices for 5-minute shifts, 5-star streak and personal bests, regulars' lines growing friendlier, choosing between two orders at 4.5+ stars, tomorrow's special, the 60-home stamp card and a final play-test before itch.io. No fear-of-missing-out mechanics. For Louis to confirm or cross out |
+| 3 Nov 2026 | Detail pass planned (Sessions 35 to 46) after Louis's play-test of the graphics pass. Reasons to come back move to Sessions 47 to 51; their gear shop session is folded into the new bike shop |
+| 3 Nov 2026 | Wahat Al Shams goes real size, about 940 by 500 m, copied from Louis's Google Earth view of the real community, and shifts become 8 minutes (48 s per in-game hour). The clock shows AM/PM in 10-minute steps |
+| 3 Nov 2026 | Layout: highway on the west with 2 checkpoints (booth, barrier, one guard; bike rides through), mosque then bus station then a bigger Plaza in the north-west, Fair Grade School, the C Institute, the jumping arena and the stables in the south-west, the green spine through the middle, 3 clusters north and 2 south, solar car parks between clusters (not behind homes), building sites on the empty patches. The horse ring was dropped. Each shift starts in front of the bus station |
+| 3 Nov 2026 | Homes are joined rows like the real ones: double rows back to back with a wall between, a lane on each side, the odd alley. 100 homes per cluster (90 courtyard, 8 garden, 2 signature), 500 in total, addresses "Villa 45, Cluster 1" |
+| 3 Nov 2026 | Cars only on the ring road and car parks, buggies only on the lanes and spine paths. Horse track round the edge is dirt with white rails, horses only; a blue run and cycle track beside it |
+| 3 Nov 2026 | 10 walk-in restaurants with their own fronts and insides: 1000 Pizza, Brain Freeze Gelato, Spill the Tea, Shawarma Supreme, Bread & Zaatar, Grand Groceries, Tok Tok Thai, Sushi You, Mario Bonito, Burgerology. Pick up by holding E at the counter |
+| 3 Nov 2026 | Fair Grade International School copies the real school from Louis's photos. The C Institute (glass front and stepped seats facing the spine, walk-in lobby with a receptionist) is a drop-off. Gym (rounded at the back, lap pool beside it) and a separate community pool in the spine; gym reception is a drop-off |
+| 3 Nov 2026 | Spine gets grass texture, flowers and gentle hills (0.5 to 1.5 m), and one path linking all the domes. Textures and props everywhere. Camera never goes inside houses. Heat shimmer removed. Top speed 28, sprint 36 km/h with stronger speed lines and wind sound. Fix people with no head and the glitchy dome doors |
+| 3 Nov 2026 | Shops: Pedal Point Bikes (upgrades, stamina +10% buyable up to 10 times, aluminium then carbon frame, a 10,000 Dh rocket booster on X at Level 10, paint and box colours) and Dune Drip (clothes, try on in front of a mirror like GTA). Menu on the left while you stay in the 3D shop, with a cart and checkout. Same side-panel style at every walk-in place |
 
 ## Sources
 
@@ -551,6 +606,14 @@ Wahat Al Shams layout and houses (the idea only, every name in the game is made 
 - [Beyond oil: Inside Dubai's Sustainable City, New Atlas](https://newatlas.com/beyond-oil-dubai-sustainable-city/57441)
 - [Green and gated, Gulf Construction](https://gulfconstructiononline.com/Article/378864/Green_and_gated)
 - [Sustainable Plaza streetscape, Urbanitarian](https://urbanitarian.com/streetscapes_post?id=18)
+
+Detail pass (the real community, the school and the restaurants; every name in the game is made up):
+
+- [Sustainable City restaurants guide, The Dubai Fork](https://wheretoeatdubai.pages.dev/blog/sustainable-city-restaurants-dubai-2026)
+- [Fairgreen International School campus and facilities, edcare](https://edcare.ae/schools/fairgreen-international-school/campus)
+- [Sanad Village, Gulf News](https://gulfnews.com/uae/sanad-village-in-dubai-sets-new-global-standard-for-people-of-determination-1.78778336)
+- [Inside Dubai's Sustainable City: facilities list, Gulf News](https://gulfnews.com/uae/inside-dubais-sustainable-city-community-what-makes-it-different-1.91842975)
+- Louis's own Google Earth measurements and photos of the community, the school and the gym (not stored in the repo)
 
 Licence tests:
 
