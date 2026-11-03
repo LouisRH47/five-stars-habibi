@@ -63,12 +63,61 @@ func _run() -> void:
 		phone._process(0.0)
 	await process_frame
 	_expect(_style_changes == 0 and _theme_changes == 0, "unchanged pickup frames also preserve cached styles")
+	_check_shift_end(world, state, delivery, phone, order)
 	state.save_path = "user://phone_refresh_finished.json"
 	world.queue_free()
 	places.free()
 	await process_frame
 	print("RESULT: ", "FAIL phone refresh" if _failed else "PASS phone refresh")
 	quit(1 if _failed else 0)
+
+
+func _check_shift_end(world: Node3D, state: Node, delivery, phone, order: Order) -> void:
+	var screen = load("res://scripts/shift_screen.gd").new()
+	world.add_child(screen)
+	var shift = load("res://scripts/shift_manager.gd").new()
+	shift.shift_screen = screen
+	world.add_child(shift)
+	shift.set_physics_process(false)
+
+	state.pick_up()
+	state.shift_time_left = 0.0
+	shift._physics_process(0.0)
+	phone._process(0.0)
+	_expect(not paused and not screen.showing and state.current_order == order and phone._pill.text == "DROP OFF",
+			"an accepted delivery remains on the phone after the shift clock runs out")
+	state.deliver()
+	_expect(paused and screen.showing and phone._status.text == "Shift over" and not phone._result.visible,
+			"the phone shows the shift is over behind the summary after the last delivery")
+	screen._next_shift()
+	phone._process(0.0)
+	_expect(not paused and phone._pill.text == "WAITING", "the next shift restores the idle phone")
+
+	order.note = "Leave by the gate"
+	state.offer_order(order)
+	phone._process(0.0)
+	_expect(phone._stops.visible and phone._chip_row.visible and phone._note.visible,
+			"the pending offer is visible before the shift closes")
+	state.shift_time_left = 0.0
+	shift._physics_process(0.0)
+	_expect(paused and screen.showing and state.offered_order == null and phone._status.text == "Shift over"
+			and not phone._stops.visible and not phone._chip_row.visible and not phone._note.visible
+			and not phone._hint.visible, "the paused summary shows no expired offer or accept hint")
+	screen._next_shift()
+
+	var another_order: Order = load("res://scripts/order_maker.gd").new(delivery.place_builder, 8.0).make("pizza", 101)
+	var choices: Array[Order] = [order, another_order]
+	state.offer_choices(choices)
+	phone._process(0.0)
+	_expect(phone._choices_box.visible, "the two choices are visible before the offer expires")
+	delivery._offer_left = 0.0
+	delivery._physics_process(0.0)
+	state.shift_time_left = 0.0
+	shift._physics_process(0.0)
+	_expect(paused and screen.showing and state.offered_orders.is_empty() and phone._status.text == "Shift over"
+			and not phone._choices_box.visible and not phone._hint.visible,
+			"the paused summary clears choices that expired earlier in the same physics frame")
+	screen._next_shift()
 
 
 func _expect(ok: bool, message: String) -> void:

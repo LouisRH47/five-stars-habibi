@@ -69,6 +69,7 @@ func _ready() -> void:
 	GameState.order_delivered.connect(_on_order_delivered)
 	GameState.stats_changed.connect(_on_stats_changed)
 	GameState.insurance_changed.connect(_on_insurance_changed)
+	GameState.shift_ended.connect(_on_shift_ended)
 	GameState.order_offered.connect(func(_order): buzz())  # Session 31
 	_on_insurance_changed(GameState.insurance_on)
 	_on_money_changed(GameState.money)
@@ -112,9 +113,11 @@ func _process(delta: float) -> void:
 		_show("%s  %s stars" % [done, _stars_text(job["stars"])], lines, "", false)
 		_set_order(null, 0)
 	else:
-		var walking := delivery_manager != null and delivery_manager.on_foot
-		_set_pill("WAITING", GREY)
-		_show("Waiting for orders...", "", _walking_hint("Walk back to your bike") if walking else "", walking)
+		var shift_over := not GameState.shift_open()
+		var walking := not shift_over and delivery_manager != null and delivery_manager.on_foot
+		_set_pill("SHIFT OVER" if shift_over else "WAITING", GREY)
+		_show("Shift over" if shift_over else "Waiting for orders...", "",
+				_walking_hint("Walk back to your bike") if walking else "", walking)
 		_set_order(null, 0)
 	_show_goals(true)
 	_streak.text = "%d in a row  ·  +%d%% tip chance" % [GameState.streak, roundi(minf(GameState.streak * GameConfig.STREAK_TIP_STEP, GameConfig.STREAK_TIP_MAX) * 100.0)] if GameState.streak > 0 else "Build a five-star streak"
@@ -278,6 +281,12 @@ func _on_money_changed(new_money: int) -> void:
 
 func _on_order_delivered(_order: Order) -> void:
 	_flash_left = GameConfig.RESULT_MESSAGE_TIME
+
+
+func _on_shift_ended(_summary: Dictionary) -> void:
+	# The summary pauses the game before the phone gets its next frame.
+	_flash_left = 0.0
+	_process(0.0)
 
 
 func _unhandled_input(event: InputEvent) -> void:
