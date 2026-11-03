@@ -109,6 +109,10 @@ func _check_shop_view() -> void:
 	var camera := Camera3D.new()
 	world.add_child(camera)
 	camera.make_current()
+	var tutorial: CanvasLayer = load("res://scripts/tutorial.gd").new()
+	tutorial.name = "Tutorial"
+	world.add_child(tutorial)
+	tutorial.call("start")
 	var shop := ShopController.new()
 	shop.bike = bike
 	shop.walker = walker
@@ -126,15 +130,22 @@ func _check_shop_view() -> void:
 			"saved paint appears on real frame geometry")
 	var old_look: Dictionary = state.equipped_cosmetics.duplicate()
 	_expect(shop.open_shop("clothes") and paused, "opening the shop keeps the 3D view and suspends gameplay input")
+	_expect(not tutorial.visible, "the shop hides the active gameplay tutorial")
+	_expect(shop.panel.rows.get_child(0).text.ends_with("W / Up")
+			and shop.panel.rows.get_child(1).text.ends_with("S / Down"), "category rows spell out the arrow key hints")
 	shop.select_item(1)
 	_expect(state.equipped_cosmetics == old_look and not state.owned_items.has("caps_sunset"), "trying an unbought item changes only the preview")
 	shop.close_shop()
 	_expect(not paused and camera.current and state.equipped_cosmetics == old_look, "Esc restores the camera and original unbought outfit")
+	_expect(tutorial.visible, "closing the shop restores the active gameplay tutorial")
+	tutorial.hide()
 	shop.open_shop("clothes")
 	shop.select_item(1)
 	shop.add_selected()
 	_expect(shop.checkout()["ok"] and state.equipped_cosmetics.get("head") == "caps_sunset", "clothes preview becomes the saved outfit after checkout")
 	shop.close_shop()
+	_expect(not tutorial.visible, "closing the shop preserves an already hidden tutorial")
+	state.tutorial_running = false
 	_expect(walker.get_node("Model/Wardrobe").get_child_count() > 0, "purchased clothes are applied to the walker")
 	for look in 3:
 		var rider := RiderLook.make_rider()

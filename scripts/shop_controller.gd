@@ -126,7 +126,7 @@ func open_shop(id: String) -> bool:
 	cart.clear()
 	_preview_equipped = _state.equipped_cosmetics.duplicate()
 	_prompt.visible = false
-	for name in ["HUD", "Phone", "Minimap", "MetersPanel"]:
+	for name in ["HUD", "Phone", "Minimap", "MetersPanel", "Tutorial"]:
 		var node := get_parent().get_node_or_null(name)
 		if node != null:
 			_hidden[node] = node.visible
@@ -215,8 +215,8 @@ func _refresh() -> void:
 	var category: String = _categories()[_category]
 	panel.heading.text = "%s\n%s" % [_place(active_shop)["name"], _place(active_shop)["arabic"]]
 	panel.detail.text = "‹  %s · Rider Level %d  ›\n%s" % [GearCatalog.TYPE_NAMES[category], _state.level(), _status]
-	panel.add_row("‹ Previous type", "W / ↑", false, func(): _change_category(-1))
-	panel.add_row("Next type ›", "S / ↓", false, func(): _change_category(1))
+	panel.add_row("‹ Previous type", "W / Up", false, func(): _change_category(-1))
+	panel.add_row("Next type ›", "S / Down", false, func(): _change_category(1))
 	var list := _items()
 	for i in list.size():
 		var item := list[i]
