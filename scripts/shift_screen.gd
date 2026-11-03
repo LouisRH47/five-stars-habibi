@@ -25,9 +25,11 @@ var _day_note: Label
 var _summary: PanelContainer
 var _title: Label
 var _stars: StarRow
+var _new_best: Label
 var _table: GridContainer
 var _gear_goal: Label
 var _gear_progress: ProgressBar
+var _tomorrow: Label
 var _shade: ColorRect
 
 
@@ -66,9 +68,12 @@ func show_summary(summary: Dictionary) -> void:
 	get_tree().paused = true
 	_title.text = "Shift %d done!" % GameState.shift_number
 	_stars.stars = roundf(summary["stars"] * 2.0) / 2.0
+	var new_bests: Array = summary.get("new_bests", [])
+	_new_best.visible = not new_bests.is_empty()
 	var next_goal := GearCatalog.next_goal(GameState)
 	_gear_goal.text = "Next upgrade: " + next_goal["description"]
 	_gear_progress.ratio = next_goal["progress"]
+	_tomorrow.text = "Tomorrow: " + ReplayCatalog.day_name(summary.get("tomorrow", "normal"))
 	for child in _table.get_children():
 		child.queue_free()
 	var rows := [
@@ -83,8 +88,7 @@ func show_summary(summary: Dictionary) -> void:
 	]
 	if summary.get("collection_bonus", 0) > 0:
 		rows.insert(4, ["Stamp card bonus", "+%d Dh" % summary["collection_bonus"]])
-	rows.append(["Tomorrow", ReplayCatalog.day_name(summary.get("tomorrow", "normal"))])
-	for best in summary.get("new_bests", []):
+	for best in new_bests:
 		rows.append(["Personal best", best])
 	if summary["cancelled"] > 0:
 		rows.insert(1, ["Cancelled", str(summary["cancelled"])])
@@ -179,6 +183,9 @@ func _build_summary() -> void:
 	_stars = StarRow.new()
 	_stars.star_size = 36.0
 	rows.add_child(_stars)
+	_new_best = _label("New best!", 20, ORANGE)
+	_new_best.hide()
+	rows.add_child(_new_best)
 	var scroll := ScrollContainer.new()
 	scroll.custom_minimum_size = Vector2(600, 300)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -199,6 +206,9 @@ func _build_summary() -> void:
 	_gear_progress.show_percentage = false
 	_gear_progress.step = 0.0
 	upgrade.add_child(_gear_progress)
+	_tomorrow = _label("", 18, ORANGE)
+	_tomorrow.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	rows.add_child(_tomorrow)
 	var next := Button.new()
 	next.text = "Start next shift  (E)"
 	next.add_theme_font_size_override("font_size", 20)

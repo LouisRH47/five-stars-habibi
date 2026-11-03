@@ -86,7 +86,7 @@ func _rebuild() -> void:
 		child.queue_free()
 	_content.add_child(_label("%s  ·  Level %d  ·  %d Dh" % [GameState.rider_name if GameState.rider_name != "" else "Snackaroo rider", GameState.level(), GameState.money], 22))
 	_content.add_child(_label("Wahat Al Shams stamp card  ·  %d / %d homes  ·  %d / %d venues" % [GameState.visited_homes.size(), GameState.home_catalog.size(), GameState.visited_venues.size(), GameState.venue_catalog.size()], 22))
-	_content.add_child(_label("Every 25 different homes in a cluster earns 20 Dh. Fill a cluster to unlock its gold delivery box colour.", 16))
+	_content.add_child(_label("Every 25 different homes in a cluster earns 20 Dh. Fill a cluster to unlock its gold delivery box colour. A + marks a visited home.", 16))
 	var clusters: Array[String] = []
 	for home in GameState.home_catalog.values():
 		if not str(home["cluster"]) in clusters:
@@ -108,13 +108,14 @@ func _rebuild() -> void:
 		_content.add_child(grid)
 		for home in homes:
 			var stamped := GameState.visited_homes.has(home["id"])
-			var stamp := _label("%s %02d" % ["✓" if stamped else "·", home["house"]], 16)
+			var stamp := _label("%s %02d" % ["+" if stamped else "-", home["house"]], 16)
 			stamp.tooltip_text = home["address"]
 			stamp.custom_minimum_size.x = 62
 			stamp.add_theme_color_override("font_color", Color(0.15, 0.53, 0.31) if stamped else Color(0.4, 0.44, 0.44))
 			grid.add_child(stamp)
 	for key in GameState.venue_catalog:
-		_content.add_child(_label("%s  %s" % ["✓" if GameState.visited_venues.has(key) else "○", GameState.venue_catalog[key]], 18))
+		var status := "Visited" if GameState.visited_venues.has(key) else "Unvisited"
+		_content.add_child(_label("%s  ·  %s" % [GameState.venue_catalog[key], status], 18))
 	_content.add_child(_label("Neighbours who know you", 24))
 	for id in ReplayCatalog.REGULAR_NAMES:
 		var stage: String = {"first": "Getting acquainted", "friendly": "Friendly", "best_friends": "Best friends"}[GameState.regular_stage(id)]

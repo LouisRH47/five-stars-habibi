@@ -75,6 +75,7 @@ func _run() -> void:
 	var summary_screen = load("res://scripts/shift_screen.gd").new()
 	world.add_child(summary_screen)
 	state.money = 17
+	state.tomorrow_kind = "rush_hour"
 	state.money_changed.emit(state.money)
 	var summary: Dictionary = state.end_shift()
 	summary_screen.show_summary(summary)
@@ -87,6 +88,13 @@ func _run() -> void:
 			"shift summary shows the same 34% GPS progress as the phone")
 	var scroll: ScrollContainer = summary_screen._table.get_parent()
 	var next_button: Button = summary_screen._summary.find_children("*", "Button", true, false)[0]
+	var tomorrow_labels: Array = summary_screen._summary.find_children("*", "Label", true, false).filter(
+			func(label): return label.text == "Tomorrow: Rush Hour")
+	_expect(tomorrow_labels.size() == 1 and tomorrow_labels[0].is_visible_in_tree()
+			and tomorrow_labels[0].get_parent() == scroll.get_parent()
+			and scroll.get_index() < tomorrow_labels[0].get_index()
+			and tomorrow_labels[0].get_index() < next_button.get_index(),
+			"tomorrow's day stays visible outside the scrolling results above Start next shift")
 	var upgrade_group := upgrade_bar.get_parent() if upgrade_bar != null else null
 	_expect(upgrade_group != null and upgrade_group.get_parent() == scroll.get_parent()
 			and scroll.get_index() < upgrade_group.get_index() and upgrade_group.get_index() < next_button.get_index(),
@@ -95,10 +103,15 @@ func _run() -> void:
 	_expect(not paused, "summary can be closed after previewing tomorrow")
 	state.start_shift()
 	state.money = 41
+	state.tomorrow_kind = "shop_special"
 	state.money_changed.emit(state.money)
 	summary_screen.show_summary(state.end_shift())
 	await process_frame
 	bars = summary_screen._summary.find_children("*", "ProgressBar", true, false)
+	tomorrow_labels = summary_screen._summary.find_children("*", "Label", true, false).filter(
+			func(label): return label.text.begins_with("Tomorrow"))
+	_expect(tomorrow_labels.size() == 1 and tomorrow_labels[0].text == "Tomorrow: Brain Freeze special",
+			"the reused summary updates the single tomorrow preview on the next shift")
 	var goal_labels: Array = summary_screen._summary.find_children("*", "Label", true, false).filter(
 			func(label): return label.text.begins_with("Next upgrade"))
 	_expect(bars.size() == 1 and bars[0] == upgrade_bar
@@ -123,6 +136,21 @@ func _run() -> void:
 	await create_timer(2.0, true).timeout
 	_expect(sounds.play_counts.get("perfect", 0) == 1, "PERFECT plays its own happy jingle")
 	card.close()
+	var record_summary: Dictionary = state.end_shift()
+	summary_screen.show_summary(record_summary)
+	var best_badges: Array = summary_screen._summary.find_children("*", "Label", true, false).filter(
+			func(label): return label.text == "New best!")
+	_expect(not record_summary["new_bests"].is_empty()
+			and best_badges.size() == 1 and best_badges[0].is_visible_in_tree()
+			and best_badges[0].get_parent() == scroll.get_parent()
+			and best_badges[0].get_index() < scroll.get_index(),
+			"a record-setting delivery shows New best above the scrolling summary details")
+	var ordinary_summary := record_summary.duplicate()
+	ordinary_summary["new_bests"] = []
+	summary_screen.show_summary(ordinary_summary)
+	_expect(best_badges.size() == 1 and not best_badges[0].is_visible_in_tree(),
+			"a summary without a personal best hides the record badge")
+	summary_screen._next_shift()
 	state.save_path = "user://replay_ui_finished.json"
 	world.queue_free()
 	places.free()
