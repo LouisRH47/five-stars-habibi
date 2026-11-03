@@ -495,6 +495,24 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - The play-test bot uses the same route finder on any map, looks ahead and slows down for
   walls. It still gets stuck in the narrow cluster lanes; fixing that is next.
 
+### Session 28
+- The sun follows the shift clock (`scripts/sun_cycle.gd`, a SunCycle node in each map):
+  low and warm at 08:00, high and white at noon, a golden sunset from 17:00 to 18:00. The sky
+  colours and the shadow light change smoothly with it. It crosses from east to west.
+- Soft corner shadows (SSAO), a light haze so the far edge of the map fades into the sky,
+  a gentle glow on bright things, and heat shimmer far away above the ground around noon
+  (10:30 to 15:30, `assets/shaders/heat_shimmer.gdshader`, very subtle: SHIMMER_AMOUNT).
+- Settings has a Graphics option: Low / Medium (default) / High, saved with the other
+  settings and applied straight away. Low: no SSAO, haze, shimmer or glow, shadows only to
+  60 m. Medium: everything on, shadows to 150 m. High: better SSAO, softer shadows to 260 m.
+- 60 fps on all three levels on the Mac (Apple M3, 1280x720).
+- All light numbers, one line per time of day, are in the "Light and sky (Session 28)" block
+  of `game_config.gd`.
+- Not done yet: "fewer people on Low" (comes with the people in Sessions 29 and 30); the main
+  menu's desert doesn't use the moving sun.
+- Built by a helper agent in parallel; the smoke test has 11 new checks for the sun and the
+  Graphics levels.
+
 ## Known bugs
 - None found by the checks. Not play-tested by Louis yet.
 - The bot once got stuck nose-to-nose with a kid on a scooter (the kid waits for the bike,

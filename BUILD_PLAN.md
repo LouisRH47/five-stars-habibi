@@ -563,8 +563,7 @@ Done when:
 - [ ] Orders work from every shop and the farm stall, to homes, the school booth and the stable office
 - [ ] The mosque never gets an order
 
-### Session 28: Light, sky and the graphics setting
-
+### Session 28: Light, sky and the graphics setting (built, needs testing)
 ```text
 Session 28. Read PRD.md (Graphics and feel: Light, Graphics setting). Make the
 sun follow the shift clock: low and warm at 08:00, high and white at noon, a
