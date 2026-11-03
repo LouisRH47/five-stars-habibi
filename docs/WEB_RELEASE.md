@@ -37,9 +37,13 @@ After tests and deployment pass, GitHub creates the named release with generated
 notes, a browser ZIP, and its SHA-256 checksum. Tags are intended to stay fixed.
 A rerun preserves an already published release's assets.
 
-The ZIP is prepared for a web server that applies the included `_headers` file:
-`index.wasm` is gzip-compressed and must be served with `Content-Encoding: gzip`
-and `Content-Type: application/wasm`. It is not a desktop executable or a file
+The ZIP is prepared for a web server that applies the included `_headers` and
+`_redirects` files. `index.wasm.gz` contains the compressed engine; a 200 proxy
+rule serves it at Godot's original `/index.wasm` URL with `Content-Encoding: gzip`
+and `Content-Type: application/wasm`. Keeping the stored `.gz` extension and
+`Cache-Control: no-transform` avoids compressing the engine twice. After one HTTP
+gzip decode, the response must begin with the WebAssembly bytes `00 61 73 6d`.
+It is not a desktop executable or a file
 to open directly in Finder. The uncompressed export is in `build/web` locally.
 
 ## Roll back or deploy a specific version

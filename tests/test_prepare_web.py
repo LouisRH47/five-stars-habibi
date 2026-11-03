@@ -33,28 +33,36 @@ class PrepareWebTest(unittest.TestCase):
     def prepare(self, **kwargs):
         return MODULE.prepare_web(self.source, self.site, build_sha=SHA, **kwargs)
 
-    def test_gzip_preserves_wasm_filename_bytes_and_loader(self):
+    def test_gzip_asset_preserves_decoded_wasm_bytes_and_loader(self):
         self.prepare(build_version="v0.1.0")
-        compressed = (self.site / "index.wasm").read_bytes()
+        compressed = (self.site / "index.wasm.gz").read_bytes()
         self.assertEqual(gzip.decompress(compressed), self.wasm)
+        self.assertEqual(gzip.decompress(compressed)[:4], b"\x00asm")
         self.assertLess(len(compressed), len(self.wasm))
         self.assertEqual((self.source / "index.wasm").read_bytes(), self.wasm)
         self.assertEqual((self.site / "index.html").read_text(), self.html)
-        self.assertFalse((self.site / "index.wasm.gz").exists())
+        self.assertFalse((self.site / "index.wasm").exists())
         self.assertEqual((self.site / "index.pck").read_bytes(), b"packed game")
         self.assertEqual(json.loads((self.site / "version.json").read_text()),
                          {"sha": SHA, "version": "v0.1.0"})
         self.prepare()
-        self.assertEqual((self.site / "index.wasm").read_bytes(), compressed)
+        self.assertEqual((self.site / "index.wasm.gz").read_bytes(), compressed)
         self.assertEqual(json.loads((self.site / "version.json").read_text())["version"], SHA)
 
-    def test_headers_match_the_unrenamed_wasm_and_revalidate_all_files(self):
+    def test_proxy_and_headers_preserve_original_url_without_recompression(self):
         self.prepare()
         headers = (self.site / "_headers").read_text()
-        self.assertTrue(headers.startswith("/*\n  Cache-Control: no-cache\n"))
+        self.assertTrue(headers.startswith("/*\n  Cache-Control: no-cache, no-transform\n"))
         self.assertIn("  X-Content-Type-Options: nosniff\n", headers)
         self.assertIn("  Referrer-Policy: strict-origin-when-cross-origin\n", headers)
         self.assertIn("/index.wasm\n  Content-Encoding: gzip\n  Content-Type: application/wasm\n", headers)
+        self.assertIn("/index.wasm.gz\n  Content-Encoding: gzip\n  Content-Type: application/wasm\n", headers)
+        self.assertEqual((self.site / "_redirects").read_text(), "/index.wasm /index.wasm.gz 200\n")
+
+    def test_rejects_preexisting_compressed_sibling(self):
+        (self.source / "index.wasm.gz").write_bytes(b"would overwrite prepared bytes")
+        with self.assertRaisesRegex(ValueError, "compressed sibling"):
+            self.prepare()
 
     def test_limit_failure_preserves_previous_site(self):
         self.site.mkdir()
