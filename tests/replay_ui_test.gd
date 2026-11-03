@@ -74,11 +74,40 @@ func _run() -> void:
 	_expect(not paused, "closing Profile resumes the active shift")
 	var summary_screen = load("res://scripts/shift_screen.gd").new()
 	world.add_child(summary_screen)
+	state.money = 17
+	state.money_changed.emit(state.money)
 	var summary: Dictionary = state.end_shift()
 	summary_screen.show_summary(summary)
 	_expect(summary_screen.showing and summary_screen._day_note.text != "", "shift screen shows today's kind of day and the summary")
+	var bars: Array[Node] = summary_screen._summary.find_children("*", "ProgressBar", true, false)
+	var upgrade_bar := bars[0] as ProgressBar if bars.size() == 1 else null
+	_expect(upgrade_bar != null and upgrade_bar.is_visible_in_tree()
+			and is_equal_approx(upgrade_bar.ratio, 0.34)
+			and is_equal_approx(upgrade_bar.ratio, phone._gear_progress.ratio),
+			"shift summary shows the same 34% GPS progress as the phone")
+	var scroll: ScrollContainer = summary_screen._table.get_parent()
+	var next_button: Button = summary_screen._summary.find_children("*", "Button", true, false)[0]
+	var upgrade_group := upgrade_bar.get_parent() if upgrade_bar != null else null
+	_expect(upgrade_group != null and upgrade_group.get_parent() == scroll.get_parent()
+			and scroll.get_index() < upgrade_group.get_index() and upgrade_group.get_index() < next_button.get_index(),
+			"upgrade progress stays visible between the scrollable results and the next shift button")
 	summary_screen._next_shift()
 	_expect(not paused, "summary can be closed after previewing tomorrow")
+	state.start_shift()
+	state.money = 41
+	state.money_changed.emit(state.money)
+	summary_screen.show_summary(state.end_shift())
+	await process_frame
+	bars = summary_screen._summary.find_children("*", "ProgressBar", true, false)
+	var goal_labels: Array = summary_screen._summary.find_children("*", "Label", true, false).filter(
+			func(label): return label.text.begins_with("Next upgrade"))
+	_expect(bars.size() == 1 and bars[0] == upgrade_bar
+			and is_equal_approx(upgrade_bar.ratio, 0.5)
+			and is_equal_approx(upgrade_bar.ratio, phone._gear_progress.ratio),
+			"next summary updates the same progress bar and shows the 50% level cap")
+	_expect(goal_labels.size() == 1 and "GPS route" in goal_labels[0].text and "9 Dh to go" in goal_labels[0].text,
+			"next summary updates the upgrade description without leaving a duplicate in the results")
+	summary_screen._next_shift()
 	var card = load("res://scripts/delivered_card.gd").new()
 	world.add_child(card)
 	var sounds = load("res://scripts/sounds.gd").new()

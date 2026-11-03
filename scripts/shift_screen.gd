@@ -26,6 +26,8 @@ var _summary: PanelContainer
 var _title: Label
 var _stars: StarRow
 var _table: GridContainer
+var _gear_goal: Label
+var _gear_progress: ProgressBar
 var _shade: ColorRect
 
 
@@ -64,6 +66,9 @@ func show_summary(summary: Dictionary) -> void:
 	get_tree().paused = true
 	_title.text = "Shift %d done!" % GameState.shift_number
 	_stars.stars = roundf(summary["stars"] * 2.0) / 2.0
+	var next_goal := GearCatalog.next_goal(GameState)
+	_gear_goal.text = "Next upgrade: " + next_goal["description"]
+	_gear_progress.ratio = next_goal["progress"]
 	for child in _table.get_children():
 		child.queue_free()
 	var rows := [
@@ -79,8 +84,6 @@ func show_summary(summary: Dictionary) -> void:
 	if summary.get("collection_bonus", 0) > 0:
 		rows.insert(4, ["Stamp card bonus", "+%d Dh" % summary["collection_bonus"]])
 	rows.append(["Tomorrow", ReplayCatalog.day_name(summary.get("tomorrow", "normal"))])
-	var next_goal := GearCatalog.next_goal(GameState)
-	rows.append(["Next upgrade", next_goal["description"]])
 	for best in summary.get("new_bests", []):
 		rows.append(["Personal best", best])
 	if summary["cancelled"] > 0:
@@ -185,6 +188,17 @@ func _build_summary() -> void:
 	_table.columns = 2
 	_table.add_theme_constant_override("v_separation", 6)
 	scroll.add_child(_table)
+	var upgrade := VBoxContainer.new()
+	upgrade.name = "NextUpgrade"
+	rows.add_child(upgrade)
+	_gear_goal = _label("", 16, TEXT)
+	_gear_goal.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	upgrade.add_child(_gear_goal)
+	_gear_progress = ProgressBar.new()
+	_gear_progress.custom_minimum_size.y = 5
+	_gear_progress.show_percentage = false
+	_gear_progress.step = 0.0
+	upgrade.add_child(_gear_progress)
 	var next := Button.new()
 	next.text = "Start next shift  (E)"
 	next.add_theme_font_size_override("font_size", 20)
