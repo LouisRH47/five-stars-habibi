@@ -143,4 +143,18 @@ The focus-guarded moving benchmark rejected both spine warmups after window focu
 - On a native Windows x64 machine, extract the portable ZIP, launch the executable, start a shift and verify movement and a pickup and delivery. The archive and executable structure have already been checked on Mac.
 - The user put itch.io on hold. The separate [MiddleLeap web deployment](https://fivestarshabibi.middleleap.com) serves v0.1.0 from main commit `85c116a6282d986b8b1916c88eab7cb8d050f7a4`. The [live manifest](https://fivestarshabibi.middleleap.com/version.json) and Cloudflare production deployment agree. The live game package matches the v0.1.0 release ZIP by SHA-256.
 - In a fresh desktop browser context, the live build loaded from Play in browser, hired a test rider, entered Wahat, accepted the tutorial pizza order and responded to pedal input. After reload, Continue restored the same test rider in Wahat. The browser reported zero console errors. Scope was first-run gameplay and browser rider persistence. Full delivery, iPad touch, the friend playtest and the native desktop gates remain separate.
+
+## Local browser and desktop integration candidate
+
+The local branch `codex/detail-web-integration` combines the completed detail pass with GitHub main at `85c116a`. Product commit `cc3bd5997ee60d8b2ea71a49a6ad0f55d0779eb5` retains the browser shell and touch controls, WebGL renderer, Cloudflare asset packaging, and separate Mac and Windows presets. The web build runs the tracked Wahat smoke script with a temporary save directory.
+
+Godot 4.7.2 completed strict import, startup, 416 Wahat smoke assertions, the touch suite, and Web export. All 12 focused gameplay suites passed, including 39 crash checks. The five Cloudflare worker tests and seven packaging tests also passed. The prepared site's manifest identifies the exact product commit. The packaged WebAssembly and game pack total 18.9 MB.
+
+Chrome loaded the actual Web export on localhost, hired a rider, accepted the first pizza order, and reached 10 km/h. The test confirmed that the game persisted the rider to browser storage, then set tutorial completion in that isolated save to measure a normal shift. Continue restored the rider. The rendered clock advanced from 8:06 AM to 8:26 AM over 20.21 monotonic seconds between the midpoints of the two screenshot calls.
+
+A browser ride into a restaurant wall at 28 km/h produced a visible tumble. The frame sequence shows the rider separating from the bike and hitting the ground before the clinic opened. The clinic classified the impact as severe and quoted 150 Dh for care plus 80 Dh for repairs. First-crash boss coverage reduced the player's bill to 0 Dh. The browser test completed with no recorded errors. The timed clock result and crash captures are under `/private/tmp/habibi-detail-browser.9seKnm/run-Xk4mIN`.
+
+The Mac and Windows review and distribution exports match the integration tree. All four archives passed CRC and SHA-256 checks. The Mac builds passed signature and arm64/x86-64 checks, and the Mac review app launched for 120 headless frames. The Windows executables passed PE x64 checks. The native Windows gameplay and moving Mac performance gates remain open. The desktop manifests and logs are under `/private/tmp/habibi-integration-desktop.COQ6oO`.
+
+The production site still serves the separate v0.1.0 build documented above. itch.io is on hold.
 - The live revision uses a five-minute 8 AM–6 PM shift, a generic tip for minor crashes and fixed major-crash charges. The local detail branch contains the requested ten-minute shift, separate rider fall reactions and impact-based charges. The web smoke applies to the deployed revision.
