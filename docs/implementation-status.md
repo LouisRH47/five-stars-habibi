@@ -123,6 +123,14 @@ Wahat now uses a 64-pixel sky radiance texture on Low and Medium and the existin
 
 All 416 Wahat smoke checks passed on the sky revision. The current portable archives at /private/tmp/habibi-sky-export-check/distribution match fingerprint ef5861d81ee1be168a0cf36bcb07bdfd3732b7002dda32c80180d1114396ce1c and passed integrity, architecture and Mac signature checks. The matched 14-second moving spine route averaged 52.5 FPS at Medium and 1080p with the 64-pixel setting active, 28 km/h throughout, no focus loss, and p95 frame time 31.5 ms. The plaza and north-ring samples lost focus during the combined run. A separate north-ring run reached 70.7 FPS with p95 18.5 ms, but never held focus and was excluded. Results: /private/tmp/habibi-sky-moving/three-route-results.json and north-native.log.
 
+The shadow probe compared Medium's four cascades at 150 m with two cascades at 110 m on the same active-order spine segment. Shadow draw calls fell from about 820 to 430 per frame. Average FPS did not improve across either repeat, and focus was lost during the run. The current shadow settings were retained. Evidence: /private/tmp/habibi-shadow-moving/fixed-input-results.json and native.log.
+
+Permanent staff and diners in walk-in venues now pause their animation beyond 85 m from the camera and resume within 70 m. Their models stay visible in their last pose. The focused check covered all 34 rigs, zero active from the spine view, a visible seated pose at distance, both sides of the hysteresis range, and resumed animation on approach. The shop suite and all 416 Wahat smoke checks passed. Evidence: /private/tmp/habibi-venue-check/venue-final.log, shop.log and wahat.log.
+
+Four focused eight-second moving spine passes at Medium and 1080p averaged 60.0–60.1 FPS. The baseline passes kept all 34 venue rigs active and the distance-gated passes ended with zero active. The p95 frame times ranged from 17.8 to 17.9 ms. There was no measurable frame-rate gain in this A/B. The current portable exports passed checksums, archive integrity, platform architecture and Mac signature checks and match runtime fingerprint fd9b3cb0d19cdfbce597a331e462913c197878834de1225415b842271b60fbd4. Evidence: /private/tmp/habibi-venue-native/fixed-input-results.json and /private/tmp/habibi-venue-export-check/distribution/manifest.json.
+
+The follow-up 14-second release runs on the spine, plaza and north ring lost focus, so the broader 60 FPS moving gate remains open. Evidence: /private/tmp/habibi-venue-moving/fixed-input-results.json.
+
 ## Remaining acceptance
 
 - Establish at least 60 FPS during representative moving gameplay at Medium. Repeat the Mac release probe with sustained foreground focus and the full HUD.

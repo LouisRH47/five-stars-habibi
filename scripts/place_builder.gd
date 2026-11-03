@@ -19,6 +19,8 @@ const VILLA_SCENE := preload("res://scenes/villa.tscn")
 const RESTAURANT_SCENE := preload("res://scenes/restaurant.tscn")
 const MARKET_SCENE := preload("res://scenes/supermarket.tscn")
 const STALL_SCRIPT := preload("res://scripts/farm_stall.gd")
+const VENUE_ANIMATION_RESUME_M := 70.0
+const VENUE_ANIMATION_PAUSE_M := 85.0
 
 
 ## The lists read from the data script. Other scripts (the DeliveryManager) use these.
@@ -28,6 +30,8 @@ var restaurant_size := Vector3.ONE
 var villa_size := Vector3.ONE
 ## The regular customers (REGULARS in the data list), empty on maps without them.
 var regulars: Array = []
+var _venue_people: Array[Person] = []
+var _venue_check_left := 0.25
 
 
 func _enter_tree() -> void:
@@ -84,8 +88,32 @@ func _ready() -> void:
 	var lists := data.get_script_constant_map()
 	for shop_data: Dictionary in lists.get("SHOPS", []):
 		add_child(ShopInterior.build(shop_data))
+	for venue in get_children():
+		if venue.has_meta("walk_in"):
+			for person in venue.get_children():
+				if person is Person:
+					_venue_people.append(person)
+	set_process(not _venue_people.is_empty())
 	if lists.has("SHOPS"):
 		_setup_shops.call_deferred()
+
+
+func _process(delta: float) -> void:
+	_venue_check_left -= delta
+	if _venue_check_left > 0.0:
+		return
+	_venue_check_left = 0.25
+	var camera := get_viewport().get_camera_3d()
+	if camera == null:
+		return
+	# Keep distant staff and diners visible in their last pose, and resume before they are close.
+	for person in _venue_people:
+		var gap := camera.global_position.distance_squared_to(person.global_position)
+		if person.process_mode == Node.PROCESS_MODE_DISABLED:
+			if gap < VENUE_ANIMATION_RESUME_M * VENUE_ANIMATION_RESUME_M:
+				person.process_mode = Node.PROCESS_MODE_INHERIT
+		elif gap > VENUE_ANIMATION_PAUSE_M * VENUE_ANIMATION_PAUSE_M:
+			person.process_mode = Node.PROCESS_MODE_DISABLED
 
 
 func _setup_shops() -> void:
