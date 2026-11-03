@@ -7,7 +7,7 @@ Completion requires code, automated checks, rendered evidence and the listed hum
 | Requirement | Status | Evidence needed |
 | --- | --- | --- |
 | 35 Real-size map, the new layout and the corrected AM/PM clock — The map is real size and laid out like the sketch, with nothing big left blank | Implemented and checked | Source + targeted check + visible acceptance |
-| 35 Real-size map, the new layout and the corrected AM/PM clock — A shift lasts 10 active real minutes and the AM/PM clock advances one game minute per second | Verified clock, recheck integration | Source + targeted check + visible acceptance |
+| 35 Real-size map, the new layout and the corrected AM/PM clock — A shift lasts 10 active real minutes and the AM/PM clock advances one game minute per second | Verified in the shift manager, Wahat smoke and rendered HUD | /private/tmp/habibi-venue-check/wahat.log and the gameplay capture below |
 | 35 Real-size map, the new layout and the corrected AM/PM clock — You start in front of the bus station and a full delivery works | Implemented and checked | Source + targeted check + visible acceptance |
 | 36 Joined rows of homes and the camera fix — Clusters look like the real ones from above: long joined rows with lanes between | Implemented and checked | Source + targeted check + visible acceptance |
 | 36 Joined rows of homes and the camera fix — The camera never goes inside a house | Implemented and checked | Source + targeted check + visible acceptance |
@@ -130,6 +130,10 @@ Permanent staff and diners in walk-in venues now pause their animation beyond 85
 Four focused eight-second moving spine passes at Medium and 1080p averaged 60.0–60.1 FPS. The baseline passes kept all 34 venue rigs active and the distance-gated passes ended with zero active. The p95 frame times ranged from 17.8 to 17.9 ms. There was no measurable frame-rate gain in this A/B. The current portable exports passed checksums, archive integrity, platform architecture and Mac signature checks and match runtime fingerprint fd9b3cb0d19cdfbce597a331e462913c197878834de1225415b842271b60fbd4. Evidence: /private/tmp/habibi-venue-native/fixed-input-results.json and /private/tmp/habibi-venue-export-check/distribution/manifest.json.
 
 The follow-up 14-second release runs on the spine, plaza and north ring lost focus, so the broader 60 FPS moving gate remains open. Evidence: /private/tmp/habibi-venue-moving/fixed-input-results.json.
+
+Refreshed the local Mac review app from the current portable build source. All 250 source files matched before isolating save and log paths. The packaged binary passed signature verification, launched the normal menu for 120 headless frames, and showed Continue in the desktop window. The isolated demo save is seeded with a hired rider and completed tutorial. The desktop click could not be confirmed after the observation timed out. An isolated source run invoked the same Continue button signal and loaded Wahat with the demo rider and 8:00 AM HUD. App and evidence: /private/tmp/habibi-current-mac-review/launch, provenance.json and menu.log, and /private/tmp/habibi-menu-path-check/final.log.
+
+The focus-guarded moving benchmark rejected both spine warmups after window focus dropped and expired with zero complete routes. The benchmark's timed results therefore leave the moving 60 FPS gate open. Evidence: /private/tmp/habibi-focus-guard/native.log and fixed-input-results.json.
 
 ## Remaining acceptance
 
