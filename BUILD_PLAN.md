@@ -310,8 +310,7 @@ Decisions log already describe all of this, so build from the PRD. Same rules as
 one session at a time, run the headless checks and the smoke test, add a check for every new
 system, update PROGRESS.md, commit. The world stays 3D; the cards on top copy the mockup.
 
-### Session 18: Hold E to pick up and drop off (plus a test fix)
-
+### Session 18: Hold E to pick up and drop off (plus a test fix) (built, needs testing)
 ```text
 Session 18. Read CLAUDE.md, PRD.md (Delivery loop and Controls) and PROGRESS.md.
 1) Picking up at the restaurant and dropping off at the villa now need E held for

@@ -335,6 +335,21 @@ on both Palm Grove and the test area. Nothing needed fixing.
   freshness drain; if too hard, the other way. Write down what felt off for the next
   tuning session.
 
+### Session 18
+- Picking up and dropping off now need **E held for 1.5 seconds** at the door, going under
+  5 km/h. A quick tap of E does nothing there. Accepting an order is still a quick tap.
+- An orange bar on the phone fills while you hold E. Letting go, moving away or speeding
+  up resets it. At the door but too fast, the phone says "Slow down, then hold E".
+- After any E action you have to let go of E before the next hold counts (so accepting an
+  order doesn't carry on into a pick-up).
+- Numbers: PICKUP_HOLD_TIME, DROPOFF_HOLD_TIME, INTERACT_MAX_SPEED_KMH in `game_config.gd`.
+  The hold is timed in `scripts/delivery_manager.gd` (`_update_hold`).
+- Tutorial tips now say "Stop, then hold E".
+- Fixed Louis's flaky check: "the customer says a line from the list" now fills {name}
+  with the real rider name.
+- The smoke test checks a quick tap does nothing and a full hold picks up and delivers,
+  and passed 5 runs in a row. The play-test bot holds E too: still 12 deliveries a shift.
+
 ## Known bugs
 - None found by the checks. Not play-tested by Louis yet.
 - The bot once got stuck nose-to-nose with a kid on a scooter (the kid waits for the bike,
