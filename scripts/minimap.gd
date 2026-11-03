@@ -37,7 +37,8 @@ var parked_bike: Node3D
 var _map: Dictionary = {}  # the data list's constants, e.g. _map["ROADS"]
 var _font: Font
 
-@onready var _view: Control = $Panel/Margin/Map
+@onready var _view: Control = $Panel/Margin/Window/View/Map
+var _ring: Control
 
 
 func _ready() -> void:
@@ -46,10 +47,17 @@ func _ready() -> void:
 	if place_builder != null and place_builder.data != null:
 		_map = place_builder.data.get_script_constant_map()
 	_view.draw.connect(_draw_map)
+	# Round, like the mockup (Session 20): the map is drawn into its own little viewport,
+	# which ui/round_mask.gdshader cuts to a circle, with a white ring on top.
+	_ring = Control.new()
+	_ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_ring.draw.connect(func(): _ring.draw_arc(_ring.size * 0.5, _ring.size.x * 0.5 - 2.0, 0.0, TAU, 96, PLAYER, 4.0, true))
+	$Panel/Margin.add_child(_ring)
 
 
 func _process(_delta: float) -> void:
 	_view.queue_redraw()
+	_ring.queue_redraw()
 
 
 ## Where a spot in the world shows up on the mini-map, in pixels from its top-left corner.
@@ -92,26 +100,17 @@ func _world_xform(bike_xform: Transform3D) -> Transform2D:
 
 ## Where a pin for this map spot is drawn: on it, or pinned to the edge if it's off the map.
 func pin_spot(spot: Vector2) -> Vector2:
-	var inset := GameConfig.MINIMAP_EDGE_INSET
-	# Keep clear of the edges, and of the name strip along the bottom.
-	var box := Rect2(Vector2.ONE * inset, _view.size - Vector2(inset * 2.0, inset * 2.0 + BAR_HEIGHT))
-	if box.has_point(spot):
-		return spot
-	# Slide it back towards the middle until it touches the edge of the box.
+	# The map is round (Session 20): keep pins inside the circle, clear of the name strip.
 	var centre := _view.size * 0.5
+	var reach := centre.x - GameConfig.MINIMAP_EDGE_INSET
 	var away := spot - centre
-	var fit := minf(_fit(away.x, box.position.x - centre.x, box.end.x - centre.x),
-			_fit(away.y, box.position.y - centre.y, box.end.y - centre.y))
-	return centre + away * fit
-
-
-## How much of a step (along one axis) fits between the middle and the box edge.
-func _fit(step: float, low: float, high: float) -> float:
-	if step > 0.0:
-		return high / step
-	if step < 0.0:
-		return low / step
-	return INF
+	if away.length() > reach:
+		away = away.normalized() * reach
+	var floor_y := _view.size.y - BAR_HEIGHT - GameConfig.MINIMAP_EDGE_INSET * 0.5
+	var pin := centre + away
+	if pin.y > floor_y:
+		pin.y = floor_y
+	return pin
 
 
 func _draw_map() -> void:
@@ -195,7 +194,7 @@ func _draw_villa_numbers(xform: Transform2D) -> void:
 
 func _draw_north(xform: Transform2D) -> void:
 	var north := xform.basis_xform(Vector2.UP).normalized()
-	var spot := _view.size * 0.5 + north * (_view.size.x * 0.5 - 12.0)
+	var spot := _view.size * 0.5 + north * (_view.size.x * 0.5 - 18.0)
 	_view.draw_circle(spot, 9.0, OUTLINE)
 	_text("N", spot, NUMBER_SIZE, PLAYER)
 
@@ -222,7 +221,7 @@ func _draw_target(xform: Transform2D) -> void:
 	# The strip along the bottom: where to go and how far it is.
 	var metres := roundi(Vector2(bike.global_position.x - door.x, bike.global_position.z - door.z).length())
 	var name := target_label() if GameState.stage == GameState.Stage.TO_RESTAURANT else "Villa " + target_label()
-	var bar := Rect2(0.0, _view.size.y - BAR_HEIGHT, _view.size.x, BAR_HEIGHT)
+	var bar := Rect2(_view.size.x * 0.15, _view.size.y - BAR_HEIGHT - 10.0, _view.size.x * 0.7, BAR_HEIGHT)
 	_view.draw_rect(bar, OUTLINE)
 	_text("%s   %d m" % [name, metres], bar.get_center(), LABEL_SIZE, TARGET)
 

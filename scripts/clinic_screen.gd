@@ -113,7 +113,9 @@ func _build() -> void:
 	var rows := VBoxContainer.new()
 	rows.add_theme_constant_override("separation", 14)
 	_panel.add_child(rows)
-	rows.add_child(_label("Al Sarab Clinic", 34, ORANGE))
+	var clinic_title := _label("Al Sarab Clinic", 36, ORANGE)
+	clinic_title.theme_type_variation = &"Heading"
+	rows.add_child(clinic_title)
 	rows.add_child(_label("Ouch! You had a big crash. The nurses patched you up.", 18, SOFT))
 	_lines = _label("", 20, TEXT)
 	rows.add_child(_lines)

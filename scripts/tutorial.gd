@@ -113,6 +113,7 @@ func _build() -> void:
 	_panel.add_child(rows)
 	var title := Label.new()
 	title.text = "TIP"
+	title.theme_type_variation = &"Heading"
 	title.add_theme_font_size_override("font_size", 14)
 	title.add_theme_color_override("font_color", ORANGE)
 	rows.add_child(title)

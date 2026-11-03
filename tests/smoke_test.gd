@@ -165,7 +165,7 @@ func _physics_process(_delta: float) -> bool:
 				_check("bike is near the villa door", _delivery.is_near_target(), "")
 				_check_minimap_pin(str(_order.villa_number))
 				var spot: Vector2 = _minimap.world_to_map(_delivery.target_door())
-				var middle: Vector2 = _minimap.get_node("Panel/Margin/Map").size * 0.5
+				var middle: Vector2 = _minimap._view.size * 0.5
 				_check("at the villa the pin is right next to you", spot.distance_to(middle) < 10.0,
 						"%.1f px from the middle" % spot.distance_to(middle))
 				_order.leave_at_door = false  # this one: the customer comes out
@@ -983,7 +983,7 @@ func _check_minimap_pin(expected: String) -> void:
 	if _minimap == null:
 		_check("Minimap node exists in the scene", false, "add ui/minimap.tscn to the scene")
 		return
-	var view: Control = _minimap.get_node("Panel/Margin/Map")
+	var view: Control = _minimap._view
 	_check("the mini-map is on screen", view.is_visible_in_tree() and view.size.x > 100.0, "%.0f px wide" % view.size.x)
 	_check("the mini-map has a pin during the order", _minimap.has_target(), "")
 	_check("the pin says " + expected, _minimap.target_label() == expected, _minimap.target_label())
@@ -995,7 +995,7 @@ func _check_minimap_pin(expected: String) -> void:
 func _check_minimap_turns() -> void:
 	if _minimap == null:
 		return
-	var middle: Vector2 = _minimap.get_node("Panel/Margin/Map").size * 0.5
+	var middle: Vector2 = _minimap._view.size * 0.5
 	var old_turn := _bike.rotation.y
 	var ok := true
 	for turn in [0.0, 1.2, -2.5]:
@@ -1007,9 +1007,8 @@ func _check_minimap_turns() -> void:
 	_check("the mini-map turns with the bike (ahead is up)", ok, "")
 	var far: Vector2 = _minimap.pin_spot(middle + Vector2(5000.0, -3000.0))
 	var inset := GameConfig.MINIMAP_EDGE_INSET
-	_check("a stop far away is pinned to the mini-map's edge",
-			Rect2(Vector2.ZERO, middle * 2.0).has_point(far) and absf(far.x - (middle.x * 2.0 - inset)) < 0.5,
-			"at %s" % far)
+	_check("a stop far away is pinned to the round mini-map's edge",
+			absf(far.distance_to(middle) - (middle.x - inset)) < 0.5, "at %s" % far)
 
 
 ## Some orders come with a note from the customer, most don't, and every note is from the list.

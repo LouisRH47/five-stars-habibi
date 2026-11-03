@@ -105,7 +105,8 @@ func _build_clock() -> void:
 	var rows := VBoxContainer.new()
 	rows.add_theme_constant_override("separation", -2)
 	box.add_child(rows)
-	_clock = _label("08:00", 32, TEXT)
+	_clock = _label("08:00", 34, TEXT)
+	_clock.theme_type_variation = &"BigNumber"
 	_clock.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	rows.add_child(_clock)
 	_clock_note = _label("Shift 1", 13, SOFT)
@@ -130,7 +131,8 @@ func _build_summary() -> void:
 	var rows := VBoxContainer.new()
 	rows.add_theme_constant_override("separation", 14)
 	_summary.add_child(rows)
-	_title = _label("Shift done!", 34, ORANGE)
+	_title = _label("Shift done!", 38, ORANGE)
+	_title.theme_type_variation = &"Heading"
 	rows.add_child(_title)
 	_stars = StarRow.new()
 	_stars.star_size = 36.0

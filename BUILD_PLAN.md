@@ -359,8 +359,7 @@ Done when:
 - [ ] The bike stays parked and you can't drive it while walking
 - [ ] The smoke test does the full off, walk, deliver, back on run
 
-### Session 20: Fonts, colours and panels like the mockup
-
+### Session 20: Fonts, colours and panels like the mockup (built, needs testing)
 ```text
 Session 20. Read PRD.md (Screens). Download Baloo 2 and Nunito from Google Fonts'
 GitHub repo (SIL Open Font License), put them in assets/fonts with their OFL

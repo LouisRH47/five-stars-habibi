@@ -19,6 +19,10 @@ config/features=PackedStringArray("4.7", "Forward Plus")
 GameState="*res://scripts/game_state.gd"
 Music="*res://scripts/music.gd"
 
+[gui]
+
+theme/custom="res://ui/theme.tres"
+
 [display]
 
 window/size/viewport_width=1920

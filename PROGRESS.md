@@ -371,6 +371,28 @@ on both Palm Grove and the test area. Nothing needed fixing.
   door, F, walk to the door, hold E, walk back, F, ride away. The play-test bot walks too:
   still 11 deliveries in a 10-minute shift.
 
+### Session 20
+- Fonts: Baloo 2 (titles, big numbers) and Nunito (everything else), free under the SIL
+  Open Font License, in `assets/fonts/` with their licence files and in CREDITS.md. Noto
+  Sans Arabic is the fallback, so Arabic in any menu still joins up.
+- One theme for every screen, `ui/theme.tres` (Project Settings > GUI > Theme): the fonts,
+  and teal rounded buttons with an orange pressed state. Labels use the "Heading" or
+  "BigNumber" variation for Baloo 2.
+- The phone is now a white rounded card like the mockup: Snackaroo header with a teal
+  wallet chip, rider name, rating and level, a coloured status pill (NEW ORDER, PICK UP,
+  DROP OFF, DONE, WAITING), pick-up and drop-off rows (the current one in orange, a done
+  one ticked), food / pay / timer chips, the customer's note in a yellow box, the hint and
+  the orange hold bar, and the insurance line.
+- The mini-map is round, with a white ring (drawn into its own little viewport and cut to
+  a circle by `ui/round_mask.gdshader`). Pins stay inside the circle.
+- The HUD, meters panel and clock use Baloo 2 for their numbers. They keep the dark
+  see-through panels (#0F2026 at 86%) from the PRD.
+- Note: the mockup link in PRD.md couldn't be opened from Claude Code (not shared with this
+  account), so the look follows the PRD's description of it. Louis, compare with the mockup
+  and say what's different.
+- The first time Godot opens the project after this change it may print a font error
+  once while it imports the new fonts; the second time it's clean.
+
 ## Known bugs
 - None found by the checks. Not play-tested by Louis yet.
 - The bot once got stuck nose-to-nose with a kid on a scooter (the kid waits for the bike,
