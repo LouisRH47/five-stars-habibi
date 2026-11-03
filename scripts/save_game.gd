@@ -28,6 +28,7 @@ static func save(state: Node, path: String) -> bool:
 		"insurance_on": state.insurance_on,
 		"boss_paid_crash": state.boss_paid_crash,
 		"shift_number": state.shift_number,
+		"crash_shifts": state.crash_shifts,
 	}
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	if file == null:
@@ -62,6 +63,9 @@ static func load_into(state: Node, path: String) -> bool:
 	state.insurance_on = bool(data.get("insurance_on", true))
 	state.boss_paid_crash = bool(data.get("boss_paid_crash", false))
 	state.shift_number = int(data.get("shift_number", 0))
+	state.crash_shifts.clear()
+	for number in data.get("crash_shifts", []):
+		state.crash_shifts.append(int(number))
 	return true
 
 

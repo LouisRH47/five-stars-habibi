@@ -430,6 +430,25 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - The numbers are the real ones from GameState. The smoke test checks the card shows, its
   total matches the money you got, the camera cuts to the door, and E closes it.
 
+### Session 23
+- The clinic screen is rebuilt like the mockup's "Big crash: clinic bills"
+  (`scripts/clinic_screen.gd`):
+  - The screen fades to black, then a simple 3D clinic room: pale teal walls, a window, your
+    rider (in your look) lying in a bed under a blanket, and a drip stand, filmed from the side.
+  - Left: a red BIG CRASH label, "You woke up at Wahat Al Shams Clinic", a sentence with what
+    you hit and how fast ("You hit a parked car at 27 km/h. The ice cream didn't make it, and
+    your shift is over for today.") and a teal Arabic sign "عيادة واحة الشمس".
+  - Right: the white "Your bills" card: ORDER CANCELLED · 0 STARS (if you had an order),
+    Clinic bill, Bike repair (Snackaroo), Insurance (or "Your boss covered it" the first
+    time), a red "You pay" total, a yellow tip when insurance was off, the "Big crashes this
+    week" bar (the last 7 shifts, full at 3), and the buttons "Turn on insurance" (only when
+    it's off) and "Shift summary · E".
+- The bike now remembers what it hit and how fast (`last_crash`: a parked car, a villa wall,
+  a palm tree, a restaurant, the mosque...). GameState keeps the shift of every big crash
+  (saved too) for the weekly bar.
+- The bills and what happens after (shift ends, summary) work as before.
+- The smoke test checks the sentence, the weekly count, the tip, and Turn on insurance.
+
 ## Known bugs
 - None found by the checks. Not play-tested by Louis yet.
 - The bot once got stuck nose-to-nose with a kid on a scooter (the kid waits for the bike,

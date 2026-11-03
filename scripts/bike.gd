@@ -34,6 +34,8 @@ var fallen_left := 0.0
 var wrecked := false
 ## True while you're walking (Session 19): the bike stands on its stand, no rider, no keys.
 var parked := false
+## The last crash (Session 23, for the clinic screen): what you hit and how fast.
+var last_crash := {"what": "a wall", "kmh": 0.0}
 
 # Where the wheels meet a speed bump, in metres ridden after the bike's collision box
 # first touches it. The box front is 0.85 m ahead of the bike's middle, the front wheel
@@ -246,6 +248,7 @@ func _check_crash(head_on: float, thing: Object) -> bool:
 		return false
 	var soft := thing is Node and (thing as Node).is_in_group("critter")
 	var big := kmh > GameConfig.CRASH_BIG_KMH and not soft
+	last_crash = {"what": what_is(thing), "kmh": kmh}
 	bumped.emit(clampf(kmh / GameConfig.BIKE_MAX_SPEED_KMH, 0.0, 1.0))  # camera shake
 	speed = 0.0
 	velocity = Vector3.ZERO
@@ -255,6 +258,31 @@ func _check_crash(head_on: float, thing: Object) -> bool:
 		fallen_left = GameConfig.CRASH_FALLEN_TIME
 	crashed.emit(big)
 	return true
+
+
+## A few words for what you hit, for the clinic screen ("a parked car").
+static func what_is(thing: Object) -> String:
+	var node := thing as Node
+	for _i in 3:  # the name may be on the thing or the node it belongs to
+		if node == null:
+			break
+		var n := String(node.name)
+		if n.begins_with("ParkedCar"):
+			return "a parked car"
+		if n.begins_with("Villa"):
+			return "a villa wall"
+		if n.begins_with("Palm"):
+			return "a palm tree"
+		if n.begins_with("Restaurant"):
+			return "a restaurant"
+		if n == "Mosque":
+			return "the mosque"
+		if n == "Supermarket":
+			return "the mini market"
+		if node.is_in_group("critter"):
+			return "a cat" if n.begins_with("Cat") else "a kid on a scooter"
+		node = node.get_parent()
+	return "a wall"
 
 
 ## On the ground after a crash: the model tips over on its side, then gets back up

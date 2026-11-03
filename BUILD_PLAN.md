@@ -422,8 +422,7 @@ Done when:
 - [ ] The 3D shot shows your rider and the customer (or the bag) at the door
 - [ ] The numbers on the card are the real ones, and E carries on
 
-### Session 23: The clinic screen like the mockup
-
+### Session 23: The clinic screen like the mockup (built, needs testing)
 ```text
 Session 23. Read PRD.md (Screens: clinic screen) and look at the mockup's
 "Big crash: clinic bills" artboard. Rebuild the clinic screen: a simple 3D

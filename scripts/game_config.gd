@@ -170,6 +170,8 @@ const REPAIR_BILL := 80               # Dh
 const INSURED_CRASH_COST := 20        # Dh, all you pay for a big crash with insurance
 const INSURANCE_PER_DELIVERY := 2     # Dh, taken from every delivery while insurance is on
 const CRASH_FADE_TIME := 0.6          # seconds the screen takes to fade out (and back in)
+const CRASH_WEEK_SHIFTS := 7          # "this week" on the clinic screen = the last 7 shifts
+const CRASH_WEEK_WARNING := 3         # the clinic's crash bar is full at this many big crashes
 
 # --- Shifts (Session 13) ---
 const SHIFT_LENGTH := 600.0           # seconds of real time in one shift (10 minutes, PRD)

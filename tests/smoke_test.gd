@@ -582,6 +582,16 @@ func _check_big_crash() -> void:
 	before = gs.money
 	var uninsured: Dictionary = gs.big_crash()
 	_check("without insurance a big crash costs 230 Dh", uninsured["paid"] == 230 and gs.money == before - 230, "Dh %d" % gs.money)
+	clinic.open(uninsured, true)
+	_check("the clinic says what you hit and how fast", "You hit a villa wall at" in clinic._story.text and "km/h" in clinic._story.text, clinic._story.text)
+	_check("the clinic counts this week's big crashes", gs.crashes_this_week() == 3 and clinic._week_text.text == "3 of 3", clinic._week_text.text)
+	_check("uninsured: the tip and Turn on insurance show", clinic._tip_box.visible and clinic._insure_button.visible, "")
+	clinic.turn_on_insurance()
+	_check("Turn on insurance switches it on", gs.insurance_on and not clinic._insure_button.visible, "")
+	clinic.close()
+	var summary_screen: Node = _main.get_node("ShiftScreen")
+	if summary_screen.showing:
+		summary_screen._next_shift()
 	gs.set_insurance(true)
 	_check("insurance starts switched on", true, "")
 	var phone := _main.get_node("Phone")

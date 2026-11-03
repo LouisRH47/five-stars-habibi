@@ -51,6 +51,8 @@ var money := 0
 var insurance_on := true
 ## True once the boss has paid for your first big crash (only happens once per game).
 var boss_paid_crash := false
+## The shift number of every big crash (Session 23: "Big crashes this week" on the clinic).
+var crash_shifts: Array[int] = []
 
 ## The shift (Session 13). scripts/shift_manager.gd counts shift_time_left down.
 var shift_number := 0  # start_shift() makes the first one shift 1
@@ -140,6 +142,7 @@ func reset() -> void:
 	xp = 0
 	insurance_on = true
 	boss_paid_crash = false
+	crash_shifts.clear()
 	shift_number = 0
 	start_shift()
 	history.clear()
@@ -268,8 +271,10 @@ func big_crash() -> Dictionary:
 		"boss": not boss_paid_crash,
 		"insured": insurance_on,
 		"lost_order": current_order != null or offered_order != null,
+		"food": current_order.food if current_order != null else "",
 		"paid": 0,
 	}
+	crash_shifts.append(shift_number)
 	if not boss_paid_crash:
 		boss_paid_crash = true
 	elif insurance_on:
@@ -303,6 +308,15 @@ func hire(rider: String, country: String, look: int) -> void:
 	hired = true
 	tutorial_done = false
 	save_soon()
+
+
+## Big crashes in the last CRASH_WEEK_SHIFTS shifts (a "week"), for the clinic screen.
+func crashes_this_week() -> int:
+	var count := 0
+	for number in crash_shifts:
+		if number > shift_number - GameConfig.CRASH_WEEK_SHIFTS:
+			count += 1
+	return count
 
 
 ## Starts a new shift: a full clock and a fresh summary.
