@@ -23,6 +23,8 @@ var _end_after_clinic := false
 func _ready() -> void:
 	GameState.order_delivered.connect(_on_order_delivered)
 	GameState.big_crashed.connect(func(_bills): _end_after_clinic = true)
+	if bike != null and bike.has_signal("crashed"):
+		bike.crashed.connect(func(_big): GameState.note_crash())  # the "No crashes" goal
 	if clinic != null:
 		clinic.closed.connect(_on_clinic_closed)
 	if shift_screen != null:

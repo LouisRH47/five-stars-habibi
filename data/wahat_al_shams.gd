@@ -283,6 +283,17 @@ const VILLAS := [
 	{"number": 902, "house": 0, "cluster": "", "address": "Stables · Office", "kind": "spot", "look": "office", "position": Vector3(139, 0, 8), "facing": -90.0, "size": Vector3(5, 3.2, 4)},
 ]
 
+## The 4 regular customers (Session 32, PRD "Regular customers"). They order more often than
+## anyone else, have a heart on the phone and say your name (their lines: data/customer_lines.gd).
+## villa: their VILLAS number. shop and food: what they usually order. who: who comes to the
+## door (resident, teacher or groom). look: a resident's outfit (scripts/people_looks.gd).
+const REGULARS := [
+	{"id": "mariam", "name": "Auntie Mariam", "villa": 207, "shop": "boba", "food": "bubble tea", "who": "resident", "look": 1},
+	{"id": "rashid", "name": "Mr Rashid", "villa": 503, "shop": "shawarma", "food": "shawarma", "who": "resident", "look": 0},
+	{"id": "dana", "name": "Ms Dana", "villa": 901, "shop": "bakery", "food": "cake", "who": "teacher", "look": -1},
+	{"id": "hamdan", "name": "Hamdan", "villa": 902, "shop": "farm", "food": "farm juice", "who": "groom", "look": -1},
+]
+
 # --- Decoration and obstacles (built by decor_builder and obstacle_builder) ---
 
 ## Palm trees round the Plaza and along the spine path (never on a road or path).

@@ -75,6 +75,11 @@ func show_summary(summary: Dictionary) -> void:
 	]
 	if summary["cancelled"] > 0:
 		rows.insert(1, ["Cancelled", str(summary["cancelled"])])
+	# Session 32: each shift goal, with its 15 Dh bonus if you did it.
+	for goal in summary.get("goals", []):
+		var at := rows.size() - 2  # just above "You earned"
+		rows.insert(at, ["%s %s" % ["✓" if goal["done"] else "•", goal["text"]],
+				"+%d Dh" % GameConfig.GOAL_BONUS if goal["done"] else "-"])
 	for row in rows:
 		var big: bool = row[0] == "You earned"
 		_table.add_child(_label(row[0], 22 if big else 19, ORANGE if big else SOFT))

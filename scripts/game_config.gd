@@ -265,3 +265,56 @@ const HANDLEBAR_SMOOTHING := 10.0     # how quickly the handlebars follow the ke
 const KICKSTAND_SPEED := 6.0          # how quickly the kickstand swings down or up
 const BELL_HEAR_RANGE := 15.0         # metres: people and cats this close hear the bell
 const BELL_SCARE_TIME := 1.2          # seconds a cat runs off (or a kid stops) after the bell
+
+# --- Special orders, goals and regulars (Session 32) ---
+# Special orders (PRD "Special orders, goals and events"). An order has at most one.
+const SPECIAL_ORDER_CHANCE := 1.0 / 6.0   # about 1 in 6 orders is special
+const SPECIAL_KINDS := ["rush", "fragile", "neighbour", "family"]
+const SPECIAL_NAMES := {"rush": "Rush", "fragile": "Fragile cake", "neighbour": "Neighbour", "family": "Big family"}
+const SPECIAL_COLOURS := {            # the chip colour on the phone
+	"rush": Color(0.85, 0.22, 0.2, 1),       # red
+	"fragile": Color(0.88, 0.4, 0.62, 1),    # pink
+	"neighbour": Color(0.45, 0.33, 0.7, 1),  # purple
+	"family": Color(0.2, 0.45, 0.8, 1),      # blue
+}
+const RUSH_TIME_SHARE := 0.7          # rush: the target time is 70% of normal...
+const RUSH_PAY_SHARE := 1.5           # ...and it pays 50% more
+const FRAGILE_SHOP := "bakery"        # fragile cakes always come from Sunrise Bakery
+const FRAGILE_FOOD := "cake"
+const FRAGILE_DAMAGE_TIMES := 2.0     # every knock does double damage to a fragile cake
+const FRAGILE_TIP_CHANCE := 0.6       # tip chance on a 5-star fragile cake (normal: TIP_CHANCE)
+const NEIGHBOUR_BONUS := 5            # Dh extra for taking it to the neighbour
+const NEIGHBOUR_NOTE := "Not home! Leave it with the neighbour at %s"
+const NEIGHBOUR_CHOICES := 3          # maps without clusters: one of the 3 nearest homes
+const FAMILY_PAY_TIMES := 2           # big family order: double pay...
+const FAMILY_SPEED_SHARE := 0.85      # ...but two bags: top speed 15% lower...
+const FAMILY_WOBBLE_DEG := 7.0        # ...and the steering wobbles up to this many degrees a second...
+const FAMILY_WOBBLE_SPEED := 2.2      # ...this many times a second
+
+# School, stables and farm orders. The drop-off spots are VILLAS entries with "kind": "spot".
+const SCHOOL_SPOT := 901              # the security booth at the school gate
+const STABLES_SPOT := 902             # the stable office
+const SCHOOL_OPEN_HOUR := 8.0         # school orders only between 08:00...
+const SCHOOL_CLOSE_HOUR := 15.0       # ...and 15:00 on the shift clock
+const SCHOOL_ORDER_CHANCE := 0.08     # share of orders that go to the school (outside lunch)
+const LUNCH_START_HOUR := 11.5        # lunch rush from 11:30...
+const LUNCH_END_HOUR := 12.5          # ...to 12:30...
+const LUNCH_SCHOOL_CHANCE := 1.0 / 3.0  # ...when about 1 in 3 orders is for the school
+const STABLES_ORDER_CHANCE := 0.06    # share of orders for the stable office (riders and grooms)
+const FARM_SHOP := "farm"             # the Wahat Farm Stall...
+const FARM_PICKUP_CHANCE := 1.0 / 8.0 # ...is the pickup for about 1 in 8 orders
+
+# Regular customers (who they are and where they live: REGULARS in data/wahat_al_shams.gd,
+# what they say: data/customer_lines.gd).
+const REGULAR_ORDER_CHANCE := 0.15    # share of orders from one of the regulars (more than anyone else)
+const REGULAR_TIP_CHANCE := 0.6       # regulars tip more often on 5-star jobs
+const REGULAR_COLOUR := Color(0.86, 0.25, 0.42, 1)  # the heart chip on the phone
+
+# Shift goals: 2 picked at the start of each shift, 15 Dh each when done (paid at the end).
+const GOALS_PER_SHIFT := 2
+const GOAL_BONUS := 15                # Dh per goal done
+const GOAL_DELIVERIES := 8            # "Make 8 deliveries"
+const GOAL_FIVE_STAR_STREAK := 3      # "3 five-star deliveries in a row"
+const GOAL_LUNCH_ORDERS := 2          # "2 school lunch orders"
+const GOAL_CLUSTERS := 5              # "Deliver to all 5 clusters"
+const GOAL_NO_CRASH_MIN_DELIVERIES := 1  # "No crashes" also needs at least this many deliveries

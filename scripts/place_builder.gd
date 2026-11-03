@@ -26,6 +26,8 @@ var restaurants: Array = []
 var villas: Array = []
 var restaurant_size := Vector3.ONE
 var villa_size := Vector3.ONE
+## The regular customers (REGULARS in the data list), empty on maps without them.
+var regulars: Array = []
 
 
 func _enter_tree() -> void:
@@ -38,6 +40,7 @@ func _enter_tree() -> void:
 	villas = lists["VILLAS"]
 	restaurant_size = lists["RESTAURANT_SIZE"]
 	villa_size = lists["VILLA_SIZE"]
+	regulars = lists.get("REGULARS", [])  # Session 32: only Wahat Al Shams has regulars
 
 
 func _ready() -> void:

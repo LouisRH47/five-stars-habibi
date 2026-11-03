@@ -474,19 +474,22 @@ func _let_go() -> void:
 func _on_shift_ended(summary: Dictionary) -> void:
 	_done = true
 	_let_go()
-	print("\n#  food        villa  ride s  target s  time%  fresh%  damage%  stars  pay  tip")
+	print("\n#  food        villa  ride s  target s  time%  fresh%  damage%  stars  pay  tip  special / regular")
 	var i := 0
 	var late := 0
 	for job in _gs.history:
 		var ride: Array = _rides[i] if i < _rides.size() else [0.0, 0.0]
 		i += 1
 		late += 1 if ride[0] > ride[1] else 0
-		print("%-2d %-11s %5d  %6.0f  %8.0f  %5.0f  %6.0f  %7.0f  %5.1f  %3d  %3d" % [i, job["food"], job["villa"],
-				ride[0], ride[1], job["time"], job["freshness"], job["damage"], job["stars"], job["pay"], job["tip"]])
+		print("%-2d %-11s %5d  %6.0f  %8.0f  %5.0f  %6.0f  %7.0f  %5.1f  %3d  %3d  %s" % [i, job["food"], job["villa"],
+				ride[0], ride[1], job["time"], job["freshness"], job["damage"], job["stars"], job["pay"], job["tip"],
+				(job.get("special", "") + " " + job.get("regular", "")).strip_edges()])
 	print("Rides slower than the target time: %d of %d" % [late, i])
+	for goal in summary.get("goals", []):  # Session 32
+		print("Goal: %s  %s" % [goal["text"], "DONE +%d Dh" % GameConfig.GOAL_BONUS if goal["done"] else "not done"])
 	print("\nShift summary: %d deliveries, %d cancelled, %.2f average stars" % [summary["deliveries"], summary["cancelled"], summary["stars"]])
-	print("Pay %d + tips %d - insurance %d - bills %d = earned %d Dh, %d XP (Rider Level %d)" % [
-			summary["pay"], summary["tips"], summary["insurance"], summary["bills"], summary["earned"], summary["xp"], _gs.level()])
+	print("Pay %d + tips %d + goals %d - insurance %d - bills %d = earned %d Dh, %d XP (Rider Level %d)" % [
+			summary["pay"], summary["tips"], summary.get("goal_bonus", 0), summary["insurance"], summary["bills"], summary["earned"], summary["xp"], _gs.level()])
 	print("Crashes: %d small, %d big. Times backed up: %d. Times stuck and reset: %d. Time spent walking: %.0f s" % [
 			_crashes["small"], _crashes["big"], _backed_up, _resets, _walk_time])
 	SaveGame.delete("user://playtest_bot_save.json")

@@ -3,7 +3,8 @@ extends Node
 ## Runs the three meters (PRD "The three meters") while you carry food to the villa.
 ## Time: full at pickup, empty at the target time. Freshness: drains every second, faster
 ## for ice cream. Damage: drops on speed bumps, hard braking and crashes into things,
-## and bubble tea spills the most. The values live in GameState; numbers in game_config.gd.
+## and bubble tea spills the most. Session 32: rush orders get less time, fragile cakes
+## take double damage. The values live in GameState; numbers in game_config.gd.
 ## A meter at 0 never cancels the order: you can always deliver, just for fewer stars.
 
 ## The bike, to hear about bumps, crashes and hard braking.
@@ -63,6 +64,8 @@ static func target_time_for(from: Vector3, to: Vector3) -> float:
 ## Knocks the food: takes `amount` off the damage meter (only while carrying food).
 func hurt_food(amount: float) -> void:
 	if _carrying():
+		if GameState.current_order.special == "fragile":
+			amount *= GameConfig.FRAGILE_DAMAGE_TIMES  # a fragile cake: every knock counts double
 		GameState.set_meters(GameState.meter_time, GameState.meter_freshness, GameState.meter_damage - amount)
 
 
@@ -87,8 +90,10 @@ func _on_stage_changed(stage: int) -> void:
 		return
 	var order := GameState.current_order
 	var places := delivery_manager.place_builder
-	GameState.start_meters(target_time_for(places.restaurant_door(order.restaurant_id),
-			places.villa_door(order.villa_number)))
+	var target := target_time_for(places.restaurant_door(order.restaurant_id), places.villa_door(order.villa_number))
+	if order.special == "rush":
+		target *= GameConfig.RUSH_TIME_SHARE  # rush order: less time (Session 32)
+	GameState.start_meters(target)
 
 
 func _on_bumped(strength: float) -> void:
