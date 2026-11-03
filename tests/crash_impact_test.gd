@@ -62,6 +62,9 @@ func _run() -> void:
 	root.add_child(clinic)
 	gs.reset()
 	gs.money = 500
+	var pizza := Order.new()
+	pizza.food = "pizza"
+	gs.offer_order(pizza)
 	bike.speed = 8.0
 	_check("a hard collision starts a major authored fall", bike._check_crash(1.0, wall) and bike.wrecked and bike.fall_kind == "tumble")
 	_check("the rider separates from the bike during the fall", bike._rider.get_parent() == bike)
@@ -72,8 +75,19 @@ func _run() -> void:
 	bike._step_fall(GameConfig.CRASH_FALL_DURATIONS["tumble"])
 	_check("one completed fall opens one clinic visit", clinic.showing and paused and _completed == 1 and _crashes == 1)
 	_check("the clinic explains impact severity", clinic.last_bills.has("severity") and "km/h" in clinic._story.text)
+	_check("the clinic hides the cancellation badge when the rider has only an offer", not clinic._tag.visible)
+	_check("a crash clears the pending offer without adding a zero-star job",
+			gs.offered_orders.is_empty() and gs.offered_order == null and gs.history.is_empty())
 	clinic.close()
 	_check("clinic recovery restores the seated rider", not paused and not bike.wrecked and bike._rider.get_parent() == bike._model)
+
+	gs.offer_order(pizza)
+	gs.accept_offer()
+	clinic.open(gs.big_crash(direct), true)
+	_check("the clinic shows the cancellation badge for an accepted order", clinic._tag.visible)
+	_check("a crash records one zero-star cancellation for the accepted order",
+			gs.history.size() == 1 and gs.history[0]["cancelled"] and gs.history[0]["stars"] == 0.0)
+	clinic.close()
 	gs.reset()
 	bike.speed = 3.0
 	_check("a low-speed collision selects a gentle fall", bike._check_crash(1.0, wall) and bike.fall_kind == "tip" and not bike.wrecked)

@@ -15,6 +15,13 @@
   spawned buggy's normal endpoint pause cannot fail the deployment checks.
 - Browser saves stay on the current device. Real iPad performance still needs
   Louis's test; emulated touch checks are not a physical-device acceptance test.
+- Safari/iPad follow-up: touch menus, name fields, settings sliders and country
+  choices now have at least 44 CSS-pixel targets. Gameplay labels are larger and
+  use plain actions. Layout checks cover landscape, portrait and browser bars.
+- The web canvas now respects device safe areas and caps Retina rendering to one
+  backing pixel per CSS pixel after Safari/WebKit graphics failures. Software
+  keyboard fields keep viewport positioning and a 16-pixel font to avoid offset
+  and automatic-zoom problems during name entry.
 
 ## Current session
 **Detail and replay implementation is ready for playtest** on `codex/detail-pass-complete`.

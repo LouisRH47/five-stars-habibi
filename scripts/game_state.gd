@@ -400,10 +400,10 @@ func set_insurance(on: bool) -> void:
 	insurance_changed.emit(on)
 
 
-## A big crash (PRD "Crashes, bills and insurance"): the order you had is cancelled
-## (0 stars, no pay) and the bills come in. The boss pays for your very first one;
-## with insurance you only pay INSURED_CRASH_COST. Returns what happened, for the clinic
-## screen: hospital, repair, paid (what came off your wallet), boss, insured, lost_order.
+## A big crash (PRD "Crashes, bills and insurance"): an accepted order is cancelled
+## (0 stars, no pay) and the bills come in. The boss pays for the first big crash.
+## After that, insurance caps your share based on the impact severity.
+## Returns the bill and whether an accepted order was lost for the clinic screen.
 func big_crash(impact: Dictionary = {}) -> Dictionary:
 	streak = 0
 	var quote := CrashImpact.quote(impact)
@@ -415,7 +415,7 @@ func big_crash(impact: Dictionary = {}) -> Dictionary:
 		"boss": not boss_paid_crash,
 		"insured": insurance_on,
 		"insured_cap": quote["insured"],
-		"lost_order": current_order != null or offered_order != null,
+		"lost_order": current_order != null,
 		"food": current_order.food if current_order != null else "",
 		"paid": 0,
 	}

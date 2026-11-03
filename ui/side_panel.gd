@@ -93,6 +93,7 @@ func add_row(text: String, status: String, selected := false, action: Callable =
 	if action.is_valid():
 		row.pressed.connect(action)
 	rows.add_child(row)
+	get_tree().root.get_node("TouchControls").fit_touch_widget(row)
 	return row
 
 

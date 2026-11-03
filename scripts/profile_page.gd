@@ -129,6 +129,7 @@ func _rebuild() -> void:
 		var reveal := Button.new()
 		reveal.text = "View fastest rides"
 		_content.add_child(reveal)
+		get_tree().root.get_node("TouchControls").fit_touch_widget(reveal)
 		var records := VBoxContainer.new()
 		records.visible = false
 		_content.add_child(records)
