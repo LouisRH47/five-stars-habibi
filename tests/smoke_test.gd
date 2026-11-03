@@ -745,7 +745,10 @@ func _check_saving() -> void:
 	_check("main menu: Continue goes to Palm Grove once hired", menu.play_button.text == "Continue"
 			and menu.play_scene() == "res://scenes/palm_grove.tscn", menu.play_button.text)
 	gs.hired = false
-	_check("main menu: Play goes to the application the first time", menu.play_scene() == "res://scenes/application.tscn", "")
+	_check("main menu: Play opens the application on the phone the first time", menu.play_scene() == "form", "")
+	menu.play()
+	_check("the phone turns into the rider application", menu.page == "form" and menu.name_box.is_visible_in_tree(), menu.page)
+	_check("the start screen has a 3D look card for each look", menu._look_cards.size() == 3 and menu._look_riders.size() == 3, "")
 	menu._open_settings()
 	_check("main menu: Settings opens", menu.settings_panel.visible and menu.settings_panel.fullscreen_box != null, "")
 	menu.free()

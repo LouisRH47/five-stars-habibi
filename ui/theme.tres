@@ -75,6 +75,34 @@ corner_radius_top_right = 16
 corner_radius_bottom_right = 16
 corner_radius_bottom_left = 16
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_edit"]
+content_margin_left = 14.0
+content_margin_top = 8.0
+content_margin_right = 14.0
+content_margin_bottom = 8.0
+bg_color = Color(0.9882353, 0.96862745, 0.92941177, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.9529412, 0.8901961, 0.7647059, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_edit_focus"]
+draw_center = false
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.9490196, 0.54901963, 0.15686275, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
 [resource]
 default_font = SubResource("FontVariation_body")
 default_font_size = 18
@@ -88,6 +116,11 @@ Button/styles/hover = SubResource("StyleBoxFlat_button_hover")
 Button/styles/pressed = SubResource("StyleBoxFlat_button_pressed")
 Button/styles/focus = SubResource("StyleBoxFlat_button_focus")
 Button/styles/disabled = SubResource("StyleBoxFlat_button_disabled")
+LineEdit/colors/font_color = Color(0.105882354, 0.11372549, 0.13333334, 1)
+LineEdit/colors/font_placeholder_color = Color(0.55, 0.6, 0.61, 1)
+LineEdit/colors/caret_color = Color(0.9490196, 0.54901963, 0.15686275, 1)
+LineEdit/styles/normal = SubResource("StyleBoxFlat_edit")
+LineEdit/styles/focus = SubResource("StyleBoxFlat_edit_focus")
 Heading/base_type = &"Label"
 Heading/fonts/font = SubResource("FontVariation_title")
 BigNumber/base_type = &"Label"

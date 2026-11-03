@@ -379,8 +379,7 @@ Done when:
 - [ ] The HUD and phone look like the mockup's gameplay screen
 - [ ] Fonts and their licences are in assets/fonts and CREDITS.md
 
-### Session 21: Start screen like the mockup
-
+### Session 21: Start screen like the mockup (built, needs testing)
 ```text
 Session 21. Read PRD.md (Screens: start screen) and look at the mockup's
 "Start: rider application" artboard. Rebuild the main menu and the rider

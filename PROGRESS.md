@@ -393,6 +393,26 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - The first time Godot opens the project after this change it may print a font error
   once while it imports the new fonts; the second time it's clean.
 
+### Session 21
+- One start screen (`scripts/start_screen.gd`) for the main menu and the rider application,
+  like the mockup's "Start: rider application":
+  - Left: "AL SARAB · السراب", the big "Five Stars Habibi" title (Baloo 2, white with a teal
+    outline), orange "Rider to Driver" and one line about the game.
+  - Behind it: a low-poly 3D desert (sand dunes, a big pale sun, a palm, warm haze), with
+    the camera drifting slowly.
+  - Right: a big phone. On the menu it has Play (Continue once you're hired), New game,
+    Settings and Quit.
+  - The first time you press Play, the phone becomes the Snackaroo rider application: your
+    name, where you're from, "Pick your look" with 3 cards (Classic, Sporty, Chill), each
+    with its own little turning 3D rider, the picked one outlined in orange, and
+    Submit application. Then "Reviewing..." and "Congrats, <name>, you're hired!" on the same
+    phone, and Start riding.
+- `scenes/main_menu.tscn` opens it on the menu, `scenes/application.tscn` straight on the
+  form. The old `main_menu.gd` and `application.gd` are gone (one script does both now).
+- Text boxes are styled for the white cards (sand box, orange edge while typing).
+- Saving, the 43 countries, the tutorial and New game work as before.
+- The smoke test checks Play opens the application on the phone and there's a 3D card per look.
+
 ## Known bugs
 - None found by the checks. Not play-tested by Louis yet.
 - The bot once got stuck nose-to-nose with a kid on a scooter (the kid waits for the bike,
