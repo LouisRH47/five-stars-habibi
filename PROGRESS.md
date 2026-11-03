@@ -1,13 +1,13 @@
 # Progress
 
 ## Current session
-Session 6: Palm Grove part 3, decoration and static obstacles (built, waiting for Louis
-to test on the Mac). Sessions 1 to 5 also still need testing on the Mac.
+Sessions 7 to 17 are built (all of Tier 1), each checked with the Godot headless checks,
+the smoke test and screenshots, on branch `sessions-8-17` (Session 7 on `session-7-minimap`).
+Louis asked for all of them in one go; they still need Louis's own play-test on the Mac.
 
-**Handover:** Sessions 1 to 6 were built in a cloud session where Godot could not run,
-so none of it has ever been run. From Session 7 on, work happens on Louis's Mac in Claude
-Code in the terminal, where Godot can run. First job there: run the headless checks and
-the smoke test from CLAUDE.md and fix anything that fails, then play-test, then Session 7.
+**Godot checks on the Mac (start of Session 7):** the headless import, the quit check and
+the smoke test all ran on Godot 4.7.2 for Sessions 1 to 6 with no errors and RESULT: PASS,
+on both Palm Grove and the test area. Nothing needed fixing.
 
 ## What works
 - Godot 4.7 project (Forward+). The main scene is `scenes/palm_grove.tscn` (since Session 4).
@@ -137,18 +137,218 @@ the smoke test from CLAUDE.md and fix anything that fails, then play-test, then 
 - Layout checked with a script: nothing overlaps roads, buildings, signs, doors or walls.
 - Not run yet (no Godot in the cloud session). Built and checked by reading.
 
+### Session 7
+- Mini-map in the bottom-left corner (`ui/minimap.tscn`, `scripts/minimap.gd`). It turns
+  with you: the way you're riding is always up, you're the white arrow in the middle.
+- It draws the walls, roads, roundabout, park, car parks, mosque, mini market, restaurants
+  (in their brand colours) and every villa with its house number, all from the same data
+  list the map is built from. Moving a villa in `data/palm_grove.gd` moves it here too.
+- During an order an orange pin marks the next stop. Going to the villa, the villa turns
+  orange and the pin shows its number. A strip along the bottom says "Villa 12   85 m" (or
+  the restaurant name). If the stop is off the map, an orange arrow on the edge points the way.
+- A small "N" on the edge shows where north is.
+- Zoom and size are in the Mini-map block of `scripts/game_config.gd`.
+- About 1 in 3 orders comes with a customer note on the phone, like "Leave it at the door,
+  please". The notes are the ORDER_NOTES list in `game_config.gd`. They're only text for now;
+  Session 11 makes "leave it at the door" mean nobody comes out.
+- No GPS line on the road (that's a later upgrade).
+- The smoke test checks the mini-map turns with the bike, the pin shows the restaurant then
+  the villa number, a far-away stop stays pinned inside the map, and some orders have notes.
+- Checked with real screenshots too, not only headless.
+
+### Session 8
+- Three meters while you carry food (`scripts/meters.gd`), shown top left in
+  `ui/meters_panel.tscn`: TIME (counts down to the target time), FRESHNESS and DAMAGE.
+  Each bar is green above 60%, orange from 30% to 60%, red under 30%.
+- Time: full at pickup, empty at the target time = straight-line distance at 20 km/h,
+  times 1.5, plus 20 s (PRD). After that it stays empty; the order is never cancelled.
+- Freshness drains every second: pizza slowly, bubble tea medium, ice cream fast.
+- Damage drops on speed bumps (more when fast), hard braking (braking above 18 km/h, once
+  per press, the bike sends `hard_braked`) and crashing into things. Bubble tea loses the
+  most on speed bumps.
+- The values live in GameState (meter_time, meter_freshness, meter_damage) and are saved
+  with each delivery in the history, ready for the stars in Session 10.
+- All numbers are in the Meters block of `scripts/game_config.gd`.
+- The smoke test checks the target time, that each meter drains, the bands, and that an
+  all-red order can still be delivered.
+
+### Session 9
+- 5 cats (`scripts/cat.gd`) stroll slowly around their own patch between two villas,
+  sit for a few seconds, then stroll on. Bump one and it dashes away, then wanders back.
+- 3 kids on kick scooters (`scripts/scooter_kid.gd`) ride back and forth along the edge
+  of Date Palm Street, Ghaf Street and East Lane, waiting a moment at each end. Bump one
+  and they stop and wobble. If the bike is in their way, they wait instead of pushing it.
+- Both are solid (`scripts/critter.gd`, the shared part), so you can't ride through them.
+  Touching one while carrying food takes 10% (pizza) to 15% (bubble tea) off the damage
+  meter, on top of the normal crash damage. Each bump counts once.
+- Where they go is in the CATS and SCOOTER_KIDS lists at the end of `data/palm_grove.gd`,
+  built by `scripts/obstacle_builder.gd`. Speeds and damage are in `game_config.gd`.
+- The smoke test checks they were all built, a kid riding into the bike counts once and
+  hurts the food, and the cats stay on their patches.
+
+### Session 10
+- Every delivery now gets 1 to 5 stars from the three meters (PRD formula: start at 5,
+  orange meter -0.5, red meter -1.5, never below 1). `GameState.stars_for()`.
+- Tips: only on 5-star deliveries, 40% of the time, 2 to 15 Dh. Never on boring orders.
+- XP: 10 per delivery plus 2 per star. Rider Level 1 to 2 needs 50 XP, then 75, 100...
+- Rating: the average stars of your last 50 deliveries.
+- The phone's top now shows your rating as stars and a number ("New" before your first
+  delivery), your Rider Level ("Lv 2") and a thin XP bar. After a delivery it shows
+  "Delivered!" with big stars, the pay, any tip and the XP for 4 seconds.
+- Stars are drawn as shapes (`scripts/star_row.gd`), because the font has no star letter.
+- Everything is kept in GameState (money, xp, history with stars/tip/xp per delivery).
+- Numbers are in the "Stars, tips, XP and rating" block of `game_config.gd`.
+- Not built yet: "better orders show up more often at a high rating" (PRD) wasn't part of
+  this session's prompt.
+- The smoke test checks the PRD star examples, that tips only come on 5-star jobs, the
+  level rule, and that the rating uses the last 50 deliveries.
+
+### Session 11
+- When you deliver, a customer (`scripts/customer.gd`) steps out of the villa's front door,
+  waves and says one line in a white speech bubble, then turns round and goes back in.
+  5 outfits (white kandura, black abaya, t-shirt, hoodie, top with a cap), 4 skin tones.
+- 20 funny lines in `data/customer_lines.gd`. `{name}` in a line becomes the rider's name
+  (GameState.rider_name; "habibi" until the application form in Session 14).
+- 15% of orders say "Leave it at the door, please": nobody comes out, an orange food bag
+  is left on the doorstep for 8 seconds and the phone says "Left at the door!".
+  Other notes ("Extra napkins, please!"...) now come on 25% of the other orders.
+- `scripts/customer_spawner.gd` does this on every delivery. Numbers in `game_config.gd`.
+- The smoke test checks a customer comes out at the right villa with a line from the list,
+  the lines vary, and a leave-at-the-door order leaves a bag instead.
+
+### Session 12
+- Crashes (`scripts/bike.gd`). A crash is hitting something fairly straight on:
+  - Small crash (10 km/h or more): you fall off, the bike lies on its side for 2 seconds,
+    the food loses 30% on the damage meter, then you get back on.
+  - Big crash (above 20 km/h into a car, wall, palm or building): the screen fades out and
+    the Al Sarab Clinic screen shows the bills (`scripts/clinic_screen.gd`). Your order is
+    cancelled (counts as 0 stars, no pay). Press E or click OK: back at the start.
+    Cats and kids only ever cause a small crash.
+- Bills: 150 Dh hospital + 80 Dh repair. The boss pays the very first big crash. With
+  insurance you only pay 20 Dh. Your wallet can go below 0.
+- Insurance starts on and costs 2 Dh per delivery (shown on the phone after each delivery).
+  Press I to switch it on or off; the bottom of the phone says which.
+- Session 13 will make a big crash end the shift (GameState sends `big_crashed`).
+- Numbers are in the "Crashes, bills and insurance" block of `game_config.gd`.
+- The smoke test rides into a villa wall slowly (small crash, back on after 2 s) and fast
+  (big crash, clinic, boss pays), and checks the insured and uninsured bills and the I key.
+  On the old test area its riding checks now start in a clear lane (the old start rides
+  into a box at sprint speed, which is now a big crash).
+
+### Session 13
+- Shifts (`scripts/shift_manager.gd`): one shift is 10 real minutes. A clock at the top
+  middle (`scripts/shift_screen.gd`) shows the in-game time from 08:00 to 18:00 and the
+  shift number. It turns orange with "Last orders!" in the last minute.
+- When the clock runs out, no new orders pop up (an order still waiting on the phone just
+  goes away, it doesn't count as a skip). If you're carrying an order you finish it, and
+  the shift ends right after you drop it off. If not, it ends straight away.
+- A big crash ends the shift too, right after the clinic screen.
+- The summary screen (game paused): deliveries, cancelled orders, average stars, pay, tips,
+  insurance, crash bills, what you earned, and XP. "Start next shift" (or E) starts a new
+  shift with a full clock and puts the bike back at the start. Money and XP carry over.
+- Shift data lives in GameState (shift_time_left, shift_number, shift_summary()).
+- Numbers are in the Shifts block of `game_config.gd`.
+- The smoke test runs 1-second shifts: finishing an order after clock-out, no new orders,
+  the summary adds up, and an empty shift ends at once.
+
+### Session 14
+- The game now opens on the Snackaroo Rider Application (`scenes/application.tscn`,
+  `scripts/application.gd`), a big phone screen: 1. your name (you can't submit without
+  one), 2. where you're from (a list in `data/application.gd`), 3. pick one of 3 looks with
+  a slowly turning 3D preview of your rider. Submit, "Reviewing..." with a spinner for 2 s,
+  then "Congrats, <name>, you're hired!" and "Start riding" opens Palm Grove.
+- The 3 looks (`scripts/rider_look.gd`), all ride the same: Classic (red cap, grey-blue
+  hoodie, backpack), Sporty (white helmet with stickers, bright sports top), Chill (bucket
+  hat, sunglasses, pink shirt, shorts).
+- The phone shows "<name> · <country>". Customers say your name.
+- Tutorial (`scripts/tutorial.gd`): right after you're hired the boss sends an easy pizza
+  to villa 4 (TUTORIAL_ORDER in `data/palm_grove.gd`). A TIP box at the bottom says what to
+  do at each step (accept with E, follow the mini-map, W/A/S/D, pick up with E, watch the
+  meters, slow down for bumps, Shift to sprint, drop off with E), and at the end points out
+  that crash insurance is on and I switches it. While the tutorial runs no other orders come
+  and the shift clock waits. It only runs once.
+- Pressing F6 on Palm Grove skips the application (handy for testing): no name, no tutorial.
+- The smoke test fills in the application, checks all 3 looks, and walks through the tutorial.
+  It now always tests Palm Grove (not the main scene, which is the application).
+
+### Session 15
+- The game now opens on the main menu (`scenes/main_menu.tscn`, `scripts/main_menu.gd`):
+  the title, a slowly turning bike in your look, and Play (Continue once you're hired),
+  New game (wipes the save, back to the application), Settings and Quit.
+- Play goes to the application the first time, and straight to Palm Grove after that.
+- Saving (`scripts/save_game.gd`): money, delivery history (so your rating), XP, your name,
+  country and look, the insurance setting, and whether you're hired / did the tutorial /
+  the boss paid a crash. GameState saves by itself after every delivery, crash, shift end
+  and insurance switch, and when you close the window. It loads when the game starts.
+  The save is `user://save.json` (on a Mac: ~/Library/Application Support/Godot/app_userdata/Five Stars Habibi/).
+- Settings (`scripts/settings.gd`, `scripts/settings_panel.gd`): Fullscreen for now, kept in
+  `user://settings.cfg`, so New game doesn't reset them.
+- The pause menu (Esc) now has Resume, Settings, Main menu (saves first) and Quit game (saves
+  first), and lists all the keys.
+- Fixed: the first shift was called "Shift 2".
+- The smoke test uses its own save file (never the real one), checks save and load keep
+  everything, the menus' buttons, and New game; then deletes its save.
+
+### Session 16
+- All sounds and the music are made by `tools/make_sounds.py` (plain Python, no installs):
+  nothing downloaded or copied, so they're ours and free (CC0, in CREDITS.md). The files
+  are in `assets/audio/`. Run `python3 tools/make_sounds.py` to remake them after a change.
+- Music (`scripts/music.gd`, an autoload called Music, so it keeps playing from the menu
+  into the game): a chill 53-second loop in maqam Hijaz with an oud-like plucked tune, a
+  soft darbuka maqsum rhythm and a low drone.
+- Sound effects (`scripts/sounds.gd`, the Sounds node in each map): phone ping for a new
+  order, bike bell when you pick up, cash register when you deliver, a crash, a thump on
+  speed bumps, and tyre noise that gets louder and higher the faster you ride.
+- Ambience: birds and distant traffic, always on in the map.
+- Settings now has 4 volume sliders: Volume (everything), Music, Effects and Ambience.
+  They're saved in `user://settings.cfg`. Each goes to its own audio bus.
+- Fixed: the Settings box in the pause menu sat in the top-left corner; it's centred now.
+- In the headless smoke test nothing actually plays (no speakers), but it checks every file
+  loads, the buses and sliders work, and the right sound is picked for each event.
+- Louis: listen and say if anything is too loud, too quiet or annoying. All of it is easy
+  to change in `tools/make_sounds.py` or with the sliders.
+
+### Session 17
+- A play-test bot (`tests/playtest_bot.gd`) rides a whole shift in Palm Grove with the
+  real physics and keys: it plans a route along the roads, goes round the roundabout,
+  slows for corners and speed bumps, accepts every order, picks up and delivers, and
+  prints each delivery and the shift summary. Command in CLAUDE.md. "-- careless" makes it
+  ride flat out.
+- What the first run showed (before tuning): even on-time rides ended with a red time bar
+  (the bar was empty AT the target time), ice cream melted to orange on a normal ride, and
+  crawling over bumps still hurt bubble tea. A careful rider averaged 4.0 stars and never
+  got a tip.
+- Tuning (all in `game_config.gd`, PRD updated):
+  - Time bar: 60% at the target time, empty at twice the target (TIME_METER_AT_TARGET,
+    TIME_EMPTY_AT). On time = green.
+  - Freshness drain: pizza 0.25, bubble tea 0.4, ice cream 0.55 % a second (was 0.35/0.6/1.0).
+  - Speed bumps: slow (10 km/h or less) costs only a quarter of the damage.
+  - Hard braking only counts from 22 km/h (was 18, so normal braking counted).
+- After tuning: a careful shift gets about 12 deliveries, 5.0 stars, ~25 Dh tips and
+  ~120 Dh. A careless shift gets fast 5-star jobs at first, then a big crash ends the shift
+  early with about half the money. The longest rides take about a minute.
+- Louis: play a few shifts. If it feels too easy, lower TIME_METER_AT_TARGET or raise the
+  freshness drain; if too hard, the other way. Write down what felt off for the next
+  tuning session.
+
 ## Known bugs
-- None found yet. Not tested on a real screen yet.
-- The review fixes and the smoke test were written without Godot available, so the
-  first run on the Mac is the real check. If the smoke test prints an error, paste it in.
+- None found by the checks. Not play-tested by Louis yet.
+- The bot once got stuck nose-to-nose with a kid on a scooter (the kid waits for the bike,
+  the bot kept pushing). A person just steers round, but say if it happens to you.
+- Palm Grove rides take up to about a minute, not the 2 to 3 minutes the PRD hoped for
+  (see "Still open" in PRD.md).
+- Godot is in the Downloads folder, not Applications, so the commands in CLAUDE.md
+  (/Applications/Godot.app/...) don't find it. Drag Godot.app into Applications to fix it.
 
 - New scripts with class_name need Godot to refresh its class list once. Opening the
   project in the Godot editor does it. If F5 shows "Could not find type Order" or similar,
   close and reopen the project in the editor.
 
 ## Next
-- Louis tests Sessions 1 to 6 and the review fixes with the checklists in BUILD_PLAN.md.
-- First check in Session 5: the Arabic on the welcome sign looks joined up and right-to-left.
-- Then Session 7: Mini-map and addresses (from Louis's terminal, with Godot running).
+- Louis play-tests everything with the "Done when" checklists in BUILD_PLAN.md
+  (start the game with F5: main menu, application, tutorial, then shifts).
+- Merge the branches into main (pull requests on GitHub).
+- Session 17 again with Louis's own notes, then a friend plays for 10 minutes.
+- After that: export for itch.io and write the Tier 2 sessions (see "After Tier 1" in BUILD_PLAN.md).
 - Open question for Louis: rides in Palm Grove take up to about a minute, the PRD hoped
   for 2 to 3 minutes. See "Still open" in PRD.md.

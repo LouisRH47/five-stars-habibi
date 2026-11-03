@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scripts/phone.gd" id="1_phone"]
+[ext_resource type="Script" path="res://scripts/star_row.gd" id="2_stars"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_phone"]
 bg_color = Color(0.05882353, 0.1254902, 0.14901961, 0.9)
@@ -56,6 +57,44 @@ theme_override_font_sizes/font_size = 22
 theme_override_colors/font_color = Color(1, 0.9529412, 0.87058824, 1)
 text = "Dh 0"
 
+[node name="Rider" type="Label" parent="Panel/Margin/Rows"]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.79, 0.89, 0.92, 1)
+text = "Rider"
+text_overrun_behavior = 3
+
+[node name="Profile" type="HBoxContainer" parent="Panel/Margin/Rows"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Stars" type="Control" parent="Panel/Margin/Rows/Profile"]
+custom_minimum_size = Vector2(102, 18)
+layout_mode = 2
+size_flags_vertical = 4
+script = ExtResource("2_stars")
+star_size = 18.0
+
+[node name="Rating" type="Label" parent="Panel/Margin/Rows/Profile"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(1, 0.9529412, 0.87058824, 1)
+text = "New"
+
+[node name="Level" type="Label" parent="Panel/Margin/Rows/Profile"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.49803922, 0.827451, 0.8784314, 1)
+text = "Lv 1"
+
+[node name="XP" type="ProgressBar" parent="Panel/Margin/Rows"]
+custom_minimum_size = Vector2(0, 5)
+layout_mode = 2
+max_value = 50.0
+show_percentage = false
+
 [node name="Line" type="ColorRect" parent="Panel/Margin/Rows" unique_id=1507245108]
 custom_minimum_size = Vector2(0, 2)
 layout_mode = 2
@@ -67,6 +106,14 @@ theme_override_font_sizes/font_size = 22
 theme_override_colors/font_color = Color(1, 0.9529412, 0.87058824, 1)
 text = "Waiting for orders..."
 autowrap_mode = 3
+
+[node name="Result" type="Control" parent="Panel/Margin/Rows"]
+visible = false
+custom_minimum_size = Vector2(182, 32)
+layout_mode = 2
+size_flags_horizontal = 0
+script = ExtResource("2_stars")
+star_size = 32.0
 
 [node name="Detail" type="Label" parent="Panel/Margin/Rows" unique_id=1507245110]
 visible = false
@@ -80,3 +127,10 @@ visible = false
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(1, 1, 1, 1)
+
+[node name="Insurance" type="Label" parent="Panel/Margin/Rows"]
+layout_mode = 2
+size_flags_vertical = 10
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.49803922, 0.62745098, 0.65882355, 1)
+text = "Insurance ON  (I to switch)"

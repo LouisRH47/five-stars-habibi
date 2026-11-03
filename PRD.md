@@ -106,7 +106,7 @@ Every delivery is a race against three meters: time, heat and damage. How well y
 **How the meters go from green to red**
 
 - Each meter is a bar from 100% (green) down to 0% (red). Above 60% is green, 30% to 60% is orange, below 30% is red.
-- **Time:** the target time is the straight-line distance from restaurant to villa at a normal riding pace (20 km/h), times 1.5 for corners, plus 20 seconds. The bar is full at pickup and empty at the target time. After that it stays empty, the order isn't cancelled.
+- **Time:** the target time is the straight-line distance from restaurant to villa at a normal riding pace (20 km/h), times 1.5 for corners, plus 20 seconds. The bar is full at pickup, at 60% (the edge of green) when you reach the target time, and empty at twice the target time. So on time = green, a bit late = orange, very late = red. Once empty it stays empty, the order isn't cancelled.
 - **Freshness:** drains at a fixed rate per food type (pizza slow, bubble tea medium, ice cream fast). Numbers live in game_config.gd.
 - **Damage:** starts full. Every bump, speed bump, kerb, hard brake or crash takes off a chunk. Bubble tea loses the most per bump.
 - A meter at 0% never cancels the order. You can always deliver, you just get fewer stars.
@@ -169,6 +169,7 @@ Keys are placeholders until the controls are tested. Controller support comes la
 | Space | Handbrake |
 | E | Accept order, pick up, drop off, talk |
 | Q | Skip order |
+| I | Switch crash insurance on or off (shown on the phone) |
 | Esc | Pause (and resume) |
 | R | Put the bike back on the road if you get stuck |
 
@@ -380,6 +381,17 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 2 Nov 2026 | Build order changed: delivery loop on the test area before the Palm Grove map. Villas placed from a data list |
 | 2 Nov 2026 | Signs use Noto Sans Arabic (SIL Open Font License, credited in CREDITS.md) for both lines. Brand names are written out in Arabic letters (برين فريز جيلاتو), plain words are translated (واحة البوبا, شارع الواحة) |
 | 2 Nov 2026 | Palm Grove gets a mosque and a park north of Ghaf Street, the Al Sarab Mini Market by the gate, palm trees, parked cars and 10 speed bumps. Speed bumps are a trigger, not a solid block: the bike hops, slows if fast, and counts each bump for the Session 8 damage meter |
+| 2 Nov 2026 | Mini-map turns with the rider (heading up), shows villa numbers, an orange pin with the next stop's number and distance, pinned to the edge when off the map. About 1 in 3 orders has a customer note |
+| 2 Nov 2026 | Meters: freshness drains 0.35 (pizza), 0.6 (bubble tea), 1.0 (ice cream) % per second. Damage per knock depends on the food; bubble tea loses 14% on a fast speed bump. Hard braking = braking above 18 km/h |
+| 2 Nov 2026 | 5 cats wander slowly in gaps between villas, 3 kids on scooters ride up and down street edges. Both are solid; bumping one costs 10 to 15% food damage and they get scared for 1.5 s. Kids wait if the bike blocks them |
+| 2 Nov 2026 | XP per delivery = 10 + 2 per star (5 stars = 20 XP). Rider Level 1 to 2 needs 50 XP, each next level needs 25 more. Boring orders never tip. Better orders for high ratings not built yet |
+| 2 Nov 2026 | Customers: 5 outfits (incl. kandura and abaya), 20 lines in data/customer_lines.gd with {name} for the rider's name. 15% of orders are 'leave it at the door': nobody comes out, a bag is left on the doorstep. Other notes on 25% of orders |
+| 2 Nov 2026 | Crashes: a fairly head-on hit at 10 km/h or more is a small crash (fall off 2 s, -30% damage); above 20 km/h into a car, wall or pole is a big crash. Cats and kids only cause small crashes. A cancelled order counts as 0 stars in the rating. Wallet can go below 0. I toggles insurance |
+| 2 Nov 2026 | Shifts: 10 real minutes, clock 08:00 to 18:00, orange in the last minute. An order on the phone when the clock runs out disappears without counting as a skip. A big crash ends the shift after the clinic |
+| 2 Nov 2026 | Application: 43 countries + 'Somewhere else'; a 3D preview shows the picked look. Tutorial order: Pizza to villa 4. During the tutorial no other orders come and the shift clock waits |
+| 2 Nov 2026 | Saving: one JSON save (user://save.json) that saves itself after every change and when you close the game. New game wipes it. Settings (fullscreen, later volume) live in their own file so New game keeps them |
+| 2 Nov 2026 | All music and sounds are made by our own script (tools/make_sounds.py), so they're CC0 and need no downloads. Music: a 53 s loop in maqam Hijaz (oud-like pluck, darbuka maqsum, drone). Volume sliders: Volume, Music, Effects, Ambience |
+| 2 Nov 2026 | Session 17 tuning from a play-test bot that rides whole shifts: the time bar now reaches 60% at the target time and 0% at twice the target (it used to be empty at the target, so even on-time rides were red). Freshness drain lowered to 0.25 / 0.4 / 0.55 % a second (pizza / bubble tea / ice cream). Speed bumps only hurt the food much above 10 km/h. Hard braking starts at 22 km/h. A careful shift now gets about 12 deliveries, 5 stars and 120 Dh; a careless one crashes and earns about half |
 | 2 Nov 2026 | Palm Grove layout: 300 m square with a wall and a closed gate in the south, Palm Grove Avenue from the gate to a central roundabout, three cross streets, 36 villas, restaurant strip just inside the gate |
 
 ## Sources

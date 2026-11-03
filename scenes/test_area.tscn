@@ -14,6 +14,14 @@
 
 [ext_resource type="PackedScene" path="res://ui/phone.tscn" id="7_phone"]
 [ext_resource type="Script" path="res://data/test_area_places.gd" id="8_places_data"]
+[ext_resource type="PackedScene" path="res://ui/minimap.tscn" id="12_minimap"]
+[ext_resource type="Script" path="res://scripts/meters.gd" id="13_meters"]
+[ext_resource type="PackedScene" path="res://ui/meters_panel.tscn" id="14_meters_panel"]
+[ext_resource type="Script" path="res://scripts/customer_spawner.gd" id="16_customers"]
+[ext_resource type="Script" path="res://scripts/clinic_screen.gd" id="17_clinic"]
+[ext_resource type="Script" path="res://scripts/shift_screen.gd" id="18_shift_screen"]
+[ext_resource type="Script" path="res://scripts/shift_manager.gd" id="19_shift"]
+[ext_resource type="Script" path="res://scripts/sounds.gd" id="21_sounds"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_jyhfs"]
 sky_top_color = Color(0.30980393, 0.6627451, 0.8392157, 1)
@@ -270,3 +278,36 @@ place_builder = NodePath("../PlaceBuilder")
 
 [node name="Phone" parent="." unique_id=1507245003 node_paths=PackedStringArray("delivery_manager") instance=ExtResource("7_phone")]
 delivery_manager = NodePath("../DeliveryManager")
+
+[node name="Minimap" parent="." node_paths=PackedStringArray("bike", "delivery_manager", "place_builder") instance=ExtResource("12_minimap")]
+bike = NodePath("../Bike")
+delivery_manager = NodePath("../DeliveryManager")
+place_builder = NodePath("../PlaceBuilder")
+
+[node name="Meters" type="Node" parent="." node_paths=PackedStringArray("bike", "delivery_manager")]
+script = ExtResource("13_meters")
+bike = NodePath("../Bike")
+delivery_manager = NodePath("../DeliveryManager")
+
+[node name="MetersPanel" parent="." instance=ExtResource("14_meters_panel")]
+
+[node name="CustomerSpawner" type="Node3D" parent="." node_paths=PackedStringArray("place_builder")]
+script = ExtResource("16_customers")
+place_builder = NodePath("../PlaceBuilder")
+
+[node name="ClinicScreen" type="CanvasLayer" parent="." node_paths=PackedStringArray("bike")]
+script = ExtResource("17_clinic")
+bike = NodePath("../Bike")
+
+[node name="ShiftScreen" type="CanvasLayer" parent="."]
+script = ExtResource("18_shift_screen")
+
+[node name="ShiftManager" type="Node" parent="." node_paths=PackedStringArray("bike", "shift_screen", "clinic")]
+script = ExtResource("19_shift")
+bike = NodePath("../Bike")
+shift_screen = NodePath("../ShiftScreen")
+clinic = NodePath("../ClinicScreen")
+
+[node name="Sounds" type="Node" parent="." node_paths=PackedStringArray("bike")]
+script = ExtResource("21_sounds")
+bike = NodePath("../Bike")

@@ -145,7 +145,7 @@ Done when:
 - [ ] Palm Grove feels like a real community
 - [ ] Speed bumps give a noticeable bump
 
-### Session 7: Mini-map and addresses
+### Session 7: Mini-map and addresses (built, needs testing)
 
 ```text
 Session 7. Add a mini-map in the bottom-left corner showing the roads, the
@@ -159,7 +159,7 @@ Done when:
 - [ ] The mini-map turns with you and shows the next stop
 - [ ] You can find any villa using just the mini-map and house numbers
 
-### Session 8: The three meters
+### Session 8: The three meters (built, needs testing)
 
 ```text
 Session 8. Add the time, freshness and damage meters from PRD.md (Delivery
@@ -174,7 +174,7 @@ Done when:
 - [ ] All three meters show and change while riding
 - [ ] Ice cream melts faster than pizza, and bubble tea hates speed bumps
 
-### Session 9: Moving obstacles
+### Session 9: Moving obstacles (built, needs testing)
 
 ```text
 Session 9. Add a few cats that wander slowly and kids on scooters riding
@@ -188,7 +188,7 @@ Done when:
 - [ ] Cats and kids move around and you can bump into them
 - [ ] Bumping them hurts the damage meter
 
-### Session 10: Stars, money, tips and XP
+### Session 10: Stars, money, tips and XP (built, needs testing)
 
 ```text
 Session 10. At the end of each delivery, give 1 to 5 stars using the star
@@ -204,7 +204,7 @@ Done when:
 - [ ] Tips sometimes appear on 5-star jobs, never on lower ones
 - [ ] Wallet, rating and XP update correctly
 
-### Session 11: Customers at the door
+### Session 11: Customers at the door (built, needs testing)
 
 ```text
 Session 11. When you deliver, a simple customer character comes out of the
@@ -218,7 +218,7 @@ Done when:
 - [ ] Customers come out and say different lines
 - [ ] Leave-at-the-door orders work
 
-### Session 12: Crashes and insurance
+### Session 12: Crashes and insurance (built, needs testing)
 
 ```text
 Session 12. Add crashes from PRD.md (Crashes, bills and insurance).
@@ -235,7 +235,7 @@ Done when:
 - [ ] Small and big crashes both happen at the right speeds
 - [ ] Bills are right with and without insurance, and the first one is free
 
-### Session 13: Shifts
+### Session 13: Shifts (built, needs testing)
 
 ```text
 Session 13. Add shifts: one shift is about 10 real minutes (one in-game day,
@@ -248,7 +248,7 @@ Done when:
 
 - [ ] The shift ends on time and the summary numbers are correct
 
-### Session 14: Application and characters
+### Session 14: Application and characters (built, needs testing)
 
 ```text
 Session 14. Add the start of the game from PRD.md (Start of the game):
@@ -264,7 +264,7 @@ Done when:
 - [ ] Customers use your name
 - [ ] The tutorial order explains the controls
 
-### Session 15: Menu and saving
+### Session 15: Menu and saving (built, needs testing)
 
 ```text
 Session 15. Add a main menu (Play, Settings, Quit) and a proper pause menu.
@@ -276,7 +276,7 @@ Done when:
 
 - [ ] Closing and reopening the game keeps your progress
 
-### Session 16: Sound and music
+### Session 16: Sound and music (built, needs testing)
 
 ```text
 Session 16. Add simple sound effects (bike, bell, crash, cash), chill
@@ -288,7 +288,7 @@ Done when:
 
 - [ ] The sounds and music work and aren't annoying
 
-### Session 17: Play-test and tuning
+### Session 17: Play-test and tuning (first pass done with the play-test bot; needs Louis's own play-test)
 
 ```text
 Session 17. I'm going to play-test. Help me tune the numbers in

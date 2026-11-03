@@ -28,8 +28,11 @@ Look and feel: the mockup linked at the top of PRD.md.
   Then run the smoke test, which rides the bike and checks it works:
   /Applications/Godot.app/Contents/MacOS/Godot --path . --headless -s tests/smoke_test.gd
   It must print RESULT: PASS. When a session adds a new system, add a check for it.
-  The smoke test runs on the main scene (Palm Grove). To also check the old test area:
+  The smoke test runs on Palm Grove (the game itself opens on the main menu). To also check the old test area:
   /Applications/Godot.app/Contents/MacOS/Godot --path . --headless -s tests/smoke_test.gd -- res://scenes/test_area.tscn
+  To see how a whole shift plays (for tuning), run the play-test bot. It rides a full
+  shift and prints every delivery and the summary (add "-- careless" to ride flat out):
+  /Applications/Godot.app/Contents/MacOS/Godot --path . --headless --fixed-fps 60 -s tests/playtest_bot.gd
 - Shared game data (money, rating, current order) lives in one autoload,
   scripts/game_state.gd (from Session 3). Don't store it anywhere else.
 - Build the map from a data list (data/) plus a builder script, not by hand-editing

@@ -28,6 +28,8 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if GameState.tutorial_running:
+		return  # the tutorial hands out its own order, and it never runs out
 	if GameState.stage == GameState.Stage.NONE:
 		_wait_left -= delta
 		if _wait_left <= 0.0:
@@ -54,8 +56,8 @@ func _unhandled_input(event: InputEvent) -> void:
 ## Makes a new order and puts it on the phone right away. Returns null if you
 ## already have an order. The timer calls this, and so does the smoke test.
 func offer_now() -> Order:
-	if GameState.stage != GameState.Stage.NONE or place_builder == null:
-		return null
+	if GameState.stage != GameState.Stage.NONE or place_builder == null or not GameState.shift_open():
+		return null  # also no new orders once the shift clock has run out
 	var order := make_order()
 	GameState.offer_order(order)
 	return order
@@ -63,11 +65,18 @@ func offer_now() -> Order:
 
 ## Picks a random restaurant and villa. If you skip a lot (acceptance rate under
 ## 70%), you get a boring order instead: a short ride for the lowest pay (PRD).
-func make_order() -> Order:
+## restaurant_id and villa_number pick an exact order (the tutorial uses this).
+func make_order(restaurant_id := "", villa_number := 0) -> Order:
 	var restaurant: Dictionary = place_builder.restaurants.pick_random()
+	for place in place_builder.restaurants:
+		if place["id"] == restaurant_id:
+			restaurant = place
 	var from := place_builder.restaurant_door(restaurant["id"])
-	var boring := GameState.acceptance_rate() < GameConfig.ORDER_LOW_ACCEPTANCE
+	var boring := GameState.acceptance_rate() < GameConfig.ORDER_LOW_ACCEPTANCE and villa_number == 0
 	var villa: Dictionary = place_builder.villas.pick_random()
+	for place in place_builder.villas:
+		if place["number"] == villa_number:
+			villa = place
 	if boring:
 		villa = _short_ride_villa(from)
 	var to := place_builder.villa_door(villa["number"])
@@ -77,7 +86,14 @@ func make_order() -> Order:
 	order.restaurant_name = restaurant["name"]
 	order.food = restaurant["food"]
 	order.villa_number = villa["number"]
+	order.boring = boring
 	order.pay = GameConfig.ORDER_PAY_MIN if boring else _pay_for(from.distance_to(to))
+	# Some customers add a short note, like "Leave it at the door, please".
+	if randf() < GameConfig.ORDER_LEAVE_AT_DOOR_CHANCE:
+		order.leave_at_door = true
+		order.note = GameConfig.ORDER_LEAVE_AT_DOOR_NOTE
+	elif randf() < GameConfig.ORDER_NOTE_CHANCE:
+		order.note = GameConfig.ORDER_NOTES.pick_random()
 	return order
 
 
