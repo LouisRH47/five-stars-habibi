@@ -401,8 +401,7 @@ Done when:
 - [ ] The 3 look cards each show a little 3D rider, and the picked one is highlighted
 - [ ] Play, Continue, New game, Settings and Quit still work, and saving still works
 
-### Session 22: The Delivered card
-
+### Session 22: The Delivered card (built, needs testing)
 ```text
 Session 22. Read PRD.md (Screens: Delivered card) and look at the mockup's
 "Delivery complete" artboard. After every delivery: pause the game (and the

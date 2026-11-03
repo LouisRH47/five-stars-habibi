@@ -413,6 +413,23 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - Saving, the 43 countries, the tutorial and New game work as before.
 - The smoke test checks Play opens the application on the phone and there's a 3D card per look.
 
+### Session 22
+- The Delivered card (`scripts/delivered_card.gd`) after every delivery, like the mockup's
+  "Delivery complete":
+  - The game pauses (and the shift clock with it). The other screen panels hide.
+  - The camera cuts to a 3D shot from the side of the door: you and the customer (or the
+    bag on the doorstep for leave-at-the-door orders), with the customer's line in a white
+    speech bubble. The customer waits at the door until the card closes.
+  - On the right a white card: "Delivered!" (or "Left at the door!"), the stars,
+    "Ice Cream to Villa 12 · 0:58" (food, villa, ride time), three tiles Time / Freshness /
+    Damage, each with a word and a colour (green, orange or red: "On time", "Okay",
+    "Smashed"...), then Delivery pay, 5-star tip (only if you got one), Insurance, a bold
+    "You earned" total and the XP.
+  - "Next order · E" (the button or E) closes it, the camera goes back and the game carries on.
+- If that was the last delivery of the shift, the shift summary comes after the card.
+- The numbers are the real ones from GameState. The smoke test checks the card shows, its
+  total matches the money you got, the camera cuts to the door, and E closes it.
+
 ## Known bugs
 - None found by the checks. Not play-tested by Louis yet.
 - The bot once got stuck nose-to-nose with a kid on a scooter (the kid waits for the bike,

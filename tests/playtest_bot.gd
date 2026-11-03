@@ -71,6 +71,10 @@ func _physics_process(delta: float) -> bool:
 		print("Bot gave up: the shift never ended")
 		_on_shift_ended(_gs.shift_summary())
 		return false
+	var card := _main.get_node_or_null("DeliveredCard")
+	if card != null and card.showing:
+		card.close()  # Next order · E
+		return false
 	var clinic := _main.get_node("ClinicScreen")
 	if clinic.showing:
 		_let_go()

@@ -17,6 +17,8 @@ const BUBBLE_HEIGHT := 2.7
 
 ## What they said (the smoke test checks it).
 var line := ""
+## True while the Delivered card is up: the customer stays at the door (Session 22).
+var held := false
 
 var _arm: Node3D
 var _bubble: Node3D
@@ -30,21 +32,34 @@ func setup(line_text: String) -> void:
 	_bubble = _make_bubble(line_text)
 	_bubble.visible = false
 	add_child(_bubble)
-	var out := position + transform.basis.z * GameConfig.CUSTOMER_STEP_OUT
+	# Keeps moving while the game is paused for the Delivered card.
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	_act.call_deferred()
+
+
+## Step out, wave and talk; stay while the Delivered card is up; then go back inside.
+func _act() -> void:
 	var inside := position
+	var out := position + transform.basis.z * GameConfig.CUSTOMER_STEP_OUT
 	var walk := create_tween()
 	walk.tween_property(self, "position", out, GameConfig.CUSTOMER_WALK_TIME)
-	walk.tween_callback(func(): _bubble.visible = true)
-	walk.tween_property(_arm, "rotation:x", deg_to_rad(-150.0), 0.25)  # wave hello
+	await walk.finished
+	_bubble.visible = true
+	var wave := create_tween()
+	wave.tween_property(_arm, "rotation:x", deg_to_rad(-150.0), 0.25)  # wave hello
 	for i in 3:
-		walk.tween_property(_arm, "rotation:z", deg_to_rad(25.0), 0.2)
-		walk.tween_property(_arm, "rotation:z", deg_to_rad(-25.0), 0.2)
-	walk.tween_property(_arm, "rotation", Vector3.ZERO, 0.25)
-	walk.tween_interval(maxf(GameConfig.CUSTOMER_TALK_TIME - 1.7, 0.0))
-	walk.tween_callback(func(): _bubble.visible = false)
-	walk.tween_property(self, "rotation:y", rotation.y + PI, 0.3)  # turn round
-	walk.tween_property(self, "position", inside, GameConfig.CUSTOMER_WALK_TIME)
-	walk.tween_callback(queue_free)
+		wave.tween_property(_arm, "rotation:z", deg_to_rad(25.0), 0.2)
+		wave.tween_property(_arm, "rotation:z", deg_to_rad(-25.0), 0.2)
+	wave.tween_property(_arm, "rotation", Vector3.ZERO, 0.25)
+	await wave.finished
+	await get_tree().create_timer(maxf(GameConfig.CUSTOMER_TALK_TIME - 1.7, 0.0)).timeout
+	while held:
+		await get_tree().process_frame
+	_bubble.visible = false
+	var back := create_tween()
+	back.tween_property(self, "rotation:y", rotation.y + PI, 0.3)  # turn round
+	back.tween_property(self, "position", inside, GameConfig.CUSTOMER_WALK_TIME)
+	back.tween_callback(queue_free)
 
 
 func _build_model(outfit: Dictionary, skin: Color) -> void:

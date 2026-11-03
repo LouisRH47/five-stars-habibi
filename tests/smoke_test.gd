@@ -184,6 +184,7 @@ func _physics_process(_delta: float) -> bool:
 			if _frame >= STEPS.hold:
 				Input.action_release("interact")
 				_check("holding E for 1.5 s at the villa delivers", _game_state.stage_name() == "NONE", "")
+				_check_delivered_card()
 				if _on_foot != null:
 					_on_foot.get_on()
 				_check_customer()
@@ -211,6 +212,7 @@ func _physics_process(_delta: float) -> bool:
 			if _frame >= STEPS.hold:
 				Input.action_release("interact")
 				_check("on foot, holding E at the door delivers", _game_state.stage_name() == "NONE", "")
+				_close_card()
 				_face(_on_foot.walker, _bike.global_position)
 				Input.action_press("move_forward")
 				_frame = 0
@@ -659,6 +661,7 @@ func _check_tutorial() -> void:
 	tutorial._process(0.0)
 	_check("tip: take it to villa 4, watch the meters", "villa 4" in tutorial.tip and "meters" in tutorial.tip, "")
 	gs.deliver()
+	_close_card()
 	_check("after the first delivery: a tip that insurance is on", "insurance is ON" in tutorial.tip, tutorial.tip)
 	tutorial.finish()
 	_check("the tutorial finishes and normal orders start", gs.tutorial_done and not gs.tutorial_running, "")
@@ -709,6 +712,7 @@ func _check_sound() -> void:
 	gs.pick_up()
 	_check("picking up rings the bike bell", sounds.last_played == "bell", sounds.last_played)
 	gs.deliver()
+	_close_card()
 	_check("delivering goes ka-ching", sounds.last_played == "cash", sounds.last_played)
 	_bike.went_over_bump.emit(0.5)
 	_check("a speed bump goes thump", sounds.last_played == "bump", sounds.last_played)
@@ -791,6 +795,8 @@ func _check_shift_carrying() -> void:
 	_check("carrying an order: you can still finish it", not screen.showing and gs.stage_name() == "TO_VILLA", "")
 	_check("no new orders once the clock is out", _delivery.offer_now() == null, "")
 	gs.deliver()
+	_check("the Delivered card shows first", _main.get_node("DeliveredCard").showing and not screen.showing, "")
+	_close_card()
 	_check("the shift ends right after the last delivery", screen.showing and paused, "")
 	var summary: Dictionary = screen.last_summary
 	var want: Dictionary = gs.shift_summary()
@@ -813,6 +819,38 @@ func _check_shift_empty() -> void:
 	screen._next_shift()
 	_main.get_node("ShiftManager").shift_length = GameConfig.SHIFT_LENGTH
 	gs.reset()
+
+
+## Session 22: after the delivery the Delivered card is up, the game is paused, its numbers
+## are the real ones, the camera shows the door, and E closes it.
+func _check_delivered_card() -> void:
+	var card := _main.get_node_or_null("DeliveredCard")
+	if card == null:
+		_check("DeliveredCard node exists in the scene", false, "")
+		return
+	var earned: int = _game_state.money - _money_before
+	_check("the Delivered card shows after a delivery", card.showing and paused, "")
+	_check("the card's total is the money you got", card.shown.get("earned") == earned, "%s Dh" % card.shown.get("earned"))
+	_check("the card shows the stars and the villa", card.shown.get("stars") == _game_state.last_result["stars"]
+			and card.shown.get("villa") == _order.villa_number, "")
+	_check("the camera cuts to the door", get_root_camera() == card._camera, "")
+	var key := InputEventAction.new()
+	key.action = "interact"
+	key.pressed = true
+	card._unhandled_input(key)
+	_check("E closes the card and the game carries on", not card.showing and not paused
+			and get_root_camera() != card._camera, "")
+
+
+func get_root_camera() -> Camera3D:
+	return root.get_camera_3d()
+
+
+## Closes the Delivered card if it's up (the checks that deliver many orders at once).
+func _close_card() -> void:
+	var card := _main.get_node_or_null("DeliveredCard")
+	if card != null and card.showing:
+		card.close()
 
 
 ## Session 19: F gets you off the bike only when it's nearly stopped, and you can only pick up
@@ -932,6 +970,7 @@ func _quick_delivery(meters: float, boring: bool) -> Dictionary:
 	gs.pick_up()
 	gs.set_meters(meters, meters, meters)
 	gs.deliver()
+	_close_card()
 	return gs.last_result
 
 
