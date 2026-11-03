@@ -343,3 +343,36 @@ const SCOOTER_KIDS := [
 	{"from": Vector3(20, 0, 123.5), "to": Vector3(150, 0, 123.5), "shirt": Color(0.9, 0.3, 0.5, 1)},
 	{"from": Vector3(-90, 0, 1.5), "to": Vector3(90, 0, 1.5), "shirt": Color(0.3, 0.75, 0.35, 1)},
 ]
+
+# --- Random events (Session 33, run by scripts/event_manager.gd) ---
+
+## Places where road works may close a stretch of road. centre: the middle of the closed
+## stretch (x, z). along: which way the road runs ("x" = west-east, "z" = north-south).
+## width: the road's width. length: how long the closed stretch is.
+## The smoke test closes each one in turn and checks every home and shop door can still
+## be reached. Only add a new one if the smoke test still passes.
+const ROAD_WORKS := [
+	{"name": "C1 Lane", "centre": Vector2(-89, -90), "along": "x", "width": 4.0, "length": 14.0},
+	{"name": "C1 Lane", "centre": Vector2(-111, -106), "along": "z", "width": 4.0, "length": 10.0},
+	{"name": "C2 Lane", "centre": Vector2(-9, -54), "along": "x", "width": 4.0, "length": 14.0},
+	{"name": "C2 Lane", "centre": Vector2(-31, -106), "along": "z", "width": 4.0, "length": 10.0},
+	{"name": "C3 Lane", "centre": Vector2(71, -90), "along": "x", "width": 4.0, "length": 14.0},
+	{"name": "C3 Lane", "centre": Vector2(115, -106), "along": "z", "width": 4.0, "length": 10.0},
+	{"name": "C4 Lane", "centre": Vector2(-67, 90), "along": "x", "width": 4.0, "length": 14.0},
+	{"name": "C4 Lane", "centre": Vector2(-111, 106), "along": "z", "width": 4.0, "length": 10.0},
+	{"name": "C5 Lane", "centre": Vector2(13, 54), "along": "x", "width": 4.0, "length": 14.0},
+	{"name": "C5 Lane", "centre": Vector2(35, 106), "along": "z", "width": 4.0, "length": 10.0},
+	{"name": "the Ring Road (north)", "centre": Vector2(140, -126), "along": "x", "width": 8.0, "length": 12.0},
+	{"name": "the Ring Road (east)", "centre": Vector2(176, -90), "along": "z", "width": 8.0, "length": 12.0},
+	{"name": "the Ring Road (south)", "centre": Vector2(-140, 126), "along": "x", "width": 8.0, "length": 12.0},
+	{"name": "the Ring Road (west)", "centre": Vector2(-176, -100), "along": "z", "width": 8.0, "length": 12.0},
+]
+
+## Where a groom leads horses across a road or path, near the stables. The line of horses
+## walks from "from" to "to" and goes out of sight there. name: what the phone says.
+const HORSE_CROSSINGS := [
+	{"name": "the Ring Road by the stables", "from": Vector3(166, 0, -17), "to": Vector3(190, 0, -17)},
+	{"name": "the Ring Road north of the stables", "from": Vector3(150, 0, -110), "to": Vector3(150, 0, -139)},
+	{"name": "the Ring Road south of the stables", "from": Vector3(162, 0, 110), "to": Vector3(162, 0, 139)},
+	{"name": "the end of the Spine Path", "from": Vector3(127, 0, -14), "to": Vector3(127, 0, 14)},
+]

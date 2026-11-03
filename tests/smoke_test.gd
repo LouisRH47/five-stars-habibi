@@ -91,6 +91,10 @@ func _initialize() -> void:
 	_minimap = _main.get_node_or_null("Minimap")
 	_meters = _main.get_node_or_null("Meters")
 	_on_foot = _main.get_node_or_null("OnFoot")
+	# Session 33: no random events during the test's own rides (_check_session33 starts them).
+	var events := _main.get_node_or_null("EventManager")
+	if events != null:
+		events.enabled = false
 	# The old test area has boxes straight ahead of the start, and riding into one at sprint
 	# speed is a big crash (Session 12). Do the riding checks in a clear lane instead.
 	if scene_path.ends_with("test_area.tscn"):
@@ -1165,11 +1169,16 @@ func _check(label: String, ok: bool, detail: String) -> void:
 
 
 func _finish() -> void:
+	# Session 33's check waits a few physics frames: nothing else runs meanwhile.
+	_phase = "finishing"
+	for action in ACTIONS:
+		Input.action_release(action)
 	_check_sound()
 	_check_session28()
 	_check_session26()
 	_check_session27()
 	_check_session29()
+	await _check_session33()
 	_check_saving()
 	for action in ACTIONS:
 		Input.action_release(action)
@@ -1480,3 +1489,169 @@ func _check_session29() -> void:
 		_check("parked cars use the CC0 car models", car.get_node_or_null("Model") != null, "")
 	var credits := FileAccess.get_file_as_string("res://CREDITS.md")
 	_check("the people and car packs are credited", "Quaternius" in credits and "Car Kit" in credits, "")
+
+
+## Session 33: random events. Each shift plans 1 or 2 (never more), the phone warns
+## before each one, only one runs at a time, road works go up with a cone on the mini-map
+## and come down after 1 to 2 in-game hours, the horses cross and go, riding into a horse
+## is only a small crash, and with each possible road works closure every home and shop
+## door can still be reached. Maps without events: skipped.
+func _check_session33() -> void:
+	var events: Node = _main.get_node_or_null("EventManager") if is_instance_valid(_main) else null
+	if events == null or not events.has_events():
+		print("      no random events on this map, Session 33 checks skipped")
+		return
+	var gs: Node = root.get_node("GameState")
+	var phone: Node = _main.get_node("Phone")
+	var places: Node = _main.get_node("PlaceBuilder")
+	var data: Dictionary = places.data.get_script_constant_map()
+	var keep_bike := _bike.global_transform
+	var keep_clock: float = gs.shift_time_left
+	var keep_out: bool = gs.shift_clock_out
+	var start: Vector3 = data["START"]["position"]
+	_move_bike_to(start)
+	events.clear_all()
+	events.started_this_shift = 0
+	# The plan: 1 or 2 events, different kinds, in order, inside the shift.
+	var plans_ok := true
+	for i in 30:
+		var plan: Array = events.make_plan()
+		plans_ok = plans_ok and plan.size() >= 1 and plan.size() <= GameConfig.EVENTS_PER_SHIFT_MAX
+		if plan.size() == 2:
+			plans_ok = plans_ok and plan[0]["kind"] != plan[1]["kind"] \
+					and plan[1]["hour"] >= plan[0]["hour"] + GameConfig.EVENT_GAP_HOURS
+		for step in plan:
+			plans_ok = plans_ok and step["hour"] >= GameConfig.SHIFT_START_HOUR and step["hour"] < GameConfig.SHIFT_END_HOUR
+	_check("each shift plans 1 or 2 events, one after the other", plans_ok, "")
+	_check("events never start during the smoke test's rides", events.started_this_shift == 0 and not events.busy(), "")
+	# Road works: the phone warns first, then they go up.
+	gs.shift_clock_out = true  # the shift clock stands still while this runs
+	gs.shift_time_left = GameConfig.SHIFT_LENGTH * 0.5  # 13:00
+	var warned: bool = events.warn("road_works", 0)
+	_check("the phone warns before road works start", warned and events.active_kind == ""
+			and "Road works" in phone.event_text() and "Heads up" in phone.event_text(), phone.event_text())
+	_check("only one event at a time", not events.warn("horses", 0), "")
+	var waited := 0.0
+	while events.active_kind == "" and waited < 30.0:
+		events.tick(1.0 / 60.0)
+		waited += 1.0 / 60.0
+	var works: Node3D = events.road_works
+	_check("road works start after the warning", events.active_kind == "road_works" and works != null
+			and waited >= GameConfig.EVENT_WARNING_TIME - 0.1, "after %.1f s" % waited)
+	_check("the road works have a digger, barriers and cones", works != null and works.get_child_count() > 30, "")
+	_check("the mini-map shows a cone at the road works", _minimap.road_works_at.size() == 1, "")
+	_check("the phone says how long the road is closed", "closed till" in phone.event_text(), phone.event_text())
+	var hours: float = events.road_works_end_hour - gs.clock_hours()
+	_check("road works last 1 to 2 in-game hours", hours >= 1.0 and hours <= 2.0, "%.2f hours" % hours)
+	# They come down when the time is up.
+	gs.shift_time_left = GameConfig.SHIFT_LENGTH * (1.0 - (events.road_works_end_hour + 0.01 - GameConfig.SHIFT_START_HOUR)
+			/ (GameConfig.SHIFT_END_HOUR - GameConfig.SHIFT_START_HOUR))
+	events.tick(1.0 / 60.0)
+	_check("road works end after their time", events.active_kind == "" and events.road_works == null
+			and _minimap.road_works_at.is_empty() and phone.event_text() == "", "")
+	# Every place on the road works list leaves every home and shop door reachable.
+	var stuck := []
+	var not_solid := []
+	var started := Time.get_ticks_msec()
+	var list: Array = events.road_works_places()
+	for i in list.size():
+		events.clear_all()
+		events.started_this_shift = 0
+		events.warn("road_works", i)
+		events._warn_left = 0.0
+		events.tick(0.0)
+		if events.road_works == null:
+			stuck.append("%d not built" % i)
+			continue
+		for frame in 2:
+			await physics_frame  # the physics world takes the new barriers in on its next step
+		var grid: RefCounted = GRID.new()
+		grid.build(_bike.get_world_3d(), data["MAP_HALF"], [_bike, _on_foot.walker])
+		var centre: Vector2 = list[i]["centre"]
+		var along := Vector2(1, 0) if list[i]["along"] == "x" else Vector2(0, 1)
+		if grid.is_free(centre + along * list[i]["length"] * 0.5):
+			not_solid.append(i)
+		for villa in places.villas:
+			var door: Vector3 = places.villa_door(villa["number"])
+			if grid.path(Vector2(start.x, start.z), Vector2(door.x, door.z)).is_empty():
+				stuck.append("%s (works %d)" % [villa["address"], i])
+		for shop in places.restaurants:
+			var door: Vector3 = places.restaurant_door(shop["id"])
+			if grid.path(Vector2(start.x, start.z), Vector2(door.x, door.z)).is_empty():
+				stuck.append("%s (works %d)" % [shop["name"], i])
+	events.clear_all()
+	_check("the road works barriers are solid", not_solid.is_empty(), "not solid: %s" % [not_solid])
+	_check("with each of the %d possible road works, every home and shop can still be reached" % list.size(),
+			stuck.is_empty(), "%s (%.1f s)" % [stuck, (Time.get_ticks_msec() - started) / 1000.0])
+	# Horses crossing: warned, then a groom and 2 or 3 horses cross and go.
+	events.started_this_shift = 1
+	warned = events.warn("horses", 0)
+	_check("the phone warns before the horses cross", warned and "Horses" in phone.event_text(), phone.event_text())
+	waited = 0.0
+	while events.active_kind == "" and waited < 30.0:
+		events.tick(1.0 / 60.0)
+		waited += 1.0 / 60.0
+	var crossing: Node = events.crossing
+	_check("horses start crossing after the warning", events.active_kind == "horses" and crossing != null, "")
+	var horses := 0
+	var soft := true
+	if crossing != null:
+		for member in crossing.members:
+			horses += 1 if String(member.name).begins_with("Horse") else 0
+			soft = soft and member.is_in_group("critter")
+		_check("a groom leads 2 or 3 horses", horses >= 2 and horses <= 3 and crossing.get_node_or_null("Groom") != null, "%d horses" % horses)
+		var horse: Node = crossing.get_node("Horse_1")
+		_check("horses only ever cause a small crash", soft and _bike.what_is(horse) == "a horse", _bike.what_is(horse))
+	var across := 0.0
+	while events.active_kind == "horses" and across < 60.0:
+		events.tick(1.0 / 60.0)
+		across += 1.0 / 60.0
+	_check("the horses cross and go", events.active_kind == "" and events.crossing == null, "%.1f s" % across)
+	_check("no more than 2 events in a shift", events.started_this_shift == 2 and not events.warn("road_works", 0), "")
+	# Road works never go up right next to you: they pick another place.
+	events.started_this_shift = 0
+	var first: Vector2 = list[0]["centre"]
+	_move_bike_to(Vector3(first.x, 0, first.y))
+	events.warn("road_works", 0)
+	events._warn_left = 0.0
+	events.tick(0.0)
+	var put: Vector3 = events.road_works.position if events.road_works != null else Vector3(first.x, 0, first.y)
+	_check("road works never go up next to you or your bike", Vector2(put.x, put.z).distance_to(first) > 1.0, "")
+	events.clear_all()
+	# The horses wait for you if you're in their way (they never shove the parked bike).
+	events.started_this_shift = 0
+	var line: Dictionary = data["HORSE_CROSSINGS"][0]
+	_move_bike_to(start)
+	events.warn("horses", 0)
+	events._warn_left = 0.0
+	events.tick(0.0)
+	var in_way: Vector3 = line["from"].lerp(line["to"], 0.4)
+	_move_bike_to(in_way)
+	_bike.look_at(in_way + Vector3(0, 0.05, -1))
+	_bike.set_parked(true)
+	for frame in 240:
+		await physics_frame
+	var groom: Node3D = events.crossing.get_node("Groom") if events.crossing != null else null
+	var groom_gap := 0.0 if groom == null else groom.global_position.distance_to(line["from"])
+	var bike_moved := Vector2(_bike.global_position.x - in_way.x, _bike.global_position.z - in_way.z).length()
+	_check("the horses wait for the parked bike and don't push it", groom != null
+			and groom_gap < line["from"].distance_to(in_way) and bike_moved < 0.1,
+			"groom %.1f m along, bike moved %.2f m" % [groom_gap, bike_moved])
+	_bike.set_parked(false)
+	events.clear_all()
+	# Riding into a horse at speed is a small crash, never a big one.
+	events.started_this_shift = 0
+	events.warn("horses", 0)
+	events._warn_left = 0.0
+	events.tick(0.0)
+	if events.crossing != null:
+		_bike.speed = (GameConfig.CRASH_BIG_KMH + 5.0) / 3.6
+		var crashed: bool = _bike._check_crash(1.0, events.crossing.get_node("Groom"))
+		_check("riding fast into the horses is a small crash", crashed and not _bike.wrecked and _bike.fallen_left > 0.0, "")
+		_bike.fallen_left = 0.0
+		_bike.speed = 0.0
+	events.clear_all()
+	events.started_this_shift = 0
+	gs.shift_time_left = keep_clock
+	gs.shift_clock_out = keep_out
+	_bike.global_transform = keep_bike

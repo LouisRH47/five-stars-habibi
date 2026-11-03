@@ -24,6 +24,7 @@ const HINT_LIT := ORANGE  # do it now
 
 var _flash_left := 0.0
 var _chips: Dictionary = {}  # "food", "pay", "time" -> Label
+var _event_banner: Label  # Session 33: road works / horses warning
 
 @onready var _wallet: Label = $Panel/Margin/Rows/Header/Wallet
 @onready var _pill: Label = $Panel/Margin/Rows/Pill
@@ -48,6 +49,7 @@ var _chips: Dictionary = {}  # "food", "pay", "time" -> Label
 func _ready() -> void:
 	for key in ["food", "pay", "time"]:
 		_chips[key] = _make_chip()
+	_make_event_banner()
 	GameState.money_changed.connect(_on_money_changed)
 	GameState.order_delivered.connect(_on_order_delivered)
 	GameState.stats_changed.connect(_on_stats_changed)
@@ -222,3 +224,35 @@ func _on_stats_changed() -> void:
 ## 4.5 shows as "4.5", 5 as "5.0".
 func _stars_text(stars: float) -> String:
 	return "%.1f" % stars
+
+
+# --- Random events (Session 33) ---
+
+## Shows a line about a random event under your profile: orange while it's a warning
+## ("Heads up! Road works soon"), teal while it's going on. "" hides it.
+## scripts/event_manager.gd calls this.
+func show_event(text: String, warning: bool) -> void:
+	_event_banner.text = text
+	_event_banner.visible = text != ""
+	(_event_banner.get_theme_stylebox("normal") as StyleBoxFlat).bg_color = ORANGE if warning else TEAL
+
+
+## The event line's text ("" when hidden), for the smoke test.
+func event_text() -> String:
+	return _event_banner.text if _event_banner.visible else ""
+
+
+func _make_event_banner() -> void:
+	_event_banner = Label.new()
+	_event_banner.name = "EventBanner"
+	_event_banner.visible = false
+	_event_banner.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var style := StyleBoxFlat.new()
+	style.set_corner_radius_all(8)
+	style.set_content_margin_all(6)
+	_event_banner.add_theme_stylebox_override("normal", style)
+	_event_banner.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+	_event_banner.add_theme_font_size_override("font_size", 14)
+	var rows := $Panel/Margin/Rows
+	rows.add_child(_event_banner)
+	rows.move_child(_event_banner, $Panel/Margin/Rows/Line.get_index())

@@ -265,3 +265,17 @@ const HANDLEBAR_SMOOTHING := 10.0     # how quickly the handlebars follow the ke
 const KICKSTAND_SPEED := 6.0          # how quickly the kickstand swings down or up
 const BELL_HEAR_RANGE := 15.0         # metres: people and cats this close hear the bell
 const BELL_SCARE_TIME := 1.2          # seconds a cat runs off (or a kid stops) after the bell
+# --- Random events (Session 33) ---
+const EVENTS_PER_SHIFT_MIN := 1         # each shift has 1 or 2 random events...
+const EVENTS_PER_SHIFT_MAX := 2         # ...never more than this (one at a time)
+const EVENT_EARLIEST_HOUR := 9.0        # events start somewhere between these in-game hours
+const EVENT_LATEST_HOUR := 16.0
+const EVENT_GAP_HOURS := 1.0            # at least this long between the start of one event and the next
+const EVENT_WARNING_TIME := 6.0         # real seconds the phone warns you before the event starts
+const EVENT_CLEAR_DISTANCE := 15.0      # metres: road works never pop up this close to you or your bike
+const ROAD_WORKS_HOURS := Vector2(1.0, 2.0)  # road works last between 1 and 2 in-game hours
+const HORSE_WALK_SPEED := 2.2           # m/s, the groom leading the horses (a brisk walk)
+const HORSE_GAP := 2.5                  # metres between the groom and each horse in the line
+const HORSE_COUNT := Vector2i(2, 3)     # the groom leads 2 or 3 horses
+const HORSE_GIVE_UP_TIME := 8.0         # seconds the horses wait if you block them, then they go back in
+const HORSE_CLEAR_DISTANCE := 4.0       # metres: horses never start crossing this close to you or your bike
