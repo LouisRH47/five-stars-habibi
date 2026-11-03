@@ -1,7 +1,10 @@
 extends CharacterBody3D
 ## The player's bicycle.
 ## W / Up arrow = pedal, S / Down arrow = brake (then roll backwards),
-## A / D or Left / Right = steer, Space = handbrake, Shift = sprint, R = back to start.
+## A / D or Left / Right = steer, Space = handbrake, Shift = sprint, R = back to start,
+## B = ring the bell (Session 29).
+## The look (wheels, pedals, handlebars, kickstand and the rider) is built in code by
+## scripts/bike_model.gd; this script moves those parts.
 ## Tuning numbers are in scripts/game_config.gd.
 
 ## Sent when the bike hits something. strength is 0 (tiny tap) to 1 (full-speed, head-on).
@@ -17,6 +20,8 @@ signal hard_braked
 ## CRASH_FALLEN_TIME. big = true: a car/wall/pole above CRASH_BIG_KMH, the CrashManager
 ## takes over (clinic). Cats and kids only ever cause a small crash.
 signal crashed(big: bool)
+## Sent when you ring the bell with B (Session 29). Sounds plays the ring.
+signal bell_rung
 
 ## Current speed in metres per second. Positive = forwards.
 var speed := 0.0
@@ -36,6 +41,10 @@ var wrecked := false
 var parked := false
 ## The last crash (Session 23, for the clinic screen): what you hit and how fast.
 var last_crash := {"what": "a wall", "kmh": 0.0}
+## How far the pedals have turned, in radians (Session 29; the smoke test watches it).
+var crank_angle := 0.0
+## How far the kickstand is down: 0 = folded up (riding), 1 = down (parked).
+var kickstand_down := 0.0
 
 # Where the wheels meet a speed bump, in metres ridden after the bike's collision box
 # first touches it. The box front is 0.85 m ahead of the bike's middle, the front wheel
@@ -57,9 +66,14 @@ var _hop_time := 0.0         # seconds since the bike touched the bump
 var _hop_height := 0.0       # metres of extra springy bounce (0 when crawling)
 var _hop_backwards := false  # true if we went over it rolling backwards
 
+var _handlebar_turn := 0.0  # radians the handlebars are turned (follows the steering)
 @onready var _model: Node3D = $Model
-@onready var _front_wheel: Node3D = $Model/FrontWheel
-@onready var _rear_wheel: Node3D = $Model/RearWheel
+var _front_wheel: Node3D
+var _rear_wheel: Node3D
+var _fork: Node3D
+var _crank: Node3D
+var _kickstand: Node3D
+var _rider: Person
 
 
 func _ready() -> void:
@@ -67,14 +81,26 @@ func _ready() -> void:
 	_start_transform = global_transform
 	# Speed bumps (scripts/speed_bump.gd) look for this group.
 	add_to_group("bike")
+	# Build the bicycle and the rider on it (Session 29).
+	BikeModel.build(_model)
+	_front_wheel = _model.get_node("Fork/FrontWheel")
+	_rear_wheel = _model.get_node("RearWheel")
+	_fork = _model.get_node("Fork")
+	_crank = _model.get_node("Crank")
+	_kickstand = _model.get_node("Kickstand")
+	_rider = _model.get_node("Rider")
+	_rider.play("pedal")
 	# Dress the rider in the look picked on the application (Session 14).
-	RiderLook.apply(_model, GameState.rider_look)
+	RiderLook.apply(_rider, GameState.rider_look)
 
 
 func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("reset_bike") and fallen_left <= 0.0 and not wrecked:
 		reset_to_start()
 		return
+	if Input.is_action_just_pressed("ring_bell") and not parked:
+		ring_bell()
+	_move_parts(delta)
 	if fallen_left > 0.0 or wrecked:
 		_lie_on_ground(delta)
 		return
@@ -112,13 +138,36 @@ func set_parked(on: bool) -> void:
 	parked = on
 	speed = 0.0
 	velocity = Vector3.ZERO
-	for part in ["RiderBody", "LegLeft", "LegRight", "Helmet", "Look"]:
-		var node := _model.get_node_or_null(part) as Node3D
-		if node != null:
-			node.visible = not on
+	_rider.visible = not on  # you're the walker now
 	if not on:
-		RiderLook.apply(_model, GameState.rider_look)  # puts the helmet back the way the look wants it
+		RiderLook.apply(_rider, GameState.rider_look)  # in case the look changed
 	_model.rotation.z = deg_to_rad(GameConfig.PARKED_LEAN_DEG) if on else 0.0
+
+
+## B: ring ring! People nearby look up and wave, cats and kids get out of the way.
+## Everything that listens is in the "hears_bell" group and checks how far away it is.
+func ring_bell() -> void:
+	bell_rung.emit()
+	get_tree().call_group("hears_bell", "hear_bell", self)
+
+
+## Moves the bike's parts: handlebars follow the steering, the kickstand drops when
+## parked, and the rider's hands and feet stay on the grips and pedals.
+func _move_parts(delta: float) -> void:
+	var steer_to := deg_to_rad(GameConfig.HANDLEBAR_MAX_DEG) * _steer if not parked else 0.0
+	_handlebar_turn = lerpf(_handlebar_turn, steer_to, 1.0 - exp(-GameConfig.HANDLEBAR_SMOOTHING * delta))
+	_fork.rotation.y = _handlebar_turn
+	kickstand_down = move_toward(kickstand_down, 1.0 if parked else 0.0, GameConfig.KICKSTAND_SPEED * delta)
+	_kickstand.rotation = Vector3(deg_to_rad(-85.0), 0, 0).lerp(Vector3(deg_to_rad(15.0), 0, deg_to_rad(-20.0)), kickstand_down)
+	if not _rider.visible:
+		return
+	var to_rider := _rider.transform.affine_inverse()
+	for i in 2:
+		var pedal := _crank.get_node("PedalLeft" if i == 0 else "PedalRight") as Node3D
+		_rider.pose.feet[i] = to_rider * (_crank.transform * pedal.position + Vector3(0, 0.07, 0.03))
+		var grip := _fork.transform * BikeModel.grip_spot(-1.0 if i == 0 else 1.0)
+		_rider.pose.hands[i] = to_rider * (grip + Vector3(0, 0.03, 0.04))
+	_rider.pose.lean = GameConfig.RIDER_LEAN_DEG
 
 
 ## Standing still on the stand: only gravity, no keys.
@@ -357,3 +406,9 @@ func _spin_wheels(delta: float) -> void:
 	var turn := speed / GameConfig.WHEEL_RADIUS * delta
 	_front_wheel.rotate_object_local(Vector3.UP, -turn)
 	_rear_wheel.rotate_object_local(Vector3.UP, -turn)
+	# The pedals go round with the wheels, slower (the gears), and stay flat.
+	crank_angle += turn / GameConfig.PEDAL_GEAR
+	_crank.rotation.x = -crank_angle
+	for pedal in _crank.get_children():
+		if pedal.name.begins_with("Pedal"):
+			(pedal as Node3D).rotation.x = crank_angle

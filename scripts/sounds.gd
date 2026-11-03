@@ -4,6 +4,7 @@ extends Node
 ## happens and plays the right sound:
 ##   new order: phone ping        pick up: bike bell     delivered: cash register
 ##   crash: crash                 speed bump: thump      riding: tyre noise (louder when faster)
+##   B: the bike bell rings (Session 29)
 ##   all the time: birds and distant traffic (ambience)
 ## The sounds are made by tools/make_sounds.py. Effects play on the Effects bus, the
 ## ambience on the Ambience bus, so the sliders in Settings control them.
@@ -17,6 +18,7 @@ const FILES := {
 	"cash": "res://assets/audio/cash.wav",
 	"crash": "res://assets/audio/crash.wav",
 	"bump": "res://assets/audio/bump.wav",
+	"ring": "res://assets/audio/ring.wav",  # the bike bell (B, Session 29)
 }
 const ROLL := "res://assets/audio/roll_loop.wav"
 const AMBIENCE := "res://assets/audio/ambience_loop.wav"
@@ -58,6 +60,7 @@ func _ready() -> void:
 	if bike != null:
 		bike.crashed.connect(func(_big): play("crash"))
 		bike.went_over_bump.connect(func(_strength): play("bump"))
+		bike.bell_rung.connect(func(): play("ring"))
 
 
 func _process(_delta: float) -> void:

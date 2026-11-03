@@ -17,6 +17,16 @@ func _init() -> void:
 	# We move it ourselves by setting position each frame, so don't let physics overwrite it.
 	sync_to_physics = false
 	add_to_group("critter")  # the bike only ever has a small crash with these
+	add_to_group("hears_bell")  # Session 29: B rings the bike bell
+
+
+## The bike rang its bell (Session 29). If it's close, get out of the way for a moment
+## (cats run off, kids stop and wobble), without hurting the food.
+func hear_bell(bike: Node3D) -> void:
+	if scared_left > 0.0 or global_position.distance_to(bike.global_position) > GameConfig.BELL_HEAR_RANGE:
+		return
+	scared_left = GameConfig.BELL_SCARE_TIME
+	_on_scared(bike)
 
 
 ## True while the bike is touching us (kids wait instead of pushing it along).

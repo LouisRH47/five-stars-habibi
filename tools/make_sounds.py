@@ -120,6 +120,17 @@ def bell():
     return track
 
 
+def ring():
+    """The bike's thumb bell (Session 29, the B key): a quick metal trill, brrring-ring."""
+    track = silence(1.3)
+    strikes = [i * 0.045 for i in range(8)] + [0.55 + i * 0.045 for i in range(5)]
+    for n, at in enumerate(strikes):
+        loud = 1.0 if n in (0, 8) else 0.55
+        for f, d, v in ((2093, 6, 1.0), (2150, 6, 0.8), (4410, 11, 0.35), (6300, 16, 0.2)):
+            mix_in(track, tone(f, 0.7, d, v * loud, 0.002), at)
+    return track
+
+
 def cash():
     track = silence(1.0)
     mix_in(track, noise(0.07, 30, 0.2, 0.6), 0.0)  # the drawer "cha"
@@ -263,3 +274,4 @@ if __name__ == "__main__":
     save("roll_loop.wav", roll_loop(), 0.5)
     save("ambience_loop.wav", ambience_loop(), 0.5)
     save("music_loop.wav", music_loop(), 0.8)
+    save("ring.wav", ring())

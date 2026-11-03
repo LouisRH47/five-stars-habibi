@@ -32,5 +32,24 @@ Everything in the game that was made by someone else, and the licence that lets 
   maqsum rhythm, low drone)
 - `assets/audio/ambience_loop.wav`: birds and distant traffic
 - `assets/audio/bell.wav`, `cash.wav`, `crash.wav`, `ping.wav`, `bump.wav`, `roll_loop.wav`
+- `assets/audio/ring.wav`: the bike bell you ring with B (Session 29)
 
 To remake them: `python3 tools/make_sounds.py`.
+
+## People and cars (Session 29)
+
+**Animated Human** by Quaternius (every person: the rider, customers, teachers, kids,
+riders and grooms)
+- Licence: CC0 1.0 (public domain), licence text: `assets/characters/quaternius_human/License.txt`
+- File: `assets/characters/quaternius_human/human.fbx` (only the FBX: the clothes are
+  painted in code, so the original textures are not included)
+- Source: https://opengameart.org/content/animated-human-low-poly (author: https://quaternius.com)
+
+**Car Kit** (version 3.1) by Kenney (the parked cars in the car parks)
+- Licence: CC0 1.0 (public domain), licence text: `assets/cars/kenney_car_kit/License.txt`
+- Files: `assets/cars/kenney_car_kit/` (sedan, suv, suv-luxury, hatchback-sports, van and
+  the shared `Textures/colormap.png`)
+- Source: https://opengameart.org/content/car-kit (author: https://kenney.nl/assets/car-kit)
+
+The bicycle, the hats, helmets, scarves, bags and shoes were built in code for this game
+(CC0).

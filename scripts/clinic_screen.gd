@@ -191,8 +191,10 @@ func _build_room() -> Control:
 	patient.name = "Patient"
 	room.add_child(patient)
 	RiderLook.apply(patient, GameState.rider_look)
-	patient.rotation_degrees = Vector3(0, 0, -90)
-	patient.position = Vector3(-0.45, 0.95, -0.6)
+	(patient as Person).play("lie")
+	# Lying on their back, head on the pillow (-X), face up (Session 29: a real person now).
+	patient.basis = Basis(Vector3(0, 0, 1), Vector3(-1, 0, 0), Vector3(0, -1, 0))
+	patient.position = Vector3(1.4, 0.85, -0.6)
 	LowPoly.box(room, Vector3(1.4, 0.12, 1.05), Color(0.55, 0.78, 0.82), Vector3(0.95, 0.85, -0.6))  # blanket
 	LowPoly.box(room, Vector3(0.35, 0.12, 0.6), Color(0.97, 0.98, 0.98), Vector3(-0.3, 0.84, -0.6))  # pillow
 	# The drip stand.

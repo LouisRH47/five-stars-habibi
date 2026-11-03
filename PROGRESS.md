@@ -566,6 +566,34 @@ on both Palm Grove and the test area. Nothing needed fixing.
   door can be reached.
 - Groceries being "a bit heavy" is only in the damage numbers for now.
 
+### Session 29
+- People are real animated low-poly humans now (free CC0 model "Animated Human" by Quaternius,
+  with idle, walk and run animations; credited in CREDITS.md). Waving, pedalling and lying in
+  the clinic bed are poses made in code. Clothes are painted in code; hats, helmets, scarves,
+  bags and shoes are small shapes that move with the body (`scripts/person.gd`,
+  `scripts/person_pose.gd`, `scripts/people_looks.gd`).
+- The rider pedals with hands on the grips and feet on the pedals; on foot they walk or jog
+  (animation speed matches). The 3 looks are kept (Classic, Sporty, Chill) on the bike, on
+  foot, on the start-screen cards and in the clinic bed.
+- Customers come in the 5 outfits (white kandura with ghutra and agal, black abaya with shayla,
+  t-shirt, red hoodie, green top with cap): they walk out, wave, and walk back in.
+- Teachers, school kids, horse riders and grooms are ready to use (`PeopleLooks.teacher()` etc.)
+  for the next sessions; nothing places them yet.
+- A proper low-poly bicycle built in code (`scripts/bike_model.gd`): spoked wheels, frame,
+  saddle, chain, rack and the orange delivery box. The pedals turn with speed, the handlebars
+  and front wheel turn when you steer, and the kickstand drops when you get off. Riding feel
+  and the collision box are unchanged.
+- **B rings the bell** (a new home-made "brrring-ring", `assets/audio/ring.wav`): customers
+  nearby wave again, cats run off, kids on scooters stop and wobble.
+- Parked cars are 5 free CC0 Kenney Car Kit models, the same size as before.
+- Fixed while merging: a cat could stroll into a parked bike and shove it (the smoke test's
+  walking check failed about 1 run in 4 on Palm Grove). Cats now pick somewhere else to go
+  when they bump into the bike or you; 6 of 6 runs passed after.
+- Not done: plants from a CC0 pack (optional). Kids are a scaled-down adult body.
+- Built by a helper agent in parallel. New smoke test checks: pedals turn faster at speed,
+  handlebars turn, kickstand down when parked, B rings the bell and scares a cat, every people
+  type can walk, wave and stand, cars are the CC0 models.
+
 ## Known bugs
 - Play-test bot findings on Wahat Al Shams (to tune in Session 34):
   - A careful 5-minute shift gets 5 to 6 deliveries (target 6 to 8). The rides are long

@@ -581,8 +581,7 @@ Done when:
 - [ ] Low / Medium / High works and is saved
 - [ ] Still 60 fps on Medium
 
-### Session 29: Animated people and the real bike
-
+### Session 29: Animated people and the real bike (built, needs testing)
 ```text
 Session 29. Read PRD.md (Graphics and feel: Art, People move, The bike).
 Download a free CC0 character pack with animations (Kenney or Quaternius,
