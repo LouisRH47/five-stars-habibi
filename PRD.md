@@ -236,6 +236,33 @@ Polished low-poly: still simple shapes, but with nicer light, moving people and 
 - **Life on the map:** golf buggies driving slowly on fixed routes (they stop and wait if you're in the way), horses with riders on the edge track, joggers and walkers, gardeners watering, kids at the cluster playgrounds, birds flying over, palms swaying, the stream and fountain moving, ducks on the stream and donkeys in the spine. No real traffic AI until Tier 2.
 - **Graphics setting:** Low, Medium (default) or High in Settings. Low turns off SSAO, shimmer and haze and shows fewer people; High shows everything.
 
+## Reasons to come back (Sessions 35 to 40)
+
+Research on games like Crazy Taxi, PowerWash Simulator, Stardew Valley, Euro Truck Simulator 2 and Death Stranding (Nov 2026) says players return when they always have a clear next goal, every action feels satisfying, their skill pays off, and there are characters they care about. Right now money and XP don't buy anything, so these come before the itch.io release. Rule for all of them: the reasons to come back must be fun, never fear of missing out. No daily login rewards, no streaks you lose by not playing, no countdowns that nag you to come back.
+
+**A perfect delivery feels special.** The Delivered card already pops the stars and coins (Session 31). On top of that: all three meters green shows a big "PERFECT!" with a happy jingle, and a tip gets its own little jingle.
+
+**Gear shop and the next goal.** The phone gets a Shop page (Tab opens it, the game pauses). Gear costs money and a Rider Level. Prices fit 5-minute shifts (a careful shift earns about 70 Dh):
+
+| Gear | Level | Price | What it does |
+| --- | --- | --- | --- |
+| Louder bell | 2 | 25 Dh | B reaches twice as far: cats, kids and buggies get out of the way sooner |
+| GPS line | 3 | 60 Dh | A line on the road to the next stop |
+| Bigger stamina bar | 5 | 120 Dh | 30% more sprint |
+
+- Cosmetics (no level needed, 15 to 40 Dh): delivery box colours, bike paint, a few hats. Only the look changes.
+- The phone and the shift summary always show the next goal with a progress bar, e.g. "GPS line: 40 Dh and Level 3 to go".
+
+**5-star streak and personal bests.** Each 5-star delivery in a row adds +5% to your tip chance, up to +30%. A crash or a delivery under 5 stars resets it (stopping playing never does). The phone shows "4 in a row". Personal bests, shown on the shift summary when you beat them: best shift earnings, longest streak, most deliveries in a shift, fastest ride to each home.
+
+**Regulars get to know you.** The 4 regulars (Auntie Mariam, Mr Rashid, Ms Dana, Hamdan) get lines for a first visit, getting friendly (3 visits) and best friends (8 visits). Best friends tip a bit more often (70%).
+
+**Choosing orders.** At a rating of 4.5 or more, half the time the phone shows two orders side by side: 1 or 2 picks one, Q skips both (counts as one skip). This is how "higher rating = better orders" works: one of the two is a better order (higher pay, a shorter ride or a tip-friendly customer).
+
+**Tomorrow's special.** Each shift is a kind of day: a normal day, Hot Noon (food spoils faster in the sun), Rush Hour (orders come quicker, 10% more pay) or a shop special ("2-for-1 at Brain Freeze": double tip chance on that shop's food). The clock shows today's, and the shift summary says what tomorrow will be.
+
+**Collections.** A Wahat Al Shams stamp card: a stamp for every home you've delivered to (60 homes in 5 clusters, plus the school gate and the stable office). A full cluster pays a small 20 Dh bonus; all 60 unlocks a gold delivery box. Also the cats and horses you've met (each gets a name) and the customer lines you've heard. All on a Profile page on the phone.
+
 ## Crashes, bills and insurance
 
 Crashing costs you, and insurance is an optional bet. Prices are scaled down from real Dubai costs so they fit game pay.
@@ -513,6 +540,7 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 3 Nov 2026 | Special orders (rush, fragile cake, neighbour, big family order), 4 regular customers, 2 shift goals worth 15 Dh each, and 2 random events (road works, horses crossing). The dust gust event was dropped |
 | 3 Nov 2026 | Graphics: polished low-poly with CC0 packs (Kenney, Quaternius) for people, cars and props; animated people; a real bike model with turning pedals, steering, kickstand and a bell on B; sun moving with the shift clock, SSAO, haze, glow, heat shimmer; juice (dust, speed lines and FOV, coin and star pops, phone buzz); life on the map (buggies on fixed routes, horses, joggers, gardeners, kids, birds, palms, ducks, donkeys); Low/Medium/High graphics setting |
 | 3 Nov 2026 | Session 34 play-test tuning (for Louis to confirm): a careful bot gets 5 to 6 deliveries a 5-minute shift (without sprinting), so the goals are now make 6 deliveries (was 8), a school lunch order (was 2: the lunch rush is only 30 real seconds) and deliver to 3 different clusters (was all 5). 7 in 10 orders now go to the nearer half of homes from the shop, so trips are shorter and a shift is busier; pay per shift stays about the same |
+| 3 Nov 2026 | Reasons to come back planned as Sessions 35 to 40, after the graphics pass so Louis's Sessions 18 to 34 keep their numbers (replaces PR #7): gear shop with prices for 5-minute shifts, 5-star streak and personal bests, regulars' lines growing friendlier, choosing between two orders at 4.5+ stars, tomorrow's special, the 60-home stamp card and a final play-test before itch.io. No fear-of-missing-out mechanics. For Louis to confirm or cross out |
 
 ## Sources
 

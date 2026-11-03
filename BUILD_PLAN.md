@@ -697,6 +697,106 @@ Done when:
 - [ ] 60 fps on Medium
 - [ ] Louis has played a full shift and is happy with it
 
+## Reasons to come back (Sessions 35 to 40)
+
+Players come back when they always have a next goal, every delivery feels good, skill pays off, and there are characters they care about. Right now money and XP don't buy anything, so these sessions come before the itch.io release. The design is in PRD.md, "Reasons to come back". These are ideas, not orders: cross out any you don't want. Same rules as before: one session at a time, play it before the next one.
+
+### Session 35: Gear shop and the next goal
+
+```text
+Session 35. Read PRD.md "Reasons to come back", Gear shop. Add a Shop page
+to the phone (Tab opens it, the game pauses while it's open) with the louder
+bell, the GPS line, the bigger stamina bar and a few cosmetics (box colours,
+bike paint, hats). Gear needs money and a Rider Level. Show the next goal with
+a progress bar on the phone and on the shift summary. Prices go in
+game_config.gd, the item list in a data file. Save what you own.
+```
+
+Done when:
+
+- [ ] You can buy the louder bell after about one good shift and the GPS line after about two
+- [ ] You always know what you're saving up for
+
+### Session 36: Streaks, personal bests and PERFECT!
+
+```text
+Session 36. Read PRD.md "Reasons to come back", 5-star streak and personal
+bests, and "A perfect delivery feels special". Each 5-star delivery in a row
+adds +5% tip chance (max +30%); a crash or a delivery under 5 stars resets it.
+Show the streak on the phone. Track personal bests (best shift earnings,
+longest streak, most deliveries in a shift, fastest ride to each home) and show
+"New best!" on the shift summary. Save them. On the Delivered card, all three
+meters green shows "PERFECT!" with a jingle, and a tip gets its own jingle
+(make the sounds in tools/make_sounds.py).
+```
+
+Done when:
+
+- [ ] A streak makes you ride more carefully, and losing it stings a little
+- [ ] A perfect delivery and a new best feel good
+
+### Session 37: Choosing orders
+
+```text
+Session 37. Read PRD.md "Reasons to come back", Choosing orders, and the
+"better order" rule in Stars. At a rating of 4.5 or more, half the time show
+two orders side by side on the phone: 1 or 2 picks one, Q skips both (counts
+as one skip). One of the two is a better order. Keep the 30-second timer.
+Special orders and regulars can be one of the two.
+```
+
+Done when:
+
+- [ ] Choosing between two orders is a real decision
+- [ ] A high rating feels worth having
+
+### Session 38: Tomorrow's special
+
+```text
+Session 38. Read PRD.md "Reasons to come back", Tomorrow's special. Each shift
+is a kind of day: normal, Hot Noon, Rush Hour or a shop special. Show today's
+kind of day by the clock and tomorrow's on the shift summary. It must work with
+the lunch rush, the shift goals and the random events. Numbers in
+game_config.gd.
+```
+
+Done when:
+
+- [ ] Shifts feel different from each other
+- [ ] Seeing tomorrow's special makes you want one more shift
+
+### Session 39: Collections, regulars and the profile page
+
+```text
+Session 39. Read PRD.md "Reasons to come back", Collections and "Regulars get
+to know you". Add a Profile page to the phone: the Wahat Al Shams stamp card
+(a stamp for each of the 60 homes, grouped by cluster, plus the school gate
+and the stable office; 20 Dh for a full cluster, a gold box for all 60), the
+cats and horses you've met (give each a name in the data file) and the
+customer lines you've heard. Give each regular lines for a first visit,
+getting friendly and best friends. Save it all.
+```
+
+Done when:
+
+- [ ] You can see how much of Wahat Al Shams you've collected
+- [ ] The regulars feel like they know you
+
+### Session 40: Final play-test, then itch.io
+
+```text
+Session 40. Run the play-test bot for 5 shifts in a row (careful) and check
+money, XP and gear come at a good pace: the bell after about one shift, the GPS
+line after about two, the stamina bar after about a week of play. Tune
+game_config.gd if not. Run the smoke test 5 times. Then export Mac and Windows
+versions for itch.io. Here's what felt off when I played: [write it here].
+```
+
+Done when:
+
+- [ ] A friend plays for 10 minutes and wants to keep going
+- [ ] It's on itch.io
+
 ## When something breaks
 
 Copy one of these and fill in the brackets.
@@ -732,7 +832,7 @@ and what's left in it.
 
 ## After Tier 1
 
-Once the graphics pass (Session 34) feels fun, upload it to itch.io for free so friends can play it and give feedback (ask Claude Code to export Mac and Windows versions). After that, the next block of sessions is the motorbike test (yard course, instructor, theory quiz), then the motorbike, Old Town, night shifts and running costs. Ask Claude Code to "write the Tier 2 sessions for BUILD_PLAN.md in the same style as Tier 1" so the plan keeps growing as you go.
+Once Sessions 35 to 40 feel fun and the game is on itch.io (Session 40), friends can play it and give feedback. After that, the next block of sessions is the motorbike test (yard course, instructor, theory quiz), then the motorbike, Old Town, night shifts and running costs. Ask Claude Code to "write the Tier 2 sessions for BUILD_PLAN.md in the same style as Tier 1" so the plan keeps growing as you go.
 
 ## Confirmed choices
 

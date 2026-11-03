@@ -1,9 +1,15 @@
 # Progress
 
 ## Current session
-**Next: Session 18 (polish pass).** Sessions 18 to 24 are planned in BUILD_PLAN.md: hold E, get off the bike, fonts and panels like the mockup, new start screen, Delivered card and clinic screen.
+**Sessions 18 to 34 are built** (the polish pass and the graphics pass), on branch
+`polish-and-graphics`. Each one passes the Godot checks and the smoke test on all three maps;
+Wahat Al Shams passes 5 runs out of 5. Sessions 26 to 33 were built by helper agents in
+parallel and merged together. They still need Louis's own play-test on the Mac.
 
-**After that: the graphics pass (Sessions 25 to 34).** Tier 1 moves to a new community, Wahat Al Shams (car-free clusters, a Plaza, a green spine, a school, stables), with Dubai-style villas, moving sun, animated people, a real bike, juice, life on the map, special orders, goals and events. Shifts become 5 minutes. Sketches are in docs/.
+**Next: Louis plays a full shift** (open the game with F5, New game, the application, the
+tutorial, then shifts) and writes down what felt off. Then **Sessions 35 to 40**, "Reasons to
+come back" (gear shop, streaks and PERFECT!, choosing orders, tomorrow's special, collections,
+final play-test and itch.io), in BUILD_PLAN.md. These are ideas: cross out any you don't want.
 
 Sessions 7 to 17 are built (all of Tier 1), each checked with the Godot headless checks,
 the smoke test and screenshots, on branch `sessions-8-17` (Session 7 on `session-7-minimap`).
@@ -740,10 +746,9 @@ on both Palm Grove and the test area. Nothing needed fixing.
   close and reopen the project in the editor.
 
 ## Next
-- Louis play-tests everything with the "Done when" checklists in BUILD_PLAN.md
-  (start the game with F5: main menu, application, tutorial, then shifts).
-- Merge the branches into main (pull requests on GitHub).
-- Session 17 again with Louis's own notes, then a friend plays for 10 minutes.
-- After that: export for itch.io and write the Tier 2 sessions (see "After Tier 1" in BUILD_PLAN.md).
-- Open question for Louis: rides in Palm Grove take up to about a minute, the PRD hoped
-  for 2 to 3 minutes. See "Still open" in PRD.md.
+- Louis play-tests Wahat Al Shams with the "Done when" checklists in BUILD_PLAN.md
+  (Sessions 18 to 34) and confirms the Session 34 tuning in the PRD Decisions log.
+- Merge `polish-and-graphics` into main (pull request on GitHub).
+- Remove the old Palm Grove map once Wahat Al Shams feels right (Session 34 left it in,
+  because the smoke test still uses it as a second map).
+- Then Sessions 35 to 40 (Reasons to come back), ending with itch.io.
