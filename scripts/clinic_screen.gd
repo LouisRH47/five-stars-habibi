@@ -132,6 +132,8 @@ func _set_visible(on: bool) -> void:
 	_room.visible = on
 	if _room_view != null:
 		_room_view.render_target_update_mode = SubViewport.UPDATE_ALWAYS if on else SubViewport.UPDATE_DISABLED
+	if _patient != null:
+		_patient.process_mode = Node.PROCESS_MODE_INHERIT if on else Node.PROCESS_MODE_DISABLED
 	_left.visible = on
 	_card.visible = on
 

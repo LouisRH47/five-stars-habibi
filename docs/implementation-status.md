@@ -99,6 +99,12 @@ In the packaged Mac review app, Continue loaded the isolated Shift 2 demo save i
 
 After palm batching, the geometry comparison, static batching suite, 27 world checks and all 416 Wahat smoke checks passed, including palm sway. The paired desktop rebuilds at /private/tmp/habibi-palm-check/review and /private/tmp/habibi-palm-check/distribution use runtime fingerprint e16ed943ed029cda8794ff85d12b32af5a43d4f055da1838c207995912d4bf01. ZIP integrity, checksums, Mac signatures, Windows executable headers, and the Mac menu and packaged Wahat headless launch passed. Verification logs are under /private/tmp/habibi-palm-check.
 
+The stamina and delivery bars now emit style notifications only when their fill colours change. The isolated check went from 40 to zero stable-colour notifications across 10 updates of all four bars, with five expected colour transitions and values intact in both runs. The walking rider and clinic patient stop processing while hidden. Seven checks covered initial inactive state, repeated dismounting, remounting, and the patient animating during the paused clinic screen. All 416 Wahat smoke checks passed on this revision. Evidence: /private/tmp/habibi-style-check/style.log, animation-recheck.log and wahat-smoke.log, and /private/tmp/habibi-palm-check/style-baseline.log.
+
+The current portable exports are at /private/tmp/habibi-ui-export-check/distribution. The archive CRCs, checksums, Mac signature and platform architectures passed and the source fingerprint matches adf37d10897156007614853daabbc39da35d4f8b9b3d89b955c8a0e6290ed547. The earlier review app and its launch evidence cover the palm revision.
+
+The follow-up release profiler returned zero for GPU timings. A shorter-shadow sample recorded a median 312 shadow draw calls against 905 in the baseline segment, but focus loss and heavy background load made the frame times incomparable. Medium quality settings were retained. Evidence: /private/tmp/habibi-spine-profile/fixed-input-results.json and CSVs.
+
 ## Remaining acceptance
 
 - Establish at least 60 FPS during representative moving gameplay at Medium. Repeat the Mac release probe with sustained foreground focus and the full HUD.

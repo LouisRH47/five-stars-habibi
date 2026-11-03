@@ -44,13 +44,15 @@ func _refresh() -> void:
 
 func _show(key: String, value: float) -> void:
 	_bars[key].value = value
+	var colour := RED
 	match Meters.band(value):
 		Meters.Band.GREEN:
-			_fills[key].bg_color = GREEN
+			colour = GREEN
 		Meters.Band.ORANGE:
-			_fills[key].bg_color = ORANGE
-		_:
-			_fills[key].bg_color = RED
+			colour = ORANGE
+	var fill: StyleBoxFlat = _fills[key]
+	if fill.bg_color != colour:
+		fill.bg_color = colour
 	if key != "time":
 		_values[key].text = "%d%%" % roundi(value)
 

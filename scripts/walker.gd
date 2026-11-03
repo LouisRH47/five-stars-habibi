@@ -33,6 +33,7 @@ func _ready() -> void:
 func set_active(on: bool) -> void:
 	active = on
 	visible = on
+	_model.process_mode = Node.PROCESS_MODE_INHERIT if on else Node.PROCESS_MODE_DISABLED
 	collision_layer = 1 if on else 0
 	collision_mask = 1 if on else 0
 	speed = 0.0
