@@ -3,8 +3,11 @@ class_name WahatAlShams
 ## A made-up car-free eco community. Sketch: docs/wahat_al_shams_map.svg.
 ## scripts/wahat_builder.gd builds the ground, roads, tracks, trees, Plaza, spine, car parks,
 ## bollards, plots, walls, gate and signs from this list; scripts/place_builder.gd builds the
-## shops and the 60 homes; scripts/decor_builder.gd the palms, parked cars and speed bumps;
-## scripts/obstacle_builder.gd the cats and kids. To move something, change its line here.
+## shops, the farm stall and the 60 homes; scripts/decor_builder.gd the mosque, palms, parked
+## cars and speed bumps; scripts/obstacle_builder.gd the cats and kids. Session 27 added
+## scripts/plaza_builder.gd (the sunken square), scripts/spine_builder.gd (domes, farm,
+## playgrounds, mini-plazas) and scripts/landmark_builder.gd (school, stables, building site).
+## To move something, change its line here.
 ## This file was first written by a small script, but it's a normal data list: edit it by hand.
 ##
 ## Positions are in metres. x runs west (-) to east (+), z runs north (-) to south (+).
@@ -27,9 +30,23 @@ const TREE_BELT := {"inner": Vector2(193, 143), "spacing": 7.0}
 const HORSE_TRACK := {"half": Vector2(188, 138), "width": 4.0}
 const BIKE_TRACK := {"half": Vector2(183, 133), "width": 2.0}
 
-## The Plaza: a round paved square just inside the gate (shops round it, Session 27 adds the
-## sunken square, fountain and shade sails).
-const PLAZA := {"centre": Vector2(-140, 0), "radius": 26.0}
+## The Plaza: a round paved square just inside the gate, with the 6 shops round it.
+## In the middle is a sunken square (Session 27): steps down to a round floor with a fountain.
+## sunken_radius: where the steps start. floor_radius: where the flat floor starts.
+## depth: how far down the floor is (metres). The bike rolls down a gentle slope under the steps.
+const PLAZA := {"centre": Vector2(-140, 0), "radius": 26.0, "sunken_radius": 14.0,
+		"floor_radius": 10.0, "depth": 0.45, "steps": 3, "fountain_radius": 3.0}
+## Shade sails over the sunken square: each sail is stretched between 3 posts.
+const PLAZA_SAILS := [
+	[Vector3(-156, 0, -5.8), Vector3(-140, 0, -17), Vector3(-124, 0, -5.8)],
+	[Vector3(-124, 0, 5.8), Vector3(-140, 0, 17), Vector3(-156, 0, 5.8)],
+]
+## Benches on the sunken floor round the fountain. facing: the way you look when you sit.
+const PLAZA_BENCHES := [
+	{"position": Vector3(-140, -0.45, -7.5), "facing": 0.0},
+	{"position": Vector3(-140, -0.45, 7.5), "facing": 180.0},
+	{"position": Vector3(-132.5, -0.45, 0), "facing": -90.0},
+]
 
 ## The green spine through the middle: grass, the spine path (above, in ROADS) and a stream.
 const SPINE := Rect2(-116, -22, 240, 44)
@@ -106,14 +123,74 @@ const WELCOME_SIGN := {
 	"facing": -90.0,
 }
 
+## The green spine (Session 27). Nothing here is on the spine path (z -2 to 2) or a lane end.
+## Domes: white greenhouse domes (their middles). Areas are Rect2(x, z, width, depth).
+const SPINE_DOMES := [
+	Vector3(22, 0, -13), Vector3(42, 0, -13), Vector3(57, 0, -13),
+	Vector3(69, 0, -13), Vector3(81, 0, -13), Vector3(93, 0, -13),
+]
+const DOME_RADIUS := 4.5
+const FARM_BEDS := [Rect2(-26, -18, 18, 9), Rect2(0, 17, 30, 4), Rect2(52, 17, 26, 4)]
+const BEEHIVES := Rect2(102, -18, 9, 7)
+const DONKEY_PEN := {"area": Rect2(90, 15.5, 24, 6), "donkeys": 2}
+const BASKETBALL_COURT := Rect2(-97, -19, 18, 10)
+const PLAYGROUND := Rect2(-72, -18, 16, 10)
+
+## The mini-plaza in each cluster: a cooling tower and a small playground in the gaps between
+## the homes next to the paved strip, and benches at the strip's edge (the strip stays clear).
+const MINI_PLAZAS := [
+	{"cluster": "C1", "tower": Vector3(-89, 0, -79.5), "playground": Vector3(-67, 0, -64.5),
+			"benches": [{"position": Vector3(-89, 0, -68.3), "facing": 180.0}, {"position": Vector3(-67, 0, -75.7), "facing": 0.0}]},
+	{"cluster": "C2", "tower": Vector3(-9, 0, -79.5), "playground": Vector3(13, 0, -64.5),
+			"benches": [{"position": Vector3(-9, 0, -68.3), "facing": 180.0}, {"position": Vector3(13, 0, -75.7), "facing": 0.0}]},
+	{"cluster": "C3", "tower": Vector3(71, 0, -79.5), "playground": Vector3(93, 0, -64.5),
+			"benches": [{"position": Vector3(71, 0, -68.3), "facing": 180.0}, {"position": Vector3(93, 0, -75.7), "facing": 0.0}]},
+	{"cluster": "C4", "tower": Vector3(-89, 0, 64.5), "playground": Vector3(-67, 0, 79.5),
+			"benches": [{"position": Vector3(-89, 0, 75.7), "facing": 180.0}, {"position": Vector3(-67, 0, 68.3), "facing": 0.0}]},
+	{"cluster": "C5", "tower": Vector3(-9, 0, 64.5), "playground": Vector3(13, 0, 79.5),
+			"benches": [{"position": Vector3(-9, 0, 75.7), "facing": 180.0}, {"position": Vector3(13, 0, 68.3), "facing": 0.0}]},
+]
+
+## The landmarks (Session 27), built by scripts/landmark_builder.gd.
+## Al Shams School: a low building in a fenced yard. The gate is in the north fence; the
+## security booth next to it is the only drop-off spot (see VILLAS, number 901).
+const SCHOOL := {
+	"name": "Al Shams School", "arabic": "مدرسة الشمس",
+	"area": Rect2(84, 37, 33, 70), "gate_x": 101.0, "gate_width": 6.0,
+	"building": {"position": Vector3(100.5, 0, 84), "size": Vector3(28, 6, 16)},
+}
+## The mosque: scenery only, no orders ever go there. Built by DecorBuilder (scenes/mosque.tscn).
+const MOSQUE := {
+	"name": "Wahat Al Shams Mosque",
+	"arabic": "مسجد واحة الشمس",
+	"position": Vector3(63.5, 0, 80),
+	"facing": 180.0,
+	"size": Vector3(18.0, 7.0, 14.0),
+}
+## The stables: a stable block and a fenced paddock with horses. The stable office is the
+## only drop-off spot (see VILLAS, number 902).
+const STABLES := {
+	"name": "Wahat Stables", "arabic": "إسطبلات الواحة",
+	"block": {"position": Vector3(158, 0, -26), "size": Vector3(26, 4.5, 9)},
+	"paddock": Rect2(146, -12, 24, 40), "horses": 4,
+}
+## The building site: a fenced plot with a crane and a bilingual "Phase 2 coming soon" sign.
+const BUILDING_SITE := {
+	"area": Rect2(134.5, 68.5, 37, 37), "crane": Vector3(153, 0, 87),
+	"sign": {"name": "Phase 2 coming soon", "arabic": "المرحلة الثانية قريباً",
+			"position": Vector3(131.5, 0, 87), "facing": -90.0},
+}
+
 ## Bilingual cluster signs at the lane entrances (Session 26 adds them; listed here now).
 const CLUSTER_NAMES := {"C1": "المجموعة ١", "C2": "المجموعة ٢", "C3": "المجموعة ٣", "C4": "المجموعة ٤", "C5": "المجموعة ٥"}
 
 ## The tutorial's first order: an easy pizza to the first home in Cluster 1.
 const TUTORIAL_ORDER := {"restaurant": "pizza", "villa": 101}
 
-## Shops round the Plaza, fronts facing the middle. Session 27 adds Shawarma Supreme and
-## Sunrise Bakery in the two empty south spots, and turns the mini market into a shop too.
+## The 7 pickup spots: the 6 shops round the Plaza (fronts facing the middle) and the Wahat
+## Farm Stall in the green spine. size: only if the shop isn't RESTAURANT_SIZE.
+## style: "market" (the mini market look) or "stall" (the farm stall); none = a restaurant.
+## foods: a shop that sells more than one food picks one of these for each order.
 const RESTAURANT_SIZE := Vector3(10.0, 5.0, 8.0)
 const RESTAURANTS := [
 	{"id": "pizza", "name": "Pizza", "arabic": "بيتزا", "food": "pizza",
@@ -122,21 +199,24 @@ const RESTAURANTS := [
 			"colour": Color(0.86, 0.33, 0.56, 1), "position": Vector3(-140, 0, -27), "facing": 0.0},
 	{"id": "boba", "name": "Boba Oasis", "arabic": "واحة البوبا", "food": "bubble tea",
 			"colour": Color(0.47, 0.3, 0.66, 1), "position": Vector3(-124, 0, -24), "facing": 0.0},
+	{"id": "shawarma", "name": "Shawarma Supreme", "arabic": "شاورما سوبريم", "food": "shawarma",
+			"colour": Color(0.82, 0.45, 0.12, 1), "position": Vector3(-156, 0, 24), "facing": 180.0},
+	{"id": "market", "name": "Al Sarab Mini Market", "arabic": "ميني ماركت السراب", "food": "groceries",
+			"colour": Color(0.2, 0.55, 0.3, 1), "position": Vector3(-140, 0, 29), "facing": 180.0,
+			"style": "market", "size": Vector3(12.0, 5.0, 9.0)},
+	{"id": "bakery", "name": "Sunrise Bakery", "arabic": "مخبز الشروق", "food": "cake",
+			"colour": Color(0.88, 0.62, 0.2, 1), "position": Vector3(-124, 0, 24), "facing": 180.0},
+	{"id": "farm", "name": "Wahat Farm Stall", "arabic": "كشك مزرعة الواحة", "food": "farm juice",
+			"foods": ["farm juice", "salad box"], "colour": Color(0.36, 0.58, 0.25, 1),
+			"position": Vector3(8, 0, -11), "facing": 0.0, "style": "stall", "size": Vector3(6.0, 3.5, 4.0)},
 ]
-
-## The mini market on the south side of the Plaza.
-const SUPERMARKET := {
-	"name": "Al Sarab Mini Market",
-	"arabic": "ميني ماركت السراب",
-	"position": Vector3(-140, 0, 29),
-	"facing": 180.0,
-	"size": Vector3(12.0, 5.0, 9.0),
-}
 
 ## The 60 homes: 12 per cluster, numbered 1 to 12 inside each cluster.
 ## number: a unique id (cluster x 100 + house). house: the number on the door.
 ## address: what the phone and the mini-map show. kind: courtyard, garden or signature
 ## (the 3 house types, Session 26). Placeholder boxes until then.
+## kind "spot": not a home but a drop-off spot (the school booth, the stable office). No house
+## is built for it (LandmarkBuilder builds it; look: "booth" or "office"); size: that little building.
 const VILLA_SIZE := Vector3(11.0, 6.5, 11.0)
 const VILLAS := [
 	{"number": 101, "house": 1, "cluster": "C1", "address": "C1 · Villa 1", "kind": "courtyard", "position": Vector3(-100, 0, -98.5), "facing": 0.0},
@@ -199,6 +279,8 @@ const VILLAS := [
 	{"number": 510, "house": 10, "cluster": "C5", "address": "C5 · Villa 10", "kind": "courtyard", "position": Vector3(-20, 0, 98.5), "facing": 180.0},
 	{"number": 511, "house": 11, "cluster": "C5", "address": "C5 · Villa 11", "kind": "courtyard", "position": Vector3(2, 0, 98.5), "facing": 180.0},
 	{"number": 512, "house": 12, "cluster": "C5", "address": "C5 · Villa 12", "kind": "signature", "position": Vector3(24, 0, 98.5), "facing": 180.0},
+	{"number": 901, "house": 0, "cluster": "", "address": "Al Shams School · Gate", "kind": "spot", "look": "booth", "position": Vector3(95, 0, 34), "facing": 180.0, "size": Vector3(2.6, 2.8, 2.6)},
+	{"number": 902, "house": 0, "cluster": "", "address": "Stables · Office", "kind": "spot", "look": "office", "position": Vector3(139, 0, 8), "facing": -90.0, "size": Vector3(5, 3.2, 4)},
 ]
 
 # --- Decoration and obstacles (built by decor_builder and obstacle_builder) ---
@@ -208,6 +290,8 @@ const PALM_TREES := [
 	Vector3(-152, 0, -9), Vector3(-128, 0, -9), Vector3(-152, 0, 9), Vector3(-128, 0, 9),
 	Vector3(-100, 0, -5), Vector3(-60, 0, -5), Vector3(-20, 0, -5), Vector3(20, 0, -5), Vector3(60, 0, -5), Vector3(100, 0, -5),
 	Vector3(-80, 0, 5), Vector3(-40, 0, 5), Vector3(40, 0, 5), Vector3(80, 0, 5),
+	# Date palms down on the sunken floor of the Plaza, round the fountain.
+	Vector3(-144.6, -0.45, -4.6), Vector3(-135.4, -0.45, -4.6), Vector3(-144.6, -0.45, 4.6), Vector3(-135.4, -0.45, 4.6),
 ]
 
 const PARKED_CAR_SIZE := Vector3(1.9, 1.5, 4.3)

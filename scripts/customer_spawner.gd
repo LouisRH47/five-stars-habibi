@@ -35,7 +35,7 @@ func _on_order_delivered(order: Order) -> void:
 		return
 	var angle := deg_to_rad(villa["facing"])
 	var front := Vector3(sin(angle), 0.0, cos(angle))
-	var wall: Vector3 = villa["position"] + front * place_builder.villa_size.z * 0.5
+	var wall: Vector3 = villa["position"] + front * place_builder.villa_size_of(villa).z * 0.5
 	if order.leave_at_door:
 		last_spawned = _leave_bag(wall + front * 0.5)
 		return

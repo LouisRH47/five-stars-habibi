@@ -2,9 +2,10 @@ extends Node3D
 ## Builds Wahat Al Shams (Session 25) from data/wahat_al_shams.gd when the game starts: the
 ## sand ground, the tree belt round the edge (with an invisible wall inside it), the horse
 ## track and bike track, the ring road, the gate road and the closed main gate with its
-## gate house and welcome sign, the cluster lanes, the round Plaza paving, the green spine
-## with its path and stream, the cluster mini-plaza strips, bollards at the lane entrances,
-## and flat plots for the school, mosque, stables and building site.
+## gate house and welcome sign, the cluster lanes, the green spine with its path and stream,
+## the cluster mini-plaza strips, bollards at the lane entrances,
+## and flat plots for the school, mosque, stables and building site (LandmarkBuilder builds
+## those, SpineBuilder the domes, farm and playgrounds).
 ## Shops and homes come from PlaceBuilder, palms/cars/bumps from DecorBuilder, cats and kids
 ## from ObstacleBuilder. Everything flat has no collision: you ride over it.
 
@@ -35,8 +36,7 @@ func _ready() -> void:
 		push_error("WahatBuilder has no data list set in the scene")
 		return
 	_map = data.get_script_constant_map()
-	var half: Vector2 = _map["MAP_HALF"]
-	_flat(Vector2.ZERO, half * 2.0 + Vector2.ONE * MARGIN * 2.0, 1.0, SAND, 0.0, true)  # ground (top at 0), solid
+	_build_ground()
 	_build_tracks()
 	for plot in _map["PLOTS"]:
 		var area: Rect2 = plot["area"]
@@ -45,10 +45,6 @@ func _ready() -> void:
 	_flat(spine.get_center(), spine.size, 0.02, GRASS, 0.012)
 	var stream: Dictionary = _map["STREAM"]
 	_build_stream(stream)
-	var plaza: Dictionary = _map["PLAZA"]
-	var disc := LowPoly.cylinder(self, plaza["radius"], plaza["radius"], 0.03, PAVING,
-			Vector3(plaza["centre"].x, 0.035, plaza["centre"].y))
-	disc.name = "Plaza"
 	for area: Rect2 in _map["PAVED_AREAS"]:
 		_flat(area.get_center(), area.size, 0.02, PAVING, 0.03)
 	for road in _map["ROADS"]:
@@ -62,6 +58,19 @@ func _ready() -> void:
 	_build_tree_belt()
 	_build_walls_and_gate()
 	_build_welcome()
+
+
+## The solid sand ground (top at 0), in 4 slabs round a square hole where the Plaza's sunken
+## square goes (PlazaBuilder fills the hole with the steps, the floor and their slope).
+func _build_ground() -> void:
+	var half: Vector2 = _map["MAP_HALF"] + Vector2.ONE * MARGIN
+	var plaza: Dictionary = _map["PLAZA"]
+	var c: Vector2 = plaza["centre"]
+	var hole: float = plaza.get("sunken_radius", 0.0)
+	_flat(Vector2((-half.x + c.x - hole) * 0.5, 0), Vector2(c.x - hole + half.x, half.y * 2.0), 1.0, SAND, 0.0, true)
+	_flat(Vector2((c.x + hole + half.x) * 0.5, 0), Vector2(half.x - c.x - hole, half.y * 2.0), 1.0, SAND, 0.0, true)
+	_flat(Vector2(c.x, (-half.y + c.y - hole) * 0.5), Vector2(hole * 2.0, c.y - hole + half.y), 1.0, SAND, 0.0, true)
+	_flat(Vector2(c.x, (c.y + hole + half.y) * 0.5), Vector2(hole * 2.0, half.y - c.y - hole), 1.0, SAND, 0.0, true)
 
 
 ## A flat coloured slab. middle: x/z. height: its thickness. top: how high its top is.

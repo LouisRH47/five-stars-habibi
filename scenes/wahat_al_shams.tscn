@@ -23,6 +23,9 @@
 [ext_resource type="Script" path="res://scripts/delivered_card.gd" id="24_card"]
 [ext_resource type="Script" path="res://scripts/tutorial.gd" id="20_tutorial"]
 [ext_resource type="Script" path="res://scripts/obstacle_builder.gd" id="15_obstacles"]
+[ext_resource type="Script" path="res://scripts/plaza_builder.gd" id="25_plaza"]
+[ext_resource type="Script" path="res://scripts/spine_builder.gd" id="26_spine"]
+[ext_resource type="Script" path="res://scripts/landmark_builder.gd" id="27_landmarks"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_pg"]
 sky_top_color = Color(0.30980393, 0.6627451, 0.8392157, 1)
@@ -52,6 +55,18 @@ shadow_enabled = true
 
 [node name="WahatBuilder" type="Node3D" parent="."]
 script = ExtResource("9_map")
+data = ExtResource("8_data")
+
+[node name="PlazaBuilder" type="Node3D" parent="."]
+script = ExtResource("25_plaza")
+data = ExtResource("8_data")
+
+[node name="SpineBuilder" type="Node3D" parent="."]
+script = ExtResource("26_spine")
+data = ExtResource("8_data")
+
+[node name="LandmarkBuilder" type="Node3D" parent="."]
+script = ExtResource("27_landmarks")
 data = ExtResource("8_data")
 
 [node name="DecorBuilder" type="Node3D" parent="."]

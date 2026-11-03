@@ -179,9 +179,9 @@ func _draw_buildings() -> void:
 		target_villa = GameState.current_order.villa_number
 	for place in place_builder.villas:
 		var colour := TARGET if place["number"] == target_villa else VILLA
-		_draw_block(place["position"], place["facing"], place_builder.villa_size, colour)
+		_draw_block(place["position"], place["facing"], place_builder.villa_size_of(place), colour)
 	for place in place_builder.restaurants:
-		_draw_block(place["position"], place["facing"], place_builder.restaurant_size, place["colour"])
+		_draw_block(place["position"], place["facing"], place_builder.restaurant_size_of(place), place["colour"])
 
 
 ## A building seen from above: width across its front, depth front to back, turned to face its way.
@@ -202,7 +202,8 @@ func _draw_villa_numbers(xform: Transform2D) -> void:
 	for place in place_builder.villas:
 		var spot: Vector2 = xform * Vector2(place["position"].x, place["position"].z)
 		if view.grow(-6.0).has_point(spot):
-			_text(str(place.get("house", place["number"])), spot, NUMBER_SIZE, VILLA_NUMBER)
+			if not PlaceBuilder.is_spot(place):  # the school booth and stable office have no number
+				_text(str(place.get("house", place["number"])), spot, NUMBER_SIZE, VILLA_NUMBER)
 
 
 func _draw_north(xform: Transform2D) -> void:
@@ -253,7 +254,7 @@ func _draw_parked_bike(xform: Transform2D) -> void:
 func _house_number() -> String:
 	for place in place_builder.villas:
 		if place["number"] == GameState.current_order.villa_number:
-			return str(place.get("house", place["number"]))
+			return "" if PlaceBuilder.is_spot(place) else str(place.get("house", place["number"]))
 	return ""
 
 
