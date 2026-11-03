@@ -1,47 +1,71 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="680" height="440" viewBox="0 0 680 440">
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="430" viewBox="0 0 680 430">
 <style>.th{font:500 14px sans-serif;fill:#2C2C2A}.ts{font:12px sans-serif;fill:#5F5E5A}</style>
-<rect width="680" height="440" fill="#FFFFFF"/>
-<rect x="40" y="30" width="600" height="360" rx="14" fill="#8DBB6A"/>
-<rect x="54" y="44" width="572" height="332" rx="10" fill="#EADBB8"/>
-<rect x="70" y="60" width="540" height="300" rx="8" fill="none" stroke="#9A9890" stroke-width="8"/>
-<rect x="40" y="203" width="34" height="14" fill="#9A9890"/>
-<rect x="86" y="150" width="34" height="34" rx="4" fill="#F2B230"/><rect x="126" y="150" width="34" height="34" rx="4" fill="#F28C28"/>
-<rect x="86" y="236" width="34" height="34" rx="4" fill="#F28C28"/><rect x="126" y="236" width="34" height="34" rx="4" fill="#F2B230"/>
-<circle cx="123" cy="210" r="23" fill="#D9C49A" stroke="#B89C68" stroke-width="1"/>
-<text class="th" x="123" y="215" text-anchor="middle" style="fill:#412402">Plaza</text>
-<rect x="170" y="182" width="358" height="56" rx="8" fill="#7DB55A"/>
-<circle cx="192" cy="197" r="7" fill="#F4F2EC"/><circle cx="212" cy="197" r="7" fill="#F4F2EC"/><circle cx="232" cy="197" r="7" fill="#F4F2EC"/>
-<circle cx="466" cy="197" r="7" fill="#F4F2EC"/><circle cx="486" cy="197" r="7" fill="#F4F2EC"/><circle cx="506" cy="197" r="7" fill="#F4F2EC"/>
-<text class="th" x="350" y="202" text-anchor="middle" style="fill:#173404">Green spine</text>
-<path d="M182 225 Q215 215 248 225 T314 225 T380 225 T446 225 T512 225" fill="none" stroke="#378ADD" stroke-width="5" stroke-linecap="round"/>
-<rect x="540" y="168" width="60" height="84" rx="6" fill="#C9A46A"/>
-<text class="th" x="570" y="206" text-anchor="middle" style="fill:#412402">Stables</text>
-<circle cx="570" cy="252" r="6" fill="#D85A30"/>
-<rect x="170" y="82" width="105" height="84" rx="6" fill="#F7F1E3" stroke="#B4B2A9" stroke-width="0.5"/>
-<rect x="290" y="82" width="105" height="84" rx="6" fill="#F7F1E3" stroke="#B4B2A9" stroke-width="0.5"/>
-<rect x="410" y="82" width="105" height="84" rx="6" fill="#F7F1E3" stroke="#B4B2A9" stroke-width="0.5"/>
-<rect x="170" y="254" width="105" height="84" rx="6" fill="#F7F1E3" stroke="#B4B2A9" stroke-width="0.5"/>
-<rect x="290" y="254" width="105" height="84" rx="6" fill="#F7F1E3" stroke="#B4B2A9" stroke-width="0.5"/>
-<circle cx="222" cy="140" r="6" fill="#85B7EB"/><circle cx="342" cy="140" r="6" fill="#85B7EB"/><circle cx="462" cy="140" r="6" fill="#85B7EB"/>
-<circle cx="222" cy="312" r="6" fill="#85B7EB"/><circle cx="342" cy="312" r="6" fill="#85B7EB"/>
-<text class="th" x="222" y="112" text-anchor="middle">C1</text>
-<text class="th" x="342" y="112" text-anchor="middle">C2</text>
-<text class="th" x="462" y="112" text-anchor="middle">C3</text>
-<text class="th" x="222" y="284" text-anchor="middle">C4</text>
-<text class="th" x="342" y="284" text-anchor="middle">C5</text>
-<rect x="410" y="254" width="50" height="84" rx="6" fill="#F1EFE8" stroke="#B4B2A9" stroke-width="0.5"/>
-<text class="ts" x="435" y="300" text-anchor="middle">Mosque</text>
-<rect x="466" y="254" width="50" height="84" rx="6" fill="#FAECE7" stroke="#F0997B" stroke-width="0.5"/>
-<text class="ts" x="491" y="300" text-anchor="middle" style="fill:#712B13">School</text>
-<circle cx="491" cy="254" r="6" fill="#D85A30"/>
-<rect x="540" y="290" width="60" height="48" rx="6" fill="#D3D1C7"/>
-<text class="ts" x="570" y="318" text-anchor="middle">Building site</text>
-<rect x="198" y="69" width="50" height="9" rx="2" fill="#185FA5"/><rect x="318" y="69" width="50" height="9" rx="2" fill="#185FA5"/><rect x="438" y="69" width="50" height="9" rx="2" fill="#185FA5"/>
-<rect x="198" y="342" width="50" height="9" rx="2" fill="#185FA5"/><rect x="318" y="342" width="50" height="9" rx="2" fill="#185FA5"/>
-<circle cx="47" cy="411" r="6" fill="#D85A30"/><text class="ts" x="60" y="415">One drop-off spot</text>
-<circle cx="187" cy="411" r="6" fill="#85B7EB"/><text class="ts" x="200" y="415">Cluster mini-plaza</text>
-<rect x="320" y="406" width="14" height="10" rx="2" fill="#F1EFE8" stroke="#B4B2A9" stroke-width="0.5"/><text class="ts" x="340" y="415">Scenery only</text>
-<rect x="430" y="406" width="14" height="10" rx="2" fill="#185FA5"/><text class="ts" x="450" y="415">Solar car park</text>
-<rect x="550" y="406" width="14" height="10" rx="2" fill="#8DBB6A"/><text class="ts" x="570" y="415">Trees + track</text>
-<text class="ts" x="40" y="22">Wahat Al Shams, top-down (north is up, gate on the west). Not to scale: about 400 x 300 m.</text>
+<rect width="680" height="430" fill="#FFFFFF"/>
+<text class="ts" x="34" y="24" text-anchor="middle">Highway</text>
+<rect x="20" y="30" width="28" height="320" fill="#6B6B66"/>
+<rect x="60" y="30" width="560" height="320" rx="10" fill="#8DBB6A"/>
+<rect x="68" y="38" width="544" height="304" rx="8" fill="none" stroke="#B9925A" stroke-width="4"/>
+<rect x="74" y="44" width="532" height="292" rx="7" fill="none" stroke="#378ADD" stroke-width="2"/>
+<rect x="78" y="48" width="524" height="284" rx="6" fill="#EADBB8"/>
+<rect x="84" y="54" width="512" height="272" rx="6" fill="none" stroke="#9A9890" stroke-width="6"/>
+<rect x="48" y="66" width="36" height="8" fill="#9A9890"/><rect x="48" y="306" width="36" height="8" fill="#9A9890"/>
+<rect x="51" y="62" width="9" height="9" fill="#D85A30"/><rect x="51" y="302" width="9" height="9" fill="#D85A30"/>
+<rect x="92" y="64" width="48" height="60" rx="4" fill="#F1EFE8" stroke="#B4B2A9" stroke-width="0.5"/>
+<text class="ts" x="116" y="98" text-anchor="middle" style="fill:#444441">Mosque</text>
+<rect x="146" y="64" width="32" height="60" rx="4" fill="#D3D1C7"/>
+<rect x="152" y="74" width="20" height="38" rx="3" fill="#F28C28"/>
+<rect x="158" y="54" width="8" height="10" fill="#9A9890"/>
+<text class="ts" x="162" y="137" text-anchor="middle" style="fill:#633806">Bus</text>
+<rect x="184" y="60" width="124" height="80" rx="4" fill="#F2B230"/>
+<circle cx="246" cy="100" r="20" fill="#D9C49A"/>
+<text class="ts" x="246" y="104" text-anchor="middle" style="fill:#412402">Plaza</text>
+<rect x="94" y="150" width="70" height="5" fill="#185FA5"/><rect x="94" y="159" width="70" height="5" fill="#185FA5"/><rect x="94" y="168" width="70" height="5" fill="#185FA5"/><rect x="94" y="177" width="70" height="5" fill="#185FA5"/>
+<rect x="172" y="146" width="74" height="6" fill="#185FA5"/>
+<rect x="172" y="155" width="74" height="30" rx="3" fill="#B5D4F4" stroke="#378ADD" stroke-width="0.5"/>
+<line x1="244" y1="158" x2="244" y2="182" stroke="#0C447C" stroke-width="3"/>
+<text class="ts" x="207" y="174" text-anchor="middle" style="fill:#0C447C">C Institute</text>
+<rect x="94" y="190" width="70" height="124" rx="12" fill="#D8C79E"/>
+<text class="ts" x="129" y="248" text-anchor="middle" style="fill:#633806">Fair Grade</text>
+<text class="ts" x="129" y="264" text-anchor="middle" style="fill:#633806">School</text>
+<rect x="172" y="192" width="70" height="54" fill="#4E9A3C"/>
+<line x1="207" y1="192" x2="207" y2="246" stroke="#FFFFFF" stroke-width="1"/>
+<text class="ts" x="207" y="223" text-anchor="middle" style="fill:#FFFFFF">Pitch</text>
+<rect x="172" y="254" width="70" height="60" fill="#D9C49A" stroke="#FFFFFF" stroke-width="2"/>
+<text class="ts" x="207" y="288" text-anchor="middle" style="fill:#633806">Jumps</text>
+<rect x="252" y="222" width="68" height="72" rx="4" fill="#D3D1C7"/>
+<text class="ts" x="286" y="254" text-anchor="middle" style="fill:#444441">Building</text>
+<text class="ts" x="286" y="270" text-anchor="middle" style="fill:#444441">site</text>
+<rect x="250" y="300" width="64" height="20" rx="3" fill="#C9A46A"/>
+<text class="ts" x="282" y="314" text-anchor="middle" style="fill:#412402">Stables</text>
+<rect x="256" y="160" width="334" height="48" rx="6" fill="#7DB55A"/>
+<line x1="256" y1="202" x2="590" y2="202" stroke="#D9C49A" stroke-width="3"/>
+<text class="ts" x="292" y="186" text-anchor="middle" style="fill:#173404">Spine</text>
+<circle cx="336" cy="184" r="6" fill="#F4F2EC"/><circle cx="360" cy="184" r="6" fill="#F4F2EC"/><circle cx="384" cy="184" r="6" fill="#F4F2EC"/>
+<circle cx="508" cy="184" r="6" fill="#F4F2EC"/><circle cx="532" cy="184" r="6" fill="#F4F2EC"/><circle cx="556" cy="184" r="6" fill="#F4F2EC"/><circle cx="578" cy="184" r="6" fill="#F4F2EC"/>
+<path d="M404 178 H426 A8 8 0 0 1 426 194 H404 Z" fill="#F4F2EC"/>
+<text class="ts" x="415" y="190" text-anchor="middle" style="fill:#2C2C2A">Gym</text>
+<rect x="404" y="195" width="26" height="4" fill="#378ADD"/>
+<rect x="448" y="164" width="44" height="20" rx="9" fill="#85B7EB"/>
+<text class="ts" x="470" y="178" text-anchor="middle" style="fill:#0C447C">Pool</text>
+<rect x="330" y="64" width="78" height="92" rx="4" fill="#F7F1E3"/><rect x="422" y="64" width="78" height="92" rx="4" fill="#F7F1E3"/><rect x="514" y="64" width="78" height="92" rx="4" fill="#F7F1E3"/>
+<rect x="336" y="66" width="12" height="72" fill="#E3D6BC"/><rect x="356" y="66" width="12" height="72" fill="#E3D6BC"/><rect x="376" y="66" width="12" height="72" fill="#E3D6BC"/><rect x="396" y="66" width="10" height="72" fill="#E3D6BC"/>
+<rect x="428" y="66" width="12" height="72" fill="#E3D6BC"/><rect x="448" y="66" width="12" height="72" fill="#E3D6BC"/><rect x="468" y="66" width="12" height="72" fill="#E3D6BC"/><rect x="488" y="66" width="10" height="72" fill="#E3D6BC"/>
+<rect x="520" y="66" width="12" height="72" fill="#E3D6BC"/><rect x="540" y="66" width="12" height="72" fill="#E3D6BC"/><rect x="560" y="66" width="12" height="72" fill="#E3D6BC"/><rect x="580" y="66" width="10" height="72" fill="#E3D6BC"/>
+<text class="th" x="369" y="151" text-anchor="middle">C1</text><text class="th" x="461" y="151" text-anchor="middle">C2</text><text class="th" x="553" y="151" text-anchor="middle">C3</text>
+<rect x="330" y="214" width="78" height="104" rx="4" fill="#F7F1E3"/><rect x="422" y="214" width="78" height="104" rx="4" fill="#F7F1E3"/>
+<rect x="336" y="216" width="12" height="82" fill="#E3D6BC"/><rect x="356" y="216" width="12" height="82" fill="#E3D6BC"/><rect x="376" y="216" width="12" height="82" fill="#E3D6BC"/><rect x="396" y="216" width="10" height="82" fill="#E3D6BC"/>
+<rect x="428" y="216" width="12" height="82" fill="#E3D6BC"/><rect x="448" y="216" width="12" height="82" fill="#E3D6BC"/><rect x="468" y="216" width="12" height="82" fill="#E3D6BC"/><rect x="488" y="216" width="10" height="82" fill="#E3D6BC"/>
+<text class="th" x="369" y="312" text-anchor="middle">C4</text><text class="th" x="461" y="312" text-anchor="middle">C5</text>
+<rect x="514" y="214" width="78" height="104" rx="4" fill="#D3D1C7"/>
+<text class="ts" x="553" y="262" text-anchor="middle" style="fill:#444441">Building</text>
+<text class="ts" x="553" y="278" text-anchor="middle" style="fill:#444441">site</text>
+<rect x="316" y="64" width="8" height="90" fill="#185FA5"/><rect x="411" y="64" width="8" height="90" fill="#185FA5"/><rect x="503" y="64" width="8" height="90" fill="#185FA5"/>
+<rect x="411" y="216" width="8" height="100" fill="#185FA5"/><rect x="503" y="216" width="8" height="100" fill="#185FA5"/>
+<rect x="40" y="365" width="10" height="10" fill="#D85A30"/><text class="ts" x="56" y="374">Checkpoint + guard</text>
+<rect x="200" y="365" width="14" height="10" fill="#185FA5"/><text class="ts" x="220" y="374">Solar car park</text>
+<line x1="350" y1="370" x2="372" y2="370" stroke="#B9925A" stroke-width="4"/><text class="ts" x="378" y="374">Horse track (horses only)</text>
+<line x1="40" y1="394" x2="58" y2="394" stroke="#378ADD" stroke-width="2"/><text class="ts" x="64" y="398">Run + cycle track</text>
+<rect x="200" y="389" width="14" height="10" fill="#D3D1C7"/><text class="ts" x="220" y="398">Building site</text>
+<rect x="350" y="389" width="10" height="10" rx="2" fill="#F28C28"/><text class="ts" x="368" y="398">Bus station (start here)</text>
+<text class="ts" x="340" y="422" text-anchor="middle">Wahat Al Shams at real size (about 940 x 500 m). North is up, highway on the west. Rows of homes run north to south.</text>
 </svg>
