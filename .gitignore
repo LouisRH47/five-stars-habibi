@@ -9,3 +9,7 @@
 
 # macOS
 .DS_Store
+
+# Local Python tool caches
+__pycache__/
+*.pyc

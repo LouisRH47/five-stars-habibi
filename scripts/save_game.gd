@@ -6,7 +6,7 @@ class_name SaveGame
 ## On a Mac the file is in ~/Library/Application Support/Godot/app_userdata/Five Stars Habibi/.
 
 ## Bump this if the save format changes, so old saves can be read differently.
-const VERSION := 1
+const VERSION := 2
 ## Only the newest deliveries are kept in the save (the rating only needs the last 50).
 const HISTORY_KEPT := 200
 ## History numbers that must come back as whole numbers (JSON turns them into decimals).
@@ -31,6 +31,9 @@ static func save(state: Node, path: String) -> bool:
 		"crash_shifts": state.crash_shifts,
 		"regular_visits": state.regular_visits,
 	}
+	for field in ["streak", "day_kind", "tomorrow_kind", "personal_bests", "visited_homes", "visited_venues",
+			"animals_met", "lines_heard", "collection_claims", "owned_collection_rewards", "upgrade_levels", "owned_items", "equipped_cosmetics"]:
+		data[field] = state.get(field)
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	if file == null:
 		push_warning("Could not save the game to " + path)
@@ -73,6 +76,32 @@ static func load_into(state: Node, path: String) -> bool:
 	if visits is Dictionary:
 		for id in visits:
 			state.regular_visits[str(id)] = int(visits[id])
+	# Version 1 remains readable. New progress is independent of the 200-job rating archive.
+	state.streak = maxi(0, int(data.get("streak", 0)))
+	state.day_kind = data.get("day_kind", "normal") if data.get("day_kind", "normal") in ReplayCatalog.DAYS else "normal"
+	state.tomorrow_kind = data.get("tomorrow_kind", "hot_noon") if data.get("tomorrow_kind", "hot_noon") in ReplayCatalog.DAYS else "hot_noon"
+	for field in ["visited_homes", "visited_venues", "animals_met", "lines_heard", "collection_claims", "owned_collection_rewards",
+			"upgrade_levels", "owned_items", "equipped_cosmetics"]:
+		var saved = data.get(field, {})
+		state.set(field, saved.duplicate(true) if saved is Dictionary else {})
+	var records = data.get("personal_bests", {})
+	state.personal_bests = records.duplicate(true) if records is Dictionary else {}
+	for field in ["earnings", "streak", "deliveries"]:
+		state.personal_bests[field] = maxi(0, int(state.personal_bests.get(field, 0)))
+	if not state.personal_bests.has("routes") or not state.personal_bests["routes"] is Dictionary:
+		state.personal_bests["routes"] = {}
+	# Migrate only the historical stamps that actually exist in an older save.
+	if int(data.get("version", 1)) < 2:
+		for job in state.history:
+			if job.get("cancelled", false):
+				continue
+			var cluster: String = job.get("cluster", "")
+			if cluster != "":
+				state.visited_homes[str(job["villa"])] = {"cluster": cluster, "address": job.get("address", "")}
+			elif int(job.get("villa", 0)) in [901, 902, 903, 904]:
+				state.visited_venues[str(job["villa"])] = job.get("address", "Reception")
+		for cluster in ["C1", "C2", "C3", "C4", "C5"]:
+			state.collection_claims[cluster] = state.cluster_stamps(cluster) / GameConfig.COLLECTION_STAMP_INTERVAL
 	return true
 
 

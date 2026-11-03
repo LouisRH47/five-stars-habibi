@@ -25,6 +25,11 @@ const HINT_LIT := ORANGE  # do it now
 var _flash_left := 0.0
 var _chips: Dictionary = {}  # "food", "pay", "time", "special", "regular" -> Label
 var _event_banner: Label  # Session 33: road works / horses warning
+var _choices_box: HBoxContainer
+var _choice_info: Array[Label] = []
+var _streak: Label
+var _gear_goal: Label
+var _gear_progress: ProgressBar
 var _goals: Label  # Session 32: this shift's 2 goals, shown while you wait for an order
 
 @onready var _wallet: Label = $Panel/Margin/Rows/Header/Wallet
@@ -52,6 +57,14 @@ func _ready() -> void:
 		_chips[key] = _make_chip()
 	_make_event_banner()
 	_goals = _make_goals()
+	_make_choices()
+	_make_profile_link()
+	var profile := ProfilePage.new()
+	profile.name = "ProfilePage"
+	add_child(profile)
+	var observer := preload("res://scripts/collection_observer.gd").new()
+	observer.delivery_manager = delivery_manager
+	add_child(observer)
 	GameState.money_changed.connect(_on_money_changed)
 	GameState.order_delivered.connect(_on_order_delivered)
 	GameState.stats_changed.connect(_on_stats_changed)
@@ -103,7 +116,9 @@ func _process(delta: float) -> void:
 		_set_pill("WAITING", GREY)
 		_show("Waiting for orders...", "", _walking_hint("Walk back to your bike") if walking else "", walking)
 		_set_order(null, 0)
-	_show_goals(stage == GameState.Stage.NONE)
+	_show_goals(true)
+	_streak.text = "%d in a row  ·  +%d%% tip chance" % [GameState.streak, roundi(minf(GameState.streak * GameConfig.STREAK_TIP_STEP, GameConfig.STREAK_TIP_MAX) * 100.0)] if GameState.streak > 0 else "Build a five-star streak"
+	_show_choices(stage == GameState.Stage.OFFERED and GameState.offered_orders.size() > 1)
 
 
 ## The order part of the card: pick-up and drop-off rows (the one you're on now in bold
@@ -119,14 +134,17 @@ func _set_order(order: Order, step: int) -> void:
 		return
 	_pick_up.text = "%s  Pick up · %s" % ["✓" if step == 2 else "•", order.restaurant_name]
 	_drop_off.text = "•  Drop off · %s" % order.address
-	_pick_up.add_theme_color_override("font_color", ORANGE if step == 1 else (SOFT if step == 2 else INK))
-	_drop_off.add_theme_color_override("font_color", ORANGE if step == 2 else INK)
+	_font_colour(_pick_up, ORANGE if step == 1 else (SOFT if step == 2 else INK))
+	_font_colour(_drop_off, ORANGE if step == 2 else INK)
 	_set_chip("food", order.food.capitalize(), TEAL)
 	_set_chip("pay", "%d Dh" % order.pay, GREEN)
 	# Session 32: a coloured chip for a special order, a heart for a regular customer.
 	_set_chip("special", GameConfig.SPECIAL_NAMES.get(order.special, ""), GameConfig.SPECIAL_COLOURS.get(order.special, TEAL))
 	_set_chip("regular", "♥ " + order.regular if order.regular != "" else "", GameConfig.REGULAR_COLOUR)
 	_note.text = "\"%s\"" % order.note
+	if order.special != "":
+		_note.visible = true
+		_note.text = ("\"%s\"\n" % order.note if order.note != "" else "") + order.requirement_text()
 
 
 ## This shift's goals (Session 32): a tick when done, otherwise how far along you are.
@@ -155,14 +173,27 @@ func _make_goals() -> Label:
 
 func _set_pill(text: String, colour: Color) -> void:
 	_pill.text = text
-	(_pill.get_theme_stylebox("normal") as StyleBoxFlat).bg_color = colour
+	_background_colour(_pill, colour)
 
 
 func _set_chip(key: String, text: String, colour: Color) -> void:
 	var chip: Label = _chips[key]
 	chip.visible = text != ""
 	chip.text = text
-	(chip.get_theme_stylebox("normal") as StyleBoxFlat).bg_color = colour
+	_background_colour(chip, colour)
+
+
+## StyleBox changes emit resource notifications even if their colour is unchanged.
+## Steady gameplay frames should reuse the existing theme/layout caches.
+func _background_colour(control: Control, colour: Color) -> void:
+	var style := control.get_theme_stylebox("normal") as StyleBoxFlat
+	if style.bg_color != colour:
+		style.bg_color = colour
+
+
+func _font_colour(control: Control, colour: Color) -> void:
+	if control.get_theme_color("font_color") != colour:
+		control.add_theme_color_override("font_color", colour)
 
 
 func _make_chip() -> Label:
@@ -220,7 +251,7 @@ func _show(status: String, detail: String, hint: String, hint_lit: bool) -> void
 	_detail.visible = detail != ""
 	_hint.text = hint
 	_hint.visible = hint != ""
-	_hint.add_theme_color_override("font_color", HINT_LIT if hint_lit else HINT_DIM)
+	_font_colour(_hint, HINT_LIT if hint_lit else HINT_DIM)
 
 
 ## Session 31: the phone buzzes when a new order comes in, a quick little side-to-side
@@ -242,6 +273,7 @@ func buzz() -> void:
 
 func _on_money_changed(new_money: int) -> void:
 	_wallet.text = "Dh %d" % new_money
+	_show_gear_goal()
 
 
 func _on_order_delivered(_order: Order) -> void:
@@ -260,6 +292,7 @@ func _on_insurance_changed(on: bool) -> void:
 
 
 func _on_stats_changed() -> void:
+	_show_gear_goal()
 	var rating := GameState.rating()
 	_rating_stars.stars = roundf(rating * 2.0) / 2.0
 	_rating.text = "New" if GameState.history.is_empty() else _stars_text(rating)
@@ -304,3 +337,95 @@ func _make_event_banner() -> void:
 	var rows := $Panel/Margin/Rows
 	rows.add_child(_event_banner)
 	rows.move_child(_event_banner, $Panel/Margin/Rows/Line.get_index())
+
+
+func _make_profile_link() -> void:
+	var rows := $Panel/Margin/Rows
+	_streak = Label.new()
+	_streak.add_theme_font_size_override("font_size", 14)
+	_streak.add_theme_color_override("font_color", GREEN)
+	rows.add_child(_streak)
+	rows.move_child(_streak, _xp_bar.get_index() + 1)
+	var profile := Button.new()
+	profile.text = "Profile & collections  ·  P"
+	profile.add_theme_font_size_override("font_size", 14)
+	profile.pressed.connect(func(): $ProfilePage.open())
+	rows.add_child(profile)
+	_gear_goal = Label.new()
+	_gear_goal.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_gear_goal.add_theme_font_size_override("font_size", 13)
+	_gear_goal.add_theme_color_override("font_color", TEAL)
+	rows.add_child(_gear_goal)
+	_gear_progress = ProgressBar.new()
+	_gear_progress.custom_minimum_size.y = 5
+	_gear_progress.show_percentage = false
+	rows.add_child(_gear_progress)
+
+
+func _show_gear_goal() -> void:
+	if _gear_goal == null:
+		return
+	var goal := GearCatalog.next_goal(GameState)
+	_gear_goal.text = "Next goal: " + goal["description"]
+	_gear_progress.value = goal["progress"] * 100.0
+
+
+func _make_choices() -> void:
+	_choices_box = HBoxContainer.new()
+	_choices_box.name = "OrderChoices"
+	_choices_box.add_theme_constant_override("separation", 12)
+	_choices_box.visible = false
+	var rows := $Panel/Margin/Rows
+	rows.add_child(_choices_box)
+	rows.move_child(_choices_box, _stops.get_index())
+	for index in 2:
+		var card := PanelContainer.new()
+		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		card.custom_minimum_size.x = 260
+		var style := StyleBoxFlat.new()
+		style.bg_color = Color(0.94, 0.97, 0.96)
+		style.border_color = GREEN if index == 1 else TEAL
+		style.set_border_width_all(2)
+		style.set_corner_radius_all(12)
+		style.set_content_margin_all(12)
+		card.add_theme_stylebox_override("panel", style)
+		_choices_box.add_child(card)
+		var inside := VBoxContainer.new()
+		inside.add_theme_constant_override("separation", 10)
+		card.add_child(inside)
+		var label := Label.new()
+		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		label.add_theme_font_size_override("font_size", 17)
+		label.add_theme_color_override("font_color", INK)
+		inside.add_child(label)
+		_choice_info.append(label)
+		var button := Button.new()
+		button.text = "Choose %d" % (index + 1)
+		button.pressed.connect(func(): delivery_manager.choose(index))
+		inside.add_child(button)
+
+
+func _show_choices(on: bool) -> void:
+	_choices_box.visible = on
+	var panel: PanelContainer = $Panel
+	var width := 640.0 if on else 330.0
+	var left := -664.0 if on else -354.0
+	if panel.custom_minimum_size.x != width:
+		panel.custom_minimum_size.x = width
+	if panel.offset_left != left:
+		panel.offset_left = left
+	if not on:
+		return
+	_stops.visible = false
+	_chip_row.visible = false
+	_note.visible = false
+	_status.text = "Choose your next delivery"
+	var secs := ceili(delivery_manager.time_left_on_offer()) if delivery_manager != null else 0
+	_hint.text = "1 or 2 to choose  ·  Q skips both  ·  %d s" % secs
+	for index in 2:
+		var order := GameState.offered_orders[index]
+		var kind: String = GameConfig.SPECIAL_NAMES.get(order.special, "Standard order")
+		var places := delivery_manager.place_builder
+		var metres := roundi(places.restaurant_approach(order.restaurant_id).distance_to(places.villa_approach(order.villa_number)))
+		var customer := "  ·  ♥ " + order.regular if order.regular != "" else ("  ·  Tip-friendly" if order.special == "fragile" else "")
+		_choice_info[index].text = "%s%s\n%s  ·  %d Dh\nTo %s\n%d m route%s\n%s\n%s" % [order.restaurant_name, "  ·  Better offer" if index == 1 else "", order.food.capitalize(), order.pay, order.address, metres, customer, kind, order.requirement_text()]

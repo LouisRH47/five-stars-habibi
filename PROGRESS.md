@@ -1,6 +1,24 @@
 # Progress
 
 ## Current session
+**Detail and replay implementation is ready for playtest** on `codex/detail-pass-complete`.
+The 940×500 m district has 500 joined homes, walk-in venues and shops, traffic,
+severity-based falls and bills, and the full Tier 1 replay loop. The clock remains
+8 AM–6 PM at one active real second per game minute. The temporary clock-check
+banner was removed; ordinary gameplay shows the normal clock.
+
+All five Wahat smoke runs and the Palm Grove/test-area runs pass (2,664 checks).
+Focused integration, crash, traffic, shop, replay, route, camera and UI checks pass.
+Medium/1920×1080 on Apple M3 Metal clears 60 fps at the three sampled game views.
+Five careful shifts earned 645 Dh, the GPS was bought after shift one and the
+first frame is affordable on shift five when following the upgrade goals.
+
+Mac and Windows builds are packaged. The Mac menu and packaged Wahat scene
+launch; Windows runtime, human acceptance and itch.io publishing remain open.
+See [docs/implementation-status.md](docs/implementation-status.md) for evidence.
+
+### Previous completed foundation
+
 **Session 35A is built** on `codex/detail-pass-35a`, from main `ac47818`.
 The corrected clock advances one game minute per active real second, so the
 8:00 AM–6:00 PM shift lasts ten real minutes. It shows every minute, with AM/PM

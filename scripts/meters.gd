@@ -30,7 +30,10 @@ func _physics_process(delta: float) -> void:
 		return
 	GameState.ride_time += delta
 	var time := time_meter_for(GameState.ride_time, GameState.target_time)
-	var fresh := GameState.meter_freshness - _per_food(GameConfig.FRESHNESS_DRAIN) * delta
+	var drain := _per_food(GameConfig.FRESHNESS_DRAIN) * GameState.freshness_multiplier()
+	if GameState.upgrade_level("insulated_bag") > 0:
+		drain *= GameConfig.INSULATED_BAG_FRESHNESS_SHARE
+	var fresh := GameState.meter_freshness - drain * delta
 	GameState.set_meters(time, fresh, GameState.meter_damage)
 
 
@@ -64,6 +67,10 @@ static func target_time_for(from: Vector3, to: Vector3) -> float:
 ## Knocks the food: takes `amount` off the damage meter (only while carrying food).
 func hurt_food(amount: float) -> void:
 	if _carrying():
+		if GameState.upgrade_level("anti_spill") > 0:
+			amount *= GameConfig.ANTI_SPILL_DAMAGE_SHARE
+		if bike != null and "boost_active" in bike and bike.boost_active:
+			amount *= GameConfig.BOOST_FOOD_DAMAGE_TIMES
 		if GameState.current_order.special == "fragile":
 			amount *= GameConfig.FRAGILE_DAMAGE_TIMES  # a fragile cake: every knock counts double
 		GameState.set_meters(GameState.meter_time, GameState.meter_freshness, GameState.meter_damage - amount)
@@ -105,7 +112,8 @@ func _on_speed_bump(strength: float) -> void:
 	var kmh := strength * GameConfig.BIKE_MAX_SPEED_KMH
 	var too_fast := clampf((kmh - GameConfig.SPEED_BUMP_SAFE_KMH)
 			/ (GameConfig.BIKE_MAX_SPEED_KMH - GameConfig.SPEED_BUMP_SAFE_KMH), 0.0, 1.0)
-	hurt_food(_per_food(GameConfig.DAMAGE_SPEED_BUMP) * lerpf(GameConfig.DAMAGE_SPEED_BUMP_SLOW_SHARE, 1.0, too_fast))
+	var gear := GameConfig.COMFY_TYRES_DAMAGE_SHARE if GameState.upgrade_level("tyres") > 0 else 1.0
+	hurt_food(_per_food(GameConfig.DAMAGE_SPEED_BUMP) * lerpf(GameConfig.DAMAGE_SPEED_BUMP_SLOW_SHARE, 1.0, too_fast) * gear)
 
 
 func _on_crashed(big: bool) -> void:
@@ -114,4 +122,5 @@ func _on_crashed(big: bool) -> void:
 
 
 func _on_hard_brake() -> void:
-	hurt_food(_per_food(GameConfig.DAMAGE_HARD_BRAKE))
+	var gear := GameConfig.BETTER_BRAKES_DAMAGE_SHARE if GameState.upgrade_level("brakes") > 0 else 1.0
+	hurt_food(_per_food(GameConfig.DAMAGE_HARD_BRAKE) * gear)

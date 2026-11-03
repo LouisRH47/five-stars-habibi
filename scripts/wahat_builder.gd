@@ -19,7 +19,7 @@ const PAVING := Color(0.86, 0.79, 0.66, 1)
 const GRASS := Color(0.47, 0.66, 0.34, 1)
 const WATER := Color(0.3, 0.6, 0.85, 1)
 const HORSE_SAND := Color(0.8, 0.68, 0.5, 1)
-const BIKE_RED := Color(0.72, 0.42, 0.32, 1)
+const BIKE_RED := Color(0.18, 0.48, 0.72, 1)
 const TRUNK := Color(0.5, 0.36, 0.22, 1)
 const LEAVES := Color(0.3, 0.52, 0.26, 1)
 const WALL := Color(0.95, 0.88, 0.74, 1)
@@ -141,7 +141,7 @@ func _build_tree_belt() -> void:
 		var z := -half.y
 		while z <= half.y:
 			spots.append(Vector3(row, 0, z))
-			if absf(z) > gap:
+			if _outside_gate_gap(z, gap):
 				spots.append(Vector3(-row, 0, z))  # leave the gate open on the west
 			z += belt["spacing"]
 	for row in [inner.y + 1.5, half.y - 1.5]:
@@ -189,19 +189,23 @@ func _build_walls_and_gate() -> void:
 	LowPoly.solid_box(walls, Vector3(inner.x * 2.0, 4.0, 1.0), Vector3(0, 2, -inner.y))
 	LowPoly.solid_box(walls, Vector3(inner.x * 2.0, 4.0, 1.0), Vector3(0, 2, inner.y))
 	LowPoly.solid_box(walls, Vector3(1.0, 4.0, inner.y * 2.0), Vector3(inner.x, 2, 0))
-	var piece := inner.y - gap
-	LowPoly.solid_box(walls, Vector3(1.0, 4.0, piece), Vector3(-inner.x, 2, -gap - piece * 0.5) + tall * 0.0)
-	LowPoly.solid_box(walls, Vector3(1.0, 4.0, piece), Vector3(-inner.x, 2, gap + piece * 0.5))
-	# The gate: a little gate house and a closed red bar (Wahat Al Shams is your whole world).
-	var gate := StaticBody3D.new()
-	gate.name = "Gate"
-	gate.position = Vector3(-inner.x - 2.0, 0, 0)
-	add_child(gate)
-	LowPoly.box(gate, Vector3(4.0, 3.2, 4.0), WALL, Vector3(0, 1.6, -gap - 3.0))
-	LowPoly.box(gate, Vector3(4.6, 0.3, 4.6), Color(0.16470589, 0.5568628, 0.6117647, 1), Vector3(0, 3.35, -gap - 3.0))
-	LowPoly.solid_box(gate, Vector3(4.0, 3.2, 4.0), Vector3(0, 1.6, -gap - 3.0))
-	LowPoly.box(gate, Vector3(0.3, 1.2, gap * 2.0), GATE, Vector3(0, 1.0, 0))
-	LowPoly.solid_box(gate, Vector3(0.6, 2.0, gap * 2.0), Vector3(0, 1.0, 0))
+	# Two west-side checkpoints, each with a side gap for bicycles.
+	var cuts: Array[float] = [-inner.y]
+	for entry: Dictionary in _map.get("GATES", [{"position": Vector3(-inner.x, 0, 0)}]):
+		var z: float = entry["position"].z
+		cuts.append(z - gap)
+		cuts.append(z + gap)
+	cuts.append(inner.y)
+	cuts.sort()
+	for i in range(0, cuts.size() - 1, 2):
+		LowPoly.solid_box(walls, Vector3(1, 4, cuts[i+1] - cuts[i]), Vector3(-inner.x, 2, (cuts[i+1] + cuts[i]) * 0.5))
+
+
+func _outside_gate_gap(z: float, gap: float) -> bool:
+	for entry: Dictionary in _map.get("GATES", [{"position": Vector3.ZERO}]):
+		if absf(z - entry["position"].z) <= gap:
+			return false
+	return true
 
 
 ## The big bilingual welcome sign by the gate road.

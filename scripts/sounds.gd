@@ -14,6 +14,8 @@ extends Node
 @export var bike: Node3D
 
 const FILES := {
+	"perfect": "res://assets/audio/perfect.wav",
+	"tip": "res://assets/audio/tip.wav",
 	"ping": "res://assets/audio/ping.wav",
 	"bell": "res://assets/audio/bell.wav",
 	"cash": "res://assets/audio/cash.wav",

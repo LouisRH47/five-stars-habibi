@@ -1,7 +1,7 @@
 extends CharacterBody3D
 ## The player's bicycle.
 ## W / Up arrow = pedal, S / Down arrow = brake (then roll backwards),
-## A / D or Left / Right = steer, Space = handbrake, Shift = sprint, R = back to start,
+## A / D or Left / Right = steer, Space = handbrake, Shift = sprint, R = nearby recovery,
 ## B = ring the bell (Session 29).
 ## The look (wheels, pedals, handlebars, kickstand and the rider) is built in code by
 ## scripts/bike_model.gd; this script moves those parts.
@@ -17,9 +17,11 @@ signal went_over_bump(strength: float)
 ## HARD_BRAKE_MIN_KMH. The damage meter listens to it (drinks spill).
 signal hard_braked
 ## Sent when you crash (Session 12). big = false: you fall off and get back on after
-## CRASH_FALLEN_TIME. big = true: a car/wall/pole above CRASH_BIG_KMH, the CrashManager
-## takes over (clinic). Cats and kids only ever cause a small crash.
+## the authored fall finishes. A major impact goes to the clinic after that fall.
+## Cats and kids cause a small crash unless the rocket boost is active.
 signal crashed(big: bool)
+## The visible fall has finished. The clinic waits for this instead of cutting away at impact.
+signal fall_completed(big: bool, impact: Dictionary)
 ## Sent when you ring the bell with B (Session 29). Sounds plays the ring.
 signal bell_rung
 
@@ -56,6 +58,24 @@ var heavy_load := false:
 		heavy_load = on
 		_show_extra_bag(on)
 
+## Equipment is injected by the shop/state layer; physics keeps no persistent ownership.
+var upgrade_levels: Dictionary = {}
+var boost_active: bool:
+	get:
+		return _boost_left > 0.0
+var boost_cooldown_left := 0.0
+var fall_kind := ""
+var fall_progress := 0.0
+var _boost_left := 0.0
+var _flames: Node3D
+var _fall_active := false
+var _fall_big := false
+var _fall_elapsed := 0.0
+var _fall_duration := 0.0
+var _rider_home := Transform3D.IDENTITY
+var _fall_rider_start := Transform3D.IDENTITY
+var _safe_transform := Transform3D.IDENTITY
+
 # Where the wheels meet a speed bump, in metres ridden after the bike's collision box
 # first touches it. The box front is 0.85 m ahead of the bike's middle, the front wheel
 # 0.55 m, and a bump is 0.5 m deep: so the front wheel is on top of the bump from 0.3 to
@@ -89,8 +109,9 @@ var _rider: Person
 
 
 func _ready() -> void:
-	# Remember where the bike started so R can put it back there.
+	# A fresh shift and clinic recovery use the original spawn.
 	_start_transform = global_transform
+	_safe_transform = global_transform
 	# Speed bumps (scripts/speed_bump.gd) look for this group.
 	add_to_group("bike")
 	# Build the bicycle and the rider on it (Session 29).
@@ -101,6 +122,7 @@ func _ready() -> void:
 	_crank = _model.get_node("Crank")
 	_kickstand = _model.get_node("Kickstand")
 	_rider = _model.get_node("Rider")
+	_rider_home = _rider.transform
 	_rider.play("pedal")
 	# Dress the rider in the look picked on the application (Session 14).
 	RiderLook.apply(_rider, GameState.rider_look)
@@ -108,17 +130,30 @@ func _ready() -> void:
 	var dust := preload("res://scripts/tyre_dust.gd").new()
 	dust.name = "TyreDust"
 	add_child(dust)
+	var wind := preload("res://scripts/ride_wind.gd").new()
+	wind.name = "RideWind"
+	wind.bike = self
+	add_child(wind)
 
 
 func _physics_process(delta: float) -> void:
-	if Input.is_action_just_pressed("reset_bike") and fallen_left <= 0.0 and not wrecked:
-		reset_to_start()
+	boost_cooldown_left = maxf(boost_cooldown_left - delta, 0.0)
+	_boost_left = maxf(_boost_left - delta, 0.0)
+	if _flames != null:
+		_flames.visible = boost_active
+		_flames.scale = Vector3.ONE * (0.9 + sin(Time.get_ticks_msec() * 0.04) * 0.1)
+	if _fall_active:
+		_step_fall(delta)
 		return
+	if Input.is_action_just_pressed("reset_bike") and fallen_left <= 0.0 and not wrecked:
+		recover_nearby()
+		return
+	if InputMap.has_action("rocket_boost") and Input.is_action_just_pressed("rocket_boost"):
+		activate_boost()
 	if Input.is_action_just_pressed("ring_bell") and not parked:
 		ring_bell()
 	_move_parts(delta)
-	if fallen_left > 0.0 or wrecked:
-		_lie_on_ground(delta)
+	if wrecked:
 		return
 	if parked:
 		_stand(delta)
@@ -132,10 +167,11 @@ func _physics_process(delta: float) -> void:
 	_bump_cooldown = maxf(_bump_cooldown - delta, 0.0)
 
 
-## Puts the bike back where it started, standing still. Used by the R key
-## and when the bike falls off the world.
+## Puts the bike back where it started for a new shift or clinic recovery.
 func reset_to_start() -> void:
 	global_transform = _start_transform
+	_safe_transform = _start_transform
+	_restore_rider()
 	velocity = Vector3.ZERO
 	speed = 0.0
 	fallen_left = 0.0
@@ -146,12 +182,103 @@ func reset_to_start() -> void:
 	_hop_active = false
 	_model.position.y = 0.0
 	_model.rotation.x = 0.0
+	_model.position = Vector3.ZERO
+	_boost_left = 0.0
+	_fall_active = false
+	fall_progress = 0.0
+	fall_kind = ""
+
+
+## R recovers locally instead of teleporting a completed job back to the shops.
+func recover_nearby() -> void:
+	if _fall_active or wrecked:
+		return
+	var origin := global_position
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape = $CollisionShape3D.shape
+	query.exclude = [get_rid()]
+	query.collide_with_areas = false
+	var space := get_world_3d().direct_space_state
+	var choices: Array[Vector3] = []
+	if _safe_transform.origin.distance_to(origin) <= 8.0:
+		choices.append(_safe_transform.origin + global_basis.z * 1.5)
+	for radius in [1.5, 3.0, 5.0, 8.0]:
+		for step in range(8):
+			var angle := step * TAU / 8.0
+			choices.append(origin + Vector3(cos(angle), 0, sin(angle)) * radius)
+	choices.sort_custom(func(a: Vector3, b: Vector3) -> bool: return a.distance_squared_to(origin) < b.distance_squared_to(origin))
+	for candidate in choices:
+		var ground_query := PhysicsRayQueryParameters3D.create(candidate + Vector3.UP * 4.0, candidate - Vector3.UP * 6.0)
+		ground_query.exclude = [get_rid()]
+		var ground := space.intersect_ray(ground_query)
+		if ground.is_empty() or (ground["normal"] as Vector3).y < 0.6:
+			continue
+		if absf(float(ground["position"].y) - origin.y) > 1.5 or CrashImpact.category_for(ground["collider"]) == "vehicle":
+			continue
+		candidate.y = ground["position"].y + 0.04
+		query.transform = Transform3D(global_basis.orthonormalized(), candidate + Vector3.UP * 0.9)
+		if not space.intersect_shape(query, 1).is_empty():
+			continue
+		var passage := PhysicsRayQueryParameters3D.create(origin + Vector3.UP * 0.85, candidate + Vector3.UP * 0.85)
+		passage.exclude = [get_rid()]
+		if not space.intersect_ray(passage).is_empty():
+			continue # Recovery may back out of trouble, but cannot skip through a wall or rail.
+		global_position = candidate
+		velocity = Vector3.ZERO
+		speed = 0.0
+		_safe_transform = global_transform
+		reset_physics_interpolation()
+		return
+
+
+func configure_upgrades(levels: Dictionary) -> void:
+	upgrade_levels = levels.duplicate()
+	stamina = minf(stamina, stamina_capacity())
+
+
+func stamina_capacity() -> float:
+	return GameConfig.STAMINA_MAX * (1.0 + 0.1 * clampi(int(upgrade_levels.get("stamina", 0)), 0, 10))
+
+
+func bell_range() -> float:
+	return GameConfig.BELL_HEAR_RANGE * (2.0 if int(upgrade_levels.get("bell", 0)) > 0 else 1.0)
+
+
+func maximum_speed_kmh(sprint := false) -> float:
+	if boost_active:
+		return GameConfig.BOOST_SPEED_KMH
+	var maximum := GameConfig.BIKE_SPRINT_MAX_SPEED_KMH if sprint else GameConfig.BIKE_MAX_SPEED_KMH
+	maximum += float(upgrade_levels.get("aluminium", 0)) + 2.0 * float(upgrade_levels.get("carbon", 0))
+	return maximum * (GameConfig.FAMILY_SPEED_SHARE if heavy_load else 1.0)
+
+
+func boost_ready() -> bool:
+	return int(upgrade_levels.get("rocket", 0)) > 0 and boost_cooldown_left <= 0.0 and not parked and not wrecked and not _fall_active
+
+
+func activate_boost() -> bool:
+	if not boost_ready():
+		return false
+	_boost_left = GameConfig.BOOST_DURATION
+	boost_cooldown_left = GameConfig.BOOST_DURATION + GameConfig.BOOST_COOLDOWN
+	if _flames == null:
+		_flames = Node3D.new()
+		_flames.name = "RocketFlames"
+		_model.add_child(_flames)
+		for colour in [Color(1, 0.22, 0.03), Color(1, 0.8, 0.1)]:
+			var flame := LowPoly.cylinder(_flames, 0.0, 0.16, 0.85, colour, Vector3(0, 0.65, 1.05))
+			flame.rotation.x = PI * 0.5
+			flame.scale = Vector3.ONE * (0.65 if colour.g > 0.5 else 1.0)
+	_flames.visible = true
+	return true
 
 
 ## Parks the bike (true) while you walk, or takes it off the stand (false).
 ## Parked: the rider on it disappears (you're the walker now) and it leans on its stand.
 func set_parked(on: bool) -> void:
 	parked = on
+	if on:
+		_boost_left = 0.0
 	speed = 0.0
 	velocity = Vector3.ZERO
 	_rider.visible = not on  # you're the walker now
@@ -222,15 +349,18 @@ func hit_speed_bump() -> void:
 func _update_stamina_and_speed(delta: float) -> void:
 	var pedal := Input.get_action_strength("move_forward")
 	var brake := Input.get_action_strength("move_back")
+	# A rider can brake while still holding W. Brake input always wins.
+	if brake > 0.0 or Input.is_action_pressed("handbrake"):
+		pedal = 0.0
 
-	sprinting = pedal > 0.0 and Input.is_action_pressed("sprint") and not tired and stamina > 0.0
+	sprinting = pedal > 0.0 and Input.is_action_pressed("sprint") and not tired and stamina > 0.0 and not boost_active
 	if sprinting:
 		stamina = maxf(stamina - GameConfig.STAMINA_DRAIN_PER_SEC * delta, 0.0)
 		if stamina <= 0.0:
 			tired = true
 	else:
 		var refill := GameConfig.STAMINA_REFILL_PEDALLING if pedal > 0.0 else GameConfig.STAMINA_REFILL_COASTING
-		stamina = minf(stamina + refill * delta, GameConfig.STAMINA_MAX)
+		stamina = minf(stamina + refill * delta, stamina_capacity())
 		if tired and stamina >= GameConfig.STAMINA_TIRED_UNTIL:
 			tired = false
 
@@ -239,13 +369,13 @@ func _update_stamina_and_speed(delta: float) -> void:
 		hard_braked.emit()
 	_braking = braking_now
 
-	var max_kmh := GameConfig.BIKE_SPRINT_MAX_SPEED_KMH if sprinting else GameConfig.BIKE_MAX_SPEED_KMH
-	if heavy_load:
-		max_kmh *= GameConfig.FAMILY_SPEED_SHARE  # two bags: slower (Session 32)
+	var max_kmh := maximum_speed_kmh(sprinting)
 	var accel := GameConfig.BIKE_SPRINT_ACCELERATION if sprinting else GameConfig.BIKE_ACCELERATION
 	var max_speed := max_kmh / 3.6
 
-	if pedal > 0.0:
+	if boost_active and brake == 0.0 and not Input.is_action_pressed("handbrake"):
+		speed = max_speed
+	elif pedal > 0.0:
 		if speed > max_speed:
 			# Just stopped sprinting: ease back down to normal top speed.
 			speed = move_toward(speed, max_speed, GameConfig.BIKE_COAST_DRAG * delta)
@@ -255,7 +385,7 @@ func _update_stamina_and_speed(delta: float) -> void:
 			speed = move_toward(speed, max_speed, accel * pedal * ease_off * delta)
 	elif brake > 0.0:
 		if speed > 0.1:
-			speed = move_toward(speed, 0.0, GameConfig.BIKE_BRAKE * brake * delta)
+			speed = move_toward(speed, 0.0, GameConfig.BIKE_BRAKE * (1.35 if int(upgrade_levels.get("brakes", 0)) > 0 else 1.0) * brake * delta)
 		else:
 			var reverse_speed := -GameConfig.BIKE_REVERSE_SPEED_KMH / 3.6
 			speed = move_toward(speed, reverse_speed, GameConfig.BIKE_ACCELERATION * delta)
@@ -287,6 +417,7 @@ func _move(delta: float) -> void:
 	forward = forward.normalized()
 	velocity.x = forward.x * speed
 	velocity.z = forward.z * speed
+	var incoming := velocity
 	if is_on_floor():
 		velocity.y = 0.0
 	else:
@@ -295,7 +426,8 @@ func _move(delta: float) -> void:
 
 	# Safety net: if the bike somehow falls off the world, put it back.
 	if global_position.y < GameConfig.WORLD_FALL_RESET_Y:
-		reset_to_start()
+		global_transform = _safe_transform
+		recover_nearby()
 		return
 
 	# Riding into a wall or box slows you down. Head-on hits slow you the most.
@@ -304,7 +436,7 @@ func _move(delta: float) -> void:
 		var normal := hit.get_normal()
 		if absf(normal.y) < 0.5:
 			var head_on := absf(forward.dot(normal))
-			if _check_crash(head_on, hit.get_collider()):
+			if _check_crash(head_on, hit.get_collider(), incoming, normal, hit.get_collider_velocity()):
 				return
 			var strength := head_on * clampf(absf(speed) / (GameConfig.BIKE_MAX_SPEED_KMH / 3.6), 0.0, 1.0)
 			speed *= lerpf(1.0, GameConfig.BIKE_BUMP_SPEED_KEEP, head_on)
@@ -312,26 +444,141 @@ func _move(delta: float) -> void:
 				_bump_cooldown = GameConfig.BUMP_COOLDOWN
 				bumped.emit(strength)
 			break
+	if is_on_floor() and get_slide_collision_count() <= 1 and not _fall_active and not wrecked:
+		_safe_transform = global_transform
 
 
 ## Was that a crash? Returns true if it was (the bike stops). Small: fall off for a bit.
 ## Big: a solid thing (not a cat or kid) hit fast and fairly straight on.
-func _check_crash(head_on: float, thing: Object) -> bool:
-	var kmh := absf(speed) * 3.6
-	if head_on < GameConfig.CRASH_HEAD_ON or kmh < GameConfig.CRASH_SMALL_KMH:
+func _check_crash(head_on: float, thing: Object, incoming := Vector3.ZERO,
+		normal := Vector3.ZERO, other_velocity := Vector3.ZERO) -> bool:
+	if _fall_active or wrecked or fallen_left > 0.0:
 		return false
-	var soft := thing is Node and (thing as Node).is_in_group("critter")
-	var big := kmh > GameConfig.CRASH_BIG_KMH and not soft
-	last_crash = {"what": what_is(thing), "kmh": kmh}
-	bumped.emit(clampf(kmh / GameConfig.BIKE_MAX_SPEED_KMH, 0.0, 1.0))  # camera shake
+	# The optional inputs keep direct smoke-test calls meaningful; actual collision
+	# handling always supplies the pre-slide velocity and collider's velocity.
+	if incoming.length_squared() < 0.000001:
+		incoming = -global_basis.z * speed
+	if normal.length_squared() < 0.000001:
+		var forward := incoming.normalized()
+		var side := Vector3.UP.cross(forward)
+		normal = -forward * head_on + side * sqrt(maxf(1.0 - head_on * head_on, 0.0))
+	var impact := CrashImpact.capture(incoming, normal, thing, other_velocity, boost_active)
+	if not impact["crash"]:
+		return false
+	last_crash = impact.duplicate(true)
+	bumped.emit(clampf(float(impact["score"]) / GameConfig.CRASH_CRITICAL_SCORE, 0.0, 1.0))
+	_begin_fall(impact)
+	return true
+
+
+func _begin_fall(impact: Dictionary) -> void:
+	last_crash = impact.duplicate(true)
+	_fall_active = true
+	_fall_big = bool(impact["big"])
+	fall_kind = impact["fall"]
+	fall_progress = 0.0
+	_fall_elapsed = 0.0
+	_fall_duration = GameConfig.CRASH_FALL_DURATIONS[fall_kind]
+	fallen_left = _fall_duration
+	wrecked = _fall_big
+	_boost_left = 0.0
+	sprinting = false
 	speed = 0.0
 	velocity = Vector3.ZERO
-	if big:
-		wrecked = true
+	_hop_active = false
+	_model.position = Vector3.ZERO
+	_model.rotation = Vector3.ZERO
+	_fall_rider_start = _rider.transform
+	_rider.reparent(self, true)
+	_fall_rider_start = _rider.transform
+	_rider.play("lie")
+	crashed.emit(_fall_big)
+
+
+## A bounded authored trajectory: visibly separate rider/bike, then recover or clinic.
+## Nothing here calls move_and_slide, so tumbling contacts cannot create another accident.
+func _step_fall(delta: float) -> void:
+	speed = 0.0
+	velocity = Vector3.ZERO
+	_fall_elapsed += delta
+	fallen_left = maxf(_fall_duration - _fall_elapsed, 0.0)
+	fall_progress = clampf(_fall_elapsed / _fall_duration, 0.0, 1.0)
+	var landing := fall_progress if _fall_big else minf(fall_progress / 0.8, 1.0)
+	var ease := 1.0 - pow(1.0 - landing, 3.0)
+	var side: float = last_crash["side"]
+	var local_normal: Vector3 = global_basis.inverse() * (last_crash["normal"] as Vector3)
+	var local_direction: Vector3 = global_basis.inverse() * (last_crash["direction"] as Vector3)
+	var slide := local_direction.slide(local_normal)
+	var intensity := clampf(float(last_crash["score"]) / GameConfig.CRASH_SEVERE_SCORE,
+			GameConfig.CRASH_FORCE_SCALE.x, GameConfig.CRASH_FORCE_SCALE.y)
+	var travel := (local_normal * 0.55 + slide.normalized() * 0.8) * intensity
+	var destination := _fall_rider_start.origin + travel
+	destination.y = 0.35
+	var rider_rotation := Vector3.ZERO
+	var lift := 0.0
+	if fall_kind == "tip":
+		destination = _fall_rider_start.origin + Vector3(side * 0.55 * intensity, 0, 0)
+		destination.y = 0.4
+		rider_rotation.z = deg_to_rad(70.0) * side * ease
+		lift = sin(landing * PI) * 0.18 * intensity
+	elif fall_kind == "skid":
+		destination += Vector3(side * 0.8 * intensity, 0, 0)
+		rider_rotation = Vector3(0, side * ease * 0.45, side * PI * 0.5 * ease)
+		lift = sin(landing * PI) * 0.35 * intensity
 	else:
-		fallen_left = GameConfig.CRASH_FALLEN_TIME
-	crashed.emit(big)
-	return true
+		# One forward somersault and a quarter turn to a horizontal landing.
+		rider_rotation = Vector3(PI * 2.5 * ease, side * 0.35 * ease, side * 0.2 * ease)
+		lift = sin(landing * PI) * intensity
+	_rider.position = _fall_rider_start.origin.lerp(destination, ease) + Vector3.UP * lift
+	_rider.rotation = rider_rotation
+	_keep_above_ground(_rider)
+	_model.position = Vector3(side * 0.2 * ease, 0, 0) + travel * ease * 0.2
+	_model.rotation = Vector3(sin(landing * PI) * (0.6 if fall_kind == "tumble" else 0.1), 0, side * deg_to_rad(82.0) * ease)
+	_keep_above_ground(_model)
+	# A small final portion of a recoverable fall is a readable getting-up motion.
+	if not _fall_big and fall_progress > 0.8:
+		var get_up := smoothstep(0.8, 1.0, fall_progress)
+		_rider.position = _rider.position.lerp(_rider_home.origin, get_up)
+		_rider.rotation *= 1.0 - get_up
+		_keep_above_ground(_rider)
+		_model.position *= 1.0 - get_up
+		_model.rotation *= 1.0 - get_up
+		_keep_above_ground(_model)
+	if fall_progress >= 1.0:
+		_fall_active = false
+		fallen_left = 0.0
+		if not _fall_big:
+			_restore_rider()
+			_model.position = Vector3.ZERO
+			_model.rotation = Vector3.ZERO
+			_bump_cooldown = GameConfig.BUMP_COOLDOWN
+		fall_completed.emit(_fall_big, last_crash.duplicate(true))
+
+
+func _restore_rider() -> void:
+	if _rider == null or not is_instance_valid(_rider):
+		return
+	if _rider.get_parent() != _model:
+		_rider.reparent(_model, false)
+	_rider.transform = _rider_home
+	_rider.visible = true
+	_rider.play("pedal")
+
+
+## Keep the whole visible body above the ground while its authored roll turns it.
+## The bone mesh's AABB is conservative, so this also avoids feet/head clipping.
+func _keep_above_ground(visual: Node3D) -> void:
+	var ground_y := global_position.y + 0.03
+	var lowest := INF
+	for part in visual.find_children("*", "MeshInstance3D", true, false):
+		var mesh := part as MeshInstance3D
+		if not mesh.visible:
+			continue
+		var bounds := mesh.get_aabb()
+		for corner in range(8):
+			lowest = minf(lowest, (mesh.global_transform * bounds.get_endpoint(corner)).y)
+	if lowest < ground_y:
+		visual.global_position.y += ground_y - lowest
 
 
 ## Heavy load (big family order): the front sways gently left and right while you ride,
@@ -382,21 +629,6 @@ static func what_is(thing: Object) -> String:
 			return "a cat" if n.begins_with("Cat") else "a kid on a scooter"
 		node = node.get_parent()
 	return "a wall"
-
-
-## On the ground after a crash: the model tips over on its side, then gets back up
-## for the last half second.
-func _lie_on_ground(delta: float) -> void:
-	speed = 0.0
-	velocity = Vector3.ZERO
-	var down := deg_to_rad(80.0)
-	if not wrecked:
-		fallen_left = maxf(fallen_left - delta, 0.0)
-		if fallen_left < 0.5:
-			down = 0.0
-	_model.rotation.z = lerpf(_model.rotation.z, down, 1.0 - exp(-10.0 * delta))
-	if fallen_left <= 0.0 and not wrecked:
-		_model.rotation.z = 0.0
 
 
 func _update_lean(delta: float) -> void:

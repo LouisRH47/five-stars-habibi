@@ -68,3 +68,9 @@ static func apply(model: Node3D, look: int) -> void:
 				var ankle := rider.spot(side + "Foot")
 				var leg := LowPoly.cylinder(shin, 0.075, 0.06, knee.distance_to(ankle), SKIN, (knee + ankle) * 0.5)
 				leg.basis = Basis(Quaternion(Vector3.UP, (knee - ankle).normalized()))
+	# This kit is also loaded while GameState itself is being compiled through the
+	# map builders. Resolve the autoload at runtime to keep that dependency acyclic.
+	var tree := Engine.get_main_loop() as SceneTree
+	var state := tree.root.get_node_or_null("GameState") if tree != null else null
+	if state != null:
+		Wardrobe.apply(rider, state.equipped_cosmetics)

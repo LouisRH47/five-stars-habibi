@@ -92,9 +92,9 @@ func _on_delivered(_order: Order) -> void:
 	var job := GameState.last_result
 	if job.is_empty():
 		return
-	var earned: int = job["pay"] + job["tip"] - job["insurance"]
+	var earned: int = job["pay"] + job["tip"] - job["insurance"] + job.get("collection_bonus", 0)
 	shown = {"earned": earned, "stars": job["stars"], "tip": job["tip"], "food": job["food"], "villa": job["villa"]}
-	_title.text = "Left at the door!" if job["left_at_door"] else "Delivered!"
+	_title.text = "PERFECT!" if job.get("perfect", false) else ("Left at the door!" if job["left_at_door"] else "Delivered!")
 	_stars.stars = job["stars"]
 	var ride := int(GameState.ride_time)
 	_what.text = "%s to %s  ·  %d:%02d" % [str(job["food"]).capitalize(), job.get("address", "Villa %d" % job["villa"]), ride / 60, ride % 60]
@@ -113,6 +113,8 @@ func _on_delivered(_order: Order) -> void:
 		_row("Delivery pay", "+%d Dh" % job["pay"], INK)
 	if job["tip"] > 0:
 		_row("5-star tip", "+%d Dh" % job["tip"], GREEN)
+	if job.get("collection_bonus", 0) > 0:
+		_row("Stamp card bonus", "+%d Dh" % job["collection_bonus"], GREEN)
 	if job["insurance"] > 0:
 		_row("Insurance", "-%d Dh" % job["insurance"], SOFT)
 	_earned.text = "%d Dh" % earned
@@ -139,7 +141,13 @@ func _start_pops(stars: float) -> void:
 	for i in ceili(stars):
 		_pop_tween.tween_callback(_pop_star.bind(i, stars))
 		_pop_tween.tween_interval(GameConfig.POP_STAR_GAP)
+	if stars >= 5.0:
+		_pop_tween.tween_callback(func(): _play("perfect", 1.0))
+		_pop_tween.tween_interval(0.35)
 	_pop_tween.tween_callback(_pop_coins)
+	if GameState.last_result.get("tip", 0) > 0:
+		_pop_tween.tween_interval(0.3)
+		_pop_tween.tween_callback(func(): _play("tip", 1.0))
 	_pop_tween.tween_property(_earned, "scale", Vector2.ONE * 1.2, 0.08)
 	_pop_tween.tween_property(_earned, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
@@ -186,6 +194,10 @@ func _play(sound: String, pitch: float) -> void:
 ## this delivery finished.
 func _extra_text(job: Dictionary) -> String:
 	var lines: Array[String] = []
+	if job.get("streak", 0) > 0:
+		lines.append("%d in a row · +%d%% tip chance" % [job["streak"], roundi(minf(job["streak"] * GameConfig.STREAK_TIP_STEP, GameConfig.STREAK_TIP_MAX) * 100.0)])
+	if job.get("new_route_best", false):
+		lines.append("New personal best for this route!")
 	if job.get("regular", "") != "":
 		lines.append("♥ Regular: %s" % job["regular"])
 	for id in GameState.last_goals_done:

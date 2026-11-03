@@ -2,18 +2,14 @@ extends Node
 ## The sun follows the shift clock (Session 28): low and warm at 08:00, high and white at
 ## noon, golden from 17:00. It also moves the sky colours and the light in the shadows.
 ## And it switches the extras on and off for the Graphics setting (Low / Medium / High):
-## soft corner shadows (SSAO), haze, glow and heat shimmer above the roads at noon.
+## soft corner shadows (SSAO), haze and glow.
 ## All the numbers are in scripts/game_config.gd ("Light and sky").
 
 @export var sun: DirectionalLight3D
 @export var world_environment: WorldEnvironment
 
-const SHIMMER_SHADER := preload("res://assets/shaders/heat_shimmer.gdshader")
-
 var _environment: Environment
 var _sky: ProceduralSkyMaterial
-var _shimmer: MeshInstance3D
-var _shimmer_material: ShaderMaterial
 var _sky_hour := -100.0  # the hour the sky colours were last set for
 
 
@@ -24,7 +20,6 @@ func _ready() -> void:
 		_sky = _environment.sky.sky_material as ProceduralSkyMaterial
 		# Spread sky updates over a few frames instead of all in one go.
 		_environment.sky.process_mode = Sky.PROCESS_MODE_INCREMENTAL
-	_make_shimmer()
 	Settings.load_once()
 	apply_graphics()
 	apply_hour(hour_now())
@@ -55,9 +50,7 @@ func apply_hour(hour: float) -> void:
 			_sky.sky_top_color = look["top"]
 			_sky.sky_horizon_color = look["horizon"]
 			_sky.ground_horizon_color = look["horizon"].lerp(Color(0.91, 0.83, 0.65), 0.5)
-	var heat := shimmer_at(hour)
-	_shimmer_material.set_shader_parameter("strength", heat)
-	_shimmer.visible = heat > 0.01 and Settings.graphics > 0
+
 
 
 ## Blends the two nearest lines of GameConfig.LIGHT_KEYS for this hour.
@@ -75,14 +68,6 @@ func light_at(hour: float) -> Dictionary:
 				mixed[key] = lerp(before[key], after[key], t)
 			return mixed
 	return keys[keys.size() - 1]
-
-
-## How strong the heat shimmer is at this hour: 0 (none) to 1 (full, around noon).
-func shimmer_at(hour: float) -> float:
-	var peak: Vector2 = GameConfig.SHIMMER_PEAK_HOURS
-	if hour < peak.x:
-		return smoothstep(GameConfig.SHIMMER_START_HOUR, peak.x, hour)
-	return 1.0 - smoothstep(peak.y, GameConfig.SHIMMER_END_HOUR, hour)
 
 
 ## Switches the extras on or off for the Graphics setting (0 Low, 1 Medium, 2 High).
@@ -108,23 +93,3 @@ func apply_graphics() -> void:
 	sun.shadow_blur = 1.0 if level == 0 else 1.5
 	RenderingServer.directional_soft_shadow_filter_set_quality(
 			RenderingServer.SHADOW_QUALITY_SOFT_HIGH if level == 2 else RenderingServer.SHADOW_QUALITY_SOFT_LOW)
-	_shimmer.visible = level > 0 and shimmer_at(hour_now()) > 0.01
-
-
-## The see-through sheet over the screen that wobbles the far-away ground (heat shimmer).
-func _make_shimmer() -> void:
-	var sheet := QuadMesh.new()
-	sheet.size = Vector2(2.0, 2.0)
-	_shimmer_material = ShaderMaterial.new()
-	_shimmer_material.shader = SHIMMER_SHADER
-	_shimmer_material.set_shader_parameter("near_distance", GameConfig.SHIMMER_NEAR)
-	_shimmer_material.set_shader_parameter("full_distance", GameConfig.SHIMMER_FULL)
-	_shimmer_material.set_shader_parameter("amount", GameConfig.SHIMMER_AMOUNT)
-	sheet.material = _shimmer_material
-	_shimmer = MeshInstance3D.new()
-	_shimmer.name = "HeatShimmer"
-	_shimmer.mesh = sheet
-	_shimmer.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	_shimmer.extra_cull_margin = 16384.0  # never hide it: it always covers the screen
-	_shimmer.visible = false
-	add_child(_shimmer)

@@ -3,7 +3,7 @@ class_name GameConfig
 ## Speeds are in km/h or metres per second (m/s). 1 Godot unit = 1 metre.
 
 # --- Bicycle ---
-const BIKE_MAX_SPEED_KMH := 25.0      # top speed when pedalling
+const BIKE_MAX_SPEED_KMH := 28.0      # top speed when pedalling
 const BIKE_REVERSE_SPEED_KMH := 5.0   # how fast you roll backwards holding S
 const BIKE_ACCELERATION := 3.0        # m/s gained per second while pedalling
 const BIKE_BRAKE := 8.0               # m/s lost per second while braking (S)
@@ -15,7 +15,7 @@ const BIKE_LEAN_MAX_DEG := 14.0       # how far the rider leans into a turn at f
 const BIKE_LEAN_SMOOTHING := 8.0      # higher = leans in and out faster
 
 # --- Sprinting (hold Shift while pedalling) ---
-const BIKE_SPRINT_MAX_SPEED_KMH := 32.0
+const BIKE_SPRINT_MAX_SPEED_KMH := 36.0
 const BIKE_SPRINT_ACCELERATION := 4.5 # m/s gained per second while sprinting
 const STAMINA_MAX := 100.0
 const STAMINA_DRAIN_PER_SEC := 22.0   # about 4.5 seconds of sprinting from full
@@ -45,6 +45,9 @@ const SPEED_BUMP_SHAKE_MAX := 0.7     # camera shake at full speed (0 to 1)
 const CAMERA_DISTANCE := 4.5          # metres behind the bike
 const CAMERA_HEIGHT := 2.2            # metres above the bike
 const CAMERA_LOOK_HEIGHT := 1.2       # the camera aims at this height on the rider
+const CAMERA_COLLISION_RADIUS := 0.28
+const CAMERA_COLLISION_MARGIN := 0.06
+const HOUSING_DETAIL_DISTANCE := 135.0
 const CAMERA_FOLLOW_SMOOTHING := 6.0  # higher = camera catches up faster
 
 # --- World ---
@@ -119,15 +122,15 @@ const TIME_EMPTY_AT := 2.0
 # Session 27 foods: shawarma goes cold (medium), cake keeps but breaks on bumps, groceries are
 # slow to spoil and a bit heavy, farm juice and salad spoil in the sun.
 const FRESHNESS_DRAIN := {"pizza": 0.25, "bubble tea": 0.4, "ice cream": 0.55,  # Session 17: was 0.35/0.6/1.0
-		"shawarma": 0.35, "cake": 0.2, "groceries": 0.1, "farm juice": 0.5, "salad box": 0.45}  # Session 27
+		"shawarma": 0.35, "cake": 0.2, "groceries": 0.1, "farm juice": 0.5, "salad box": 0.45, "pad thai": 0.35, "sushi": 0.5, "tacos": 0.3, "burgers": 0.3, "coffee": 0.4, "manakish": 0.25}  # Session 27
 # Damage lost per knock, per food. Bubble tea hates speed bumps.
 const DAMAGE_SPEED_BUMP := {"pizza": 3.0, "bubble tea": 14.0, "ice cream": 5.0,  # at full speed
-		"shawarma": 4.0, "cake": 16.0, "groceries": 6.0, "farm juice": 10.0, "salad box": 6.0}  # cake breaks on bumps
+		"shawarma": 4.0, "cake": 16.0, "groceries": 6.0, "farm juice": 10.0, "salad box": 6.0, "pad thai": 7, "sushi": 9, "tacos": 14, "burgers": 5, "coffee": 14, "manakish": 4}  # cake breaks on bumps
 const DAMAGE_SPEED_BUMP_SLOW_SHARE := 0.25  # at or under SPEED_BUMP_SAFE_KMH a bump costs a quarter of that
 const DAMAGE_HARD_BRAKE := {"pizza": 3.0, "bubble tea": 8.0, "ice cream": 4.0,
-		"shawarma": 3.0, "cake": 9.0, "groceries": 5.0, "farm juice": 7.0, "salad box": 4.0}
+		"shawarma": 3.0, "cake": 9.0, "groceries": 5.0, "farm juice": 7.0, "salad box": 4.0, "pad thai": 5, "sushi": 5, "tacos": 8, "burgers": 3, "coffee": 8, "manakish": 3}
 const DAMAGE_COLLISION := {"pizza": 15.0, "bubble tea": 25.0, "ice cream": 18.0,  # a full-speed head-on hit
-		"shawarma": 15.0, "cake": 30.0, "groceries": 20.0, "farm juice": 25.0, "salad box": 18.0}
+		"shawarma": 15.0, "cake": 30.0, "groceries": 20.0, "farm juice": 25.0, "salad box": 18.0, "pad thai": 18, "sushi": 22, "tacos": 25, "burgers": 15, "coffee": 25, "manakish": 15}
 # Hard braking: braking (S or Space) while going faster than this counts once per press.
 const HARD_BRAKE_MIN_KMH := 22.0       # Session 17: was 18, then normal braking counted too
 
@@ -142,7 +145,7 @@ const SCOOTER_GIVE_WAY_TIME := 2.0    # seconds a kid waits for you before turni
 const CRITTER_SCARED_TIME := 1.5      # seconds a bumped cat runs / a bumped kid stops
 # Extra food damage when you bump a cat or a kid (on top of the crash itself).
 const DAMAGE_CRITTER := {"pizza": 10.0, "bubble tea": 15.0, "ice cream": 12.0,
-		"shawarma": 10.0, "cake": 16.0, "groceries": 12.0, "farm juice": 15.0, "salad box": 12.0}
+		"shawarma": 10.0, "cake": 16.0, "groceries": 12.0, "farm juice": 15.0, "salad box": 12.0, "pad thai": 12, "sushi": 14, "tacos": 15, "burgers": 10, "coffee": 15, "manakish": 10}
 
 # --- Stars, tips, XP and rating (Session 10) ---
 # Stars: start at 5, each orange meter takes off 0.5, each red one 1.5. Never below 1 (PRD).
@@ -180,6 +183,21 @@ const INSURANCE_PER_DELIVERY := 2     # Dh, taken from every delivery while insu
 const CRASH_FADE_TIME := 0.6          # seconds the screen takes to fade out (and back in)
 const CRASH_WEEK_SHIFTS := 7          # "this week" on the clinic screen = the last 7 shifts
 const CRASH_WEEK_WARNING := 3         # the clinic's crash bar is full at this many big crashes
+const CRASH_GLANCING_MIN := 0.2
+const CRASH_MAJOR_SCORE := 18.0
+const CRASH_SEVERE_SCORE := 25.0
+const CRASH_CRITICAL_SCORE := 35.0
+const CRASH_GLANCE_WEIGHT := 0.2
+const CRASH_TIP_SCORE := 12.0
+const CRASH_TUMBLE_HEAD_ON := 0.65
+const CRASH_MATERIAL_HARDNESS := {"soft": 0.35, "wood": 0.8, "vehicle": 1.15, "rigid": 1.0}
+const CRASH_FALL_DURATIONS := {"tip": 1.4, "skid": 1.8, "tumble": 2.2}
+const CRASH_BILL_BANDS := {
+	"minor": {"hospital": 0, "repair": 0, "insured": 0},
+	"moderate": {"hospital": 60, "repair": 35, "insured": 8},
+	"severe": {"hospital": 150, "repair": 80, "insured": 20},
+	"critical": {"hospital": 220, "repair": 140, "insured": 35},
+}
 
 # --- Shifts (Session 13) ---
 const SHIFT_START_HOUR := 8.0         # the clock shows 08:00 when the shift starts...
@@ -278,10 +296,10 @@ const DUST_MIN_KMH := 6.0             # slower than this on sand: no dust
 const DUST_BRAKE_TIME := 0.45         # seconds of extra dust after you brake hard
 const DUST_PUFF_SIZE := 0.22          # metres across a puff when it starts (it grows)
 # Sprinting: a slightly wider camera and speed lines at the screen edges.
-const SPRINT_FOV_EXTRA := 7.0         # degrees wider while sprinting
+const SPRINT_FOV_EXTRA := 12.0         # degrees wider while sprinting
 const SPRINT_FOV_SPEED := 4.0         # how quickly the camera widens and comes back
 const SPEED_LINES_COUNT := 22         # streaks at the edges of the screen
-const SPEED_LINES_ALPHA := 0.45       # how see-through they are at full strength (0 to 1)
+const SPEED_LINES_ALPHA := 0.65       # how see-through they are at full strength (0 to 1)
 # Delivered card pops (scripts/delivered_card.gd and scripts/pop_icon.gd).
 const POP_FIRST_DELAY := 0.25         # seconds after the card shows before the first star pops
 const POP_STAR_GAP := 0.13            # seconds between one star pop and the next
@@ -378,3 +396,71 @@ const GOAL_FIVE_STAR_STREAK := 3      # "3 five-star deliveries in a row"
 const GOAL_LUNCH_ORDERS := 1          # "A school lunch order" (11:30–12:30 is 60 active seconds)
 const GOAL_CLUSTERS := 3              # "Deliver to 3 different clusters" (PRD said all 5: too many for 5 minutes)
 const GOAL_NO_CRASH_MIN_DELIVERIES := 1  # "No crashes" also needs at least this many deliveries
+
+# --- Replay progression (Sessions 47–50) ---
+const STREAK_TIP_STEP := 0.05
+const STREAK_TIP_MAX := 0.30
+const ORDER_CHOICE_RATING := 4.5
+const ORDER_CHOICE_CHANCE := 0.5
+const HOT_NOON_FRESHNESS_MULTIPLIER := 1.25
+const RUSH_HOUR_ORDER_DELAY_SHARE := 0.5
+const RUSH_HOUR_PAY_MULTIPLIER := 1.1
+const SHOP_SPECIAL_TIP_MULTIPLIER := 2.0
+const FRIENDLY_VISITS := 3
+const BEST_FRIEND_VISITS := 8
+const BEST_FRIEND_TIP_CHANCE := 0.7
+const COLLECTION_STAMP_INTERVAL := 25
+const COLLECTION_STAMP_BONUS := 20
+const COLLECTION_HOMES_PER_CLUSTER := 100
+const ANIMAL_MEET_DISTANCE := 4.0
+
+# --- Equipment effects (Session 45) ---
+const INSULATED_BAG_FRESHNESS_SHARE := 0.75
+const ANTI_SPILL_DAMAGE_SHARE := 0.7
+const COMFY_TYRES_DAMAGE_SHARE := 0.7
+const BETTER_BRAKES_DAMAGE_SHARE := 0.7
+const BOOST_FOOD_DAMAGE_TIMES := 3.0
+const BOOST_SPEED_KMH := 80.0
+const BOOST_DURATION := 4.0
+const BOOST_COOLDOWN := 30.0
+
+const RECEPTION_ORDER_CHANCE := 0.08
+
+# --- District traffic and horse rails ---
+const TRAFFIC_CAR_SPEED := 5.0
+const TRAFFIC_BUS_SPEED := 11.5
+const TRAFFIC_STOP_DISTANCE := 5.5
+const TRAFFIC_PARK_WAIT := 8.0
+const BUS_INTERVAL_GAME_MINUTES := 60.0
+const BUS_DWELL_TIME := 8.0
+const HORSE_RAIL_HEIGHT := 1.35
+const HORSE_RAIL_SPACING := 4.0
+const ARENA_JUMP_HEIGHT := 1.2
+const ARENA_JUMP_REACH := 3.5
+# --- Shops ---
+const GEAR_PRICES := {"gps":50,"bell":25,"insulated_bag":70,"anti_spill":70,"stamina":40,"brakes":90,"tyres":90,"aluminium":90,"carbon":200,"rocket":10000}
+const STAMINA_PRICE_STEP := 20
+const COSMETIC_PRICES := {"paint":25,"box":20,"caps":20,"glasses":25,"helmets":35,"tops":40,"shoes":30,"bags":35}
+const SHOP_HOLD_TIME := 0.7
+const SHOP_INTERACT_DISTANCE := 2.2
+const SHOP_PREVIEW_TURN_SPEED := 0.25
+
+# --- Optional GPS route ---
+const GPS_REPLAN_SECONDS := 0.5
+const GPS_REPLAN_METRES := 3.0
+const GPS_LINE_WIDTH := 0.45
+const GPS_LINE_HEIGHT := 0.08
+const GPS_WALL_COST := 2.0
+
+const GPS_SCAN_CELLS_PER_FRAME := 4000
+const CRASH_FORCE_SCALE := Vector2(0.6, 1.4)
+
+# --- Riding wind ---
+const WIND_START_KMH := 8.0
+const WIND_VOLUME_DB := Vector2(-38, -10)
+const WIND_SPRINT_GAIN_DB := 3.0
+const WIND_PITCH := Vector2(0.8, 1.15)
+const WIND_SMOOTHING := 6.0
+const GPS_GROUND_SAMPLE_METRES := 2.0
+const COMFY_TYRES_CAMERA_VERTICAL_SHARE := 0.5
+const COMFY_TYRES_SHAKE_SHARE := 0.65

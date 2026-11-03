@@ -9,6 +9,9 @@ extends RefCounted
 var places: PlaceBuilder
 ## The shift clock in hours (11.5 = 11:30).
 var hour := 8.0
+var day_kind := "normal"
+var regular_visits: Dictionary = {}
+var streak := 0
 ## Chances, handed in by the DeliveryManager (the smoke test turns them off for its old checks).
 var special_chance := GameConfig.SPECIAL_ORDER_CHANCE
 var regular_chance := GameConfig.REGULAR_ORDER_CHANCE
@@ -50,6 +53,7 @@ func make(restaurant_id := "", villa_number := 0, special := "", boring := false
 	elif randf() < GameConfig.ORDER_NOTE_CHANCE:
 		order.note = GameConfig.ORDER_NOTES.pick_random()
 	_make_special(order, special)
+	_apply_day_pay(order)
 	return order
 
 
@@ -65,6 +69,7 @@ func make_regular(regular: Dictionary) -> Order:
 	order.look = regular["look"]
 	order.base_pay = pay_for(places.restaurant_door(restaurant["id"]).distance_to(places.villa_door(villa["number"])))
 	order.pay = order.base_pay
+	_apply_day_pay(order)
 	return order
 
 
@@ -91,7 +96,7 @@ func neighbour_for(villa_number: int) -> Dictionary:
 		others = others.filter(func(v): return v.get("cluster", "") == cluster)
 	else:
 		var door := places.villa_door(villa_number)
-		others.sort_custom(func(a, b): return places.villa_door(a["number"]).distance_to(door) < places.villa_door(b["number"]).distance_to(door))
+		others.sort_custom(func(a, b): return _villa_point(a).distance_to(door) < _villa_point(b).distance_to(door))
 		others = others.slice(0, GameConfig.NEIGHBOUR_CHOICES)
 	return {} if others.is_empty() else others.pick_random()
 
@@ -158,10 +163,13 @@ func _pick_drop_off(spots_ok: bool, from: Vector3) -> Dictionary:
 			return school
 	if spots_ok and not stables.is_empty() and randf() < GameConfig.STABLES_ORDER_CHANCE:
 		return stables
+	var receptions: Array = places.villas.filter(func(v): return v["number"] in [903, 904])
+	if spots_ok and not receptions.is_empty() and randf() < GameConfig.RECEPTION_ORDER_CHANCE:
+		return receptions.pick_random()
 	var homes := _homes()
 	if randf() < GameConfig.ORDER_NEARBY_HOME_CHANCE:
 		# Like a real delivery app: many orders are for homes not far from the shop.
-		homes.sort_custom(func(a, b): return places.villa_door(a["number"]).distance_to(from) < places.villa_door(b["number"]).distance_to(from))
+		homes.sort_custom(func(a, b): return _villa_point(a).distance_to(from) < _villa_point(b).distance_to(from))
 		homes = homes.slice(0, maxi(1, homes.size() / 2))
 	return homes.pick_random()
 
@@ -174,12 +182,17 @@ func _order_for(restaurant: Dictionary, villa: Dictionary) -> Order:
 	order.food = restaurant["food"]
 	order.villa_number = villa["number"]
 	order.address = villa.get("address", "Villa %d" % villa["number"])
+	order.map_address = villa.get("map_address", order.address)
 	order.cluster = villa.get("cluster", "")
 	if villa["number"] == GameConfig.SCHOOL_SPOT:
 		order.who = ["teacher", "kid"].pick_random()
 		order.lunch = is_lunch(hour)
 	elif villa["number"] == GameConfig.STABLES_SPOT:
 		order.who = ["rider", "groom"].pick_random()
+	elif villa["number"] == 903:
+		order.who = "institute"
+	elif villa["number"] == 904:
+		order.who = "gym"
 	return order
 
 
@@ -192,7 +205,7 @@ func _homes() -> Array:
 ## after 15:00.
 func _short_ride_villa(from: Vector3) -> Dictionary:
 	var villas: Array = places.villas.filter(func(v): return v["number"] != GameConfig.SCHOOL_SPOT or school_open(hour))
-	villas.sort_custom(func(a, b): return places.villa_door(a["number"]).distance_to(from) < places.villa_door(b["number"]).distance_to(from))
+	villas.sort_custom(func(a, b): return _villa_point(a).distance_to(from) < _villa_point(b).distance_to(from))
 	return villas.slice(0, GameConfig.ORDER_BORING_CHOICES).pick_random()
 
 
@@ -202,3 +215,62 @@ static func _find(list: Array, key: String, value) -> Dictionary:
 		if item[key] == value:
 			return item
 	return {}
+
+
+func _apply_day_pay(order: Order) -> void:
+	if day_kind == "rush_hour":
+		order.base_pay = roundi(order.base_pay * GameConfig.RUSH_HOUR_PAY_MULTIPLIER)
+		order.pay = roundi(order.pay * GameConfig.RUSH_HOUR_PAY_MULTIPLIER)
+
+
+## A better offer uses the existing pay, journey and customer rules, including pay caps.
+func better_than(order: Order) -> Order:
+	for attempt in 24:
+		var candidate := make()
+		if is_better(candidate, order):
+			return candidate
+	# A deterministic fallback makes a useful pair even when random sampling repeats.
+	var home_choices := _homes()
+	for restaurant in places.restaurants:
+		if home_choices.is_empty():
+			break
+		var from := places.restaurant_door(restaurant["id"])
+		home_choices.sort_custom(func(a, b): return from.distance_to(_villa_point(a)) < from.distance_to(_villa_point(b)))
+		for villa in [home_choices.front(), home_choices.back()]:
+			var candidate := make(restaurant["id"], villa["number"])
+			if is_better(candidate, order):
+				return candidate
+	for regular in places.regulars:
+		if regular["villa"] == GameConfig.SCHOOL_SPOT and not school_open(hour):
+			continue
+		var candidate := make_regular(regular)
+		if is_better(candidate, order):
+			return candidate
+	return null  # a map with just one identical possible job has no honest alternative
+
+
+func is_better(candidate: Order, original: Order) -> bool:
+	if candidate == null:
+		return false
+	var candidate_ride := places.restaurant_approach(candidate.restaurant_id).distance_to(places.villa_approach(candidate.villa_number))
+	var original_ride := places.restaurant_approach(original.restaurant_id).distance_to(places.villa_approach(original.villa_number))
+	return candidate.pay > original.pay or candidate_ride + 0.1 < original_ride or _tip_chance(candidate) > _tip_chance(original)
+
+
+func _tip_chance(order: Order) -> float:
+	var base := GameConfig.TIP_CHANCE
+	if order.regular != "":
+		base = GameConfig.BEST_FRIEND_TIP_CHANCE if regular_visits.get(order.regular_id, 0) >= GameConfig.BEST_FRIEND_VISITS else GameConfig.REGULAR_TIP_CHANCE
+	elif order.special == "fragile":
+		base = GameConfig.FRAGILE_TIP_CHANCE
+	base += minf(streak * GameConfig.STREAK_TIP_STEP, GameConfig.STREAK_TIP_MAX)
+	if day_kind == "shop_special" and order.restaurant_id == "gelato":
+		base *= GameConfig.SHOP_SPECIAL_TIP_MULTIPLIER
+	return clampf(base, 0.0, 1.0)
+
+
+## Sorting already has each villa's data. Avoid a linear catalogue search per comparison.
+func _villa_point(villa: Dictionary) -> Vector3:
+	if villa.get("interior", false):
+		return VenueBuilder.world_point(villa, VenueBuilder.counter_local(places.villa_size_of(villa)))
+	return PlaceBuilder.door_point(villa["position"], villa["facing"], places.villa_size_of(villa))

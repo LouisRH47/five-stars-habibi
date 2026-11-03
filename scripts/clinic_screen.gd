@@ -1,6 +1,7 @@
 extends CanvasLayer
 ## After a big crash (Session 23, like the mockup's "Big crash: clinic bills"): the screen
-## fades to black and you wake up at the clinic. Behind everything a simple 3D clinic room
+## waits for the visible fall, then fades to black and you wake up at the clinic.
+## Behind everything a simple 3D clinic room
 ## (pale teal walls, your rider lying in a bed, a drip stand), filmed from the side.
 ## Left: a red BIG CRASH label, "You woke up at Wahat Al Shams Clinic", one sentence with
 ## what you hit and how fast, and a teal Arabic sign. Right: the white "Your bills" card
@@ -41,6 +42,9 @@ var _tip_box: PanelContainer
 var _week_bar: ProgressBar
 var _week_text: Label
 var _insure_button: Button
+var _transition: Tween
+var _patient: Person
+var _room_view: SubViewport
 
 
 func _ready() -> void:
@@ -59,7 +63,10 @@ func _ready() -> void:
 	add_child(_fade)
 	_set_visible(false)
 	if bike != null:
-		bike.crashed.connect(_on_crashed)
+		if bike.has_signal("fall_completed"):
+			bike.fall_completed.connect(_on_fall_completed)
+		else:
+			bike.crashed.connect(_on_crashed)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -70,6 +77,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 ## Shows the clinic with these bills (fades out first, unless instantly is true).
 func open(bills: Dictionary, instantly := false) -> void:
+	if _patient != null:
+		RiderLook.apply(_patient, GameState.rider_look)
+		_patient.play("lie")
 	last_bills = bills
 	showing = true
 	get_tree().paused = true
@@ -77,10 +87,12 @@ func open(bills: Dictionary, instantly := false) -> void:
 	if instantly:
 		_set_visible(true)
 		return
-	var tween := create_tween()
-	tween.tween_property(_fade, "color:a", 1.0, GameConfig.CRASH_FADE_TIME)
-	tween.tween_callback(func(): _set_visible(true))
-	tween.tween_property(_fade, "color:a", 0.0, GameConfig.CRASH_FADE_TIME * 0.6)
+	if _transition != null:
+		_transition.kill()
+	_transition = create_tween()
+	_transition.tween_property(_fade, "color:a", 1.0, GameConfig.CRASH_FADE_TIME)
+	_transition.tween_callback(func(): _set_visible(true))
+	_transition.tween_property(_fade, "color:a", 0.0, GameConfig.CRASH_FADE_TIME * 0.6)
 
 
 ## "Shift summary": back to the game world (the ShiftManager then shows the summary).
@@ -88,6 +100,9 @@ func close() -> void:
 	if not showing:
 		return
 	showing = false
+	if _transition != null:
+		_transition.kill()
+	_fade.color.a = 0.0
 	_set_visible(false)
 	if bike != null:
 		bike.reset_to_start()
@@ -104,17 +119,27 @@ func turn_on_insurance() -> void:
 
 func _on_crashed(big: bool) -> void:
 	if big and not showing:
-		open(GameState.big_crash())
+		open(GameState.big_crash(bike.last_crash if bike != null else {}))
+
+
+## One clinic visit is resolved only after the rider and bike have completed their fall.
+func _on_fall_completed(big: bool, impact: Dictionary) -> void:
+	if big and not showing:
+		open(GameState.big_crash(impact))
 
 
 func _set_visible(on: bool) -> void:
 	_room.visible = on
+	if _room_view != null:
+		_room_view.render_target_update_mode = SubViewport.UPDATE_ALWAYS if on else SubViewport.UPDATE_DISABLED
 	_left.visible = on
 	_card.visible = on
 
 
 func _fill(bills: Dictionary) -> void:
-	var hit: Dictionary = bike.last_crash if bike != null else {"what": "a wall", "kmh": 25.0}
+	var hit: Dictionary = bills.get("impact", {})
+	if hit.is_empty():
+		hit = bike.last_crash if bike != null else {"what": "a wall", "kmh": 25.0}
 	var food: String = bills.get("food", "")
 	var story := "You hit %s at %d km/h." % [hit["what"], roundi(hit["kmh"])]
 	if food != "":
@@ -126,12 +151,14 @@ func _fill(bills: Dictionary) -> void:
 	for child in _rows.get_children():
 		child.queue_free()
 	var full: int = bills["hospital"] + bills["repair"]
+	_row("Impact severity", str(bills.get("severity", hit.get("severity", "severe"))).capitalize(), INK)
 	_row("Clinic bill", "%d Dh" % bills["hospital"], INK)
 	_row("Bike repair (Snackaroo)", "%d Dh" % bills["repair"], INK)
 	if bills["boss"]:
 		_row("Your boss covered it", "-%d Dh" % full, TEAL)
 	elif bills["insured"]:
 		_row("Insurance", "-%d Dh" % (full - bills["paid"]), TEAL)
+		_row("Your insured cap", "%d Dh" % bills.get("insured_cap", bills["paid"]), TEAL)
 	else:
 		_row("Insurance", "off", RED)
 	_total.text = "%d Dh" % bills["paid"]
@@ -160,6 +187,7 @@ func _build_room() -> Control:
 	frame.set_anchors_preset(Control.PRESET_FULL_RECT)
 	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var view := SubViewport.new()
+	_room_view = view
 	view.own_world_3d = true
 	frame.add_child(view)
 	var room := Node3D.new()
@@ -188,6 +216,7 @@ func _build_room() -> Control:
 		for z in [-1.1, -0.1]:
 			LowPoly.cylinder(room, 0.04, 0.04, 0.35, Color(0.5, 0.55, 0.58), Vector3(x, 0.17, z))
 	var patient := Walker.build_model()
+	_patient = patient
 	patient.name = "Patient"
 	room.add_child(patient)
 	RiderLook.apply(patient, GameState.rider_look)
@@ -300,7 +329,7 @@ func _build_card() -> PanelContainer:
 	tip_style.set_corner_radius_all(14)
 	tip_style.set_content_margin_all(12)
 	_tip_box.add_theme_stylebox_override("panel", tip_style)
-	var tip := _label("Tip: with insurance (2 Dh a delivery) a big crash only costs %d Dh." % GameConfig.INSURED_CRASH_COST, 16, Color(0.4, 0.3, 0.05, 1))
+	var tip := _label("Insurance (2 Dh a delivery) reduces the bill. Your capped share depends on how hard you hit.", 16, Color(0.4, 0.3, 0.05, 1))
 	tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_tip_box.add_child(tip)
 	rows.add_child(_tip_box)

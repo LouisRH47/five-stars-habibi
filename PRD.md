@@ -299,7 +299,7 @@ Crashing costs you, and insurance is an optional bet. Prices are scaled down fro
 - **Small crash:** a low-speed hit or wipeout. You fall off, the damage meter takes a big hit (bad for your rating), and you get back on after about 2 seconds.
 - **Big crash:** hitting a car, wall or pole above about 20 km/h on the bicycle (higher limits for faster vehicles). The screen fades out and you wake up at the clinic. The order is cancelled (0 stars, no pay), the bills pop up, and your shift ends.
 
-**Planned crash upgrade (Sessions 44A–44B)**
+**Crash reactions and severity billing (Sessions 44A–44B)**
 
 - **Show the fall before the hospital.** A crash plays a short, stylised rider-and-bike sequence before recovery or the clinic fade. Use distinct reactions: a wobble or gentle tip for a soft/slow hit, a sideways skid for a glancing collision, and a forward tumble or over-the-handlebars fall for a hard frontal impact. Faster, harder impacts give a stronger tumble/slide and camera/sound feedback. The rider separates from the bike where appropriate; the camera keeps the fall visible.
 - **Use the actual impact.** Capture the impact before the bike is stopped: relative speed into the obstacle, collision direction/angle, and obstacle category/hardness. A scrape along a wall should be milder than hitting it straight on at the same riding speed. A soft obstacle and a rigid wall/car should produce different reactions. Preserve the existing forgiving policy for people and animals.
@@ -308,7 +308,19 @@ Crashing costs you, and insurance is an optional bet. Prices are scaled down fro
 - **Keep the existing protections.** The boss still covers the first major crash, and insurance starts on. Minor falls return control to the rider; major falls finish the animation before the hospital and shift-ending flow. The later rocket's “any crash is major” rule still applies, using the same impact record.
 - Start with a few reliable authored/physics-assisted fall reactions; full ragdoll physics is optional. Exact thresholds, durations, material weights, bill bands and insured caps are playtest values in game_config.gd. Tune them against delivery earnings so a cool fall does not create an excessive repeat-work penalty.
 
-**Current fixed big-crash bills (prototype, replaced when 44B is built)**
+**Bicycle bill bands (detail pass, playtest values)**
+
+The captured relative impact speed, angle and material hardness choose the band.
+Recoverable minor falls have no cash bill. The first major crash is still boss-covered.
+
+| Severity | Treatment | Repair | Insured contribution cap |
+| --- | --- | --- | --- |
+| Minor | 0 Dh | 0 Dh | 0 Dh |
+| Moderate | 60 Dh | 35 Dh | 8 Dh |
+| Severe | 150 Dh | 80 Dh | 20 Dh |
+| Critical | 220 Dh | 140 Dh | 35 Dh |
+
+**Previous flat prototype bills (higher tiers remain future design)**
 
 | Tier | Hospital bill | Repair bill (from the delivery company) | With insurance you only pay |
 | --- | --- | --- | --- |
@@ -316,7 +328,7 @@ Crashing costs you, and insurance is an optional bet. Prices are scaled down fro
 | Motorbike | 400 Dh | 300 Dh | 50 Dh |
 | Taxi tiers | 800 Dh | 1,500 Dh+ | 150 Dh |
 
-One uninsured big crash on the bicycle costs about 20 deliveries of pay. That is too harsh for someone still learning the bike, so:
+A severe uninsured bicycle crash costs about 20 deliveries of pay. New riders have these protections:
 
 - **The boss covers your first big crash.** The first big crash of the game shows the bills, then a message from the boss saying Snackaroo pays this one. You still lose the order and the shift.
 - **Insurance starts switched on.** You can turn it off from the phone whenever you like. The tutorial points it out.

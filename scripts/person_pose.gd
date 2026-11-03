@@ -5,10 +5,11 @@ extends SkeletonModifier3D
 ##   "pedal": sitting on the bike, leaning forward, hands on the handlebars and feet on
 ##            the pedals. The bike tells us where the pedals and grips are each frame.
 ##   "lie":   straight legs and arms by the sides (the clinic bed)
+##   "sit":   thighs forward, feet down and hands on the lap (cafe/reception chairs)
 ## It works by pointing bones at spots (like a puppet on strings). Spots are in metres on
 ## the person (facing -Z, +X is their right).
 
-## Which pose: "", "wave", "pedal" or "lie".
+## Which pose: "", "wave", "pedal", "lie" or "sit".
 var mode := ""
 ## The Person we belong to.
 var person: Person
@@ -30,6 +31,8 @@ func _process_modification_with_delta(delta: float) -> void:
 		_pedal()
 	elif mode == "lie":
 		_lie()
+	elif mode == "sit":
+		_sit()
 
 
 func _wave() -> void:
@@ -54,6 +57,16 @@ func _lie() -> void:
 		_point(side + "Leg", side + "Foot", Vector3.DOWN)
 		_point(side + "Arm", side + "ForeArm", Vector3(x, -1.0, 0.0))
 		_point(side + "ForeArm", side + "Hand", Vector3(x * 0.5, -1.0, -0.1))
+
+
+func _sit() -> void:
+	var hip_height := person.spot("Hips").y
+	for side in ["Left", "Right"]:
+		var x := -0.2 if side == "Left" else 0.2
+		_point(side + "UpLeg", side + "Leg", Vector3(0, -0.05, -1))
+		_point(side + "Leg", side + "Foot", Vector3.DOWN)
+		_reach(side + "Arm", side + "ForeArm", side + "Hand",
+				Vector3(x, hip_height - 0.1, -0.35), Vector3(x * 3, -0.3, 0.1))
 
 
 ## Bends a limb (upper bone, lower bone, end bone) so its end reaches `target`.

@@ -38,6 +38,26 @@ var road_works_at: Array = []
 
 var _map: Dictionary = {}  # the data list's constants, e.g. _map["ROADS"]
 var _font: Font
+var _static_root: Node2D
+var _land: Node2D
+var _background: Control
+var _map_xform := Transform2D.IDENTITY
+var _home_labels: Array = []
+var _number_candidates: Array = []
+var _target_buildings := {}
+var _last_candidate_position := Vector2(INF, INF)
+var _candidate_revision := 0
+var _number_widths := {}
+var _ascents := {}
+
+## Individual canvas items let the renderer cull off-map groups of buildings.
+## Their draw commands are recorded once, rather than rebuilding 500 polygons per frame.
+class BuildingChunk extends Node2D:
+	var polygons: Array[PackedVector2Array] = []
+	var colours: Array[Color] = []
+	func _draw() -> void:
+		for i in polygons.size():
+			draw_colored_polygon(polygons[i], colours[i])
 
 @onready var _view: Control = $Panel/Margin/Window/View/Map
 var _ring: Control
@@ -48,6 +68,10 @@ func _ready() -> void:
 	$Panel.custom_minimum_size = Vector2.ONE * GameConfig.MINIMAP_SIZE
 	if place_builder != null and place_builder.data != null:
 		_map = place_builder.data.get_script_constant_map()
+	var viewport := _view.get_viewport() as SubViewport
+	viewport.disable_3d = true
+	viewport.render_target_update_mode = SubViewport.UPDATE_WHEN_VISIBLE
+	_build_static_map()
 	_view.draw.connect(_draw_map)
 	# Round, like the mockup (Session 20): the map is drawn into its own little viewport,
 	# which ui/round_mask.gdshader cuts to a circle, with a white ring on top.
@@ -55,11 +79,22 @@ func _ready() -> void:
 	_ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_ring.draw.connect(func(): _ring.draw_arc(_ring.size * 0.5, _ring.size.x * 0.5 - 2.0, 0.0, TAU, 96, PLAYER, 4.0, true))
 	$Panel/Margin.add_child(_ring)
+	_ring.resized.connect(_ring.queue_redraw)
+	_view.resized.connect(_background.queue_redraw)
+	_ring.queue_redraw()
+	if bike != null:
+		_map_xform = _world_xform(bike.get_global_transform_interpolated())
+		_static_root.transform = _map_xform
+		_refresh_number_candidates()
 
 
 func _process(_delta: float) -> void:
+	if not visible or bike == null:
+		return
+	_map_xform = _world_xform(bike.get_global_transform_interpolated())
+	_static_root.transform = _map_xform
+	_refresh_number_candidates()
 	_view.queue_redraw()
-	_ring.queue_redraw()
 
 
 ## Where a spot in the world shows up on the mini-map, in pixels from its top-left corner.
@@ -82,7 +117,7 @@ func target_label() -> String:
 	var order := GameState.current_order
 	if GameState.stage == GameState.Stage.TO_RESTAURANT:
 		return order.restaurant_name
-	return order.address
+	return order.map_address if order.map_address != "" else order.address
 
 
 ## Where the pin is drawn: on the stop itself, or pinned to the edge if it's off the map.
@@ -119,12 +154,10 @@ func _draw_map() -> void:
 	if bike == null:
 		return
 	# Smooth position (physics interpolation is on), so the map doesn't jitter.
-	var xform := _world_xform(bike.get_global_transform_interpolated())
-	_view.draw_rect(Rect2(Vector2.ZERO, _view.size), OUTSIDE)
+	var xform := _map_xform
 	_view.draw_set_transform_matrix(xform)
-	_draw_ground()
-	_draw_roads()
-	_draw_buildings()
+	_draw_target_building()
+	_draw_gps_route()
 	_view.draw_set_transform_matrix(Transform2D.IDENTITY)
 	_draw_villa_numbers(xform)
 	_draw_road_works(xform)
@@ -136,77 +169,138 @@ func _draw_map() -> void:
 
 # --- Drawn in world metres (the map transform is on) ---
 
-func _draw_ground() -> void:
+func _draw_ground(canvas: CanvasItem = null) -> void:
+	if canvas == null:
+		canvas = _view
 	var half := Vector2.ZERO
 	if _map.has("HALF_SIZE"):
 		half = Vector2.ONE * _map["HALF_SIZE"]
 	elif _map.has("MAP_HALF"):
 		half = _map["MAP_HALF"]
 	if half != Vector2.ZERO:
-		_view.draw_rect(Rect2(-half, half * 2.0), GROUND)
-		_view.draw_rect(Rect2(-half, half * 2.0), WALL, false, 2.0)
+		canvas.draw_rect(Rect2(-half, half * 2.0), GROUND)
+		canvas.draw_rect(Rect2(-half, half * 2.0), WALL, false, 2.0)
 	for plot in _map.get("PLOTS", []):
-		_view.draw_rect(plot["area"], plot["colour"])
+		canvas.draw_rect(plot["area"], plot["colour"])
 	if _map.has("SPINE"):
-		_view.draw_rect(_map["SPINE"], GRASS)
+		canvas.draw_rect(_map["SPINE"], GRASS)
 	if _map.has("PLAZA"):
-		_view.draw_circle(_map["PLAZA"]["centre"], _map["PLAZA"]["radius"], PAVING)
+		canvas.draw_circle(_map["PLAZA"]["centre"], _map["PLAZA"]["radius"], PAVING)
 	for area in _map.get("PAVED_AREAS", []):
-		_view.draw_rect(area, PAVING)
+		canvas.draw_rect(area, PAVING)
 	if _map.has("PARK"):
-		_view.draw_rect(_map["PARK"]["area"], GRASS)
+		canvas.draw_rect(_map["PARK"]["area"], GRASS)
 	for area in _map.get("PARK_PATHS", []):
-		_view.draw_rect(area, PAVING)
+		canvas.draw_rect(area, PAVING)
 	for area in _map.get("PARKING_AREAS", []):
-		_view.draw_rect(area, ROAD)
+		canvas.draw_rect(area, ROAD)
 
 
-func _draw_roads() -> void:
+func _draw_roads(canvas: CanvasItem = null) -> void:
+	if canvas == null:
+		canvas = _view
 	var width: float = _map.get("ROAD_WIDTH", 8.0)
 	for road in _map.get("ROADS", []):
 		# One road-width longer, like the real roads, so corners are filled in.
 		var road_width: float = road.get("width", width)
 		var along: Vector2 = (road["to"] - road["from"]).normalized() * road_width * 0.5
-		_view.draw_line(road["from"] - along, road["to"] + along, ROAD if road_width >= 6.0 else PAVING.darkened(0.2), road_width)
+		canvas.draw_line(road["from"] - along, road["to"] + along, ROAD if road_width >= 6.0 else PAVING.darkened(0.2), road_width)
 	if _map.has("ROUNDABOUT_CENTRE"):
-		_view.draw_circle(_map["ROUNDABOUT_CENTRE"], _map["ROUNDABOUT_RADIUS"], ROAD)
-		_view.draw_circle(_map["ROUNDABOUT_CENTRE"], _map["ROUNDABOUT_ISLAND_RADIUS"], GRASS)
+		canvas.draw_circle(_map["ROUNDABOUT_CENTRE"], _map["ROUNDABOUT_RADIUS"], ROAD)
+		canvas.draw_circle(_map["ROUNDABOUT_CENTRE"], _map["ROUNDABOUT_ISLAND_RADIUS"], GRASS)
 
 
-func _draw_buildings() -> void:
+func _build_static_map() -> void:
+	_background = Control.new()
+	_background.name = "MapBackground"
+	_background.show_behind_parent = true
+	_background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_view.add_child(_background)
+	_background.draw.connect(func(): _background.draw_rect(Rect2(Vector2.ZERO, _view.size), OUTSIDE))
+	_static_root = Node2D.new()
+	_static_root.name = "StaticMap"
+	_static_root.show_behind_parent = true
+	_view.add_child(_static_root)
+	_land = Node2D.new()
+	_land.name = "GroundAndRoads"
+	_static_root.add_child(_land)
+	_land.draw.connect(func(): _draw_ground(_land); _draw_roads(_land))
+	var chunks := {}
 	for key in ["MOSQUE", "SUPERMARKET"]:
 		if _map.has(key):
-			_draw_block(_map[key]["position"], _map[key]["facing"], _map[key]["size"], LANDMARK)
-	var target_villa := -1
-	if has_target() and GameState.stage == GameState.Stage.TO_VILLA:
-		target_villa = GameState.current_order.villa_number
+			_cache_block(chunks, _map[key]["position"], _map[key]["facing"], _map[key]["size"], LANDMARK)
+	if place_builder == null:
+		return
 	for place in place_builder.villas:
-		var colour := TARGET if place["number"] == target_villa else VILLA
-		_draw_block(place["position"], place["facing"], place_builder.villa_size_of(place), colour)
+		var size := place_builder.villa_size_of(place)
+		_cache_block(chunks, place["position"], place["facing"], size, VILLA)
+		_target_buildings[int(place["number"])] = [place["position"], place["facing"], size]
+		if not PlaceBuilder.is_spot(place):
+			_home_labels.append([Vector2(place["position"].x, place["position"].z), str(place.get("house", place["number"]))])
 	for place in place_builder.restaurants:
-		_draw_block(place["position"], place["facing"], place_builder.restaurant_size_of(place), place["colour"])
+		_cache_block(chunks, place["position"], place["facing"], place_builder.restaurant_size_of(place), place["colour"])
+	_background.queue_redraw()
+	_land.queue_redraw()
+
+
+func _cache_block(chunks: Dictionary, spot: Vector3, facing: float, size: Vector3, colour: Color) -> void:
+	var cell := Vector2i(floori(spot.x / 64.0), floori(spot.z / 64.0))
+	if not chunks.has(cell):
+		var chunk := BuildingChunk.new()
+		chunk.name = "Buildings_%d_%d" % [cell.x, cell.y]
+		chunk.position = Vector2(cell) * 64.0 + Vector2.ONE * 32.0
+		_static_root.add_child(chunk)
+		chunks[cell] = chunk
+	var chunk := chunks[cell] as BuildingChunk
+	chunk.polygons.append(_block_corners(spot, facing, size, chunk.position))
+	chunk.colours.append(colour)
+
+
+func _refresh_number_candidates() -> void:
+	var at := Vector2(bike.global_position.x, bike.global_position.z)
+	if at.distance_squared_to(_last_candidate_position) < 25.0:
+		return
+	_last_candidate_position = at
+	_candidate_revision += 1
+	_number_candidates.clear()
+	# Include the square viewport's diagonal plus the five-metre movement allowance.
+	var radius := GameConfig.MINIMAP_METRES_ACROSS * 0.75 + 6.0
+	for entry: Array in _home_labels:
+		if at.distance_squared_to(entry[0]) <= radius * radius:
+			_number_candidates.append(entry)
+
+
+func _draw_target_building() -> void:
+	if not has_target() or GameState.stage != GameState.Stage.TO_VILLA:
+		return
+	var number: int = GameState.current_order.villa_number
+	if _target_buildings.has(number):
+		var building: Array = _target_buildings[number]
+		_draw_block(building[0], building[1], building[2], TARGET)
 
 
 ## A building seen from above: width across its front, depth front to back, turned to face its way.
 func _draw_block(spot: Vector3, facing_deg: float, size: Vector3, colour: Color) -> void:
+	_view.draw_colored_polygon(_block_corners(spot, facing_deg, size), colour)
+
+
+func _block_corners(spot: Vector3, facing_deg: float, size: Vector3, origin := Vector2.ZERO) -> PackedVector2Array:
 	var angle := deg_to_rad(facing_deg)
 	var front := Vector2(sin(angle), cos(angle)) * size.z * 0.5
 	var side := Vector2(cos(angle), -sin(angle)) * size.x * 0.5
-	var middle := Vector2(spot.x, spot.z)
-	var corners := PackedVector2Array([middle + front + side, middle + front - side,
+	var middle := Vector2(spot.x, spot.z) - origin
+	return PackedVector2Array([middle + front + side, middle + front - side,
 			middle - front - side, middle - front + side])
-	_view.draw_colored_polygon(corners, colour)
 
 
 # --- Drawn in pixels (upright, so text never turns upside down) ---
 
 func _draw_villa_numbers(xform: Transform2D) -> void:
-	var view := Rect2(Vector2.ZERO, _view.size)
-	for place in place_builder.villas:
-		var spot: Vector2 = xform * Vector2(place["position"].x, place["position"].z)
-		if view.grow(-6.0).has_point(spot):
-			if not PlaceBuilder.is_spot(place):  # the school booth and stable office have no number
-				_text(str(place.get("house", place["number"])), spot, NUMBER_SIZE, VILLA_NUMBER)
+	var bounds := Rect2(Vector2.ZERO, _view.size).grow(-6.0)
+	for entry: Array in _number_candidates:
+		var spot: Vector2 = xform * entry[0]
+		if bounds.has_point(spot):
+			_text(entry[1], spot, NUMBER_SIZE, VILLA_NUMBER)
 
 
 func _draw_north(xform: Transform2D) -> void:
@@ -272,8 +366,16 @@ func _draw_player() -> void:
 
 ## Text centred on a spot.
 func _text(text: String, centre: Vector2, size: int, colour: Color) -> void:
-	var width := _font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x
-	var baseline := centre + Vector2(-width * 0.5, _font.get_ascent(size) * 0.5 - 1.0)
+	var width := 0.0
+	if size == NUMBER_SIZE:
+		if not _number_widths.has(text):
+			_number_widths[text] = _font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x
+		width = _number_widths[text]
+	else:
+		width = _font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x
+	if not _ascents.has(size):
+		_ascents[size] = _font.get_ascent(size)
+	var baseline := centre + Vector2(-width * 0.5, _ascents[size] * 0.5 - 1.0)
 	_view.draw_string(_font, baseline, text, HORIZONTAL_ALIGNMENT_LEFT, -1, size, colour)
 
 
@@ -288,3 +390,14 @@ func _draw_road_works(xform: Transform2D) -> void:
 				spot + Vector2(-6, 6)]), TARGET)
 		_view.draw_line(spot + Vector2(-3.5, 1), spot + Vector2(3.5, 1), PLAYER, 2.0)
 		_view.draw_line(spot + Vector2(-8, 7), spot + Vector2(8, 7), TARGET, 2.0)
+
+
+## The line uses exactly the collision-safe route shown on the ground.
+func _draw_gps_route() -> void:
+	if GameState.upgrade_level("gps") <= 0 or delivery_manager == null:
+		return
+	var gps := delivery_manager.get_node_or_null("GPSRoute") as GPSRoute
+	if gps == null or gps.points.size() < 2:
+		return
+	for index in gps.points.size() - 1:
+		_view.draw_line(gps.points[index], gps.points[index + 1], Color(0.1, 0.95, 0.9), 1.0, true)

@@ -50,7 +50,26 @@ func _ready() -> void:
 		shop.position = place["position"]
 		shop.rotation_degrees = Vector3(0.0, place["facing"], 0.0)
 		add_child(shop)
+	var joined: Array = []
 	for place in villas:
+		if place.get("row_mode", false):
+			joined.append(place)
+	if not joined.is_empty():
+		add_child(HousingRows.build(joined, villa_size))
+	for place in villas:
+		if place.get("row_mode", false):
+			continue
+		if place.get("interior", false):
+			var room_data: Dictionary = place.duplicate()
+			room_data["name"] = "C Institute" if place["number"] == 903 else "Wahat Gym"
+			room_data["arabic"] = "معهد سي" if place["number"] == 903 else "نادي الواحة الرياضي"
+			room_data["venue_type"] = "institute" if place["number"] == 903 else "gym"
+			var room := VenueBuilder.build(room_data, villa_size_of(place))
+			room.name = "Institute" if place["number"] == 903 else "Gym"
+			room.position = place["position"]
+			room.rotation_degrees.y = place["facing"]
+			add_child(room)
+			continue
 		if is_spot(place):
 			continue  # the school booth and the stable office are built by LandmarkBuilder
 		if place.has("kind"):
@@ -62,11 +81,33 @@ func _ready() -> void:
 		villa.setup(place.get("house", place["number"]), villa_size)
 		villa.name = "Villa%d" % place["number"]  # unique, even when two clusters both have a Villa 7
 		add_child(villa)
+	var lists := data.get_script_constant_map()
+	for shop_data: Dictionary in lists.get("SHOPS", []):
+		add_child(ShopInterior.build(shop_data))
+	if lists.has("SHOPS"):
+		_setup_shops.call_deferred()
+
+
+func _setup_shops() -> void:
+	var world := get_parent()
+	var controller := ShopController.new()
+	controller.name = "ShopController"
+	controller.bike = world.get_node("Bike")
+	controller.camera = world.get_node("FollowCamera")
+	controller.walker = world.get_node_or_null("Walker")
+	controller.configure(data.get_script_constant_map()["SHOPS"])
+	world.add_child(controller)
+	var counters := Node.new()
+	counters.set_script(load("res://scripts/counter_panel.gd"))
+	counters.name = "CounterPanel"
+	world.add_child(counters)
 
 
 ## A restaurant, the mini market or the farm stall, depending on the shop's "style".
 func _make_shop(place: Dictionary) -> Node3D:
 	var size := restaurant_size_of(place)
+	if place.get("interior", false):
+		return VenueBuilder.build(place, size)
 	var style: String = place.get("style", "")
 	if style == "market":
 		var market: Node3D = MARKET_SCENE.instantiate()
@@ -99,6 +140,10 @@ func villa_size_of(place: Dictionary) -> Vector3:
 
 ## The spot on the ground in front of a restaurant's door.
 func restaurant_door(id: String) -> Vector3:
+	return restaurant_approach(id)
+
+
+func restaurant_approach(id: String) -> Vector3:
 	for place in restaurants:
 		if place["id"] == id:
 			return door_point(place["position"], place["facing"], restaurant_size_of(place))
@@ -106,12 +151,39 @@ func restaurant_door(id: String) -> Vector3:
 	return Vector3.ZERO
 
 
+func restaurant_entrance(id: String) -> Vector3:
+	for place in restaurants:
+		if place["id"] == id:
+			return VenueBuilder.world_point(place, Vector3(0, 0, restaurant_size_of(place).z * 0.5 + 0.7))
+	return Vector3.ZERO
+
+
+func restaurant_counter(id: String) -> Vector3:
+	for place in restaurants:
+		if place["id"] == id:
+			if place.get("interior", false):
+				return VenueBuilder.world_point(place, VenueBuilder.counter_local(restaurant_size_of(place)))
+			return restaurant_approach(id)
+	return Vector3.ZERO
+
+
 ## The spot on the ground in front of a villa's door.
 func villa_door(number: int) -> Vector3:
 	for place in villas:
 		if place["number"] == number:
+			if place.get("interior", false):
+				return VenueBuilder.world_point(place, VenueBuilder.counter_local(villa_size_of(place)))
 			return door_point(place["position"], place["facing"], villa_size_of(place))
 	push_error("No villa number %d" % number)
+	return Vector3.ZERO
+
+
+func villa_approach(number: int) -> Vector3:
+	for place in villas:
+		if place["number"] == number:
+			if place.has("approach"):
+				return place["approach"]
+			return door_point(place["position"], place["facing"], villa_size_of(place))
 	return Vector3.ZERO
 
 

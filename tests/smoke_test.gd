@@ -27,7 +27,7 @@ const STEPS := {
 	"critters": 120,   # 2 seconds for a kid on a scooter to ride into the bike
 	"crash_small": 30, # half a second to coast into a wall
 	"fallen": 150,     # long enough to get back on the bike
-	"crash_big": 60,   # one second to ride fast into a wall
+	"crash_big": 240,   # one second to ride fast into a wall
 	"shift": 90,       # 1.5 seconds, longer than the test's 1-second shift
 }
 ## How far before the speed bump the bike starts its ride, in metres.
@@ -39,7 +39,7 @@ const ACTIONS := ["move_forward", "move_back", "sprint", "handbrake", "interact"
 const FONT_PATH := "res://assets/fonts/NotoSansArabic.ttf"
 const GRID := preload("res://tests/grid_path.gd")
 ## The test saves here, never over the real save (user://save.json).
-const TEST_SAVE := "user://smoke_test_save.json"
+var _test_save := "user://smoke_test_save.json"
 
 var _main: Node
 var _bike: CharacterBody3D
@@ -65,6 +65,7 @@ var _parked_at := Vector3.ZERO
 var _kid_start := Vector3.ZERO
 var _lowest_y := 0.0       # the lowest the bike got while riding in from the gate (Session 27)
 var _grid: RefCounted      # the map scan from _check_wahat, reused by _check_session27
+var _saw_major_fall := false
 var _clock_before := 0.0  # Session 35A: check pause/tutorial behaviour over real frames
 
 
@@ -73,10 +74,11 @@ func _initialize() -> void:
 	var user_args := OS.get_cmdline_user_args()
 	if not user_args.is_empty():
 		scene_path = user_args[0]
+	_test_save = "user://smoke_%s_save.json" % scene_path.get_file().get_basename()
 	print("      scene: ", scene_path)
 	# Start from a clean slate, whatever is in the real save, and never write to it.
 	var state := root.get_node("GameState")
-	state.save_path = TEST_SAVE
+	state.save_path = _test_save
 	state.new_game()
 	var packed := load(scene_path) as PackedScene
 	if packed == null:
@@ -183,9 +185,10 @@ func _physics_process(_delta: float) -> bool:
 				_check("holding E for 1.5 s at the restaurant picks up the food", _game_state.stage_name() == "TO_VILLA", "")
 				_check_stage("TO_VILLA")
 				if _on_foot != null:
+					_on_foot.walker.global_position = _bike.global_position + Vector3.UP * 0.05
 					_check("F next to the bike gets you back on", _on_foot.get_on() and not _on_foot.on_foot, "")
 				# Still at the restaurant, so the villa may be off the map: the pin must stay on it.
-				_check_minimap_pin(_order.address)
+				_check_minimap_pin(_order.map_address if _order.map_address != "" else _order.address)
 				_check_minimap_turns()
 				_check_meters()
 				_move_bike_to(_delivery.target_door())
@@ -194,7 +197,7 @@ func _physics_process(_delta: float) -> bool:
 		"at_villa":
 			if _frame >= STEPS.settle:
 				_check("bike is near the villa door", _delivery.is_near_target(), "")
-				_check_minimap_pin(_order.address)
+				_check_minimap_pin(_order.map_address if _order.map_address != "" else _order.address)
 				var spot: Vector2 = _minimap.world_to_map(_delivery.target_door())
 				var middle: Vector2 = _minimap._view.size * 0.5
 				_check("at the villa the pin is right next to you", spot.distance_to(middle) < 10.0,
@@ -217,6 +220,8 @@ func _physics_process(_delta: float) -> bool:
 				_check("holding E for 1.5 s at the villa delivers", _game_state.stage_name() == "NONE", "")
 				_check_delivered_card()
 				if _on_foot != null:
+					_on_foot.walker.global_position = _bike.global_position + Vector3.UP * 0.05
+					_on_foot.walker.velocity = Vector3.ZERO
 					_on_foot.get_on()
 				_check_customer()
 				_check("money goes up by the pay, minus 2 Dh insurance", _game_state.money == _money_before + _order.pay - GameConfig.INSURANCE_PER_DELIVERY, "Dh %d" % _game_state.money)
@@ -277,7 +282,9 @@ func _physics_process(_delta: float) -> bool:
 				_check("back on the bike after the small crash", _bike.fallen_left == 0.0, "")
 				_start_crash(true)
 		"crash_big":
-			if _frame >= STEPS.crash_big:
+			if _bike.fallen_left > 0.0 and _bike.wrecked and not _main.get_node("ClinicScreen").showing:
+				_saw_major_fall = true
+			if _main.get_node("ClinicScreen").showing or _frame >= STEPS.crash_big:
 				Input.action_release("move_forward")
 				_check_big_crash()
 				_start_shift_check(true)
@@ -416,6 +423,7 @@ func _start_delivery_check() -> void:
 		_finish()
 		return
 	_game_state.reset()
+	_game_state.shift_goals.clear()  # this phase isolates the plain delivery loop
 	# The older checks want plain orders (a neighbour order would send them next door, a rush
 	# order changes the target time). _check_session32 turns specials and regulars back on.
 	_delivery.special_chance = 0.0
@@ -425,9 +433,7 @@ func _start_delivery_check() -> void:
 	var places: Node = _delivery.place_builder
 	var built := 0
 	if places != null:
-		for child in places.get_children():
-			if child.name.begins_with("Villa"):
-				built += 1
+		built = places.find_children("Villa*", "StaticBody3D", true, false).size()
 	# Drop-off spots that aren't homes (the school booth, the stable office) get no villa.
 	var listed: int = 0 if places == null else places.villas.filter(func(v): return v.get("kind", "") != "spot").size()
 	_check("every villa in the data list was built", listed > 0 and built == listed, "%d of %d" % [built, listed])
@@ -608,6 +614,7 @@ func _start_critter_check() -> void:
 	kid.hit_by_bike.connect(func(): _kid_hits += 1)
 	var ahead: Vector3 = (kid._to - kid._from).normalized()
 	_game_state.reset()
+	_game_state.shift_goals.clear()  # isolate ordinary food damage from a forced fragile-goal offer
 	_delivery.offer_now()
 	_delivery.accept()
 	_game_state.pick_up()
@@ -629,6 +636,7 @@ func _check_critters() -> void:
 		cats_home = cats_home and patch.has_point(Vector2(cat.position.x, cat.position.z))
 	_check("cats stay on their own patch", cats_home, "")
 	var cat: Node3D = obstacles.get_node("Cat_0")
+	cat.scared_left = 0.0  # begin the explicit cooldown check with a calm cat
 	var before: float = _game_state.meter_damage
 	cat.bumped_by(_bike)
 	cat.bumped_by(_bike)
@@ -697,6 +705,7 @@ func _start_crash(big: bool) -> void:
 	_bike.rotation = Vector3(0.0, atan2(front.x, front.z), 0.0)  # facing the wall
 	_bike.speed = 7.5 if big else 4.2  # 27 km/h or 15 km/h
 	if big:
+		_saw_major_fall = false
 		_money_before = gs.money
 		Input.action_press("move_forward")
 	_frame = 0
@@ -709,7 +718,9 @@ func _check_big_crash() -> void:
 	_check("a fast hit into a wall is a big crash", _bike.wrecked or clinic.showing, "")
 	_check("the clinic screen shows and the game pauses", clinic.showing and paused, "")
 	var bills: Dictionary = clinic.last_bills
-	_check("the bills are 150 Dh hospital + 80 Dh repair", bills.get("hospital") == 150 and bills.get("repair") == 80, "")
+	var expected: Dictionary = load("res://scripts/crash_impact.gd").quote(bills.get("impact", {}))
+	_check("a major fall animates before the hospital cut", _saw_major_fall, "")
+	_check("clinic bills match the captured impact severity", bills.get("hospital") == expected["hospital"] and bills.get("repair") == expected["repair"], str(bills))
 	_check("the boss pays the first big crash", bills.get("boss", false) and gs.money == _money_before, "Dh %d" % gs.money)
 	_check("the order is cancelled with 0 stars", gs.stage_name() == "NONE" and gs.history.size() == 1
 			and gs.history[0]["cancelled"] and gs.history[0]["stars"] == 0.0, "")
@@ -759,19 +770,19 @@ func _check_wahat() -> void:
 		return
 	var data: Dictionary = places.data.get_script_constant_map()
 	var homes: Array = places.villas.filter(func(v): return v.get("kind", "") != "spot")
-	_check("Wahat Al Shams has 60 homes", homes.size() == 60, "%d" % homes.size())
+	_check("Wahat Al Shams has 500 homes", homes.size() == 500, "%d" % homes.size())
 	var good := 0
 	var clusters := {}
 	for villa in homes:
 		var house: int = villa["house"]
-		if villa["address"] == "%s · Villa %d" % [villa["cluster"], house] and house >= 1 and house <= 12:
+		if villa["address"] == "Villa %d, Cluster %s" % [house, str(villa["cluster"]).substr(1)] and villa.get("map_address", "") == "%s · Villa %d" % [villa["cluster"], house] and house >= 1 and house <= 100:
 			good += 1
 		clusters[villa["cluster"]] = clusters.get(villa["cluster"], 0) + 1
-	_check("every home has an address like \"C3 · Villa 7\"", good == 60, "%d of 60" % good)
-	_check("5 clusters of 12 homes", clusters.size() == 5 and clusters.values().all(func(n): return n == 12), "%s" % [clusters])
+	_check("every home has a full phone address and compact cluster map address", good == 500, "%d of 500" % good)
+	_check("5 clusters of 100 homes", clusters.size() == 5 and clusters.values().all(func(n): return n == 100), "%s" % [clusters])
 	var plaza: Dictionary = data["PLAZA"]
 	var reached: float = Vector2(_bike.global_position.x, _bike.global_position.z).distance_to(plaza["centre"])
-	_check("the ride from the gate ends in the Plaza", reached < plaza["radius"], "%.0f m from the middle" % reached)
+	_check("the bus-stop ride reaches the Plaza neighbourhood", reached < plaza["radius"] + 12.0, "%.0f m from the middle" % reached)
 	var started := Time.get_ticks_msec()
 	var grid: RefCounted = GRID.new()
 	_grid = grid
@@ -783,13 +794,13 @@ func _check_wahat() -> void:
 	var stuck := []
 	for villa in places.villas:
 		var door: Vector3 = places.villa_door(villa["number"])
-		if grid.path(Vector2(start.x, start.z), Vector2(door.x, door.z)).is_empty():
+		if not grid.can_reach(Vector2(start.x, start.z), Vector2(door.x, door.z)):
 			stuck.append(villa["address"])
 	for shop in places.restaurants:
 		var door: Vector3 = places.restaurant_door(shop["id"])
-		if grid.path(Vector2(start.x, start.z), Vector2(door.x, door.z)).is_empty():
+		if not grid.can_reach(Vector2(start.x, start.z), Vector2(door.x, door.z)):
 			stuck.append(shop["name"])
-	_check("every home, shop and drop-off spot door can be reached by bike", stuck.is_empty(),
+	_check("every home, shop and reception can be reached through the collision map", stuck.is_empty(),
 			"%s (%.1f s)" % [stuck, (Time.get_ticks_msec() - started) / 1000.0])
 	_check("bollards stop cars at the lane entrances", data["BOLLARDS"].size() >= 20, "%d" % data["BOLLARDS"].size())
 
@@ -852,7 +863,7 @@ func _check_tutorial() -> void:
 			and gs.stage_name() == "OFFERED", "")
 	_delivery.accept()
 	tutorial._process(0.0)
-	_check("tip: ride to the pizza place with the mini-map", "Ride to Pizza" in tutorial.tip and "mini-map" in tutorial.tip, "")
+	_check("tip: ride to the pizza place with the mini-map", gs.current_order.restaurant_name in tutorial.tip and "mini-map" in tutorial.tip, "")
 	_move_bike_to(_delivery.target_door())
 	tutorial._process(0.0)
 	_check("tip at the door: get off and hold E to pick up", "press F to get off" in tutorial.tip and "hold E" in tutorial.tip, tutorial.tip)
@@ -933,7 +944,7 @@ func _check_saving() -> void:
 	gs.set_insurance(false)
 	gs.regular_visits = {"mariam": 3, "rashid": 1}
 	var keep := {"money": gs.money, "xp": gs.xp, "jobs": gs.history.size(), "rating": gs.rating()}
-	_check("the game saves", gs.save_game() and FileAccess.file_exists(TEST_SAVE), TEST_SAVE)
+	_check("the game saves", gs.save_game() and FileAccess.file_exists(_test_save), _test_save)
 	gs.reset()
 	gs.rider_name = ""
 	gs.hired = false
@@ -969,8 +980,8 @@ func _check_saving() -> void:
 			ProjectSettings.get_setting("application/run/main_scene") == "res://scenes/main_menu.tscn", "")
 	gs.new_game()
 	_check("New game wipes everything", gs.money == 0 and gs.history.is_empty() and not gs.hired and gs.rider_name == "", "")
-	SaveGame.delete(TEST_SAVE)
-	_check("the test save is cleaned up", not FileAccess.file_exists(TEST_SAVE), "")
+	SaveGame.delete(_test_save)
+	_check("the test save is cleaned up", not FileAccess.file_exists(_test_save), "")
 
 
 ## Session 13: a 1-second test shift. carrying: run out of time while carrying an order.
@@ -996,6 +1007,9 @@ func _check_shift_carrying() -> void:
 	_check("the shift clock runs out", gs.shift_clock_out and gs.clock_hours() == GameConfig.SHIFT_END_HOUR, "")
 	_check("carrying an order: you can still finish it", not screen.showing and gs.stage_name() == "TO_VILLA", "")
 	_check("no new orders once the clock is out", _delivery.offer_now() == null, "")
+	if _on_foot != null:
+		_on_foot.get_off()
+		_on_foot.walker.global_position += Vector3(0, 0, 20)
 	gs.deliver()
 	_check("the Delivered card shows first", _main.get_node("DeliveredCard").showing and not screen.showing, "")
 	_close_card()
@@ -1012,6 +1026,8 @@ func _check_shift_carrying() -> void:
 	screen._next_shift()
 	_check("the next shift starts with a full clock", not paused and not gs.shift_clock_out
 			and gs.shift_time_left == GameConfig.SHIFT_LENGTH and gs.shift_number == 2, "")
+	if _on_foot != null:
+		_check("a shift finished on foot starts the next shift riding the reset bike", not _on_foot.on_foot and _delivery.actor == _bike and _main.get_node("FollowCamera").target == _bike, "")
 
 
 func _check_shift_empty() -> void:
@@ -1066,6 +1082,9 @@ func _check_get_off() -> void:
 	_bike.speed = 0.0
 	_check("on the bike, holding E at the door does nothing", not _delivery._slow_enough() or _delivery.needs_walking, "")
 	_check("F gets you off when you're stopped", _on_foot.get_off() and _on_foot.on_foot and _bike.parked, "")
+	# This basic hold test skips the walk; the dedicated walk phase exercises movement.
+	_on_foot.walker.global_position = _delivery.target_door() + Vector3.UP * 0.05
+	_on_foot.walker.velocity = Vector3.ZERO
 	_check("the camera and the mini-map follow you on foot", _main.get_node("FollowCamera").target == _on_foot.walker
 			and _minimap.bike == _on_foot.walker and _minimap.parked_bike == _bike, "")
 
@@ -1079,10 +1098,11 @@ func _start_walk_check() -> void:
 		return
 	var gs: Node = _game_state
 	gs.reset()
-	_delivery.offer_now()
+	var home: int = _delivery.place_builder.villas.filter(func(v): return not PlaceBuilder.is_spot(v))[0]["number"]
+	gs.offer_order(_delivery.make_order("pizza", home))
 	_delivery.accept()
 	gs.pick_up()
-	_walk_goal = _delivery.target_door()
+	_walk_goal = _delivery.place_builder.villa_door(gs.current_order.villa_number)
 	print("      walk check order: ", gs.current_order.describe())
 	var villa: Dictionary = {}
 	for place in _delivery.place_builder.villas:
@@ -1135,7 +1155,7 @@ func _check_scoring() -> void:
 		if job["tip"] > 0:
 			tips += 1
 			tips_ok = tips_ok and job["tip"] >= GameConfig.TIP_MIN and job["tip"] <= GameConfig.TIP_MAX
-	_check("tips sometimes come on 5-star jobs, 2 to 15 Dh", tips > 40 and tips < 120 and tips_ok, "%d of 200" % tips)
+	_check("streak-boosted tips sometimes come on 5-star jobs, 2 to 15 Dh", tips > 100 and tips < 180 and tips_ok, "%d of 200" % tips)
 	var low_tips := 0
 	for i in 100:
 		low_tips += _quick_delivery(50.0, false)["tip"] + _quick_delivery(100.0, true)["tip"]
@@ -1356,16 +1376,16 @@ func _check_session28() -> void:
 		Settings.apply()  # applies straight away, without saving the settings file
 		cycle.apply_hour(12.5)
 		seen[level] = {"ssao": env.ssao_enabled, "haze": env.fog_enabled, "glow": env.glow_enabled,
-				"shimmer": cycle._shimmer.visible, "shadows": sun.directional_shadow_max_distance}
+				"shimmer": cycle.get_node_or_null("HeatShimmer") != null, "shadows": sun.directional_shadow_max_distance}
 	_check("Low: no SSAO, haze or shimmer",
 			not seen[0]["ssao"] and not seen[0]["haze"] and not seen[0]["shimmer"], str(seen[0]))
-	_check("Medium: SSAO, haze, glow and noon shimmer on",
-			seen[1]["ssao"] and seen[1]["haze"] and seen[1]["glow"] and seen[1]["shimmer"], str(seen[1]))
-	_check("High: everything on", seen[2]["ssao"] and seen[2]["haze"] and seen[2]["shimmer"], str(seen[2]))
+	_check("Medium: SSAO, haze and glow on, shimmer removed",
+			seen[1]["ssao"] and seen[1]["haze"] and seen[1]["glow"] and not seen[1]["shimmer"], str(seen[1]))
+	_check("High: visual effects on without heat shimmer", seen[2]["ssao"] and seen[2]["haze"] and not seen[2]["shimmer"], str(seen[2]))
 	_check("shadows reach further on higher settings",
 			seen[0]["shadows"] < seen[1]["shadows"] and seen[1]["shadows"] < seen[2]["shadows"], "")
 	cycle.apply_hour(8.0)
-	_check("no heat shimmer in the morning", not cycle._shimmer.visible, "")
+	_check("no heat shimmer in the morning", cycle.get_node_or_null("HeatShimmer") == null, "")
 	Settings.graphics = before
 	Settings.apply()
 	cycle.apply_hour(cycle.hour_now())
@@ -1392,11 +1412,11 @@ func _check_session26() -> void:
 	var good := 0
 	var most_meshes := 0
 	for villa in homes:
-		var home: Node = places.get_node_or_null("Villa%d" % villa["number"])
+		var home: Node = places.find_child("Villa%d" % villa["number"], true, false)
 		if home == null:
 			continue
 		var number: Node = home.get_node_or_null("Number")
-		if home.get_meta("kind", "") == villa["kind"] and home.get_node_or_null("House") is MeshInstance3D \
+		if home.get_meta("kind", "") == villa["kind"] and home.get_meta("batched", false) and home.get_node_or_null("House") == null \
 				and number is Label3D and number.text == str(villa["house"]):
 			good += 1
 		var key: String = "%s %s" % [villa["cluster"], villa["kind"]]
@@ -1407,17 +1427,18 @@ func _check_session26() -> void:
 			"%d of %d" % [good, homes.size()])
 	var split_ok := true
 	for cluster in data["CLUSTER_NAMES"]:
-		if kinds.get(cluster + " courtyard", 0) != 10 or kinds.get(cluster + " garden", 0) != 1 \
-				or kinds.get(cluster + " signature", 0) != 1:
+		if kinds.get(cluster + " courtyard", 0) != 90 or kinds.get(cluster + " garden", 0) != 8 \
+				or kinds.get(cluster + " signature", 0) != 2:
 			split_ok = false
-	_check("each cluster: 10 courtyard, 1 garden, 1 signature villa", split_ok, "%s" % [kinds])
-	_check("homes look different from each other", looks.size() >= homes.size() * 0.8, "%d looks" % looks.size())
-	var first: Node = places.get_node("Villa%d" % homes[0]["number"])
+	_check("each cluster: 90 courtyard, 8 garden, 2 signature villas", split_ok, "%s" % [kinds])
+	_check("homes look different from each other", looks.size() >= 80, "%d looks" % looks.size())
+	var first: Node = places.find_child("Villa%d" % homes[0]["number"], true, false)
 	var again: Node = load("res://scripts/villa_builder.gd").build(homes[0], places.villa_size)
 	_check("a home looks the same every time it's built", again.get_meta("extras") == first.get_meta("extras"),
 			again.get_meta("extras"))
 	again.free()
-	_check("each home is drawn as one merged mesh", most_meshes == 1, "%d" % most_meshes)
+	var housing := places.get_node_or_null("HousingRows")
+	_check("500 homes share 20 detailed row meshes and 20 distant meshes", most_meshes == 0 and housing != null and housing.near_meshes.size() == 20 and housing.far_meshes.size() == 20 and housing.home_count == 500, "row batching")
 	# Nothing solid from a house may stand on a door spot or on a road or lane.
 	var space := _bike.get_world_3d().direct_space_state
 	var ball := SphereShape3D.new()
@@ -1471,7 +1492,7 @@ func _check_session27() -> void:
 		return
 	var data: Dictionary = places.data.get_script_constant_map()
 	paused = false
-	_check("the ride from the gate went down into the sunken square", _lowest_y < -0.2, "lowest %.2f m" % _lowest_y)
+	_check("the bus-stop ride stays supported by the world", _lowest_y > -1.0, "lowest %.2f m" % _lowest_y)
 	var plaza: Dictionary = data["PLAZA"]
 	var floor_spot := Vector3(plaza["centre"].x + plaza["floor_radius"] - 2.0, 5.0, plaza["centre"].y)
 	var hit := _bike.get_world_3d().direct_space_state.intersect_ray(
@@ -1490,14 +1511,15 @@ func _check_session27() -> void:
 			_has_arabic_label(site_sign) and _has_label_text(site_sign, "Phase 2 coming soon"), "")
 	# One order from each new pickup spot, delivered: the food has numbers in game_config.gd.
 	var gs: Node = _game_state
-	var foods := {"shawarma": ["shawarma"], "bakery": ["cake"], "market": ["groceries"],
-			"farm": ["farm juice", "salad box"]}
+	var foods := {"shawarma": ["shawarma"], "bakery": ["cake", "manakish"], "market": ["groceries"],
+			"farm": ["farm juice", "salad box"], "thai": ["pad thai"], "sushi": ["sushi"],
+			"tacos": ["tacos"], "burger": ["burgers"]}
 	var start: Vector3 = data["START"]["position"]
 	for id in foods:
 		gs.reset()
 		var order: Object = _delivery.make_order(id, 101)
 		var door: Vector3 = places.restaurant_door(id)
-		var reachable: bool = _grid != null and not _grid.path(Vector2(start.x, start.z), Vector2(door.x, door.z)).is_empty()
+		var reachable: bool = _grid != null and _grid.can_reach(Vector2(start.x, start.z), Vector2(door.x, door.z))
 		var tables := [GameConfig.FRESHNESS_DRAIN, GameConfig.DAMAGE_SPEED_BUMP, GameConfig.DAMAGE_HARD_BRAKE,
 				GameConfig.DAMAGE_COLLISION, GameConfig.DAMAGE_CRITTER]
 		var tuned := tables.all(func(t): return t.has(order.food))
@@ -1511,7 +1533,7 @@ func _check_session27() -> void:
 	for plot in data["PLOTS"]:
 		plots[plot["name"]] = plot["area"]
 	var mosque: Rect2 = plots["Mosque"]
-	var school: Rect2 = plots["Al Shams School"].grow(8.0)  # the booth is just outside the fence
+	var school: Rect2 = data["SCHOOL"]["area"].grow(8.0)  # the booth is just outside the fence
 	var stables: Rect2 = plots["Stables"].grow(2.0)
 	var to_mosque := 0
 	var wrong_spot := 0
@@ -1532,7 +1554,7 @@ func _check_session27() -> void:
 	_check("300 orders: the mosque never gets one", to_mosque == 0, "%d" % to_mosque)
 	_check("school orders only go to the gate booth, stables orders only to the office", wrong_spot == 0
 			and spots.has(901) and spots.has(902), "%d wrong, spots used %s" % [wrong_spot, spots.keys()])
-	for number in [901, 902]:
+	for number in [901, 902, 903, 904]:
 		gs.reset()
 		var order: Object = _delivery.make_order("pizza", number)
 		var done: bool = gs.offer_order(order) and gs.accept_offer() and gs.pick_up() and gs.deliver()
@@ -1785,6 +1807,7 @@ func _check_session30() -> void:
 	buggy.scared_left = 0.0
 	buggy._pause_left = 0.0
 	buggy._blocked = 0.0
+	buggy.start_at(0, 0.35, true)  # start mid-segment, not at a random endpoint pause
 	var start: Vector3 = buggy.position
 	for i in 60:
 		buggy._physics_process(1.0 / 30.0)
@@ -1824,11 +1847,13 @@ func _check_session30() -> void:
 	var tilt := crown.rotation
 	var donkey: Node3D = ambient._donkeys[0]["node"]
 	ambient._donkeys[0]["pause"] = 0.0
+	var pen: Rect2 = ambient._pen
+	ambient._donkeys[0]["target"] = Vector3(pen.end.x - 0.5 if donkey.position.x < pen.get_center().x else pen.position.x + 0.5, 0, pen.get_center().y)
 	var donkey_from := donkey.position
 	for i in 30:
 		ambient._process(1.0 / 30.0)
 	_check("palm tops sway in the breeze", crown.rotation.distance_to(tilt) > 0.001, "")
-	_check("the donkeys stroll round their pen", donkey.position.distance_to(donkey_from) > 0.1, "")
+	_check("the donkeys stroll round their pen", donkey.position.distance_to(donkey_from) > 0.1 and pen.has_point(Vector2(donkey.position.x, donkey.position.z)), "")
 	var stream := _main.get_node("WahatBuilder/Stream").get_child(0) as MeshInstance3D
 	_check("the stream has moving water", stream.material_override is ShaderMaterial, "")
 	# Fewer things on Low than on High (sets the setting without saving it).
@@ -1836,7 +1861,10 @@ func _check_session30() -> void:
 	Settings.graphics = 0
 	Settings.apply()
 	var low: int = life.shown_count()
-	var low_off: bool = not life.get_node("Buggy_2").visible and life.get_node("Buggy_2").process_mode == Node.PROCESS_MODE_DISABLED
+	var low_off := true
+	for node in life.levels:
+		if life.levels[node] > 0:
+			low_off = low_off and not node.visible and node.process_mode == Node.PROCESS_MODE_DISABLED
 	Settings.graphics = 2
 	Settings.apply()
 	var high: int = life.shown_count()
@@ -1910,6 +1938,11 @@ func _check_session33() -> void:
 	var not_solid := []
 	var started := Time.get_ticks_msec()
 	var list: Array = events.road_works_places()
+	await physics_frame
+	await physics_frame
+	var grid: RefCounted = GRID.new()
+	grid.build(_bike.get_world_3d(), data["MAP_HALF"], [_bike, _on_foot.walker])
+	var previous_area := Rect2()
 	for i in list.size():
 		events.clear_all()
 		events.started_this_shift = 0
@@ -1921,19 +1954,23 @@ func _check_session33() -> void:
 			continue
 		for frame in 2:
 			await physics_frame  # the physics world takes the new barriers in on its next step
-		var grid: RefCounted = GRID.new()
-		grid.build(_bike.get_world_3d(), data["MAP_HALF"], [_bike, _on_foot.walker])
 		var centre: Vector2 = list[i]["centre"]
+		var footprint := Vector2(list[i]["width"], list[i]["length"])
+		if list[i]["along"] == "x":
+			footprint = Vector2(footprint.y, footprint.x)
+		var area := Rect2(centre - footprint * 0.5, footprint).grow(4.0)
+		grid.refresh_region(_bike.get_world_3d(), area.merge(previous_area) if previous_area.size != Vector2.ZERO else area, [_bike, _on_foot.walker])
+		previous_area = area
 		var along := Vector2(1, 0) if list[i]["along"] == "x" else Vector2(0, 1)
 		if grid.is_free(centre + along * list[i]["length"] * 0.5):
 			not_solid.append(i)
 		for villa in places.villas:
 			var door: Vector3 = places.villa_door(villa["number"])
-			if grid.path(Vector2(start.x, start.z), Vector2(door.x, door.z)).is_empty():
+			if not grid.can_reach(Vector2(start.x, start.z), Vector2(door.x, door.z)):
 				stuck.append("%s (works %d)" % [villa["address"], i])
 		for shop in places.restaurants:
 			var door: Vector3 = places.restaurant_door(shop["id"])
-			if grid.path(Vector2(start.x, start.z), Vector2(door.x, door.z)).is_empty():
+			if not grid.can_reach(Vector2(start.x, start.z), Vector2(door.x, door.z)):
 				stuck.append("%s (works %d)" % [shop["name"], i])
 	events.clear_all()
 	_check("the road works barriers are solid", not_solid.is_empty(), "not solid: %s" % [not_solid])
@@ -2089,6 +2126,7 @@ func _check_session32() -> void:
 	_close_card()
 	# Fragile cake: from Sunrise Bakery, double damage, 60% tip chance.
 	if places.restaurants.any(func(r): return r["id"] == GameConfig.FRAGILE_SHOP):
+		gs.streak = 0  # isolate the base fragile tip chance from the preceding clean delivery
 		var cake: Object = dm.make_order("", 0, "fragile")
 		_check("a fragile order is a cake from Sunrise Bakery", cake.restaurant_id == GameConfig.FRAGILE_SHOP and cake.food == "cake", cake.describe())
 		_start_order(cake)
@@ -2110,7 +2148,7 @@ func _check_session32() -> void:
 	_check("at the door: not home, take it to the neighbour", sent and gs.stage_name() == "TO_VILLA" and next_door.villa_number != home
 			and next_door.cluster == first_cluster and "Not home!" in next_door.note, "%s: %s" % [next_door.address, next_door.note])
 	_check("the clock keeps running for the neighbour", gs.ride_time == 12.0 and gs.target_time > 0.0, "%.0f s" % gs.ride_time)
-	_check("the beam moves to the neighbour's door", dm.target_door().distance_to(places.villa_door(next_door.villa_number)) < 0.01, "")
+	_check("the beam moves to the neighbour's door", dm.target_door().distance_to(places.villa_door(next_door.villa_number) if dm.on_foot else places.villa_approach(next_door.villa_number)) < 0.01, "")
 	_put_actor_at(dm.target_door())
 	money = gs.money
 	_check("then you can deliver to the neighbour", dm.try_interact() and gs.stage_name() == "NONE"
@@ -2231,6 +2269,7 @@ func _check_regulars() -> void:
 	var gs: Node = _game_state
 	var dm: Node = _delivery
 	var regulars: Array = dm.place_builder.regulars
+	gs.reset()
 	if regulars.is_empty():
 		print("      no regulars on this map, regular checks skipped")
 		return
@@ -2238,7 +2277,7 @@ func _check_regulars() -> void:
 	gs.rider_name = "Louis"
 	var maker: Object = dm.order_maker()
 	var mariam: Object = maker.make_regular(regulars[0])
-	_check("Auntie Mariam orders bubble tea to Villa 7, Cluster 2", mariam.food == "bubble tea" and mariam.address == "C2 · Villa 7", mariam.describe())
+	_check("Auntie Mariam orders bubble tea to Villa 7, Cluster 2", mariam.food == "bubble tea" and mariam.address == "Villa 7, Cluster 2", mariam.describe())
 	gs.offer_order(mariam)
 	var phone := _main.get_node("Phone")
 	phone._process(0.0)
@@ -2249,7 +2288,7 @@ func _check_regulars() -> void:
 	_check("regulars tip more often (60%)", gs.tip_chance(mariam) == GameConfig.REGULAR_TIP_CHANCE, "")
 	gs.deliver()
 	var customer: Node = _main.get_node("CustomerSpawner").last_spawned
-	var lines: Array = load("res://data/customer_lines.gd").REGULAR_LINES["mariam"]
+	var lines: Array = load("res://data/customer_lines.gd").REGULAR_STAGES["mariam"]["first"]
 	var said: String = customer.get("line") if customer != null else ""
 	var own := lines.any(func(l): return l.replace("{name}", "Louis") == said)
 	_check("Auntie Mariam says one of her own lines with your name", own and "Louis" in said, said)

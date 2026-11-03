@@ -86,7 +86,8 @@ func _wave() -> void:
 func hear_bell(bike: Node3D) -> void:
 	if _walking or person.action == "wave" or not is_inside_tree():
 		return
-	if global_position.distance_to(bike.global_position) <= GameConfig.BELL_HEAR_RANGE:
+	var reach: float = bike.bell_range() if bike.has_method("bell_range") else GameConfig.BELL_HEAR_RANGE
+	if global_position.distance_to(bike.global_position) <= reach:
 		_wave()
 
 
