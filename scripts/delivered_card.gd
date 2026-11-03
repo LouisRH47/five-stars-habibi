@@ -90,7 +90,7 @@ func _on_delivered(_order: Order) -> void:
 	_title.text = "Left at the door!" if job["left_at_door"] else "Delivered!"
 	_stars.stars = job["stars"]
 	var ride := int(GameState.ride_time)
-	_what.text = "%s to Villa %d  ·  %d:%02d" % [str(job["food"]).capitalize(), job["villa"], ride / 60, ride % 60]
+	_what.text = "%s to %s  ·  %d:%02d" % [str(job["food"]).capitalize(), job.get("address", "Villa %d" % job["villa"]), ride / 60, ride % 60]
 	for child in _tiles.get_children():
 		child.queue_free()
 	for key in ["time", "freshness", "damage"]:

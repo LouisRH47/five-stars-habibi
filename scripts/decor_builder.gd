@@ -43,12 +43,15 @@ func _ready() -> void:
 		var middle := area.get_center()
 		LowPoly.box(self, Vector3(area.size.x, PAD_THICKNESS, area.size.y), ASPHALT_COLOUR,
 				Vector3(middle.x, PAD_THICKNESS * 0.5, middle.y))
-	_build_mosque()
-	_build_supermarket()
-	var park: Node3D = PARK_SCENE.instantiate()
-	park.name = "Park"
-	add_child(park)
-	park.setup(_map)
+	if _map.has("MOSQUE"):
+		_build_mosque()
+	if _map.has("SUPERMARKET"):
+		_build_supermarket()
+	if _map.has("PARK"):
+		var park: Node3D = PARK_SCENE.instantiate()
+		park.name = "Park"
+		add_child(park)
+		park.setup(_map)
 	_build_palms()
 	_build_cars()
 	_build_bumps()

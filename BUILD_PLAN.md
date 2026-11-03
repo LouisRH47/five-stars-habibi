@@ -473,8 +473,7 @@ headless checks and smoke test, a smoke test check for every new system, PROGRES
 commit. Keep the game running at 60 fps on Louis's Mac on Medium: check the frame time
 in every session that adds things to the map.
 
-### Session 25: Wahat Al Shams layout (and 5-minute shifts)
-
+### Session 25: Wahat Al Shams layout (and 5-minute shifts) (built, needs testing)
 ```text
 Session 25. Read CLAUDE.md, PRD.md (Shifts, and "Wahat Al Shams, the Tier 1
 community") and PROGRESS.md.

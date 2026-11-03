@@ -98,6 +98,7 @@ func make_order(restaurant_id := "", villa_number := 0) -> Order:
 	order.restaurant_name = restaurant["name"]
 	order.food = restaurant["food"]
 	order.villa_number = villa["number"]
+	order.address = villa.get("address", "Villa %d" % villa["number"])
 	order.boring = boring
 	order.pay = GameConfig.ORDER_PAY_MIN if boring else _pay_for(from.distance_to(to))
 	# Some customers add a short note, like "Leave it at the door, please".

@@ -14,7 +14,7 @@ extends Control
 
 const LIST := preload("res://data/application.gd")
 const PALM_SCENE := preload("res://scenes/palm_tree.tscn")
-const GAME_SCENE := "res://scenes/palm_grove.tscn"
+const GAME_SCENE := "res://scenes/wahat_al_shams.tscn"
 
 const TEAL := Color(0.05882353, 0.29803923, 0.36078432, 1)
 const ORANGE := Color(0.9490196, 0.54901963, 0.15686275, 1)

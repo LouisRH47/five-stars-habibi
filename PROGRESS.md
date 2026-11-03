@@ -462,6 +462,39 @@ on both Palm Grove and the test area. Nothing needed fixing.
   Claude Code. Louis: compare the four screens with the mockup and list what's different.
 - Still to do: Louis plays a full shift himself.
 
+### Session 25
+- **Shifts are 5 minutes** now (30 s per in-game hour, 08:00 to 18:00). The clock turns
+  orange in the last in-game hour.
+- **New map: Wahat Al Shams** (`scenes/wahat_al_shams.tscn`, data list
+  `data/wahat_al_shams.gd`, built by `scripts/wahat_builder.gd`), about 400 x 300 m, from
+  Louis's sketch (`docs/wahat_al_shams_map.svg`):
+  - a belt of trees round the edge (one MultiMesh, fast), an invisible wall inside it,
+    a sandy horse track and a red bike track, then the ring road;
+  - the main gate in the middle of the west side (closed red bar, gate house) with the
+    bilingual welcome sign "Welcome to Wahat Al Shams / أهلاً بكم في واحة الشمس";
+  - the Plaza just inside the gate (round paving for now) with Pizza, Brain Freeze Gelato and
+    Boba Oasis on its north side and the Al Sarab Mini Market on its south side;
+  - the green spine through the middle: grass, the spine path (the bike shortcut) and a
+    winding stream;
+  - 5 clusters (C1 to C3 north, C4 and C5 south), each with 12 homes on two 4 m lanes,
+    connector lanes at each side from the ring road to the spine, bollards at every lane
+    entrance (cars can't get in, the bike can) and a mini-plaza strip through the middle;
+  - solar car park spots on the ring road by each cluster, with parked cars;
+  - flat plots for the school, mosque, stables and building site (built in Session 27);
+  - speed bumps on the ring road, palms round the Plaza and along the spine path, cats in
+    the mini-plazas, kids on scooters on the ring road and the spine path.
+- Homes are placeholder boxes for now (the house kit is Session 26), numbered 1 to 12 inside
+  each cluster. Addresses read "C3 · Villa 7" on the phone, the mini-map, the Delivered card
+  and the tutorial. Orders keep an `address`.
+- The main menu starts the new map. `scenes/palm_grove.tscn` stays as an old test map.
+- The mini-map draws any map now (the Plaza, spine, plots, lanes in their own width).
+- The smoke test runs on Wahat Al Shams by default: it checks the 60 homes and their
+  addresses, that the ride from the gate ends in the Plaza, and that every home and shop door
+  can be reached by bike. For that, `tests/grid_path.gd` scans the map in 1 m squares and finds
+  routes with Godot's AStarGrid2D. Palm Grove and the test area still pass too.
+- The play-test bot uses the same route finder on any map, looks ahead and slows down for
+  walls. It still gets stuck in the narrow cluster lanes; fixing that is next.
+
 ## Known bugs
 - None found by the checks. Not play-tested by Louis yet.
 - The bot once got stuck nose-to-nose with a kid on a scooter (the kid waits for the bike,

@@ -45,7 +45,8 @@ func _ready() -> void:
 		var villa = VILLA_SCENE.instantiate()
 		villa.position = place["position"]
 		villa.rotation_degrees = Vector3(0.0, place["facing"], 0.0)
-		villa.setup(place["number"], villa_size)
+		villa.setup(place.get("house", place["number"]), villa_size)
+		villa.name = "Villa%d" % place["number"]  # unique, even when two clusters both have a Villa 7
 		add_child(villa)
 
 

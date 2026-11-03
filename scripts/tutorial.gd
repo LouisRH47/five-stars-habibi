@@ -54,7 +54,7 @@ func _process(_delta: float) -> void:
 			if near:
 				_show("Stop, press F to get off, walk to the door and hold E to hand over the pizza." if not delivery_manager.on_foot else "Hold E at the door to hand over the pizza.")
 			else:
-				_show("Take it to villa %d. Watch your meters (top left): be quick, and slow down for speed bumps! Hold Shift to sprint." % order.villa_number)
+				_show("Take it to %s. Watch your meters (top left): be quick, and slow down for speed bumps! Hold Shift to sprint." % order.address)
 
 
 func _offer() -> void:

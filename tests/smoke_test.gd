@@ -37,6 +37,7 @@ const TEST_OFFER_TIMEOUT := 0.2
 ## Every action the test might press. All of them are let go at the end.
 const ACTIONS := ["move_forward", "move_back", "sprint", "handbrake", "interact", "skip_order", "toggle_bike"]
 const FONT_PATH := "res://assets/fonts/NotoSansArabic.ttf"
+const GRID := preload("res://tests/grid_path.gd")
 ## The test saves here, never over the real save (user://save.json).
 const TEST_SAVE := "user://smoke_test_save.json"
 
@@ -65,7 +66,7 @@ var _kid_start := Vector3.ZERO
 
 
 func _initialize() -> void:
-	var scene_path := "res://scenes/palm_grove.tscn"  # the game opens on the application, test the map
+	var scene_path := "res://scenes/wahat_al_shams.tscn"  # the game opens on the main menu, test the map
 	var user_args := OS.get_cmdline_user_args()
 	if not user_args.is_empty():
 		scene_path = user_args[0]
@@ -154,7 +155,7 @@ func _physics_process(_delta: float) -> bool:
 				if _on_foot != null:
 					_check("F next to the bike gets you back on", _on_foot.get_on() and not _on_foot.on_foot, "")
 				# Still at the restaurant, so the villa may be off the map: the pin must stay on it.
-				_check_minimap_pin(str(_order.villa_number))
+				_check_minimap_pin(_order.address)
 				_check_minimap_turns()
 				_check_meters()
 				_move_bike_to(_delivery.target_door())
@@ -163,7 +164,7 @@ func _physics_process(_delta: float) -> bool:
 		"at_villa":
 			if _frame >= STEPS.settle:
 				_check("bike is near the villa door", _delivery.is_near_target(), "")
-				_check_minimap_pin(str(_order.villa_number))
+				_check_minimap_pin(_order.address)
 				var spot: Vector2 = _minimap.world_to_map(_delivery.target_door())
 				var middle: Vector2 = _minimap._view.size * 0.5
 				_check("at the villa the pin is right next to you", spot.distance_to(middle) < 10.0,
@@ -272,6 +273,7 @@ func _physics_process(_delta: float) -> bool:
 
 ## Fresh start, a new order pops up, accept it, then jump to the restaurant door.
 func _start_delivery_check() -> void:
+	_check_wahat()
 	_check_application()
 	_check_signs()
 	if _game_state == null:
@@ -403,6 +405,8 @@ func _start_decor_check() -> void:
 				"%d of %d" % [built, listed.size()])
 	var map: Dictionary = decor.data.get_script_constant_map()
 	for pair in [["Mosque", "MOSQUE"], ["Supermarket", "SUPERMARKET"]]:
+		if not map.has(pair[1]):
+			continue
 		var node_name: String = pair[0]
 		var place: Dictionary = map[pair[1]]
 		var english: String = place["name"]
@@ -411,8 +415,9 @@ func _start_decor_check() -> void:
 		if building != null:
 			_check(node_name + " has an Arabic sign", _has_arabic_label(building), "")
 			_check(node_name + " has an English sign", _has_label_text(building, english), english)
-	var park := decor.get_node_or_null("Park")
-	_check("the park sign has Arabic", park != null and _has_arabic_label(park), "")
+	if map.has("PARK"):
+		var park := decor.get_node_or_null("Park")
+		_check("the park sign has Arabic", park != null and _has_arabic_label(park), "")
 	if decor.speed_bumps.is_empty():
 		_finish()
 		return
@@ -605,6 +610,49 @@ func _check_big_crash() -> void:
 	_check("a fresh game starts with insurance on", gs.insurance_on, "")
 
 
+## Session 25: Wahat Al Shams. 60 homes with addresses like "C3 · Villa 7", the bike rode
+## from the gate into the Plaza, every door spot can be reached by bike, 5-minute shifts.
+func _check_wahat() -> void:
+	var places: Node = _main.get_node_or_null("PlaceBuilder")
+	if places == null or not places.data.get_script_constant_map().has("MAP_HALF"):
+		print("      not Wahat Al Shams, its checks skipped")
+		return
+	var data: Dictionary = places.data.get_script_constant_map()
+	_check("Wahat Al Shams has 60 homes", places.villas.size() == 60, "%d" % places.villas.size())
+	var good := 0
+	var clusters := {}
+	for villa in places.villas:
+		var house: int = villa["house"]
+		if villa["address"] == "%s · Villa %d" % [villa["cluster"], house] and house >= 1 and house <= 12:
+			good += 1
+		clusters[villa["cluster"]] = clusters.get(villa["cluster"], 0) + 1
+	_check("every home has an address like \"C3 · Villa 7\"", good == 60, "%d of 60" % good)
+	_check("5 clusters of 12 homes", clusters.size() == 5 and clusters.values().all(func(n): return n == 12), "%s" % [clusters])
+	var plaza: Dictionary = data["PLAZA"]
+	var reached: float = Vector2(_bike.global_position.x, _bike.global_position.z).distance_to(plaza["centre"])
+	_check("the ride from the gate ends in the Plaza", reached < plaza["radius"], "%.0f m from the middle" % reached)
+	_check("a shift is 5 minutes", GameConfig.SHIFT_LENGTH == 300.0, "")
+	var started := Time.get_ticks_msec()
+	var grid: RefCounted = GRID.new()
+	grid.build(_bike.get_world_3d(), data["MAP_HALF"], [_bike, _on_foot.walker if _on_foot != null else null])
+	var house: Vector3 = places.villas[0]["position"]
+	_check("the map scan sees houses as solid and lanes as free", not grid.is_free(Vector2(house.x, house.z))
+			and grid.is_free(Vector2(data["START"]["position"].x, data["START"]["position"].z)), "")
+	var start: Vector3 = data["START"]["position"]
+	var stuck := []
+	for villa in places.villas:
+		var door: Vector3 = places.villa_door(villa["number"])
+		if grid.path(Vector2(start.x, start.z), Vector2(door.x, door.z)).is_empty():
+			stuck.append(villa["address"])
+	for shop in places.restaurants:
+		var door: Vector3 = places.restaurant_door(shop["id"])
+		if grid.path(Vector2(start.x, start.z), Vector2(door.x, door.z)).is_empty():
+			stuck.append(shop["name"])
+	_check("every home and shop door can be reached by bike", stuck.is_empty(),
+			"%s (%.1f s)" % [stuck, (Time.get_ticks_msec() - started) / 1000.0])
+	_check("bollards stop cars at the lane entrances", data["BOLLARDS"].size() >= 20, "%d" % data["BOLLARDS"].size())
+
+
 ## Session 14: fill in the rider application and get hired. Runs before the map loads.
 func _check_application() -> void:
 	var gs: Node = root.get_node("GameState")
@@ -649,12 +697,13 @@ func _check_tutorial() -> void:
 	gs.tutorial_done = false
 	tutorial.start()
 	var first: Object = gs.offered_order
-	_check("the tutorial's first order is pizza to villa 4", first != null and first.restaurant_id == "pizza"
-			and first.villa_number == 4, "" if first == null else first.describe())
+	var tutorial_villa: int = _delivery.place_builder.data.get_script_constant_map()["TUTORIAL_ORDER"]["villa"]
+	_check("the tutorial's first order is the easy pizza", first != null and first.restaurant_id == "pizza"
+			and first.villa_number == tutorial_villa, "" if first == null else first.describe())
 	tutorial._process(0.0)
 	_check("tip: press E to accept", "Press E to accept" in tutorial.tip, tutorial.tip)
 	_delivery.skip()
-	_check("skipping the tutorial order brings it back", gs.stage_name() == "OFFERED" and gs.offered_order.villa_number == 4, "")
+	_check("skipping the tutorial order brings it back", gs.stage_name() == "OFFERED" and gs.offered_order.villa_number == tutorial_villa, "")
 	var clock: float = gs.shift_time_left
 	_main.get_node("ShiftManager")._physics_process(5.0)
 	_delivery._physics_process(100.0)
@@ -669,7 +718,7 @@ func _check_tutorial() -> void:
 	gs.pick_up()
 	_move_bike_to(Vector3(2.0, 0.05, 140.0))
 	tutorial._process(0.0)
-	_check("tip: take it to villa 4, watch the meters", "villa 4" in tutorial.tip and "meters" in tutorial.tip, "")
+	_check("tip: take it to the tutorial address, watch the meters", gs.current_order.address in tutorial.tip and "meters" in tutorial.tip, tutorial.tip)
 	gs.deliver()
 	_close_card()
 	_check("after the first delivery: a tip that insurance is on", "insurance is ON" in tutorial.tip, tutorial.tip)
@@ -756,8 +805,8 @@ func _check_saving() -> void:
 	_check("saved numbers stay whole numbers", typeof(gs.money) == TYPE_INT and typeof(gs.history[0]["pay"]) == TYPE_INT, "")
 	var menu: Control = load("res://scenes/main_menu.tscn").instantiate()
 	root.add_child(menu)
-	_check("main menu: Continue goes to Palm Grove once hired", menu.play_button.text == "Continue"
-			and menu.play_scene() == "res://scenes/palm_grove.tscn", menu.play_button.text)
+	_check("main menu: Continue goes to Wahat Al Shams once hired", menu.play_button.text == "Continue"
+			and menu.play_scene() == "res://scenes/wahat_al_shams.tscn", menu.play_button.text)
 	gs.hired = false
 	_check("main menu: Play opens the application on the phone the first time", menu.play_scene() == "form", "")
 	menu.play()
@@ -896,8 +945,9 @@ func _start_walk_check() -> void:
 			villa = place
 	var angle := deg_to_rad(villa["facing"])
 	var front := Vector3(sin(angle), 0.0, cos(angle))
-	_move_bike_to(_walk_goal + front * 6.0)  # out on the road, 6 m from the door spot
-	_bike.rotation = Vector3(0.0, atan2(front.x, front.z), 0.0)
+	var along := Vector3(front.z, 0.0, -front.x)  # along the street or lane
+	_move_bike_to(_walk_goal + along * 6.0)  # 6 m down the street from the door spot
+	_bike.rotation = Vector3(0.0, atan2(along.x, along.z), 0.0)
 	var phone := _main.get_node("Phone")
 	phone._process(0.0)
 	var hint: String = phone.get_node("Panel/Margin/Rows/Hint").text

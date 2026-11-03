@@ -215,6 +215,7 @@ func deliver() -> bool:
 	last_result = {
 		"restaurant": done.restaurant_name,
 		"villa": done.villa_number,
+		"address": done.address,
 		"food": done.food,
 		"pay": done.pay,
 		"tip": tip,
@@ -284,7 +285,7 @@ func big_crash() -> Dictionary:
 	if current_order != null:
 		# Cancelled: counts as a 0-star job in your rating, no pay, no XP.
 		history.append({
-			"restaurant": current_order.restaurant_name, "villa": current_order.villa_number,
+			"restaurant": current_order.restaurant_name, "villa": current_order.villa_number, "address": current_order.address,
 			"food": current_order.food, "pay": 0, "tip": 0, "insurance": 0, "xp": 0,
 			"time": 0.0, "freshness": 0.0, "damage": 0.0, "stars": 0.0,
 			"left_at_door": false, "cancelled": true,

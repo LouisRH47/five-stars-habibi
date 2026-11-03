@@ -80,7 +80,7 @@ func target_label() -> String:
 	var order := GameState.current_order
 	if GameState.stage == GameState.Stage.TO_RESTAURANT:
 		return order.restaurant_name
-	return str(order.villa_number)
+	return order.address
 
 
 ## Where the pin is drawn: on the stop itself, or pinned to the edge if it's off the map.
@@ -134,10 +134,22 @@ func _draw_map() -> void:
 # --- Drawn in world metres (the map transform is on) ---
 
 func _draw_ground() -> void:
+	var half := Vector2.ZERO
 	if _map.has("HALF_SIZE"):
-		var half: float = _map["HALF_SIZE"]
-		_view.draw_rect(Rect2(-half, -half, half * 2.0, half * 2.0), GROUND)
-		_view.draw_rect(Rect2(-half, -half, half * 2.0, half * 2.0), WALL, false, 2.0)
+		half = Vector2.ONE * _map["HALF_SIZE"]
+	elif _map.has("MAP_HALF"):
+		half = _map["MAP_HALF"]
+	if half != Vector2.ZERO:
+		_view.draw_rect(Rect2(-half, half * 2.0), GROUND)
+		_view.draw_rect(Rect2(-half, half * 2.0), WALL, false, 2.0)
+	for plot in _map.get("PLOTS", []):
+		_view.draw_rect(plot["area"], plot["colour"])
+	if _map.has("SPINE"):
+		_view.draw_rect(_map["SPINE"], GRASS)
+	if _map.has("PLAZA"):
+		_view.draw_circle(_map["PLAZA"]["centre"], _map["PLAZA"]["radius"], PAVING)
+	for area in _map.get("PAVED_AREAS", []):
+		_view.draw_rect(area, PAVING)
 	if _map.has("PARK"):
 		_view.draw_rect(_map["PARK"]["area"], GRASS)
 	for area in _map.get("PARK_PATHS", []):
@@ -150,8 +162,9 @@ func _draw_roads() -> void:
 	var width: float = _map.get("ROAD_WIDTH", 8.0)
 	for road in _map.get("ROADS", []):
 		# One road-width longer, like the real roads, so corners are filled in.
-		var along: Vector2 = (road["to"] - road["from"]).normalized() * width * 0.5
-		_view.draw_line(road["from"] - along, road["to"] + along, ROAD, width)
+		var road_width: float = road.get("width", width)
+		var along: Vector2 = (road["to"] - road["from"]).normalized() * road_width * 0.5
+		_view.draw_line(road["from"] - along, road["to"] + along, ROAD if road_width >= 6.0 else PAVING.darkened(0.2), road_width)
 	if _map.has("ROUNDABOUT_CENTRE"):
 		_view.draw_circle(_map["ROUNDABOUT_CENTRE"], _map["ROUNDABOUT_RADIUS"], ROAD)
 		_view.draw_circle(_map["ROUNDABOUT_CENTRE"], _map["ROUNDABOUT_ISLAND_RADIUS"], GRASS)
@@ -189,7 +202,7 @@ func _draw_villa_numbers(xform: Transform2D) -> void:
 	for place in place_builder.villas:
 		var spot: Vector2 = xform * Vector2(place["position"].x, place["position"].z)
 		if view.grow(-6.0).has_point(spot):
-			_text(str(place["number"]), spot, NUMBER_SIZE, VILLA_NUMBER)
+			_text(str(place.get("house", place["number"])), spot, NUMBER_SIZE, VILLA_NUMBER)
 
 
 func _draw_north(xform: Transform2D) -> void:
@@ -217,10 +230,10 @@ func _draw_target(xform: Transform2D) -> void:
 		_view.draw_circle(spot, 12.0 if to_villa else 8.0, OUTLINE)
 		_view.draw_circle(spot, 10.0 if to_villa else 6.0, TARGET)
 		if to_villa:
-			_text(target_label(), spot, NUMBER_SIZE, PLAYER)
+			_text(_house_number(), spot, NUMBER_SIZE, PLAYER)
 	# The strip along the bottom: where to go and how far it is.
 	var metres := roundi(Vector2(bike.global_position.x - door.x, bike.global_position.z - door.z).length())
-	var name := target_label() if GameState.stage == GameState.Stage.TO_RESTAURANT else "Villa " + target_label()
+	var name := target_label()
 	var bar := Rect2(_view.size.x * 0.15, _view.size.y - BAR_HEIGHT - 10.0, _view.size.x * 0.7, BAR_HEIGHT)
 	_view.draw_rect(bar, OUTLINE)
 	_text("%s   %d m" % [name, metres], bar.get_center(), LABEL_SIZE, TARGET)
@@ -234,6 +247,14 @@ func _draw_parked_bike(xform: Transform2D) -> void:
 	_view.draw_circle(spot, 8.0, PLAYER)
 	_view.draw_circle(spot, 6.0, Color(0.16470589, 0.5568628, 0.6117647, 1))
 	_text("B", spot, NUMBER_SIZE - 2, PLAYER)
+
+
+## The number on the door of the villa you're going to (inside its cluster).
+func _house_number() -> String:
+	for place in place_builder.villas:
+		if place["number"] == GameState.current_order.villa_number:
+			return str(place.get("house", place["number"]))
+	return ""
 
 
 ## You: a white arrow in the middle, always pointing up (the way you're riding).

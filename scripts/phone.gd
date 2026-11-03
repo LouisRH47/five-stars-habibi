@@ -79,7 +79,7 @@ func _process(delta: float) -> void:
 	elif stage == GameState.Stage.TO_VILLA:
 		var order := GameState.current_order
 		_set_pill("DROP OFF", TEAL)
-		_show("Deliver to villa %d" % order.villa_number, "", _hold_hint("drop off"), near)
+		_show("Deliver to %s" % order.address, "", _hold_hint("drop off"), near)
 		_set_order(order, 2)
 	elif _flash_left > 0.0 and not GameState.last_result.is_empty():
 		var job := GameState.last_result
@@ -112,7 +112,7 @@ func _set_order(order: Order, step: int) -> void:
 	if order == null:
 		return
 	_pick_up.text = "%s  Pick up · %s" % ["✓" if step == 2 else "•", order.restaurant_name]
-	_drop_off.text = "•  Drop off · Villa %d" % order.villa_number
+	_drop_off.text = "•  Drop off · %s" % order.address
 	_pick_up.add_theme_color_override("font_color", ORANGE if step == 1 else (SOFT if step == 2 else INK))
 	_drop_off.add_theme_color_override("font_color", ORANGE if step == 2 else INK)
 	_set_chip("food", order.food.capitalize(), TEAL)
