@@ -40,7 +40,7 @@ logs.mkdir(parents=True, exist_ok=True)
 (root / "build" / ".gdignore").touch()
 ansi = re.compile(r"\x1b\[[0-9;]*m")
 
-def run(name, args, timeout=180, require_pass=False):
+def run(name, args, timeout=180, require_pass=False, bootstrap_fonts=False):
     print(f"\nRunning {name} (timeout {timeout}s)", flush=True)
     command = [godot, "--headless", "--path", str(root),
                "--log-file", str(logs / f"{name}-engine.log"), *args]
@@ -57,6 +57,17 @@ def run(name, args, timeout=180, require_pass=False):
     (logs / f"{name}.log").write_text(output)
     print(output, end="", flush=True)
     lines = output.splitlines()
+    scan_start = next((i for i, line in enumerate(lines) if "first_scan_filesystem |" in line), -1)
+    font = r"(?:Nunito|Baloo2|NotoSansArabic)\.ttf"
+    font_data = rf"res://\.godot/imported/{font}-[a-f0-9]+\.fontdata"
+    initial_theme_errors = (
+        rf"ERROR: Cannot open file '{font_data}'\.",
+        rf"ERROR: Failed loading resource: {font_data}\.",
+        rf"ERROR: Failed loading resource: res://assets/fonts/{font}\.",
+        rf"ERROR: res://ui/theme\.tres:\d+ - Parse Error: \[ext_resource\] referenced non-existent resource at: res://assets/fonts/{font}\.",
+        r"ERROR: Failed loading resource: res://ui/theme\.tres\.",
+        r"ERROR: Error loading custom project theme 'res://ui/theme\.tres'",
+    )
     errors = []
     for index, line in enumerate(lines):
         if not line.startswith(("ERROR:", "SCRIPT ERROR:")):
@@ -69,11 +80,19 @@ def run(name, args, timeout=180, require_pass=False):
             and index + 1 < len(lines)
             and "at: get_system_ca_certificates (platform/macos/os_macos.mm:" in lines[index + 1]
         )
-        if not known_mac_certificate_error:
+        # On a fresh checkout Godot opens the custom theme before importing its
+        # fonts. Permit only these startup messages during the bootstrap pass;
+        # the next import is strict, including the same theme/font diagnostics.
+        known_bootstrap_font_error = (
+            bootstrap_fonts and index < scan_start
+            and any(re.fullmatch(pattern, line) for pattern in initial_theme_errors)
+        )
+        if not known_mac_certificate_error and not known_bootstrap_font_error:
             errors.append(line)
     if completed.returncode or errors or (require_pass and "RESULT: PASS" not in output):
         raise SystemExit(f"{name} failed (exit {completed.returncode}); see build/logs/{name}.log")
 
+run("bootstrap-import", ["--import"], timeout=300, bootstrap_fonts=True)
 run("import", ["--import"], timeout=300)
 # Initial GameState._ready loads before wiring autosave signals; this reads existing
 # player progress but does not modify it. All logs are redirected into build/logs.
