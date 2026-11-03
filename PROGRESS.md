@@ -449,6 +449,19 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - The bills and what happens after (shift ends, summary) work as before.
 - The smoke test checks the sentence, the weekly count, the tip, and Turn on insurance.
 
+### Session 24
+- Smoke test: passed 5 runs in a row (212 checks each).
+- Play-test bot, 10-minute shift (still Palm Grove): a careful shift gets **10 deliveries**,
+  4.95 stars, ~120 Dh, with about 30 s spent walking to doors. A careless shift also gets
+  about 10 deliveries but crashes (2 small, 1 big, one order cancelled) and earns ~93 Dh.
+  Walking to the door doesn't make deliveries too slow, so no tuning was needed.
+- Screenshots were taken of the gameplay HUD, the start screen, the Delivered card and the
+  clinic screen (one per session, 20 to 23) and fixed where something was off (title line
+  gap, look cards, card camera, clinic camera).
+- Couldn't compare with the mockup itself: the mockup link in PRD.md can't be opened from
+  Claude Code. Louis: compare the four screens with the mockup and list what's different.
+- Still to do: Louis plays a full shift himself.
+
 ## Known bugs
 - None found by the checks. Not play-tested by Louis yet.
 - The bot once got stuck nose-to-nose with a kid on a scooter (the kid waits for the bike,

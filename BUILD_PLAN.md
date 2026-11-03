@@ -445,8 +445,7 @@ Done when:
 - [ ] The bills are the real ones, including the boss-covered first crash
 - [ ] Turn on insurance works, and Shift summary goes to the end-of-shift screen
 
-### Session 24: Play-test the polish pass
-
+### Session 24: Play-test the polish pass (built, needs testing)
 ```text
 Session 24. Run the play-test bot for a careful and a careless shift and the
 smoke test 5 times. Take screenshots of the gameplay HUD, the start screen, the
