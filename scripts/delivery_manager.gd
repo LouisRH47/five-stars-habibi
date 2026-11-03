@@ -96,7 +96,7 @@ func make_order(restaurant_id := "", villa_number := 0) -> Order:
 	var order := Order.new()
 	order.restaurant_id = restaurant["id"]
 	order.restaurant_name = restaurant["name"]
-	order.food = restaurant["food"]
+	order.food = restaurant.get("foods", [restaurant["food"]]).pick_random()  # the farm stall sells two
 	order.villa_number = villa["number"]
 	order.address = villa.get("address", "Villa %d" % villa["number"])
 	order.boring = boring

@@ -63,6 +63,8 @@ var _on_foot: Node
 var _walk_goal := Vector3.ZERO
 var _parked_at := Vector3.ZERO
 var _kid_start := Vector3.ZERO
+var _lowest_y := 0.0       # the lowest the bike got while riding in from the gate (Session 27)
+var _grid: RefCounted      # the map scan from _check_wahat, reused by _check_session27
 
 
 func _initialize() -> void:
@@ -104,6 +106,8 @@ func _physics_process(_delta: float) -> bool:
 		return false
 	_frame += 1
 	_top_speed = maxf(_top_speed, _bike.speed)
+	if _phase in ["pedal", "sprint", "brake"]:
+		_lowest_y = minf(_lowest_y, _bike.global_position.y)
 	match _phase:
 		"pedal":
 			if _frame >= STEPS.pedal:
@@ -293,9 +297,8 @@ func _start_delivery_check() -> void:
 		for child in places.get_children():
 			if child.name.begins_with("Villa"):
 				built += 1
-	var listed: int = 0
-	if places != null:  # "spot" entries are drop-off spots, not homes (Session 26)
-		listed = places.villas.filter(func(v): return v.get("kind", "") != "spot").size()
+	# Drop-off spots that aren't homes (the school booth, the stable office) get no villa.
+	var listed: int = 0 if places == null else places.villas.filter(func(v): return v.get("kind", "") != "spot").size()
 	_check("every villa in the data list was built", listed > 0 and built == listed, "%d of %d" % [built, listed])
 	_check("an order pops up", _order != null, "")
 	if _order == null:
@@ -620,10 +623,11 @@ func _check_wahat() -> void:
 		print("      not Wahat Al Shams, its checks skipped")
 		return
 	var data: Dictionary = places.data.get_script_constant_map()
-	_check("Wahat Al Shams has 60 homes", places.villas.size() == 60, "%d" % places.villas.size())
+	var homes: Array = places.villas.filter(func(v): return v.get("kind", "") != "spot")
+	_check("Wahat Al Shams has 60 homes", homes.size() == 60, "%d" % homes.size())
 	var good := 0
 	var clusters := {}
-	for villa in places.villas:
+	for villa in homes:
 		var house: int = villa["house"]
 		if villa["address"] == "%s · Villa %d" % [villa["cluster"], house] and house >= 1 and house <= 12:
 			good += 1
@@ -636,6 +640,7 @@ func _check_wahat() -> void:
 	_check("a shift is 5 minutes", GameConfig.SHIFT_LENGTH == 300.0, "")
 	var started := Time.get_ticks_msec()
 	var grid: RefCounted = GRID.new()
+	_grid = grid
 	grid.build(_bike.get_world_3d(), data["MAP_HALF"], [_bike, _on_foot.walker if _on_foot != null else null])
 	var house: Vector3 = places.villas[0]["position"]
 	_check("the map scan sees houses as solid and lanes as free", not grid.is_free(Vector2(house.x, house.z))
@@ -650,7 +655,7 @@ func _check_wahat() -> void:
 		var door: Vector3 = places.restaurant_door(shop["id"])
 		if grid.path(Vector2(start.x, start.z), Vector2(door.x, door.z)).is_empty():
 			stuck.append(shop["name"])
-	_check("every home and shop door can be reached by bike", stuck.is_empty(),
+	_check("every home, shop and drop-off spot door can be reached by bike", stuck.is_empty(),
 			"%s (%.1f s)" % [stuck, (Time.get_ticks_msec() - started) / 1000.0])
 	_check("bollards stop cars at the lane entrances", data["BOLLARDS"].size() >= 20, "%d" % data["BOLLARDS"].size())
 
@@ -1163,6 +1168,7 @@ func _finish() -> void:
 	_check_sound()
 	_check_session28()
 	_check_session26()
+	_check_session27()
 	_check_saving()
 	for action in ACTIONS:
 		Input.action_release(action)
@@ -1305,3 +1311,84 @@ func _house_hits(space: PhysicsDirectSpaceState3D, shape: Shape3D, spot: Transfo
 		if String((hit["collider"] as Node).name).begins_with("Villa"):
 			count += 1
 	return count
+
+
+## Session 27: the Plaza, the spine and the landmarks. The bike rode down into the sunken
+## square, the new shops and the farm stall each give a working order (to a reachable door),
+## the mosque never gets an order, and the school and stables only use their one spot.
+func _check_session27() -> void:
+	var places: Node = _main.get_node_or_null("PlaceBuilder")
+	if places == null or not places.data.get_script_constant_map().has("SCHOOL"):
+		print("      not Wahat Al Shams, Session 27 checks skipped")
+		return
+	var data: Dictionary = places.data.get_script_constant_map()
+	paused = false
+	_check("the ride from the gate went down into the sunken square", _lowest_y < -0.2, "lowest %.2f m" % _lowest_y)
+	var plaza: Dictionary = data["PLAZA"]
+	var floor_spot := Vector3(plaza["centre"].x + plaza["floor_radius"] - 2.0, 5.0, plaza["centre"].y)
+	var hit := _bike.get_world_3d().direct_space_state.intersect_ray(
+			PhysicsRayQueryParameters3D.create(floor_spot, floor_spot + Vector3.DOWN * 10.0, 1, [_bike.get_rid()]))
+	_check("the Plaza floor is sunken (lower than the street)", not hit.is_empty() and hit["position"].y < -0.3,
+			"%s" % [hit.get("position", "nothing hit")])
+	var built := ["PlazaBuilder/Fountain", "LandmarkBuilder/School", "LandmarkBuilder/SchoolBooth",
+			"LandmarkBuilder/StableOffice", "LandmarkBuilder/Stables", "LandmarkBuilder/BuildingSite/Crane",
+			"DecorBuilder/Mosque"]
+	for path in built:
+		_check(path.get_file() + " was built", _main.get_node_or_null(path) != null, path)
+	var domes := _main.get_node("SpineBuilder").get_children().filter(func(n): return n.name.begins_with("Dome"))
+	_check("the spine has 6 greenhouse domes", domes.size() == 6, "%d" % domes.size())
+	var site_sign: Node = _main.get_node("LandmarkBuilder/BuildingSite")
+	_check("the building site sign says Phase 2 coming soon in Arabic and English",
+			_has_arabic_label(site_sign) and _has_label_text(site_sign, "Phase 2 coming soon"), "")
+	# One order from each new pickup spot, delivered: the food has numbers in game_config.gd.
+	var gs: Node = _game_state
+	var foods := {"shawarma": ["shawarma"], "bakery": ["cake"], "market": ["groceries"],
+			"farm": ["farm juice", "salad box"]}
+	var start: Vector3 = data["START"]["position"]
+	for id in foods:
+		gs.reset()
+		var order: Object = _delivery.make_order(id, 101)
+		var door: Vector3 = places.restaurant_door(id)
+		var reachable: bool = _grid != null and not _grid.path(Vector2(start.x, start.z), Vector2(door.x, door.z)).is_empty()
+		var tables := [GameConfig.FRESHNESS_DRAIN, GameConfig.DAMAGE_SPEED_BUMP, GameConfig.DAMAGE_HARD_BRAKE,
+				GameConfig.DAMAGE_COLLISION, GameConfig.DAMAGE_CRITTER]
+		var tuned := tables.all(func(t): return t.has(order.food))
+		var money: int = gs.money
+		var done: bool = gs.offer_order(order) and gs.accept_offer() and gs.pick_up() and gs.deliver()
+		_close_card()
+		_check("an order from %s works" % order.restaurant_name, order.restaurant_id == id and order.food in foods[id]
+				and reachable and tuned and done and gs.money > money, "%s, door reachable %s" % [order.describe(), reachable])
+	# Lots of random orders: never to or from the mosque; the school and stables only use their spot.
+	var plots := {}
+	for plot in data["PLOTS"]:
+		plots[plot["name"]] = plot["area"]
+	var mosque: Rect2 = plots["Mosque"]
+	var school: Rect2 = plots["Al Shams School"].grow(8.0)  # the booth is just outside the fence
+	var stables: Rect2 = plots["Stables"].grow(2.0)
+	var to_mosque := 0
+	var wrong_spot := 0
+	var spots := {}
+	gs.reset()
+	for i in 300:
+		var order: Object = _delivery.make_order()
+		var to: Vector3 = places.villa_door(order.villa_number)
+		var from: Vector3 = places.restaurant_door(order.restaurant_id)
+		if mosque.grow(3.0).has_point(Vector2(to.x, to.z)) or mosque.grow(3.0).has_point(Vector2(from.x, from.z)):
+			to_mosque += 1
+		if school.has_point(Vector2(to.x, to.z)) and order.villa_number != 901:
+			wrong_spot += 1
+		if stables.has_point(Vector2(to.x, to.z)) and order.villa_number != 902:
+			wrong_spot += 1
+		if order.villa_number >= 900:
+			spots[order.villa_number] = true
+	_check("300 orders: the mosque never gets one", to_mosque == 0, "%d" % to_mosque)
+	_check("school orders only go to the gate booth, stables orders only to the office", wrong_spot == 0
+			and spots.has(901) and spots.has(902), "%d wrong, spots used %s" % [wrong_spot, spots.keys()])
+	for number in [901, 902]:
+		gs.reset()
+		var order: Object = _delivery.make_order("pizza", number)
+		var done: bool = gs.offer_order(order) and gs.accept_offer() and gs.pick_up() and gs.deliver()
+		_close_card()
+		_check("a delivery to %s works" % order.address, done and order.villa_number == number, order.describe())
+	gs.reset()
+	paused = false

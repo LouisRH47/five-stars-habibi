@@ -538,6 +538,34 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - Built by a helper agent in parallel; new smoke test checks for the house kinds, the door
   numbers, the signs and that nothing blocks a door.
 
+### Session 27
+- The Plaza has a sunken square: steps down to a round tiled floor with a fountain, 4 date
+  palms, benches and two white shade sails. The bike rolls down a gentle hidden slope (0.45 m).
+- 6 shops round the Plaza: Pizza, Brain Freeze Gelato, Boba Oasis, plus Shawarma Supreme and
+  Sunrise Bakery (new), and Al Sarab Mini Market, now a real pickup shop selling groceries.
+- The green spine: 6 white greenhouse domes, farm beds, beehives, a donkey pen with 2 donkeys,
+  a basketball court and a playground. The Wahat Farm Stall is the 7th pickup spot (farm juice
+  or a salad box).
+- Each cluster mini-plaza has a cooling tower, a small playground and benches (the strip stays
+  clear to ride).
+- Al Shams School (fenced yard, bilingual sign, football pitch, flag): its security booth at the
+  gate is the only drop-off spot. The mosque with its minaret is scenery only: never an order.
+  The stables: stable block with horses looking out, a paddock with 4 horses, and the stable
+  office (the only drop-off spot). The building site: fence, crane, containers, sand piles and a
+  bilingual "Phase 2 coming soon" sign.
+- New foods with their own freshness and damage numbers: shawarma (medium), cake (breaks on
+  bumps), groceries (slow to spoil), farm juice and salad box (spoil in the sun).
+- Orders pick up from all 7 pickup spots and go to the 60 homes, the school booth and the
+  stable office (who orders and when is Session 32).
+- New builders: `scripts/plaza_builder.gd`, `scripts/spine_builder.gd`,
+  `scripts/landmark_builder.gd`, `scripts/farm_stall.gd`, and `scripts/props.gd` (benches,
+  playgrounds, fences, cooling tower, horses, donkeys).
+- Built by a helper agent in parallel and merged with Session 26's houses (both changed how
+  homes and drop-off spots are built). The smoke test checks the sunken square, every new
+  building, an order from each new shop, that the mosque never gets an order, and that every
+  door can be reached.
+- Groceries being "a bit heavy" is only in the damage numbers for now.
+
 ## Known bugs
 - Play-test bot findings on Wahat Al Shams (to tune in Session 34):
   - A careful 5-minute shift gets 5 to 6 deliveries (target 6 to 8). The rides are long

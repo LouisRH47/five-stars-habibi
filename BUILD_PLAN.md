@@ -531,8 +531,7 @@ Done when:
 - [ ] You can tell homes apart by their details, and they're the same every time
 - [ ] Still 60 fps on Medium, and door spots still work
 
-### Session 27: The Plaza, the spine and the landmarks
-
+### Session 27: The Plaza, the spine and the landmarks (built, needs testing)
 ```text
 Session 27. Read PRD.md (Wahat Al Shams section: the Plaza, green spine,
 school, mosque, stables, building site, and the shops table). Build:
