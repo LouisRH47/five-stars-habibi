@@ -434,10 +434,10 @@ Session 23. Read PRD.md (Screens: clinic screen) and look at the mockup's
 "Big crash: clinic bills" artboard. Rebuild the clinic screen: a simple 3D
 clinic room behind it (pale teal walls, a bed with your rider lying in it, a
 drip stand), filmed from the side like the mockup. Left: a small red
-"BIG CRASH" label, the big title "You woke up at Palm Grove Clinic", one
+"BIG CRASH" label, the big title "You woke up at Wahat Al Shams Clinic", one
 sentence with what you hit and how fast ("You hit a parked car at 27 km/h. The
 ice cream didn't make it, and your shift is over for today.") and a teal Arabic
-sign "عيادة بستان النخيل". Right: the white "Your bills" card from the mockup
+sign "عيادة واحة الشمس". Right: the white "Your bills" card from the mockup
 with the ORDER CANCELLED · 0 STARS tag, Clinic bill, Bike repair (Snackaroo),
 Insurance, the red "You pay" total, the yellow insurance tip (only if it was
 off), the "Big crashes this week" bar and the buttons "Turn on insurance" (only
@@ -466,6 +466,252 @@ Done when:
 
 - [ ] All four screens match the mockup closely
 - [ ] A careful shift still gets about 10 deliveries
+- [ ] Louis has played a full shift and is happy with it
+
+## The sessions (Graphics pass, Sessions 25 to 34)
+
+The polish pass made the screens look right. This pass fixes Louis's two biggest problems:
+the map feels empty, and deliveries get the same after a few. It moves Tier 1 to a new
+community, Wahat Al Shams, builds Dubai-style houses, adds light, people and life, and adds
+special orders, goals and events. Everything is already in PRD.md: "Shifts", "Special
+orders, goals and events", "Graphics and feel" and "Wahat Al Shams, the Tier 1 community"
+in the city map section. Build from the PRD. Same rules as before: one session at a time,
+headless checks and smoke test, a smoke test check for every new system, PROGRESS.md,
+commit. Keep the game running at 60 fps on Louis's Mac on Medium: check the frame time
+in every session that adds things to the map.
+
+### Session 25: Wahat Al Shams layout (and 5-minute shifts)
+
+```text
+Session 25. Read CLAUDE.md, PRD.md (Shifts, and "Wahat Al Shams, the Tier 1
+community") and PROGRESS.md.
+1) Shifts are now 5 minutes: SHIFT_LENGTH = 300 in game_config.gd (08:00 to
+18:00 stays, so 30 s per in-game hour). Fix anything that assumed 10 minutes.
+2) Build the new map (sketch: docs/wahat_al_shams_map.svg) from a new data list data/wahat_al_shams.gd and the builder
+scripts (reuse map_builder, place_builder and sign_builder where you can), in a
+new scene scenes/wahat_al_shams.tscn. About 400 m east-west by 300 m north-south:
+tree belt and horse track round the edge, ring road, main gate on the west with
+the bilingual welcome sign, the Plaza area by the gate (flat for now, shops come
+in Session 27), the green spine west to east (grass, paths, stream; no domes yet),
+5 cluster plots (C1 to C3 north, C4 and C5 south) with narrow lanes and a
+mini-plaza space in each, solar car parks on the ring road by each cluster (no
+door more than 40 m away), bollards at the lane entrances, and plain plots for
+the school, mosque, stables and building site. 60 homes as simple placeholder
+boxes with door spots, numbered 1 to 12 per cluster ("Villa 7, Cluster 3").
+Move the 3 restaurants and the mini market to the Plaza so deliveries work.
+Phone, mini-map and customers use the new addresses ("C3 · Villa 7"). Cats,
+kids and speed bumps get new spots. Main menu starts the new map. Keep
+palm_grove.tscn as an old test map for now.
+Smoke test: runs on Wahat Al Shams by default, rides from the gate into the
+Plaza, and checks every home's door spot can be reached by bike (no walls in the
+way). The play-test bot also runs on the new map.
+```
+
+Done when:
+
+- [ ] The game starts in Wahat Al Shams and a full delivery works there
+- [ ] A shift lasts 5 minutes, 08:00 to 18:00
+- [ ] Every home has an address like "Villa 7, Cluster 3" on the phone and mini-map
+- [ ] No car can get into a cluster, but the bike can
+
+### Session 26: The house kit and the 3 villa types
+
+```text
+Session 26. Read PRD.md ("The houses" in the Wahat Al Shams section) and look at
+docs/villa_types.svg. Make a
+house kit in code (scripts/villa_builder.gd plus small part scripts if needed):
+L-shaped two-storey block, flat roof with parapet, roof terrace, tilted solar
+panel canopy on posts, wind tower (barjeel) with slots, small deep windows,
+wooden door with a house number, low courtyard wall with a gap, a wooden
+mashrabiya screen. Use matt cream and sand colours (LowPoly helper). Build the
+3 types: courtyard villa (10 per cluster), garden villa (1, big lawn and tree)
+and signature villa (1, bigger corner home with the mashrabiya). Replace the
+placeholder boxes from Session 25. Make each home different using its number
+as the seed: door colour, plants, a golf buggy or bikes outside, toys, AC units,
+a satellite dish, panels on the front or back, and a small pool or trampoline
+on garden and signature villas. Add the bilingual cluster signs at the lane
+entrances. Merge meshes or use MultiMesh so 60 homes stay fast.
+Take screenshots of a lane, a mini-plaza and a signature villa.
+```
+
+Done when:
+
+- [ ] The homes look like docs/villa_types.svg: cream L-shape, roof terrace, solar panels, wind tower
+- [ ] You can tell homes apart by their details, and they're the same every time
+- [ ] Still 60 fps on Medium, and door spots still work
+
+### Session 27: The Plaza, the spine and the landmarks
+
+```text
+Session 27. Read PRD.md (Wahat Al Shams section: the Plaza, green spine,
+school, mosque, stables, building site, and the shops table). Build:
+- The Plaza: a sunken round square (steps down, fountain, date palms, shade
+  sails, benches) with 6 shop fronts round it, each with a bilingual sign and
+  door spot: Pizza, Brain Freeze Gelato, Boba Oasis, Shawarma Supreme, Sunrise
+  Bakery, Al Sarab Mini Market.
+- The green spine: 6 white dome greenhouses, farm beds, beehives, a donkey pen,
+  a basketball court, a playground, and the Wahat Farm Stall with a door spot.
+- The cluster mini-plazas: a cooling tower, a small playground and benches.
+- Al Shams School with a fenced yard and a security booth at the gate (the only
+  drop-off spot), the mosque with a minaret (no door spot, scenery only), the
+  stables with a stable block, a paddock and the stable office (the only drop-off
+  spot), and the building site with a crane and "Phase 2 coming soon".
+- New foods in game_config.gd: shawarma, cake, groceries, farm juice/salad, with
+  freshness and damage numbers like the PRD table.
+Orders can now pick up from all 7 pickup spots and drop off at homes, the
+school booth and the stable office (just the spots for now; who orders and when
+comes in Session 32). Smoke test: an order from each new shop works, the mosque
+never gets an order, the school and stables only use their one spot.
+```
+
+Done when:
+
+- [ ] The Plaza looks like a real little hub with 6 shops round a sunken square
+- [ ] The spine has the domes, farm, donkeys, court and playground
+- [ ] Orders work from every shop and the farm stall, to homes, the school booth and the stable office
+- [ ] The mosque never gets an order
+
+### Session 28: Light, sky and the graphics setting
+
+```text
+Session 28. Read PRD.md (Graphics and feel: Light, Graphics setting). Make the
+sun follow the shift clock: low and warm at 08:00, high and white at noon, a
+golden sunset from 17:00 to 18:00 (sun colour, angle, sky colours and ambient
+light all change smoothly). Add SSAO, a light haze towards the edge of the map
+(fog), a gentle glow, and heat shimmer above the roads around noon (a simple
+screen or road shader). Add a Graphics setting (Low / Medium / High, default
+Medium) to the Settings panel and save it with the other settings: Low turns off
+SSAO, shimmer and haze, shorter shadow distance; High turns everything on.
+Smoke test: the sun angle at 08:00, 12:00 and 18:00 is different, and switching
+Low/Medium/High doesn't give errors. Take screenshots at 08:00, 12:00 and 17:30.
+```
+
+Done when:
+
+- [ ] Morning, noon and sunset look clearly different, and the sunset is golden
+- [ ] Low / Medium / High works and is saved
+- [ ] Still 60 fps on Medium
+
+### Session 29: Animated people and the real bike
+
+```text
+Session 29. Read PRD.md (Graphics and feel: Art, People move, The bike).
+Download a free CC0 character pack with animations (Kenney or Quaternius,
+check the licence says CC0), put it in assets/ and credit it in CREDITS.md.
+Use it for the rider (pedalling on the bike, idle, walk, jog on foot),
+customers (idle, walk out, wave), and the new types: teachers, school kids,
+riders and grooms. Keep the 3 looks (Classic, Sporty, Chill) and the 5 resident
+outfits by colouring or swapping parts. Build a proper low-poly bike in code or
+from a CC0 model: pedals turn with speed, handlebars turn when you steer, the
+kickstand drops when you get off. B rings the bell (a new home-made sound in
+tools/make_sounds.py): people near you look up and wave, cats move aside.
+Also use CC0 packs for the parked cars in the solar car parks and for plants.
+Smoke test: B plays the bell, pedals turn faster at higher speed.
+```
+
+Done when:
+
+- [ ] The rider and customers walk, wave and pedal, no more sliding capsules
+- [ ] The bike's pedals, handlebars and kickstand move, and B rings the bell
+- [ ] Every new asset is CC0 and listed in CREDITS.md
+
+### Session 30: Life on the map
+
+```text
+Session 30. Read PRD.md (Graphics and feel: Life on the map). Add:
+golf buggies that drive slowly on fixed routes round the ring road and spine
+paths (they stop and wait if you're in the way, bumping one is like bumping a
+kid), horses with riders walking and trotting on the edge track, joggers and
+walkers on the paths, gardeners watering in front of homes, kids playing at the
+cluster mini-plazas, birds flying over, palms swaying, the stream and fountain
+water moving, ducks on the stream and donkeys in their pen. No traffic AI: every
+buggy, horse and walker follows its own path from the data list. Fewer of them
+on Low. Smoke test: buggies move along their route and stop for the bike.
+```
+
+Done when:
+
+- [ ] Wherever you ride you see someone or something moving
+- [ ] Buggies stop for you, and nothing walks through walls
+- [ ] Still 60 fps on Medium
+
+### Session 31: Juice
+
+```text
+Session 31. Read PRD.md (Graphics and feel: Juice). Add: dust puffs from the
+tyres on sand and when braking hard (GPUParticles3D, fewer on Low), speed lines
+at the screen edges and a slightly wider camera (FOV) while sprinting, coin and
+star pops (little animated icons and a sound) when you deliver, and the phone
+buzzing (a quick shake plus a buzz sound) when a new order comes in. Use Tweens
+for the small animations. Keep every effect short so it doesn't get annoying.
+Smoke test: sprinting raises the FOV and it comes back after, a new order makes
+the phone buzz.
+```
+
+Done when:
+
+- [ ] Riding, sprinting, braking and delivering all feel punchier
+- [ ] Nothing flashes or shakes so much it's annoying
+
+### Session 32: Special orders, school and stables orders, regulars, goals
+
+```text
+Session 32. Read PRD.md (Special orders, goals and events). Add:
+- Special orders (rush, fragile cake, neighbour, big family order) with their
+  rules and rewards, about 1 in 6 orders, a coloured chip on the phone.
+- School orders from teachers and kids, only 08:00 to 15:00, lunch rush 11:30 to
+  12:30. Stables orders from riders and grooms. Farm orders from the farm stall.
+- The 4 regular customers with a heart on the phone, their own lines that use
+  your name, and a 60% tip chance.
+- 2 shift goals on the phone at the start of each shift, a 15 Dh bonus each,
+  shown on the shift summary.
+Put every number in game_config.gd. Save regulars' progress in the save file.
+Smoke test: each special order type can be made and finished, a school order
+never comes after 15:00, a done goal adds its bonus.
+```
+
+Done when:
+
+- [ ] Each special order works and feels different
+- [ ] School orders stop after 15:00 and pick up at lunch
+- [ ] The regulars show up and know your name
+- [ ] Goals show at the start and pay out on the summary
+
+### Session 33: Random events
+
+```text
+Session 33. Read PRD.md (Random events). Add road works (cones, a barrier and a
+small digger close one cluster lane or one part of the ring road for 1 to 2
+in-game hours, with a cone icon on the mini-map) and horses crossing (a groom
+leads 2 or 3 horses across a path for about 5 s; riding into them is a small
+crash). At most 2 events a shift, one at a time, the phone warns you first. Make
+sure road works never block the only way to a home. Smoke test: each event
+starts and ends, and every home is still reachable during road works.
+```
+
+Done when:
+
+- [ ] Road works and horses crossing both happen and the phone warns you
+- [ ] You can always still reach every home
+
+### Session 34: Play-test the graphics pass
+
+```text
+Session 34. Run the play-test bot for a careful and a careless shift on
+Wahat Al Shams, and the smoke test 5 times. A careful 5-minute shift should get
+about 6 to 8 deliveries; tune game_config.gd if not (pay too, so a careful shift
+still earns about the same per minute as before). Check the frame time on Low,
+Medium and High. Take screenshots: the gate, the Plaza, a cluster lane, the
+spine, the school gate, the stables, and the sunset. If everything works, remove
+the old Palm Grove map and its data. Then I'll play it myself; here's what felt
+off: [write it here].
+```
+
+Done when:
+
+- [ ] A careful shift gets about 6 to 8 deliveries and feels busy
+- [ ] The map never feels empty, and the deliveries feel different from each other
+- [ ] 60 fps on Medium
 - [ ] Louis has played a full shift and is happy with it
 
 ## When something breaks
@@ -503,7 +749,7 @@ and what's left in it.
 
 ## After Tier 1
 
-Once the polish pass (Session 24) feels fun, upload it to itch.io for free so friends can play it and give feedback (ask Claude Code to export Mac and Windows versions). After that, the next block of sessions is the motorbike test (yard course, instructor, theory quiz), then the motorbike, Old Town, night shifts and running costs. Ask Claude Code to "write the Tier 2 sessions for BUILD_PLAN.md in the same style as Tier 1" so the plan keeps growing as you go.
+Once the graphics pass (Session 34) feels fun, upload it to itch.io for free so friends can play it and give feedback (ask Claude Code to export Mac and Windows versions). After that, the next block of sessions is the motorbike test (yard course, instructor, theory quiz), then the motorbike, Old Town, night shifts and running costs. Ask Claude Code to "write the Tier 2 sessions for BUILD_PLAN.md in the same style as Tier 1" so the plan keeps growing as you go.
 
 ## Confirmed choices
 

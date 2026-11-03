@@ -3,6 +3,8 @@
 ## Current session
 **Next: Session 18 (polish pass).** Sessions 18 to 24 are planned in BUILD_PLAN.md: hold E, get off the bike, fonts and panels like the mockup, new start screen, Delivered card and clinic screen.
 
+**After that: the graphics pass (Sessions 25 to 34).** Tier 1 moves to a new community, Wahat Al Shams (car-free clusters, a Plaza, a green spine, a school, stables), with Dubai-style villas, moving sun, animated people, a real bike, juice, life on the map, special orders, goals and events. Shifts become 5 minutes. Sketches are in docs/.
+
 Sessions 7 to 17 are built (all of Tier 1), each checked with the Godot headless checks,
 the smoke test and screenshots, on branch `sessions-8-17` (Session 7 on `session-7-minimap`).
 Louis asked for all of them in one go; they still need Louis's own play-test on the Mac.

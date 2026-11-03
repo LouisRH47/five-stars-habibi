@@ -29,6 +29,7 @@ Five Stars Habibi is a job-sim driving game set in Al Sarab, a made-up desert ci
 - All brands are made up (no real company names).
 - Game text is English only. Signs in the world are Arabic + English, like Dubai.
 - Chill Arabic-style background music (free-to-use tracks only).
+- Tier 1 happens in Wahat Al Shams, a made-up car-free eco community with a Plaza, a green park through the middle, 5 clusters of homes, a school and stables. Shifts are 5 minutes.
 
 ## The career ladder (NOT NOW, vision only)
 
@@ -136,10 +137,11 @@ Every delivery is a race against three meters: time, heat and damage. How well y
 - Pizza: easy, good for the tutorial
 - Ice cream: melts fast
 - Bubble tea: spills on bumps
+- From the graphics pass: shawarma, cake, groceries and farm juice/salad too (see "Wahat Al Shams" in the city map section)
 
 **Shifts**
 
-- One shift is about 10 real minutes (one in-game day). Tier 1 is day shift only. Night shifts unlock at Tier 2.
+- One shift is 5 real minutes (one in-game day, 08:00 to 18:00, so one in-game hour is 30 seconds). It ends with a golden sunset. Tier 1 is day shift only. Night shifts unlock at Tier 2.
 - If the clock runs out while you're carrying an order, you still finish that delivery. The shift ends right after you drop it off. No new orders pop up once the clock is out.
 - At the end you get a summary screen: deliveries, stars, money earned, XP.
 
@@ -156,6 +158,40 @@ Every delivery is a race against three meters: time, heat and damage. How well y
 
 **Customers at the door:** the customer comes out with a short animation and one line of speech. Some ask you to leave it at the door. More customer types get added later.
 
+## Special orders, goals and events (graphics pass)
+
+These stop deliveries from feeling the same after a few. All numbers are starting ideas and live in game_config.gd.
+
+**Special orders** (about 1 in 6 orders, never two at once, shown with a coloured chip on the phone)
+
+| Order | What's different | Reward |
+| --- | --- | --- |
+| Rush | Target time is 70% of normal | +50% pay |
+| Fragile cake | From Sunrise Bakery. Bumps do double damage | Tip chance 60% instead of 40% on 5 stars |
+| Neighbour | When you get to the door: "Not home! Leave it with the neighbour at Villa X" (a home in the same cluster). The clock keeps running | Normal pay, +5 Dh |
+| Big family order | Two bags on the bike: top speed 15% lower and steering a bit wobblier | Double pay |
+
+**School orders:** teachers and kids order to the school, always to the security booth at the main gate. They only come in between 08:00 and 15:00 on the shift clock. Lunch rush from 11:30 to 12:30: about 1 in 3 orders is for the school.
+
+**Stables orders:** riders and grooms order to the stable office. Horses in the paddock are just for looking at.
+
+**Farm orders:** about 1 in 8 orders is picked up at the Wahat Farm Stall in the green spine instead of the Plaza.
+
+**Regular customers:** 4 regulars who order more often than anyone else, have a heart on the phone and say your name. Their tip chance is 60%. Starting list:
+
+| Regular | Where | Usually orders |
+| --- | --- | --- |
+| Auntie Mariam | Villa 7, Cluster 2 | Bubble tea |
+| Mr Rashid | Villa 3, Cluster 5 | Shawarma |
+| Ms Dana (teacher) | School gate | Cake from Sunrise Bakery |
+| Hamdan (groom) | Stable office | Farm juice |
+
+**Shift goals:** at the start of each shift the phone shows 2 goals picked from a list. Each done goal pays a 15 Dh bonus, shown on the shift summary. List: make 8 deliveries; 3 five-star deliveries in a row; no crashes; 2 school lunch orders; a fragile cake with 5 stars; deliver to all 5 clusters.
+
+**Random events** (at most 2 per shift, one at a time, the phone warns you):
+- **Road works:** cones, a barrier and a small digger close one cluster lane or one part of the ring road for 1 to 2 in-game hours. The mini-map shows a cone icon. You find another way.
+- **Horses crossing:** a groom leads 2 or 3 horses across a path for about 5 seconds. You wait or go round. Riding into them is a small crash.
+
 ## Controls (Tier 1, keyboard)
 
 Keys are placeholders until the controls are tested. Controller support comes later.
@@ -167,6 +203,7 @@ Keys are placeholders until the controls are tested. Controller support comes la
 | A / D or Left / Right | Steer (only while moving) |
 | Shift | Sprint (uses stamina) |
 | Space | Handbrake |
+| B | Bike bell (people and kids look up and wave, cats move aside) |
 | E | Tap: accept order, Next order on the Delivered card. Hold 1.5 s at the door (on foot): pick up, drop off |
 | F | Get off the bike / get back on (only when nearly stopped) |
 | W A S D (on foot) | Walk. Shift to jog |
@@ -185,7 +222,19 @@ The mockup (link at the top) is the look to copy. The game world stays 3D; the c
 
 **Delivered card (after every delivery):** the game pauses (the shift clock too). The camera cuts to a 3D shot of your rider and the customer at the villa door (or the bag on the doorstep for leave-at-the-door orders), with the customer's line in a white speech bubble. On the right, a white card like the mockup: "Delivered!", 1 to 5 stars, the food, villa and ride time, three tiles (Time, Freshness, Damage) each with a word and a colour, then Delivery pay, 5-star tip, Insurance, a bold "You earned" total and XP. A dark teal "Next order · E" button closes it.
 
-**Clinic screen (after a big crash):** like the mockup's "Big crash: clinic bills". A simple 3D clinic room (pale teal walls, a bed with your rider lying in it, a drip stand) behind it. Left: a small red "BIG CRASH" label, the big title "You woke up at Palm Grove Clinic", one sentence saying what you hit and how fast, and a teal Arabic sign "عيادة بستان النخيل". Right: a white "Your bills" card with an "ORDER CANCELLED · 0 STARS" tag, Clinic bill, Bike repair (Snackaroo), Insurance, a bold red "You pay" total, a yellow tip box when insurance was off, a "Big crashes this week" bar (1 of 3), and two buttons: "Turn on insurance" (only when it's off) and "Shift summary". When the boss covers your first big crash, the card says so and You pay is 0 Dh.
+**Clinic screen (after a big crash):** like the mockup's "Big crash: clinic bills". A simple 3D clinic room (pale teal walls, a bed with your rider lying in it, a drip stand) behind it. Left: a small red "BIG CRASH" label, the big title "You woke up at Wahat Al Shams Clinic", one sentence saying what you hit and how fast, and a teal Arabic sign "عيادة واحة الشمس". Right: a white "Your bills" card with an "ORDER CANCELLED · 0 STARS" tag, Clinic bill, Bike repair (Snackaroo), Insurance, a bold red "You pay" total, a yellow tip box when insurance was off, a "Big crashes this week" bar (1 of 3), and two buttons: "Turn on insurance" (only when it's off) and "Shift summary". When the boss covers your first big crash, the card says so and You pay is 0 Dh.
+
+## Graphics and feel (graphics pass)
+
+Polished low-poly: still simple shapes, but with nicer light, moving people and lots of little details.
+
+- **Art:** the houses, Plaza, school, mosque, stables and domes are built in code from our own kit of parts. People, cars, plants and small props come from free CC0 packs (Kenney, Quaternius), credited in CREDITS.md. Never paid or copyrighted assets.
+- **People move:** customers, walkers, gardeners, kids, teachers and grooms have idle, walk and wave animations. Your rider too, on the bike (pedalling) and on foot.
+- **The bike:** a proper low-poly bicycle. The pedals turn with speed, the handlebars turn when you steer, the kickstand drops when you get off, and B rings the bell.
+- **Light:** the sun moves with the shift clock: low and warm in the morning, high and white at noon, a golden sunset from 17:00. Soft shadows in corners (SSAO), a light haze towards the desert, a gentle glow on bright things, and heat shimmer above the roads at noon.
+- **Juice:** dust puffs from the tyres on sand and when braking hard, speed lines and a wider camera when sprinting, coin and star pops when you deliver, and the phone buzzes (shakes with a sound) when a new order comes in.
+- **Life on the map:** golf buggies driving slowly on fixed routes (they stop and wait if you're in the way), horses with riders on the edge track, joggers and walkers, gardeners watering, kids at the cluster playgrounds, birds flying over, palms swaying, the stream and fountain moving, ducks on the stream and donkeys in the spine. No real traffic AI until Tier 2.
+- **Graphics setting:** Low, Medium (default) or High in Settings. Low turns off SSAO, shimmer and haze and shows fewer people; High shows everything.
 
 ## Crashes, bills and insurance
 
@@ -323,20 +372,64 @@ Al Sarab is one map. Districts sit behind barriers or a "not in your zone yet" m
 
 | District | Opens at | Feel | Gameplay twist |
 | --- | --- | --- | --- |
-| Palm Grove (home community) | Tier 1 | Quiet villas, palm trees, speed bumps | Gate codes, dogs, kids playing in the street |
+| Wahat Al Shams (home community) | Tier 1 | Car-free eco community: shady lanes, solar panels, a green park through the middle, horses | One drop-off spot at the school and the stables, regular customers, horses crossing |
 | Other villa communities | Tier 2 | Bigger, longer roads | Security gate checks |
 | Old Town | Tier 2 | Narrow alleys, markets | Shortcuts, potholes, tight turns |
 | Marina | Tier 3 | Towers by the water, windy | Wind pushes you, nice tips |
 | Downtown | Tier 3 | Skyscrapers, traffic jams | Lifts to high floors eat your time, and notes like "leave it in the lobby" |
 | Highway and airport | Tier 4 | Fast roads, terminals | Fast travel, airport pickups |
 
-**Palm Grove, the Tier 1 map**
+**Wahat Al Shams, the Tier 1 community (replaces Palm Grove)**
 
-- Around 25 to 40 villas with house numbers you can read.
-- A small strip of 3 restaurants at the community entrance (pizza, ice cream, bubble tea).
-- A park, a mosque, a small supermarket and a roundabout or two to make it feel real.
-- Speed bumps, a few loose cats and kids on scooters as obstacles.
-- Small enough to learn in 10 minutes, big enough that some deliveries take 2 to 3 minutes.
+Wahat Al Shams (واحة الشمس, "Sun Oasis") is a made-up eco community. Its layout copies the idea of a real car-free eco community in Dubai (see Sources), scaled down for the game and with every name made up. The old Palm Grove map stays as a test map until Wahat Al Shams works, then it's removed. Built from a data list (data/wahat_al_shams.gd) plus builder scripts, like Palm Grove.
+
+*Layout (about 400 m east to west, 300 m north to south). Map sketch: docs/wahat_al_shams_map.svg. House sketch: docs/villa_types.svg.*
+
+| Part | Where | What's there |
+| --- | --- | --- |
+| Tree belt and horse track | All the way round the edge | A thick belt of tall trees, with a sandy horse track and a bike track inside it. Riders on horses use it. You can ride the bike track |
+| Ring road | Inside the tree belt | The only road for cars. Parked cars and golf buggies only, no traffic driving around in Tier 1 |
+| Main gate | Middle of the west side | Gate house with a barrier and a big bilingual "Welcome to Wahat Al Shams" sign |
+| The Plaza | Just inside the gate | The hub. A sunken round square in the middle (steps down, a fountain, date palms, shade sails, benches) with 6 shops around it (see below). Every order is picked up here, except farm orders |
+| Green spine | Through the middle, west to east | A long park: a winding stream, 6 white dome greenhouses, farm beds, beehives, donkeys in a pen, a basketball court and a playground. Paths through it are the main shortcut for the bike. The Farm Stall by the domes is the 7th pickup spot |
+| 5 clusters | 3 north of the spine (C1, C2, C3), 2 south (C4, C5) | 12 homes each, 60 in total. No cars inside. Narrow shady lanes (about 4 m wide) for bikes, people and buggies. A mini-plaza in the middle of each cluster with a cooling tower, a small playground and benches |
+| Solar car parks | On the ring road next to each cluster | Car bays under a roof of solar panels. No door is more than about 40 m from its car park. Bollards stop cars going into the clusters |
+| School | South side, east of C5 | Al Shams School, a low building with a fenced yard. Orders go to one spot only: the security booth at the main gate |
+| Mosque | South side, between C5 and the school | A mosque with a minaret. Scenery only: no orders ever go there |
+| Stables | East end of the spine | Stable block, a paddock with horses you can stop and watch, and a small office. Orders go to one spot only: the stable office |
+| Building site | South-east corner | A fenced plot with a crane and a "Phase 2 coming soon" sign. Scenery and a landmark for addresses |
+
+*Addresses:* homes are numbered 1 to 12 inside each cluster, so an address reads "Villa 7, Cluster 3" (phone and mini-map: "C3 · Villa 7"). Each cluster has a bilingual sign at both lane entrances.
+
+*The houses:* one style for the whole community, built in code from our own kit of parts (no free pack has houses like these). Cream or sand walls, two storeys, L-shaped, flat roof with a roof terrace shaded by tilted solar panels, a small wind tower (barjeel), small deep windows, a wooden door and a low courtyard wall. Three types, as in the real place:
+
+| Type | Per cluster | Look |
+| --- | --- | --- |
+| Courtyard villa | 10 | The normal L-shaped home with a small walled courtyard |
+| Garden villa | 1 | Same house with a big lawn and a tree |
+| Signature villa | 1 | Bigger corner home with a wooden mashrabiya screen on the front |
+
+To make every home easy to tell apart: door colour, plants, a golf buggy or bikes outside, toys, AC units, a satellite dish, and on garden and signature villas a small pool or a trampoline. Picked from the villa's number so it's always the same.
+
+*The 6 Plaza shops plus the Farm Stall (pickup spots):*
+
+| Shop | Arabic sign | Food | What the food cares about |
+| --- | --- | --- | --- |
+| Pizza | بيتزا | Pizza | Easy |
+| Brain Freeze Gelato | برين فريز جيلاتو | Ice cream | Melts fast |
+| Boba Oasis | واحة البوبا | Bubble tea | Spills on bumps |
+| Shawarma Supreme | شاورما سوبريم | Shawarma | Goes cold, medium |
+| Sunrise Bakery | مخبز الشروق | Cake | Breaks on bumps (fragile) |
+| Al Sarab Mini Market | ميني ماركت السراب | Groceries bag | Slow to spoil, bit heavy |
+| Wahat Farm Stall | كشك مزرعة الواحة | Fresh juice and salad box | Spoils in the sun |
+
+*Drop-off spots:* the 60 home doors, the school gate booth and the stable office. Never the mosque or the shops.
+
+*Who orders:* residents (the 5 outfits we have), teachers (lanyard, folder) and school kids (uniform) at the school, riders and grooms (riding helmet, boots) at the stables.
+
+*Obstacles:* speed bumps on the ring road, the loose cats and the kids on scooters (now also in the cluster lanes and mini-plazas), golf buggies, and horses when they cross.
+
+*Size:* the bike can cut through the spine, so most rides are 30 to 60 seconds and the far corners about 90 seconds.
 
 **Language and signs:** the game itself (menus, phone, customers) is in English only. Signs on buildings, shops, restaurants and roads show both Arabic and English, like real signs in Dubai.
 
@@ -351,10 +444,11 @@ Build it in milestones and play-test at the end of each one. Only move on when t
 3. **Palm Grove map:** roads, villas with house numbers (placed from a data list, not by hand), the restaurant strip with Arabic + English signs, decoration, mini-map.
 4. **Meters, obstacles and stars:** time, freshness and damage, the things that hurt them, plus the star score at the end.
 5. **Money, tips, XP and customers:** wallet, random tips on 5-star jobs, Rider Level, customers at the door.
-6. **Crashes and shifts:** small and big crashes, insurance, the 10-minute shift and the summary screen.
-7. **Start screen and polish:** application form and the 3 presets, menu, saving, sounds and music.
-8. **Motorbike test:** yard course, instructor, theory quiz, fail and retake rules.
-9. **Tier 2 and beyond:** motorbike, Old Town, then the next tiers one by one.
+6. **Crashes and shifts:** small and big crashes, insurance, the shift and the summary screen.
+7. **Start screen and polish:** application form and the 3 presets, menu, saving, sounds and music, then the polish pass (hold E, get off the bike, screens like the mockup).
+8. **Graphics pass:** the Wahat Al Shams community, the house kit, light and weather, animated people, the real bike, juice, life on the map, special orders, goals and events.
+9. **Motorbike test:** yard course, instructor, theory quiz, fail and retake rules.
+10. **Tier 2 and beyond:** motorbike, Old Town, then the next tiers one by one.
 
 ## Still open
 
@@ -362,7 +456,7 @@ Build it in milestones and play-test at the end of each one. Only move on when t
 - Tuning all pay, bills and insurance numbers once Tier 1 is playable
 - Whether the motorbike can carry several orders at once, later on
 - Exact keys for the taxi requests
-- Palm Grove is about 300 m across, so the longest rides take about a minute, not the 2 to 3 minutes the city map section asks for. Decide after play-testing whether to make the map bigger or keep it compact
+- Pay for the new foods, special orders and goal bonuses: starting ideas are in the PRD, tune them after the graphics pass play-test
 
 ## Decisions log
 
@@ -410,8 +504,26 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 3 Nov 2026 | Polish pass planned (Sessions 18 to 24): hold E for 1.5 s to pick up and drop off, nearly stopped |
 | 3 Nov 2026 | You get off the bike to pick up and deliver: F gets off and on (only when nearly stopped), you walk to the door yourself, meters keep ticking while you walk |
 | 3 Nov 2026 | Screens copy the mockup: Baloo 2 + Nunito fonts on every screen, start screen with the title left and the phone right, a Delivered card after every delivery (game paused), and the clinic screen as in the mockup with a 3D clinic room |
+| 3 Nov 2026 | Graphics pass planned (Sessions 25 to 34) after the polish pass. Biggest problems to fix: the map feels empty, and deliveries get the same after a few |
+| 3 Nov 2026 | Shift is 5 minutes: 30 seconds per in-game hour, 08:00 to 18:00, ending with a golden sunset (was 10 minutes) |
+| 3 Nov 2026 | New Tier 1 community Wahat Al Shams replaces Palm Grove. Layout copies the idea of a real car-free eco community in Dubai: tree belt and horse track round the edge, ring road, gate on the west, a Plaza, a green spine through the middle, 5 car-free clusters of 12 homes with shady lanes and mini-plazas, solar car parks, a school, a mosque, stables and a building site. About 400 by 300 m |
+| 3 Nov 2026 | Houses: one style (cream L-shaped two-storey villa, roof terrace under solar panels, wind tower, courtyard wall) in 3 types: 10 courtyard, 1 garden and 1 signature villa per cluster. Built in code from our own kit of parts. Addresses read "Villa 7, Cluster 3" |
+| 3 Nov 2026 | The Plaza has a sunken round square and 6 shops around it: Pizza, Brain Freeze Gelato, Boba Oasis, Shawarma Supreme, Sunrise Bakery, Al Sarab Mini Market. Plus the Wahat Farm Stall in the spine. New foods: shawarma, cake, groceries, farm juice/salad |
+| 3 Nov 2026 | School orders (teachers and kids) only to the gate security booth, 08:00 to 15:00, lunch rush 11:30 to 12:30. Stables: look at the horses, orders only to the stable office. The mosque is scenery only, never an order |
+| 3 Nov 2026 | Special orders (rush, fragile cake, neighbour, big family order), 4 regular customers, 2 shift goals worth 15 Dh each, and 2 random events (road works, horses crossing). The dust gust event was dropped |
+| 3 Nov 2026 | Graphics: polished low-poly with CC0 packs (Kenney, Quaternius) for people, cars and props; animated people; a real bike model with turning pedals, steering, kickstand and a bell on B; sun moving with the shift clock, SSAO, haze, glow, heat shimmer; juice (dust, speed lines and FOV, coin and star pops, phone buzz); life on the map (buggies on fixed routes, horses, joggers, gardeners, kids, birds, palms, ducks, donkeys); Low/Medium/High graphics setting |
 
 ## Sources
+
+Wahat Al Shams layout and houses (the idea only, every name in the game is made up):
+
+- [Sustainable City masterplan, Urbanitarian](https://urbanitarian.com/masterplans_post?id=378)
+- [Project profile: The Sustainable City, Middle East Construction News](https://meconstructionnews.com/?p=21952)
+- [Beyond oil: Inside Dubai's Sustainable City, New Atlas](https://newatlas.com/beyond-oil-dubai-sustainable-city/57441)
+- [Green and gated, Gulf Construction](https://gulfconstructiononline.com/Article/378864/Green_and_gated)
+- [Sustainable Plaza streetscape, Urbanitarian](https://urbanitarian.com/streetscapes_post?id=18)
+
+Licence tests:
 
 - [How to get a motorcycle licence in Dubai, Property Finder](https://www.propertyfinder.ae/blog/dubai-motorcycle-licence)
 - [How to prepare for the UAE motorcycle test, theorytest.ae](https://www.theorytest.ae/?p=15359)
