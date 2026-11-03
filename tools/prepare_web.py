@@ -3,7 +3,8 @@
 
 Usage: python3 tools/prepare_web.py build/web build/site
 BUILD_SHA defaults to this checkout's HEAD; BUILD_VERSION defaults to that SHA.
-The .wasm filename stays unchanged so Godot's generated loader needs no patches.
+Store compressed modules as .wasm.gz and internally route their original .wasm
+URLs to them. Godot's generated loader and uncompressed fileSizes stay unchanged.
 """
 
 from __future__ import annotations
@@ -54,7 +55,7 @@ def prepare_web(
             if not path.is_file():
                 continue
             relative = path.relative_to(source)
-            if relative.as_posix() in ("_headers", "version.json"):
+            if relative.as_posix() in ("_headers", "_redirects", "version.json"):
                 continue  # These are regenerated for every deployment.
             target = site / relative
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -62,6 +63,12 @@ def prepare_web(
                 raw = path.read_bytes()
                 if not raw.startswith(b"\x00asm"):
                     raise ValueError(f"Not an uncompressed WebAssembly module: {relative}")
+                # Pages can compress .wasm origin assets before applying _headers.
+                # A .gz asset is recognized as already compressed; the original
+                # URL is preserved by an internal 200 proxy rule below.
+                target = target.with_suffix(".wasm.gz")
+                if path.with_suffix(".wasm.gz").exists():
+                    raise ValueError(f"Export already contains a compressed sibling: {relative}.gz")
                 target.write_bytes(gzip.compress(raw, compresslevel=9, mtime=0))
                 wasm_paths.append("/" + relative.as_posix())
             else:
@@ -69,13 +76,17 @@ def prepare_web(
 
         headers = [
             "/*",
-            "  Cache-Control: no-cache",
+            "  Cache-Control: no-cache, no-transform",
             "  X-Content-Type-Options: nosniff",
             "  Referrer-Policy: strict-origin-when-cross-origin",
         ]
+        redirects = []
         for path in wasm_paths:
-            headers.extend(("", path, "  Content-Encoding: gzip", "  Content-Type: application/wasm"))
+            redirects.append(f"{path} {path}.gz 200")
+            for url in (path, path + ".gz"):
+                headers.extend(("", url, "  Content-Encoding: gzip", "  Content-Type: application/wasm"))
         (site / "_headers").write_text("\n".join(headers) + "\n", encoding="utf-8")
+        (site / "_redirects").write_text("\n".join(redirects) + "\n", encoding="utf-8")
         (site / "version.json").write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
 
         for path in sorted(site.rglob("*")):

@@ -109,6 +109,9 @@ jobs:
           for attempt in $(seq 1 12); do
             actual=$(curl --fail --silent --show-error "https://fivestarshabibi.middleleap.com/version.json?check=$SOURCE_SHA-$attempt" | jq -r .sha) || actual=''
             if [ "$actual" = "$SOURCE_SHA" ]; then
+              curl --compressed --fail --silent --show-error --retry 3 \
+                "https://fivestarshabibi.middleleap.com/index.wasm?check=$SOURCE_SHA" --output /tmp/live-game.wasm
+              python3 -c 'from pathlib import Path; assert Path("/tmp/live-game.wasm").read_bytes()[:4] == b"\x00asm", "Live WebAssembly does not decode correctly"'
               echo "Live: https://fivestarshabibi.middleleap.com ($SOURCE_SHA)"
               exit 0
             fi
