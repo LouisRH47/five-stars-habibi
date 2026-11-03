@@ -675,7 +675,7 @@ func _check_application() -> void:
 func _check_tutorial() -> void:
 	var gs: Node = _game_state
 	var tutorial := _main.get_node_or_null("Tutorial")
-	var model: Node3D = _bike.get_node("Model")
+	var model: Node3D = _bike.get_node("Model/Rider")  # the rider on the bike (Session 29)
 	var parts := []
 	for number in 3:
 		RiderLook.apply(model, number)
@@ -1159,9 +1159,97 @@ func _check(label: String, ok: bool, detail: String) -> void:
 
 func _finish() -> void:
 	_check_sound()
+	_check_session29()
 	_check_saving()
 	for action in ACTIONS:
 		Input.action_release(action)
 	_phase = "done"
 	print("RESULT: ", "FAIL" if _failed else "PASS")
 	quit(1 if _failed else 0)
+
+
+## Session 29: animated people, the real bike (pedals, handlebars, kickstand) and the bell.
+func _check_session29() -> void:
+	var rider: Node3D = _bike.get_node("Model/Rider")
+	var all_moves := true
+	for action in ["idle", "walk", "jog", "wave", "pedal", "lie"]:
+		all_moves = all_moves and rider.can_do(action)
+	_check("the rider has idle, walk, jog, wave, pedal and lie", all_moves, "")
+	_check("the rider pedals on the bike", rider.action == "pedal", rider.action)
+	var walker_model: Node3D = _main.get_node("Walker/Model")
+	_check("the rider on foot is an animated person", walker_model.can_do("walk") and walker_model.can_do("jog"), "")
+	# Customers in all 5 outfits, and the new types for later sessions.
+	var looks: Script = load("res://scripts/people_looks.gd")
+	var made := 0
+	var folks: Array = []
+	for outfit in 5:
+		folks.append(looks.resident(outfit))
+	folks.append_array([looks.teacher(), looks.school_kid(), looks.horse_rider(), looks.groom()])
+	for person: Node3D in folks:
+		if person.can_do("walk") and person.can_do("wave") and person.can_do("idle"):
+			made += 1
+		person.free()
+	_check("residents, teachers, kids, riders and grooms walk, wave and stand", made == 9, "%d of 9" % made)
+	var customer: Node3D = load("res://scripts/customer.gd").new()
+	_main.add_child(customer)
+	customer.setup("Shukran!")
+	_check("a customer is an animated person who can wave", customer.person != null and customer.person.can_do("wave"), "")
+	customer.free()
+	# The pedals turn faster at higher speed.
+	var keep := _bike.global_transform
+	_bike.set_parked(false)
+	_bike.speed = 2.0
+	var before: float = _bike.crank_angle
+	_bike._spin_wheels(0.1)
+	var slow: float = absf(_bike.crank_angle - before)
+	_bike.speed = 6.0
+	before = _bike.crank_angle
+	_bike._spin_wheels(0.1)
+	var fast: float = absf(_bike.crank_angle - before)
+	_check("the pedals turn faster at higher speed", slow > 0.0 and fast > slow * 2.5, "%.2f then %.2f rad" % [slow, fast])
+	_bike.speed = 0.0
+	# The handlebars turn when you steer.
+	_bike._steer = 1.0
+	_bike._move_parts(1.0)
+	var turned: float = _bike.get_node("Model/Fork").rotation.y
+	_bike._steer = 0.0
+	_bike._move_parts(1.0)
+	_check("the handlebars turn when you steer", turned > 0.2, "%.0f degrees" % rad_to_deg(turned))
+	# The kickstand drops when you get off, and folds up when you ride.
+	_bike.set_parked(true)
+	_bike._move_parts(1.0)
+	var down: float = _bike.kickstand_down
+	var stand_angle: float = _bike.get_node("Model/Kickstand").rotation.x
+	_check("the kickstand is down when parked, and the rider is off", down == 1.0 and stand_angle > 0.0 and not rider.visible,
+			"%.1f, %.0f degrees" % [down, rad_to_deg(stand_angle)])
+	_bike.set_parked(false)
+	_bike._move_parts(1.0)
+	_check("the kickstand folds up when riding", _bike.kickstand_down == 0.0 and rider.visible, "")
+	# B rings the bell: the ring plays, and a cat nearby gets out of the way.
+	var b_key := false
+	for event in InputMap.action_get_events("ring_bell"):
+		if event is InputEventKey and (event as InputEventKey).physical_keycode == KEY_B:
+			b_key = true
+	_check("B is the bell key", b_key, "")
+	var sounds := _main.get_node("Sounds")
+	var cat: Node3D = null
+	for critter in get_nodes_in_group("critter"):
+		if String(critter.name).begins_with("Cat"):
+			cat = critter
+			break
+	if cat != null:
+		cat.scared_left = 0.0
+		_bike.global_position = cat.global_position + Vector3(3, 0, 0)
+	_bike.ring_bell()
+	_check("B plays the bell", sounds.last_played == "ring", sounds.last_played)
+	if cat != null:
+		_check("a cat near the bell moves aside", cat.scared_left > 0.0, "%.1f s" % cat.scared_left)
+	else:
+		print("      no cats in this scene, bell scare not checked")
+	_bike.global_transform = keep
+	# Parked cars are the CC0 models.
+	var car := _main.find_child("ParkedCar_0", true, false)
+	if car != null:
+		_check("parked cars use the CC0 car models", car.get_node_or_null("Model") != null, "")
+	var credits := FileAccess.get_file_as_string("res://CREDITS.md")
+	_check("the people and car packs are credited", "Quaternius" in credits and "Car Kit" in credits, "")

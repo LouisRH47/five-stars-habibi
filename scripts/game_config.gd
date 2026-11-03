@@ -183,3 +183,18 @@ const SHIFT_WARNING_TIME := 30.0      # the clock turns orange this many seconds
 const APPLICATION_REVIEW_TIME := 2.0  # seconds of "Reviewing..." before you're hired
 const RIDER_NAME_MAX := 16            # letters allowed in your name
 const TUTORIAL_LAST_TIPS_TIME := 7.0  # seconds each of the last two tips stays up
+
+# --- People and bike (Session 29) ---
+const PERSON_HEIGHT := 1.75           # metres, a grown-up (kids are made smaller)
+const KID_HEIGHT := 1.3               # metres, a school kid
+const PERSON_WALK_ANIM_MPS := 1.4     # the walk animation looks right at this speed (m/s)
+const PERSON_JOG_ANIM_MPS := 3.0      # the jog animation looks right at this speed (m/s)
+const PERSON_BLEND_TIME := 0.2        # seconds to blend from one animation to the next
+const WAVE_TIME := 1.7                # seconds a person waves for
+const PEDAL_GEAR := 2.2               # wheel turns per pedal turn (bigger = slower pedals)
+const RIDER_LEAN_DEG := 18.0          # how far the rider leans forward over the handlebars
+const HANDLEBAR_MAX_DEG := 25.0       # how far the handlebars turn when you steer
+const HANDLEBAR_SMOOTHING := 10.0     # how quickly the handlebars follow the keys
+const KICKSTAND_SPEED := 6.0          # how quickly the kickstand swings down or up
+const BELL_HEAR_RANGE := 15.0         # metres: people and cats this close hear the bell
+const BELL_SCARE_TIME := 1.2          # seconds a cat runs off (or a kid stops) after the bell
