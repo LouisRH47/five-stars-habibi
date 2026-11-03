@@ -19,8 +19,12 @@
 [ext_resource type="Script" path="res://scripts/shift_screen.gd" id="18_shift_screen"]
 [ext_resource type="Script" path="res://scripts/shift_manager.gd" id="19_shift"]
 [ext_resource type="Script" path="res://scripts/sounds.gd" id="21_sounds"]
+[ext_resource type="Script" path="res://scripts/walker.gd" id="22_walker"]
+[ext_resource type="Script" path="res://scripts/on_foot.gd" id="23_on_foot"]
+[ext_resource type="Script" path="res://scripts/delivered_card.gd" id="24_card"]
 [ext_resource type="Script" path="res://scripts/tutorial.gd" id="20_tutorial"]
 [ext_resource type="Script" path="res://scripts/obstacle_builder.gd" id="15_obstacles"]
+[ext_resource type="Script" path="res://scripts/sun_cycle.gd" id="28_sun"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_pg"]
 sky_top_color = Color(0.30980393, 0.6627451, 0.8392157, 1)
@@ -47,6 +51,11 @@ transform = Transform3D(0.81915206, 0.43938506, -0.36868784, 0, 0.64278764, 0.76
 light_color = Color(1, 0.94509804, 0.8392157, 1)
 light_energy = 1.2
 shadow_enabled = true
+
+[node name="SunCycle" type="Node" parent="." node_paths=PackedStringArray("sun", "world_environment")]
+script = ExtResource("28_sun")
+sun = NodePath("../Sun")
+world_environment = NodePath("../WorldEnvironment")
 
 [node name="MapBuilder" type="Node3D" parent="." unique_id=1507247003]
 script = ExtResource("9_map")
@@ -113,11 +122,12 @@ bike = NodePath("../Bike")
 [node name="ShiftScreen" type="CanvasLayer" parent="."]
 script = ExtResource("18_shift_screen")
 
-[node name="ShiftManager" type="Node" parent="." node_paths=PackedStringArray("bike", "shift_screen", "clinic")]
+[node name="ShiftManager" type="Node" parent="." node_paths=PackedStringArray("bike", "shift_screen", "clinic", "delivered_card")]
 script = ExtResource("19_shift")
 bike = NodePath("../Bike")
 shift_screen = NodePath("../ShiftScreen")
 clinic = NodePath("../ClinicScreen")
+delivered_card = NodePath("../DeliveredCard")
 
 [node name="Tutorial" type="CanvasLayer" parent="." node_paths=PackedStringArray("delivery_manager")]
 script = ExtResource("20_tutorial")
@@ -126,3 +136,19 @@ delivery_manager = NodePath("../DeliveryManager")
 [node name="Sounds" type="Node" parent="." node_paths=PackedStringArray("bike")]
 script = ExtResource("21_sounds")
 bike = NodePath("../Bike")
+
+[node name="Walker" type="CharacterBody3D" parent="."]
+script = ExtResource("22_walker")
+
+[node name="OnFoot" type="Node" parent="." node_paths=PackedStringArray("bike", "walker", "camera", "delivery_manager", "minimap")]
+script = ExtResource("23_on_foot")
+bike = NodePath("../Bike")
+walker = NodePath("../Walker")
+camera = NodePath("../FollowCamera")
+delivery_manager = NodePath("../DeliveryManager")
+minimap = NodePath("../Minimap")
+
+[node name="DeliveredCard" type="CanvasLayer" parent="." node_paths=PackedStringArray("delivery_manager", "customer_spawner")]
+script = ExtResource("24_card")
+delivery_manager = NodePath("../DeliveryManager")
+customer_spawner = NodePath("../CustomerSpawner")

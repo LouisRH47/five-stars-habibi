@@ -1,0 +1,178 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/bike.tscn" id="1_bike"]
+[ext_resource type="Script" path="res://scripts/follow_camera.gd" id="2_camera"]
+[ext_resource type="PackedScene" path="res://ui/hud.tscn" id="3_hud"]
+[ext_resource type="PackedScene" path="res://ui/pause_menu.tscn" id="4_pause"]
+[ext_resource type="Script" path="res://scripts/place_builder.gd" id="5_places"]
+[ext_resource type="Script" path="res://scripts/delivery_manager.gd" id="6_orders"]
+[ext_resource type="PackedScene" path="res://ui/phone.tscn" id="7_phone"]
+[ext_resource type="Script" path="res://data/wahat_al_shams.gd" id="8_data"]
+[ext_resource type="Script" path="res://scripts/wahat_builder.gd" id="9_map"]
+[ext_resource type="Script" path="res://scripts/decor_builder.gd" id="11_decor"]
+[ext_resource type="PackedScene" path="res://ui/minimap.tscn" id="12_minimap"]
+[ext_resource type="Script" path="res://scripts/meters.gd" id="13_meters"]
+[ext_resource type="PackedScene" path="res://ui/meters_panel.tscn" id="14_meters_panel"]
+[ext_resource type="Script" path="res://scripts/customer_spawner.gd" id="16_customers"]
+[ext_resource type="Script" path="res://scripts/clinic_screen.gd" id="17_clinic"]
+[ext_resource type="Script" path="res://scripts/shift_screen.gd" id="18_shift_screen"]
+[ext_resource type="Script" path="res://scripts/shift_manager.gd" id="19_shift"]
+[ext_resource type="Script" path="res://scripts/sounds.gd" id="21_sounds"]
+[ext_resource type="Script" path="res://scripts/walker.gd" id="22_walker"]
+[ext_resource type="Script" path="res://scripts/on_foot.gd" id="23_on_foot"]
+[ext_resource type="Script" path="res://scripts/delivered_card.gd" id="24_card"]
+[ext_resource type="Script" path="res://scripts/tutorial.gd" id="20_tutorial"]
+[ext_resource type="Script" path="res://scripts/obstacle_builder.gd" id="15_obstacles"]
+[ext_resource type="Script" path="res://scripts/sun_cycle.gd" id="28_sun"]
+[ext_resource type="Script" path="res://scripts/plaza_builder.gd" id="25_plaza"]
+[ext_resource type="Script" path="res://scripts/spine_builder.gd" id="26_spine"]
+[ext_resource type="Script" path="res://scripts/landmark_builder.gd" id="27_landmarks"]
+[ext_resource type="Script" path="res://scripts/life_builder.gd" id="30_life"]
+[ext_resource type="Script" path="res://scripts/event_manager.gd" id="33_events"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_pg"]
+sky_top_color = Color(0.30980393, 0.6627451, 0.8392157, 1)
+sky_horizon_color = Color(0.8039216, 0.92156863, 0.9529412, 1)
+ground_bottom_color = Color(0.7882353, 0.65882355, 0.43137255, 1)
+ground_horizon_color = Color(0.9098039, 0.827451, 0.6509804, 1)
+
+[sub_resource type="Sky" id="Sky_pg"]
+sky_material = SubResource("ProceduralSkyMaterial_pg")
+
+[sub_resource type="Environment" id="Environment_pg"]
+background_mode = 2
+sky = SubResource("Sky_pg")
+ambient_light_source = 3
+tonemap_mode = 2
+
+[node name="WahatAlShams" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_pg")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.81915206, 0.43938506, -0.36868784, 0, 0.64278764, 0.76604444, 0.57357645, -0.62750685, 0.5265408, 0, 0, 0)
+light_color = Color(1, 0.94509804, 0.8392157, 1)
+light_energy = 1.2
+shadow_enabled = true
+
+[node name="SunCycle" type="Node" parent="." node_paths=PackedStringArray("sun", "world_environment")]
+script = ExtResource("28_sun")
+sun = NodePath("../Sun")
+world_environment = NodePath("../WorldEnvironment")
+
+[node name="WahatBuilder" type="Node3D" parent="."]
+script = ExtResource("9_map")
+data = ExtResource("8_data")
+
+[node name="PlazaBuilder" type="Node3D" parent="."]
+script = ExtResource("25_plaza")
+data = ExtResource("8_data")
+
+[node name="SpineBuilder" type="Node3D" parent="."]
+script = ExtResource("26_spine")
+data = ExtResource("8_data")
+
+[node name="LandmarkBuilder" type="Node3D" parent="."]
+script = ExtResource("27_landmarks")
+data = ExtResource("8_data")
+
+[node name="DecorBuilder" type="Node3D" parent="."]
+script = ExtResource("11_decor")
+data = ExtResource("8_data")
+
+[node name="PlaceBuilder" type="Node3D" parent="."]
+script = ExtResource("5_places")
+data = ExtResource("8_data")
+
+[node name="Bike" parent="." instance=ExtResource("1_bike")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -188, 0, 2)
+
+[node name="FollowCamera" type="Camera3D" parent="." node_paths=PackedStringArray("target")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -192.5, 2.2, 2)
+fov = 70.0
+script = ExtResource("2_camera")
+target = NodePath("../Bike")
+
+[node name="HUD" parent="." node_paths=PackedStringArray("bike") instance=ExtResource("3_hud")]
+bike = NodePath("../Bike")
+
+[node name="PauseMenu" parent="." instance=ExtResource("4_pause")]
+
+[node name="DeliveryManager" type="Node" parent="." node_paths=PackedStringArray("bike", "place_builder")]
+script = ExtResource("6_orders")
+bike = NodePath("../Bike")
+place_builder = NodePath("../PlaceBuilder")
+
+[node name="Phone" parent="." node_paths=PackedStringArray("delivery_manager") instance=ExtResource("7_phone")]
+delivery_manager = NodePath("../DeliveryManager")
+
+[node name="Minimap" parent="." node_paths=PackedStringArray("bike", "delivery_manager", "place_builder") instance=ExtResource("12_minimap")]
+bike = NodePath("../Bike")
+delivery_manager = NodePath("../DeliveryManager")
+place_builder = NodePath("../PlaceBuilder")
+
+[node name="Meters" type="Node" parent="." node_paths=PackedStringArray("bike", "delivery_manager")]
+script = ExtResource("13_meters")
+bike = NodePath("../Bike")
+delivery_manager = NodePath("../DeliveryManager")
+
+[node name="MetersPanel" parent="." instance=ExtResource("14_meters_panel")]
+
+[node name="ObstacleBuilder" type="Node3D" parent="."]
+script = ExtResource("15_obstacles")
+data = ExtResource("8_data")
+
+[node name="LifeBuilder" type="Node3D" parent="."]
+script = ExtResource("30_life")
+data = ExtResource("8_data")
+
+[node name="CustomerSpawner" type="Node3D" parent="." node_paths=PackedStringArray("place_builder")]
+script = ExtResource("16_customers")
+place_builder = NodePath("../PlaceBuilder")
+
+[node name="ClinicScreen" type="CanvasLayer" parent="." node_paths=PackedStringArray("bike")]
+script = ExtResource("17_clinic")
+bike = NodePath("../Bike")
+
+[node name="ShiftScreen" type="CanvasLayer" parent="."]
+script = ExtResource("18_shift_screen")
+
+[node name="ShiftManager" type="Node" parent="." node_paths=PackedStringArray("bike", "shift_screen", "clinic", "delivered_card")]
+script = ExtResource("19_shift")
+bike = NodePath("../Bike")
+shift_screen = NodePath("../ShiftScreen")
+clinic = NodePath("../ClinicScreen")
+delivered_card = NodePath("../DeliveredCard")
+
+[node name="Tutorial" type="CanvasLayer" parent="." node_paths=PackedStringArray("delivery_manager")]
+script = ExtResource("20_tutorial")
+delivery_manager = NodePath("../DeliveryManager")
+
+[node name="Sounds" type="Node" parent="." node_paths=PackedStringArray("bike")]
+script = ExtResource("21_sounds")
+bike = NodePath("../Bike")
+
+[node name="Walker" type="CharacterBody3D" parent="."]
+script = ExtResource("22_walker")
+
+[node name="OnFoot" type="Node" parent="." node_paths=PackedStringArray("bike", "walker", "camera", "delivery_manager", "minimap")]
+script = ExtResource("23_on_foot")
+bike = NodePath("../Bike")
+walker = NodePath("../Walker")
+camera = NodePath("../FollowCamera")
+delivery_manager = NodePath("../DeliveryManager")
+minimap = NodePath("../Minimap")
+
+[node name="DeliveredCard" type="CanvasLayer" parent="." node_paths=PackedStringArray("delivery_manager", "customer_spawner")]
+script = ExtResource("24_card")
+delivery_manager = NodePath("../DeliveryManager")
+customer_spawner = NodePath("../CustomerSpawner")
+
+[node name="EventManager" type="Node3D" parent="." node_paths=PackedStringArray("place_builder", "bike", "walker", "phone", "minimap")]
+script = ExtResource("33_events")
+place_builder = NodePath("../PlaceBuilder")
+bike = NodePath("../Bike")
+walker = NodePath("../Walker")
+phone = NodePath("../Phone")
+minimap = NodePath("../Minimap")

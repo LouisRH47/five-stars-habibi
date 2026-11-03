@@ -1,6 +1,6 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://scripts/application.gd" id="1_application"]
+[ext_resource type="Script" path="res://scripts/start_screen.gd" id="1_application"]
 
 [node name="Application" type="Control"]
 layout_mode = 3
@@ -10,3 +10,4 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_application")
+start_page = "form"

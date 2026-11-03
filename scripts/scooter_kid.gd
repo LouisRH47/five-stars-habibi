@@ -11,6 +11,7 @@ var _to := Vector3.ZERO
 var _going_to_end := true
 var _pause_left := 0.0
 var _wobble := 0.0
+var _blocked := 0.0  # seconds someone has been in the way
 var _model: Node3D
 
 
@@ -40,7 +41,14 @@ func _physics_process(delta: float) -> void:
 			face(_heading())
 		return
 	if bike_in_the_way():
-		return  # wait politely until the bike moves
+		# Wait politely, but if you stay in the way (say the bike is parked), turn back.
+		_blocked += delta
+		if _blocked > GameConfig.SCOOTER_GIVE_WAY_TIME:
+			_blocked = 0.0
+			_going_to_end = not _going_to_end
+			_pause_left = GameConfig.SCOOTER_TURN_PAUSE
+		return
+	_blocked = 0.0
 	var goal := _to if _going_to_end else _from
 	var gap := goal - position
 	var step := GameConfig.SCOOTER_SPEED * delta

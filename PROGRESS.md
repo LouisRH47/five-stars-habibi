@@ -1,6 +1,16 @@
 # Progress
 
 ## Current session
+**Sessions 18 to 34 are built** (the polish pass and the graphics pass), on branch
+`polish-and-graphics`. Each one passes the Godot checks and the smoke test on all three maps;
+Wahat Al Shams passes 5 runs out of 5. Sessions 26 to 33 were built by helper agents in
+parallel and merged together. They still need Louis's own play-test on the Mac.
+
+**Next: Louis plays a full shift** (open the game with F5, New game, the application, the
+tutorial, then shifts) and writes down what felt off. Then **Sessions 35 to 40**, "Reasons to
+come back" (gear shop, streaks and PERFECT!, choosing orders, tomorrow's special, collections,
+final play-test and itch.io), in BUILD_PLAN.md. These are ideas: cross out any you don't want.
+
 Sessions 7 to 17 are built (all of Tier 1), each checked with the Godot headless checks,
 the smoke test and screenshots, on branch `sessions-8-17` (Session 7 on `session-7-minimap`).
 Louis asked for all of them in one go; they still need Louis's own play-test on the Mac.
@@ -331,7 +341,398 @@ on both Palm Grove and the test area. Nothing needed fixing.
   freshness drain; if too hard, the other way. Write down what felt off for the next
   tuning session.
 
+### Session 18
+- Picking up and dropping off now need **E held for 1.5 seconds** at the door, going under
+  5 km/h. A quick tap of E does nothing there. Accepting an order is still a quick tap.
+- An orange bar on the phone fills while you hold E. Letting go, moving away or speeding
+  up resets it. At the door but too fast, the phone says "Slow down, then hold E".
+- After any E action you have to let go of E before the next hold counts (so accepting an
+  order doesn't carry on into a pick-up).
+- Numbers: PICKUP_HOLD_TIME, DROPOFF_HOLD_TIME, INTERACT_MAX_SPEED_KMH in `game_config.gd`.
+  The hold is timed in `scripts/delivery_manager.gd` (`_update_hold`).
+- Tutorial tips now say "Stop, then hold E".
+- Fixed Louis's flaky check: "the customer says a line from the list" now fills {name}
+  with the real rider name.
+- The smoke test checks a quick tap does nothing and a full hold picks up and delivers,
+  and passed 5 runs in a row. The play-test bot holds E too: still 12 deliveries a shift.
+
+### Session 19
+- **F gets off the bike** (only under 5 km/h) and back on (within 2 m of it). The bike
+  stays parked where you left it: solid, leaning on its stand, no rider on it.
+- On foot (`scripts/walker.gd`): W / S walk forward and back (5 km/h), A / D turn, Shift
+  jogs (9 km/h). The legs swing as you walk. The walker wears your look (cap, helmet or
+  bucket hat), using the same `scripts/rider_look.gd` as the rider on the bike.
+- `scripts/on_foot.gd` (the OnFoot node) switches between riding and walking: the camera,
+  the mini-map and the DeliveryManager follow whoever you control.
+- Picking up and dropping off (hold E) **only work on foot**. The meters and the shift clock
+  keep running while you walk, so parking near the door matters.
+- Phone hints: "Park near the door", "Press F to get off", "Walk to the door", "Hold E to
+  drop off", "Press F to ride", and "Your bike is over there" when you're more than 40 m
+  away. The mini-map shows the parked bike as a teal "B".
+- R on foot puts you back on the bike at the start.
+- Kids on scooters wait for you, and turn back after 2 s if you stay in their way (so a
+  parked bike can't block them forever). Cats and kids can't crash into you on foot.
+- Tutorial tips explain F and walking. Numbers: the "On foot" block in `game_config.gd`.
+- The smoke test checks F only works when stopped, and does the full run: park 6 m from a
+  door, F, walk to the door, hold E, walk back, F, ride away. The play-test bot walks too:
+  still 11 deliveries in a 10-minute shift.
+
+### Session 20
+- Fonts: Baloo 2 (titles, big numbers) and Nunito (everything else), free under the SIL
+  Open Font License, in `assets/fonts/` with their licence files and in CREDITS.md. Noto
+  Sans Arabic is the fallback, so Arabic in any menu still joins up.
+- One theme for every screen, `ui/theme.tres` (Project Settings > GUI > Theme): the fonts,
+  and teal rounded buttons with an orange pressed state. Labels use the "Heading" or
+  "BigNumber" variation for Baloo 2.
+- The phone is now a white rounded card like the mockup: Snackaroo header with a teal
+  wallet chip, rider name, rating and level, a coloured status pill (NEW ORDER, PICK UP,
+  DROP OFF, DONE, WAITING), pick-up and drop-off rows (the current one in orange, a done
+  one ticked), food / pay / timer chips, the customer's note in a yellow box, the hint and
+  the orange hold bar, and the insurance line.
+- The mini-map is round, with a white ring (drawn into its own little viewport and cut to
+  a circle by `ui/round_mask.gdshader`). Pins stay inside the circle.
+- The HUD, meters panel and clock use Baloo 2 for their numbers. They keep the dark
+  see-through panels (#0F2026 at 86%) from the PRD.
+- Note: the mockup link in PRD.md couldn't be opened from Claude Code (not shared with this
+  account), so the look follows the PRD's description of it. Louis, compare with the mockup
+  and say what's different.
+- The first time Godot opens the project after this change it may print a font error
+  once while it imports the new fonts; the second time it's clean.
+
+### Session 21
+- One start screen (`scripts/start_screen.gd`) for the main menu and the rider application,
+  like the mockup's "Start: rider application":
+  - Left: "AL SARAB · السراب", the big "Five Stars Habibi" title (Baloo 2, white with a teal
+    outline), orange "Rider to Driver" and one line about the game.
+  - Behind it: a low-poly 3D desert (sand dunes, a big pale sun, a palm, warm haze), with
+    the camera drifting slowly.
+  - Right: a big phone. On the menu it has Play (Continue once you're hired), New game,
+    Settings and Quit.
+  - The first time you press Play, the phone becomes the Snackaroo rider application: your
+    name, where you're from, "Pick your look" with 3 cards (Classic, Sporty, Chill), each
+    with its own little turning 3D rider, the picked one outlined in orange, and
+    Submit application. Then "Reviewing..." and "Congrats, <name>, you're hired!" on the same
+    phone, and Start riding.
+- `scenes/main_menu.tscn` opens it on the menu, `scenes/application.tscn` straight on the
+  form. The old `main_menu.gd` and `application.gd` are gone (one script does both now).
+- Text boxes are styled for the white cards (sand box, orange edge while typing).
+- Saving, the 43 countries, the tutorial and New game work as before.
+- The smoke test checks Play opens the application on the phone and there's a 3D card per look.
+
+### Session 22
+- The Delivered card (`scripts/delivered_card.gd`) after every delivery, like the mockup's
+  "Delivery complete":
+  - The game pauses (and the shift clock with it). The other screen panels hide.
+  - The camera cuts to a 3D shot from the side of the door: you and the customer (or the
+    bag on the doorstep for leave-at-the-door orders), with the customer's line in a white
+    speech bubble. The customer waits at the door until the card closes.
+  - On the right a white card: "Delivered!" (or "Left at the door!"), the stars,
+    "Ice Cream to Villa 12 · 0:58" (food, villa, ride time), three tiles Time / Freshness /
+    Damage, each with a word and a colour (green, orange or red: "On time", "Okay",
+    "Smashed"...), then Delivery pay, 5-star tip (only if you got one), Insurance, a bold
+    "You earned" total and the XP.
+  - "Next order · E" (the button or E) closes it, the camera goes back and the game carries on.
+- If that was the last delivery of the shift, the shift summary comes after the card.
+- The numbers are the real ones from GameState. The smoke test checks the card shows, its
+  total matches the money you got, the camera cuts to the door, and E closes it.
+
+### Session 23
+- The clinic screen is rebuilt like the mockup's "Big crash: clinic bills"
+  (`scripts/clinic_screen.gd`):
+  - The screen fades to black, then a simple 3D clinic room: pale teal walls, a window, your
+    rider (in your look) lying in a bed under a blanket, and a drip stand, filmed from the side.
+  - Left: a red BIG CRASH label, "You woke up at Wahat Al Shams Clinic", a sentence with what
+    you hit and how fast ("You hit a parked car at 27 km/h. The ice cream didn't make it, and
+    your shift is over for today.") and a teal Arabic sign "عيادة واحة الشمس".
+  - Right: the white "Your bills" card: ORDER CANCELLED · 0 STARS (if you had an order),
+    Clinic bill, Bike repair (Snackaroo), Insurance (or "Your boss covered it" the first
+    time), a red "You pay" total, a yellow tip when insurance was off, the "Big crashes this
+    week" bar (the last 7 shifts, full at 3), and the buttons "Turn on insurance" (only when
+    it's off) and "Shift summary · E".
+- The bike now remembers what it hit and how fast (`last_crash`: a parked car, a villa wall,
+  a palm tree, a restaurant, the mosque...). GameState keeps the shift of every big crash
+  (saved too) for the weekly bar.
+- The bills and what happens after (shift ends, summary) work as before.
+- The smoke test checks the sentence, the weekly count, the tip, and Turn on insurance.
+
+### Session 24
+- Smoke test: passed 5 runs in a row (212 checks each).
+- Play-test bot, 10-minute shift (still Palm Grove): a careful shift gets **10 deliveries**,
+  4.95 stars, ~120 Dh, with about 30 s spent walking to doors. A careless shift also gets
+  about 10 deliveries but crashes (2 small, 1 big, one order cancelled) and earns ~93 Dh.
+  Walking to the door doesn't make deliveries too slow, so no tuning was needed.
+- Screenshots were taken of the gameplay HUD, the start screen, the Delivered card and the
+  clinic screen (one per session, 20 to 23) and fixed where something was off (title line
+  gap, look cards, card camera, clinic camera).
+- Couldn't compare with the mockup itself: the mockup link in PRD.md can't be opened from
+  Claude Code. Louis: compare the four screens with the mockup and list what's different.
+- Still to do: Louis plays a full shift himself.
+
+### Session 25
+- **Shifts are 5 minutes** now (30 s per in-game hour, 08:00 to 18:00). The clock turns
+  orange in the last in-game hour.
+- **New map: Wahat Al Shams** (`scenes/wahat_al_shams.tscn`, data list
+  `data/wahat_al_shams.gd`, built by `scripts/wahat_builder.gd`), about 400 x 300 m, from
+  Louis's sketch (`docs/wahat_al_shams_map.svg`):
+  - a belt of trees round the edge (one MultiMesh, fast), an invisible wall inside it,
+    a sandy horse track and a red bike track, then the ring road;
+  - the main gate in the middle of the west side (closed red bar, gate house) with the
+    bilingual welcome sign "Welcome to Wahat Al Shams / أهلاً بكم في واحة الشمس";
+  - the Plaza just inside the gate (round paving for now) with Pizza, Brain Freeze Gelato and
+    Boba Oasis on its north side and the Al Sarab Mini Market on its south side;
+  - the green spine through the middle: grass, the spine path (the bike shortcut) and a
+    winding stream;
+  - 5 clusters (C1 to C3 north, C4 and C5 south), each with 12 homes on two 4 m lanes,
+    connector lanes at each side from the ring road to the spine, bollards at every lane
+    entrance (cars can't get in, the bike can) and a mini-plaza strip through the middle;
+  - solar car park spots on the ring road by each cluster, with parked cars;
+  - flat plots for the school, mosque, stables and building site (built in Session 27);
+  - speed bumps on the ring road, palms round the Plaza and along the spine path, cats in
+    the mini-plazas, kids on scooters on the ring road and the spine path.
+- Homes are placeholder boxes for now (the house kit is Session 26), numbered 1 to 12 inside
+  each cluster. Addresses read "C3 · Villa 7" on the phone, the mini-map, the Delivered card
+  and the tutorial. Orders keep an `address`.
+- The main menu starts the new map. `scenes/palm_grove.tscn` stays as an old test map.
+- The mini-map draws any map now (the Plaza, spine, plots, lanes in their own width).
+- The smoke test runs on Wahat Al Shams by default: it checks the 60 homes and their
+  addresses, that the ride from the gate ends in the Plaza, and that every home and shop door
+  can be reached by bike. For that, `tests/grid_path.gd` scans the map in 1 m squares and finds
+  routes with Godot's AStarGrid2D. Palm Grove and the test area still pass too.
+- The play-test bot uses the same route finder on any map, looks ahead and slows down for
+  walls. It still gets stuck in the narrow cluster lanes; fixing that is next.
+
+### Session 28
+- The sun follows the shift clock (`scripts/sun_cycle.gd`, a SunCycle node in each map):
+  low and warm at 08:00, high and white at noon, a golden sunset from 17:00 to 18:00. The sky
+  colours and the shadow light change smoothly with it. It crosses from east to west.
+- Soft corner shadows (SSAO), a light haze so the far edge of the map fades into the sky,
+  a gentle glow on bright things, and heat shimmer far away above the ground around noon
+  (10:30 to 15:30, `assets/shaders/heat_shimmer.gdshader`, very subtle: SHIMMER_AMOUNT).
+- Settings has a Graphics option: Low / Medium (default) / High, saved with the other
+  settings and applied straight away. Low: no SSAO, haze, shimmer or glow, shadows only to
+  60 m. Medium: everything on, shadows to 150 m. High: better SSAO, softer shadows to 260 m.
+- 60 fps on all three levels on the Mac (Apple M3, 1280x720).
+- All light numbers, one line per time of day, are in the "Light and sky (Session 28)" block
+  of `game_config.gd`.
+- Not done yet: "fewer people on Low" (comes with the people in Sessions 29 and 30); the main
+  menu's desert doesn't use the moving sun.
+- Built by a helper agent in parallel; the smoke test has 11 new checks for the sun and the
+  Graphics levels.
+
+### Session 26
+- The 60 Wahat Al Shams homes are real houses now, built in code from a house kit
+  (`scripts/villa_builder.gd`, details in `scripts/villa_extras.gd`, merged into one mesh per
+  home by `scripts/mesh_kit.gd` so it stays fast): cream or sand two-storey L-shapes with a flat
+  roof, parapet and roof terrace, tilted solar panels on posts, a wind tower (barjeel) with
+  slots, small deep windows, a wooden door with a step and a little shade, and a teal plate
+  with the house number (1 to 12).
+- 3 types per cluster: 10 courtyard villas (side wing with the wind tower, a paved courtyard
+  behind a low wall), 1 garden villa (big lawn, hedge, shade tree) and 1 signature villa
+  (house 12: bigger, double door, wooden mashrabiya screen upstairs).
+- Every home looks different, and the same every time (its number picks): door colour,
+  courtyard left or right, golf buggy or bikes, AC units, satellite dish, pot plants, a tree in
+  the courtyard, flowers on the wall, toys, panels front or back, and a pool or trampoline on
+  garden and signature villas.
+- Homes are solid; door spots and lanes stay clear (checked).
+- Bilingual cluster signs ("المجموعة ١ / Cluster 1") at all 4 lane ends of every cluster
+  (`scripts/cluster_signs.gd`), readable from both sides.
+- About 55 to 59 fps in screenshot runs on the Mac.
+- Palm Grove keeps its old villas. A data entry with "kind": "spot" gets no house (for the
+  school and stables drop-off spots in Session 27).
+- Worth knowing: signature villas are a little bigger than the 11 x 11 plot (SIGNATURE_EXTRA_*
+  in `game_config.gd`); the mini-map still draws every home as the same square.
+- Built by a helper agent in parallel; new smoke test checks for the house kinds, the door
+  numbers, the signs and that nothing blocks a door.
+
+### Session 27
+- The Plaza has a sunken square: steps down to a round tiled floor with a fountain, 4 date
+  palms, benches and two white shade sails. The bike rolls down a gentle hidden slope (0.45 m).
+- 6 shops round the Plaza: Pizza, Brain Freeze Gelato, Boba Oasis, plus Shawarma Supreme and
+  Sunrise Bakery (new), and Al Sarab Mini Market, now a real pickup shop selling groceries.
+- The green spine: 6 white greenhouse domes, farm beds, beehives, a donkey pen with 2 donkeys,
+  a basketball court and a playground. The Wahat Farm Stall is the 7th pickup spot (farm juice
+  or a salad box).
+- Each cluster mini-plaza has a cooling tower, a small playground and benches (the strip stays
+  clear to ride).
+- Al Shams School (fenced yard, bilingual sign, football pitch, flag): its security booth at the
+  gate is the only drop-off spot. The mosque with its minaret is scenery only: never an order.
+  The stables: stable block with horses looking out, a paddock with 4 horses, and the stable
+  office (the only drop-off spot). The building site: fence, crane, containers, sand piles and a
+  bilingual "Phase 2 coming soon" sign.
+- New foods with their own freshness and damage numbers: shawarma (medium), cake (breaks on
+  bumps), groceries (slow to spoil), farm juice and salad box (spoil in the sun).
+- Orders pick up from all 7 pickup spots and go to the 60 homes, the school booth and the
+  stable office (who orders and when is Session 32).
+- New builders: `scripts/plaza_builder.gd`, `scripts/spine_builder.gd`,
+  `scripts/landmark_builder.gd`, `scripts/farm_stall.gd`, and `scripts/props.gd` (benches,
+  playgrounds, fences, cooling tower, horses, donkeys).
+- Built by a helper agent in parallel and merged with Session 26's houses (both changed how
+  homes and drop-off spots are built). The smoke test checks the sunken square, every new
+  building, an order from each new shop, that the mosque never gets an order, and that every
+  door can be reached.
+- Groceries being "a bit heavy" is only in the damage numbers for now.
+
+### Session 29
+- People are real animated low-poly humans now (free CC0 model "Animated Human" by Quaternius,
+  with idle, walk and run animations; credited in CREDITS.md). Waving, pedalling and lying in
+  the clinic bed are poses made in code. Clothes are painted in code; hats, helmets, scarves,
+  bags and shoes are small shapes that move with the body (`scripts/person.gd`,
+  `scripts/person_pose.gd`, `scripts/people_looks.gd`).
+- The rider pedals with hands on the grips and feet on the pedals; on foot they walk or jog
+  (animation speed matches). The 3 looks are kept (Classic, Sporty, Chill) on the bike, on
+  foot, on the start-screen cards and in the clinic bed.
+- Customers come in the 5 outfits (white kandura with ghutra and agal, black abaya with shayla,
+  t-shirt, red hoodie, green top with cap): they walk out, wave, and walk back in.
+- Teachers, school kids, horse riders and grooms are ready to use (`PeopleLooks.teacher()` etc.)
+  for the next sessions; nothing places them yet.
+- A proper low-poly bicycle built in code (`scripts/bike_model.gd`): spoked wheels, frame,
+  saddle, chain, rack and the orange delivery box. The pedals turn with speed, the handlebars
+  and front wheel turn when you steer, and the kickstand drops when you get off. Riding feel
+  and the collision box are unchanged.
+- **B rings the bell** (a new home-made "brrring-ring", `assets/audio/ring.wav`): customers
+  nearby wave again, cats run off, kids on scooters stop and wobble.
+- Parked cars are 5 free CC0 Kenney Car Kit models, the same size as before.
+- Fixed while merging: a cat could stroll into a parked bike and shove it (the smoke test's
+  walking check failed about 1 run in 4 on Palm Grove). Cats now pick somewhere else to go
+  when they bump into the bike or you; 6 of 6 runs passed after.
+- Not done: plants from a CC0 pack (optional). Kids are a scaled-down adult body.
+- Built by a helper agent in parallel. New smoke test checks: pedals turn faster at speed,
+  handlebars turn, kickstand down when parked, B rings the bell and scares a cat, every people
+  type can walk, wave and stand, cars are the CC0 models.
+
+### Session 31
+- Dust puffs come off the back tyre when you ride on sand, and when you brake hard on any
+  ground (`scripts/tyre_dust.gd`; where the sand is comes from the map's data list,
+  `scripts/ground_type.gd`). Fewer puffs on Low graphics, more on High.
+- While you sprint (Shift) the view widens by 7 degrees and thin white speed lines rush out at
+  the screen edges (`scripts/speed_lines.gd`); both fade back when you stop.
+- On the Delivered card the stars fill in one at a time, each with sparkles and a blip that
+  gets higher each time; then gold coins fly out of "You earned" with a coin jingle and the
+  total bounces (`scripts/pop_icon.gd`).
+- A new order makes the phone shake for a moment and go "bzz-bzz" (plus the old ping).
+- 3 new home-made sounds (buzz, pop, coins) from `tools/make_sounds.py`, in CREDITS.md.
+- Sound effects now keep playing while the game is paused (the "ka-ching" used to be cut off
+  when the Delivered card paused the game).
+- No measurable effect on frame rate. Numbers in the "Juice (Session 31)" block of
+  `game_config.gd` (SPEED_LINES_ALPHA if the speed lines should be stronger).
+- Built by a helper agent in parallel; the smoke test checks the wider view while sprinting,
+  the buzz, the pops, the dust and fewer particles on Low.
+
+### Session 30
+- Golf buggies with drivers go slowly back and forth on fixed routes (the outer lane of the
+  north and south ring road and the spine path; two more on High). They stop and wait when
+  the bike or you on foot are in front; stay in the way 5 seconds and they turn round.
+- Bumping a buggy, horse, walker, gardener, kid or duck is like bumping a kid: a small knock
+  to the food, never a big crash.
+- Horses with riders walk and trot on the horse track round the edge; joggers run on the red
+  bike track; walkers stroll beside the spine path; gardeners water flower beds with a hose;
+  kids run about by every cluster playground.
+- Ducks paddle along the stream, birds circle overhead, palms sway, the donkeys stroll round
+  their pen, and the stream and fountain water ripple (`assets/shaders/water.gdshader`).
+- Every route is its own line in `data/wahat_al_shams.gd` (BUGGIES, HORSE_RIDERS,
+  PEOPLE_ROUTES, GARDENERS, PLAY_KIDS, DUCKS, BIRD_FLOCKS): no traffic AI. Built by
+  `scripts/life_builder.gd`, moved by `scripts/route_mover.gd`.
+- 12 moving things on Low graphics, 36 on High; people far from the camera stop animating.
+  Still 120 fps (the screen's limit) on Medium.
+- Fixed while merging: a parked bike no longer slides at all when something walks into it
+  (a test failed about 1 run in 6 on Palm Grove because of that); 8 of 8 runs passed after.
+- Built by a helper agent in parallel. The smoke test checks every route stays clear of
+  walls, buggies stop for the bike and turn round, everything moves, and Low has fewer.
+
+### Session 33
+- Each shift has 1 or 2 surprise events at random times between 09:00 and 16:00, one at a
+  time, never during the tutorial. The phone warns you first ("Heads up!", orange, 6
+  seconds), then a teal line says what's on ("Road works: C3 Lane closed till 14:35").
+- Road works: barriers, cones, a small yellow digger and bilingual "أعمال طرق / Road works"
+  signs close a stretch of a cluster lane or the ring road for 1 to 2 in-game hours, with an
+  orange cone on the mini-map. Only the 14 places on the ROAD_WORKS list in
+  `data/wahat_al_shams.gd`; the smoke test closes each one in turn and checks every home and
+  shop door can still be reached. Never within 15 m of you or your parked bike.
+- Horses crossing: a groom leads 2 or 3 horses across a road near the stables (4 places,
+  HORSE_CROSSINGS); the road is blocked for about 6 to 8 seconds. Riding into them is only a
+  small crash. They wait for you or the parked bike, never shove.
+- Files: `scripts/event_manager.gd`, `scripts/road_works.gd`, `scripts/horse_crossing.gd`;
+  numbers in the "Random events (Session 33)" block of `game_config.gd`. Palm Grove and the
+  test area have no events.
+- Fixed while merging with Session 30: golf buggies, horses and walkers now stop at road
+  works instead of driving through the barrier (and turn round after a few seconds); the
+  crossing groom's speed got its own name (CROSSING_WALK_SPEED) so it doesn't clash with the
+  horse riders' speed. New smoke check: a buggy stops at the north ring road works.
+- The play-test bot re-plans its route when road works go up or come down, and rides round.
+- Known: barriers only span the road, so on the ring road you can ride round on the sand.
+  The crossing horses pop in and out at the ends of their path and their legs don't move.
+- Built by a helper agent in parallel.
+
+### Session 32
+- About 1 in 6 orders is special, with a coloured chip on the phone: **Rush** (red: 70% of the
+  time, +50% pay), **Fragile cake** (pink: from Sunrise Bakery, every knock does double
+  damage, 60% tip chance on 5 stars), **Neighbour** (purple: at the door "Not home! Leave it
+  with the neighbour at C1 · Villa 9", the clock keeps running, +5 Dh) and **Big family**
+  (blue: a second bag on the handlebars, top speed 15% lower, a little sway, double pay).
+  The Delivered card shows the extra pay on its own row.
+- School orders only 08:00 to 15:00; in the 11:30 to 12:30 lunch rush about 1 in 3 orders go
+  to the school gate, where a teacher or a school kid comes out. Stables orders go to the
+  stable office (a rider or groom comes out). About 1 in 8 pickups is at the Farm Stall.
+- 4 regulars order more often: Auntie Mariam (bubble tea, C2 Villa 7), Mr Rashid (shawarma,
+  C5 Villa 3), Ms Dana (cake, school gate, school hours only) and Hamdan (farm juice, stable
+  office). Pink heart chip, their own lines with your name, 60% tip chance on 5 stars, and the
+  save file remembers how many times you've delivered to each.
+- 2 shift goals on the phone at the start of each shift (e.g. "Make 8 deliveries 0/8"); each
+  one done pays 15 Dh, listed on the shift summary. The Delivered card says when a delivery
+  finishes a goal.
+- New files: `scripts/order_maker.gd` (who orders what from where), `scripts/shift_goals.gd`.
+  Numbers in the "Special orders, goals and regulars (Session 32)" block of `game_config.gd`.
+- Palm Grove and the test area leave out what they can't do (no school, no regulars).
+- **Goal numbers to decide (Session 34):** with 5-minute shifts and 4 to 6 deliveries,
+  "Make 8 deliveries" and "2 school lunch orders" (the lunch rush is only 30 real seconds)
+  are effectively impossible, "all 5 clusters" is very unlikely, and "a fragile cake with 5
+  stars" only works in about 1 shift in 5. Kept as in the PRD for now.
+- Fixed while merging: the old "kids on scooters move" check was flaky (the kid could touch
+  the bike after only 0.4 m); the bike now waits 3.5 m ahead instead of 2.5 m.
+- Built by a helper agent in parallel. Smoke checks: each special's rule and reward, no school
+  order after 15:00, lunch rush share, regulars (heart, name, tips, saved), goal bonus once.
+
+### Session 34
+- Play-test bot on Wahat Al Shams. Before tuning, a careful 5-minute shift got 5 deliveries:
+  riding to the shop took almost half the shift (the shops are in the Plaza at the west end).
+  Now 7 in 10 orders go to the nearer half of homes from the shop (ORDER_NEARBY_HOME_CHANCE
+  in `game_config.gd`), so trips are shorter. A careful bot (which never sprints) now gets 5
+  to 7 deliveries, about 6; a player who sprints should get 6 to 7. Pay per shift stayed about
+  the same (54 to 74 Dh before tips and goals).
+- Final shifts: careful 6 deliveries, 5.00 stars, 0 crashes, 69 Dh. Careless 6 deliveries,
+  4.67 stars, 9 small crashes, 84 Dh (lucky tips and a goal). Small crashes are cheap now,
+  so being careless doesn't cost enough yet: something to look at after Louis plays.
+- Shift goals changed to fit 5 minutes (PRD Decisions log, for Louis to confirm): make 6
+  deliveries (was 8), a school lunch order (was 2: the lunch rush is only 30 real seconds),
+  deliver to 3 different clusters (was all 5).
+- Frame rate at the Plaza and the spine (1280x720, vsync off): Low 60 fps, Medium 60 to 67,
+  High 70 to 72. 60 fps on Medium: yes.
+- Screenshots of the gate, the Plaza, a cluster lane, the spine, the school gate, the stables
+  and the sunset all look right.
+- Smoke test 5 times on Wahat: 5 of 5 PASS (362 checks each). Palm Grove and the test area
+  pass too.
+- The play-test bot now rides (instead of walking) when a "leave it with the neighbour" order
+  sends it to a far door, and says when a walk takes longer than 20 seconds.
+- Not done yet: removing the old Palm Grove map. It's still the smoke test's second map; remove
+  it once Louis has played Wahat Al Shams and is happy.
+- **Louis's turn:** play a full shift and write down what felt off.
+
 ## Known bugs
+- Play-test bot findings on Wahat Al Shams (to tune in Session 34):
+  - A careful 5-minute shift gets 5 to 6 deliveries (target 6 to 8). The rides are long
+    (Plaza to cluster 100 to 250 m), not the bot; target times look generous (time meter
+    ends around 76 to 84%).
+  - At full speed the bike can't make a 90° turn between 4 m lanes: brake to about 12 to 14 km/h
+    before lane corners. Careless riding hits villa corners.
+  - Cats sit in the cluster mini-plaza strips, the natural shortcut, so fast riders hit them
+    a lot (one ice cream lost all its damage to three cat hits).
+  - Doors face the narrow lanes, so every stop ends in a three-point turn (S to reverse):
+    worth a line in the tutorial.
+  - A scooter kid riding head-on can keep bumping a stopped rider until it turns back.
+- The play-test bot (`tests/playtest_bot.gd`, `tests/grid_path.gd`) was rebuilt by a helper
+  agent: it looks ahead on its route, slows for corners, bumps, cats and doors, steers round
+  cats and kids, backs up when blocked. 0 crashes and 0 resets in 11 careful shifts.
+  `-- timeline` prints every step.
 - None found by the checks. Not play-tested by Louis yet.
 - The bot once got stuck nose-to-nose with a kid on a scooter (the kid waits for the bike,
   the bot kept pushing). A person just steers round, but say if it happens to you.
@@ -345,10 +746,9 @@ on both Palm Grove and the test area. Nothing needed fixing.
   close and reopen the project in the editor.
 
 ## Next
-- Louis play-tests everything with the "Done when" checklists in BUILD_PLAN.md
-  (start the game with F5: main menu, application, tutorial, then shifts).
-- Merge the branches into main (pull requests on GitHub).
-- Session 17 again with Louis's own notes, then a friend plays for 10 minutes.
-- After that: export for itch.io and write the Tier 2 sessions (see "After Tier 1" in BUILD_PLAN.md).
-- Open question for Louis: rides in Palm Grove take up to about a minute, the PRD hoped
-  for 2 to 3 minutes. See "Still open" in PRD.md.
+- Louis play-tests Wahat Al Shams with the "Done when" checklists in BUILD_PLAN.md
+  (Sessions 18 to 34) and confirms the Session 34 tuning in the PRD Decisions log.
+- Merge `polish-and-graphics` into main (pull request on GitHub).
+- Remove the old Palm Grove map once Wahat Al Shams feels right (Session 34 left it in,
+  because the smoke test still uses it as a second map).
+- Then Sessions 35 to 40 (Reasons to come back), ending with itch.io.

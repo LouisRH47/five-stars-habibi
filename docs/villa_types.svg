@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="370" viewBox="0 0 680 370">
+<style>.th{font:500 14px sans-serif;fill:#2C2C2A}.ts{font:12px sans-serif;fill:#5F5E5A}</style>
+<rect width="680" height="370" fill="#FFFFFF"/>
+<rect x="30" y="300" width="620" height="6" fill="#D9C49A"/>
+<rect x="50" y="190" width="100" height="110" fill="#F1E9DA" stroke="#CDBF9F" stroke-width="0.5"/>
+<rect x="50" y="182" width="100" height="8" fill="#E3D6BC"/>
+<line x1="62" y1="182" x2="62" y2="158" stroke="#6B6B66" stroke-width="2"/>
+<line x1="138" y1="182" x2="138" y2="150" stroke="#6B6B66" stroke-width="2"/>
+<polygon points="54,160 146,148 146,154 54,166" fill="#2E4A6B"/>
+<rect x="150" y="240" width="62" height="60" fill="#EADFC9" stroke="#CDBF9F" stroke-width="0.5"/>
+<rect x="186" y="198" width="18" height="42" fill="#EADFC9" stroke="#CDBF9F" stroke-width="0.5"/>
+<line x1="191" y1="204" x2="191" y2="220" stroke="#8A7A5C" stroke-width="2"/><line x1="199" y1="204" x2="199" y2="220" stroke="#8A7A5C" stroke-width="2"/>
+<rect x="64" y="205" width="14" height="22" fill="#5D7C8A"/><rect x="110" y="205" width="14" height="22" fill="#5D7C8A"/>
+<rect x="64" y="252" width="14" height="22" fill="#5D7C8A"/>
+<rect x="104" y="260" width="22" height="40" fill="#8A5A2B"/>
+<circle cx="200" cy="262" r="14" fill="#6E9E4F"/>
+<rect x="150" y="278" width="66" height="22" fill="#E6DCC7" stroke="#CDBF9F" stroke-width="0.5"/>
+<text class="th" x="130" y="325" text-anchor="middle">Courtyard villa (10 per cluster)</text>
+<text class="ts" x="130" y="345" text-anchor="middle">L-shape, walled courtyard</text>
+<rect x="258" y="190" width="100" height="110" fill="#F1E9DA" stroke="#CDBF9F" stroke-width="0.5"/>
+<rect x="258" y="182" width="100" height="8" fill="#E3D6BC"/>
+<line x1="268" y1="182" x2="268" y2="160" stroke="#6B6B66" stroke-width="2"/>
+<line x1="316" y1="182" x2="316" y2="154" stroke="#6B6B66" stroke-width="2"/>
+<polygon points="262,162 322,154 322,160 262,168" fill="#2E4A6B"/>
+<rect x="330" y="136" width="18" height="46" fill="#EADFC9" stroke="#CDBF9F" stroke-width="0.5"/>
+<line x1="335" y1="142" x2="335" y2="160" stroke="#8A7A5C" stroke-width="2"/><line x1="343" y1="142" x2="343" y2="160" stroke="#8A7A5C" stroke-width="2"/>
+<rect x="358" y="244" width="40" height="56" fill="#EADFC9" stroke="#CDBF9F" stroke-width="0.5"/>
+<rect x="272" y="205" width="14" height="22" fill="#5D7C8A"/><rect x="318" y="205" width="14" height="22" fill="#5D7C8A"/>
+<rect x="272" y="252" width="14" height="22" fill="#5D7C8A"/>
+<rect x="312" y="260" width="22" height="40" fill="#8A5A2B"/>
+<rect x="250" y="294" width="185" height="6" fill="#7FAE5C"/>
+<line x1="418" y1="294" x2="418" y2="250" stroke="#7A5A3A" stroke-width="3"/>
+<circle cx="418" cy="244" r="16" fill="#6E9E4F"/>
+<text class="th" x="340" y="325" text-anchor="middle">Garden villa (1)</text>
+<text class="ts" x="340" y="345" text-anchor="middle">Big lawn and tree</text>
+<rect x="462" y="168" width="114" height="132" fill="#F1E9DA" stroke="#CDBF9F" stroke-width="0.5"/>
+<rect x="462" y="160" width="114" height="8" fill="#E3D6BC"/>
+<line x1="472" y1="160" x2="472" y2="134" stroke="#6B6B66" stroke-width="2"/>
+<line x1="566" y1="160" x2="566" y2="126" stroke="#6B6B66" stroke-width="2"/>
+<polygon points="466,136 572,124 572,130 466,142" fill="#2E4A6B"/>
+<rect x="576" y="226" width="62" height="74" fill="#EADFC9" stroke="#CDBF9F" stroke-width="0.5"/>
+<rect x="612" y="180" width="18" height="46" fill="#EADFC9" stroke="#CDBF9F" stroke-width="0.5"/>
+<line x1="617" y1="186" x2="617" y2="204" stroke="#8A7A5C" stroke-width="2"/><line x1="625" y1="186" x2="625" y2="204" stroke="#8A7A5C" stroke-width="2"/>
+<rect x="478" y="186" width="40" height="30" fill="#C9A46A"/>
+<line x1="488" y1="186" x2="488" y2="216" stroke="#8A6A3A" stroke-width="1"/><line x1="498" y1="186" x2="498" y2="216" stroke="#8A6A3A" stroke-width="1"/><line x1="508" y1="186" x2="508" y2="216" stroke="#8A6A3A" stroke-width="1"/>
+<line x1="478" y1="196" x2="518" y2="196" stroke="#8A6A3A" stroke-width="1"/><line x1="478" y1="206" x2="518" y2="206" stroke="#8A6A3A" stroke-width="1"/>
+<rect x="540" y="186" width="16" height="30" fill="#5D7C8A"/>
+<rect x="478" y="244" width="16" height="24" fill="#5D7C8A"/><rect x="540" y="244" width="16" height="24" fill="#5D7C8A"/>
+<rect x="506" y="256" width="26" height="44" fill="#8A5A2B"/>
+<rect x="576" y="276" width="64" height="24" fill="#E6DCC7" stroke="#CDBF9F" stroke-width="0.5"/>
+<text class="th" x="550" y="325" text-anchor="middle">Signature villa (1)</text>
+<text class="ts" x="550" y="345" text-anchor="middle">Big corner home, mashrabiya</text>
+<text class="ts" x="40" y="40">Side views. Roof terrace under tilted solar panels, wind tower (barjeel), small deep windows, wooden door.</text>
+</svg>

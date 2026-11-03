@@ -62,7 +62,22 @@ const ORDER_PAY_PER_METRE := 0.03     # Dh extra per metre, straight line restau
 const ORDER_ACCEPT_HISTORY := 20      # acceptance rate looks at your last 20 accept/skip choices
 const ORDER_LOW_ACCEPTANCE := 0.7     # below 70% you get boring orders: short ride, lowest pay
 const ORDER_BORING_CHOICES := 2       # a boring order goes to one of the 2 villas closest to the restaurant
+const ORDER_NEARBY_HOME_CHANCE := 0.7  # share of orders that go to the nearer half of homes (Session 34: more, shorter trips)
 const INTERACT_RADIUS := 3.5          # metres from a door where E picks up or drops off
+# Session 18: picking up and dropping off need E held at the door while going slowly.
+const PICKUP_HOLD_TIME := 1.5         # seconds to hold E at the restaurant
+const DROPOFF_HOLD_TIME := 1.5        # seconds to hold E at the villa
+const INTERACT_MAX_SPEED_KMH := 5.0   # faster than this at the door: "Slow down, then hold E"
+
+# --- On foot (Session 19) ---
+const GET_OFF_MAX_KMH := 5.0          # F only works when the bike is slower than this
+const WALK_SPEED_KMH := 5.0           # W on foot
+const JOG_SPEED_KMH := 9.0            # Shift + W on foot
+const WALK_ACCELERATION := 8.0        # m/s gained per second on foot
+const WALK_TURN_DEG_PER_SEC := 150.0  # A / D on foot
+const GET_ON_DISTANCE := 2.0          # metres from the bike where F gets you back on
+const BIKE_FAR_DISTANCE := 40.0       # further than this: "Your bike is over there"
+const PARKED_LEAN_DEG := 8.0          # the parked bike leans on its stand
 const DOOR_DISTANCE := 2.5            # the door spot is this many metres in front of a building
 const MARKER_RADIUS := 1.2            # the glowing beam over the next stop
 const MARKER_HEIGHT := 4.0            # lower than every roof (5 m and up), so the beam never covers a sign
@@ -101,12 +116,18 @@ const TIME_TARGET_EXTRA := 20.0       # seconds
 const TIME_METER_AT_TARGET := 60.0
 const TIME_EMPTY_AT := 2.0
 # Freshness lost per second, per food (pizza slow, bubble tea medium, ice cream fast).
-const FRESHNESS_DRAIN := {"pizza": 0.25, "bubble tea": 0.4, "ice cream": 0.55}  # Session 17: was 0.35/0.6/1.0
+# Session 27 foods: shawarma goes cold (medium), cake keeps but breaks on bumps, groceries are
+# slow to spoil and a bit heavy, farm juice and salad spoil in the sun.
+const FRESHNESS_DRAIN := {"pizza": 0.25, "bubble tea": 0.4, "ice cream": 0.55,  # Session 17: was 0.35/0.6/1.0
+		"shawarma": 0.35, "cake": 0.2, "groceries": 0.1, "farm juice": 0.5, "salad box": 0.45}  # Session 27
 # Damage lost per knock, per food. Bubble tea hates speed bumps.
-const DAMAGE_SPEED_BUMP := {"pizza": 3.0, "bubble tea": 14.0, "ice cream": 5.0}  # at full speed
+const DAMAGE_SPEED_BUMP := {"pizza": 3.0, "bubble tea": 14.0, "ice cream": 5.0,  # at full speed
+		"shawarma": 4.0, "cake": 16.0, "groceries": 6.0, "farm juice": 10.0, "salad box": 6.0}  # cake breaks on bumps
 const DAMAGE_SPEED_BUMP_SLOW_SHARE := 0.25  # at or under SPEED_BUMP_SAFE_KMH a bump costs a quarter of that
-const DAMAGE_HARD_BRAKE := {"pizza": 3.0, "bubble tea": 8.0, "ice cream": 4.0}
-const DAMAGE_COLLISION := {"pizza": 15.0, "bubble tea": 25.0, "ice cream": 18.0}  # a full-speed head-on hit
+const DAMAGE_HARD_BRAKE := {"pizza": 3.0, "bubble tea": 8.0, "ice cream": 4.0,
+		"shawarma": 3.0, "cake": 9.0, "groceries": 5.0, "farm juice": 7.0, "salad box": 4.0}
+const DAMAGE_COLLISION := {"pizza": 15.0, "bubble tea": 25.0, "ice cream": 18.0,  # a full-speed head-on hit
+		"shawarma": 15.0, "cake": 30.0, "groceries": 20.0, "farm juice": 25.0, "salad box": 18.0}
 # Hard braking: braking (S or Space) while going faster than this counts once per press.
 const HARD_BRAKE_MIN_KMH := 22.0       # Session 17: was 18, then normal braking counted too
 
@@ -117,9 +138,11 @@ const CAT_PAUSE_MIN := 1.5            # seconds a cat sits still between strolls
 const CAT_PAUSE_MAX := 4.0
 const SCOOTER_SPEED := 2.5            # m/s, about 9 km/h
 const SCOOTER_TURN_PAUSE := 1.5       # seconds a kid waits at each end before turning round
+const SCOOTER_GIVE_WAY_TIME := 2.0    # seconds a kid waits for you before turning back
 const CRITTER_SCARED_TIME := 1.5      # seconds a bumped cat runs / a bumped kid stops
 # Extra food damage when you bump a cat or a kid (on top of the crash itself).
-const DAMAGE_CRITTER := {"pizza": 10.0, "bubble tea": 15.0, "ice cream": 12.0}
+const DAMAGE_CRITTER := {"pizza": 10.0, "bubble tea": 15.0, "ice cream": 12.0,
+		"shawarma": 10.0, "cake": 16.0, "groceries": 12.0, "farm juice": 15.0, "salad box": 12.0}
 
 # --- Stars, tips, XP and rating (Session 10) ---
 # Stars: start at 5, each orange meter takes off 0.5, each red one 1.5. Never below 1 (PRD).
@@ -155,14 +178,201 @@ const REPAIR_BILL := 80               # Dh
 const INSURED_CRASH_COST := 20        # Dh, all you pay for a big crash with insurance
 const INSURANCE_PER_DELIVERY := 2     # Dh, taken from every delivery while insurance is on
 const CRASH_FADE_TIME := 0.6          # seconds the screen takes to fade out (and back in)
+const CRASH_WEEK_SHIFTS := 7          # "this week" on the clinic screen = the last 7 shifts
+const CRASH_WEEK_WARNING := 3         # the clinic's crash bar is full at this many big crashes
 
 # --- Shifts (Session 13) ---
-const SHIFT_LENGTH := 600.0           # seconds of real time in one shift (10 minutes, PRD)
+const SHIFT_LENGTH := 300.0           # seconds of real time in one shift (5 minutes, 30 s per in-game hour)
 const SHIFT_START_HOUR := 8.0         # the clock shows 08:00 when the shift starts...
 const SHIFT_END_HOUR := 18.0          # ...and 18:00 when it's over (day shift only in Tier 1)
-const SHIFT_WARNING_TIME := 60.0      # the clock turns orange this many seconds before the end
+const SHIFT_WARNING_TIME := 30.0      # the clock turns orange this many seconds before the end (one in-game hour)
 
 # --- Application and tutorial (Session 14) ---
 const APPLICATION_REVIEW_TIME := 2.0  # seconds of "Reviewing..." before you're hired
 const RIDER_NAME_MAX := 16            # letters allowed in your name
 const TUTORIAL_LAST_TIPS_TIME := 7.0  # seconds each of the last two tips stays up
+
+# --- Light and sky (Session 28) ---
+# The sun follows the shift clock (scripts/sun_cycle.gd). Each line is one moment of the
+# day; in between, everything blends smoothly. hour = clock time, height = how high the
+# sun is (degrees above the ground), sun = sun colour, energy = how bright the sun is,
+# top / horizon = sky colours, ambient = how bright the shadows are.
+const LIGHT_KEYS := [
+	{"hour": 8.0, "height": 16.0, "sun": Color(1.0, 0.8, 0.6), "energy": 0.95,
+			"top": Color(0.36, 0.6, 0.82), "horizon": Color(0.98, 0.86, 0.72), "ambient": 0.75},
+	{"hour": 10.0, "height": 45.0, "sun": Color(1.0, 0.94, 0.85), "energy": 1.0,
+			"top": Color(0.3, 0.63, 0.85), "horizon": Color(0.84, 0.92, 0.95), "ambient": 0.85},
+	{"hour": 12.5, "height": 72.0, "sun": Color(1.0, 0.99, 0.96), "energy": 0.9,
+			"top": Color(0.27, 0.6, 0.86), "horizon": Color(0.86, 0.93, 0.96), "ambient": 0.75},
+	{"hour": 15.0, "height": 45.0, "sun": Color(1.0, 0.95, 0.86), "energy": 1.0,
+			"top": Color(0.3, 0.62, 0.85), "horizon": Color(0.86, 0.91, 0.92), "ambient": 0.85},
+	{"hour": 16.5, "height": 26.0, "sun": Color(1.0, 0.86, 0.66), "energy": 1.1,
+			"top": Color(0.33, 0.56, 0.8), "horizon": Color(0.98, 0.84, 0.66), "ambient": 0.85},
+	{"hour": 17.25, "height": 14.0, "sun": Color(1.0, 0.72, 0.42), "energy": 1.05,
+			"top": Color(0.34, 0.48, 0.74), "horizon": Color(1.0, 0.72, 0.46), "ambient": 0.8},
+	{"hour": 18.0, "height": 5.0, "sun": Color(1.0, 0.58, 0.3), "energy": 0.85,
+			"top": Color(0.3, 0.38, 0.64), "horizon": Color(0.98, 0.58, 0.36), "ambient": 0.6},
+]
+const SUN_TURN_MORNING := 95.0     # degrees: the sun starts in the east...
+const SUN_TURN_EVENING := -95.0    # ...and ends in the west
+const SUN_TURN_TILT := 20.0        # turns the whole path a little, so shadows don't run along the roads
+const SKY_UPDATE_HOURS := 0.05     # sky colours update every 0.05 in-game hours (1.5 s), cheaper than every frame
+# Haze (fog), glow, soft corner shadows (SSAO) and heat shimmer.
+const HAZE_DENSITY := 0.0025       # thicker = the far end of the map fades into the sky sooner
+const HAZE_SKY_MIX := 0.4          # how much the haze takes the sky's colour (0 to 1)
+const GLOW_STRENGTH := 0.35        # the gentle glow on bright things
+const GLOW_THRESHOLD := 1.0        # only things brighter than this glow
+const SSAO_RADIUS := 1.2           # metres: how far the soft corner shadows reach
+const SSAO_INTENSITY := 1.6        # how dark the corner shadows are
+const SHIMMER_START_HOUR := 10.5   # heat shimmer fades in from here...
+const SHIMMER_PEAK_HOURS := Vector2(12.0, 14.0)  # ...is strongest between these hours...
+const SHIMMER_END_HOUR := 15.5     # ...and is gone again by here
+const SHIMMER_NEAR := 18.0         # metres: no shimmer closer than this
+const SHIMMER_FULL := 55.0         # metres: full shimmer from here on
+const SHIMMER_AMOUNT := 0.0018     # how far the picture wobbles (part of the screen width)
+# The Graphics setting (0 Low, 1 Medium, 2 High): how far away shadows are still drawn (metres).
+const SHADOW_DISTANCE := [60.0, 150.0, 260.0]
+# --- Houses (Session 26) ---
+const HOUSE_STOREY := 2.6             # metres per floor (homes have 2 floors)
+const HOUSE_PARAPET := 0.5            # the low wall round the roof terrace
+const HOUSE_ANNEX_HEIGHT := 3.0       # the one-floor side part with the wind tower
+const HOUSE_COURTYARD_WALL := 1.3     # how high the low courtyard wall is
+const HOUSE_SIDE_YARD := 2.5          # metres beside a home where buggies, bikes and lawns may go
+const HOUSE_FRONT_STRIP := 0.8        # pot plants may stand this far in front of the front wall
+const SIGNATURE_EXTRA_DEPTH := 3.0    # signature villas are this much deeper (at the back)...
+const SIGNATURE_EXTRA_WIDTH := 2.0    # ...and this much wider on the courtyard side
+const HOUSE_NUMBER_FONT := 130        # size of the house number by the door
+const CLUSTER_SIGN_INSET := 5.0       # cluster signs stand this far in from the lane's end...
+const CLUSTER_SIGN_SIDE := 3.4        # ...and this far to the side of the lane's middle line
+# How likely each extra is (0 = never, 1 = always). Picked from the home's number, so the
+# same home always looks the same.
+const HOUSE_BUGGY_CHANCE := 0.45      # a golf buggy beside the house
+const HOUSE_BIKES_CHANCE := 0.5       # bikes beside the house (when there's no buggy)
+const HOUSE_DISH_CHANCE := 0.4        # a satellite dish
+const HOUSE_TOYS_CHANCE := 0.45       # kids' toys
+const HOUSE_FLIP_CHANCE := 0.5        # the house is built mirror-image (courtyard on the other side)
+const HOUSE_POOL_CHANCE := 0.5        # garden and signature villas: a pool, otherwise a trampoline
+# --- People and bike (Session 29) ---
+const PERSON_HEIGHT := 1.75           # metres, a grown-up (kids are made smaller)
+const KID_HEIGHT := 1.3               # metres, a school kid
+const PERSON_WALK_ANIM_MPS := 1.4     # the walk animation looks right at this speed (m/s)
+const PERSON_JOG_ANIM_MPS := 3.0      # the jog animation looks right at this speed (m/s)
+const PERSON_BLEND_TIME := 0.2        # seconds to blend from one animation to the next
+const WAVE_TIME := 1.7                # seconds a person waves for
+const PEDAL_GEAR := 2.2               # wheel turns per pedal turn (bigger = slower pedals)
+const RIDER_LEAN_DEG := 18.0          # how far the rider leans forward over the handlebars
+const HANDLEBAR_MAX_DEG := 25.0       # how far the handlebars turn when you steer
+const HANDLEBAR_SMOOTHING := 10.0     # how quickly the handlebars follow the keys
+const KICKSTAND_SPEED := 6.0          # how quickly the kickstand swings down or up
+const BELL_HEAR_RANGE := 15.0         # metres: people and cats this close hear the bell
+const BELL_SCARE_TIME := 1.2          # seconds a cat runs off (or a kid stops) after the bell
+
+
+# --- Juice (Session 31) ---
+# Dust puffs from the back tyre (scripts/tyre_dust.gd).
+const DUST_AMOUNT := [10, 22, 36]     # puffs alive at once for Graphics Low, Medium, High
+const DUST_LIFETIME := 0.7            # seconds one puff lasts
+const DUST_MIN_KMH := 6.0             # slower than this on sand: no dust
+const DUST_BRAKE_TIME := 0.45         # seconds of extra dust after you brake hard
+const DUST_PUFF_SIZE := 0.22          # metres across a puff when it starts (it grows)
+# Sprinting: a slightly wider camera and speed lines at the screen edges.
+const SPRINT_FOV_EXTRA := 7.0         # degrees wider while sprinting
+const SPRINT_FOV_SPEED := 4.0         # how quickly the camera widens and comes back
+const SPEED_LINES_COUNT := 22         # streaks at the edges of the screen
+const SPEED_LINES_ALPHA := 0.45       # how see-through they are at full strength (0 to 1)
+# Delivered card pops (scripts/delivered_card.gd and scripts/pop_icon.gd).
+const POP_FIRST_DELAY := 0.25         # seconds after the card shows before the first star pops
+const POP_STAR_GAP := 0.13            # seconds between one star pop and the next
+const POP_COINS := 7                  # coins that fly out of the "You earned" total
+const POP_ICON_TIME := 0.8            # seconds one little icon lives
+# The phone buzz when a new order comes in (scripts/phone.gd).
+const PHONE_BUZZ_PIXELS := 6.0        # how far the phone shakes sideways
+const PHONE_BUZZ_TIME := 0.35         # seconds the shake lasts
+
+# --- Life on the map (Session 30) ---
+const BUGGY_SPEED := 3.0              # m/s, about 11 km/h: golf buggies drive slowly
+const HORSE_WALK_SPEED := 1.6         # m/s, a horse walking
+const HORSE_TROT_SPEED := 3.4         # m/s, a horse trotting
+const HORSE_GAIT_TIME := Vector2(8.0, 16.0)  # seconds before a horse switches between walk and trot
+const WALKER_SPEED := 1.3             # m/s, people out for a walk
+const JOGGER_SPEED := 2.8             # m/s, joggers on the bike track
+const PLAY_KID_SPEED := 2.0           # m/s, kids running round the playgrounds
+const DUCK_SPEED := 0.45              # m/s, ducks paddling along the stream
+const DONKEY_SPEED := 0.5             # m/s, donkeys strolling in their pen
+const LIFE_END_PAUSE := 2.0           # seconds a buggy, horse or walker waits at the end of its route
+const LIFE_GIVE_UP_TIME := 5.0        # seconds one waits for you to move before turning round
+const LIFE_TURN_SPEED := 4.0          # how quickly they turn to face where they're going
+## Low / Medium / High: further away than this, people stop animating and are hidden (faster).
+const LIFE_VIEW_DISTANCE := [70.0, 100.0, 140.0]
+const BIRD_SPEED := 8.0               # m/s, birds circling over the community
+const PALM_SWAY_DEG := 2.5            # how far the palm tops sway in the breeze
+const PALM_SWAY_SPEED := 0.9          # how fast they sway
+const WATER_FLOW_SPEED := 0.6         # how fast the ripples on the stream and fountain move
+
+
+# --- Random events (Session 33) ---
+const EVENTS_PER_SHIFT_MIN := 1         # each shift has 1 or 2 random events...
+const EVENTS_PER_SHIFT_MAX := 2         # ...never more than this (one at a time)
+const EVENT_EARLIEST_HOUR := 9.0        # events start somewhere between these in-game hours
+const EVENT_LATEST_HOUR := 16.0
+const EVENT_GAP_HOURS := 1.0            # at least this long between the start of one event and the next
+const EVENT_WARNING_TIME := 6.0         # real seconds the phone warns you before the event starts
+const EVENT_CLEAR_DISTANCE := 15.0      # metres: road works never pop up this close to you or your bike
+const ROAD_WORKS_HOURS := Vector2(1.0, 2.0)  # road works last between 1 and 2 in-game hours
+const CROSSING_WALK_SPEED := 2.2         # m/s, the groom leading the horses (a brisk walk)
+const HORSE_GAP := 2.5                  # metres between the groom and each horse in the line
+const HORSE_COUNT := Vector2i(2, 3)     # the groom leads 2 or 3 horses
+const HORSE_GIVE_UP_TIME := 8.0         # seconds the horses wait if you block them, then they go back in
+const HORSE_CLEAR_DISTANCE := 4.0       # metres: horses never start crossing this close to you or your bike
+# --- Special orders, goals and regulars (Session 32) ---
+# Special orders (PRD "Special orders, goals and events"). An order has at most one.
+const SPECIAL_ORDER_CHANCE := 1.0 / 6.0   # about 1 in 6 orders is special
+const SPECIAL_KINDS := ["rush", "fragile", "neighbour", "family"]
+const SPECIAL_NAMES := {"rush": "Rush", "fragile": "Fragile cake", "neighbour": "Neighbour", "family": "Big family"}
+const SPECIAL_COLOURS := {            # the chip colour on the phone
+	"rush": Color(0.85, 0.22, 0.2, 1),       # red
+	"fragile": Color(0.88, 0.4, 0.62, 1),    # pink
+	"neighbour": Color(0.45, 0.33, 0.7, 1),  # purple
+	"family": Color(0.2, 0.45, 0.8, 1),      # blue
+}
+const RUSH_TIME_SHARE := 0.7          # rush: the target time is 70% of normal...
+const RUSH_PAY_SHARE := 1.5           # ...and it pays 50% more
+const FRAGILE_SHOP := "bakery"        # fragile cakes always come from Sunrise Bakery
+const FRAGILE_FOOD := "cake"
+const FRAGILE_DAMAGE_TIMES := 2.0     # every knock does double damage to a fragile cake
+const FRAGILE_TIP_CHANCE := 0.6       # tip chance on a 5-star fragile cake (normal: TIP_CHANCE)
+const NEIGHBOUR_BONUS := 5            # Dh extra for taking it to the neighbour
+const NEIGHBOUR_NOTE := "Not home! Leave it with the neighbour at %s"
+const NEIGHBOUR_CHOICES := 3          # maps without clusters: one of the 3 nearest homes
+const FAMILY_PAY_TIMES := 2           # big family order: double pay...
+const FAMILY_SPEED_SHARE := 0.85      # ...but two bags: top speed 15% lower...
+const FAMILY_WOBBLE_DEG := 7.0        # ...and the steering wobbles up to this many degrees a second...
+const FAMILY_WOBBLE_SPEED := 2.2      # ...this many times a second
+
+# School, stables and farm orders. The drop-off spots are VILLAS entries with "kind": "spot".
+const SCHOOL_SPOT := 901              # the security booth at the school gate
+const STABLES_SPOT := 902             # the stable office
+const SCHOOL_OPEN_HOUR := 8.0         # school orders only between 08:00...
+const SCHOOL_CLOSE_HOUR := 15.0       # ...and 15:00 on the shift clock
+const SCHOOL_ORDER_CHANCE := 0.08     # share of orders that go to the school (outside lunch)
+const LUNCH_START_HOUR := 11.5        # lunch rush from 11:30...
+const LUNCH_END_HOUR := 12.5          # ...to 12:30...
+const LUNCH_SCHOOL_CHANCE := 1.0 / 3.0  # ...when about 1 in 3 orders is for the school
+const STABLES_ORDER_CHANCE := 0.06    # share of orders for the stable office (riders and grooms)
+const FARM_SHOP := "farm"             # the Wahat Farm Stall...
+const FARM_PICKUP_CHANCE := 1.0 / 8.0 # ...is the pickup for about 1 in 8 orders
+
+# Regular customers (who they are and where they live: REGULARS in data/wahat_al_shams.gd,
+# what they say: data/customer_lines.gd).
+const REGULAR_ORDER_CHANCE := 0.15    # share of orders from one of the regulars (more than anyone else)
+const REGULAR_TIP_CHANCE := 0.6       # regulars tip more often on 5-star jobs
+const REGULAR_COLOUR := Color(0.86, 0.25, 0.42, 1)  # the heart chip on the phone
+
+# Shift goals: 2 picked at the start of each shift, 15 Dh each when done (paid at the end).
+const GOALS_PER_SHIFT := 2
+const GOAL_BONUS := 15                # Dh per goal done
+const GOAL_DELIVERIES := 6            # "Make 6 deliveries" (PRD said 8: too many for a 5-minute shift)
+const GOAL_FIVE_STAR_STREAK := 3      # "3 five-star deliveries in a row"
+const GOAL_LUNCH_ORDERS := 1          # "A school lunch order" (PRD said 2: the lunch rush is only 30 real seconds)
+const GOAL_CLUSTERS := 3              # "Deliver to 3 different clusters" (PRD said all 5: too many for 5 minutes)
+const GOAL_NO_CRASH_MIN_DELIVERIES := 1  # "No crashes" also needs at least this many deliveries

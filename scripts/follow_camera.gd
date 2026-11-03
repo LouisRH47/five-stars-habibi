@@ -1,18 +1,26 @@
 extends Camera3D
 ## Follows the bike from behind and a little above, smoothly.
 ## Shakes a bit when the bike bumps into something or rides over a speed bump.
-## Distance, height and shake are in scripts/game_config.gd.
+## While you sprint the view widens a little and speed lines show at the edges (Session 31).
+## Distance, height, shake and the sprint numbers are in scripts/game_config.gd.
 
 ## The thing to follow (the bike).
 @export var target: Node3D
 
 var _shake := 0.0
 var _rest_position := Vector3.ZERO
+## The normal field of view (set in the scene); sprinting widens it a little.
+var base_fov := 70.0
+## The speed lines at the screen edges (scripts/speed_lines.gd).
+var speed_lines: CanvasLayer
 
 
 func _ready() -> void:
 	# The camera moves every frame in _process, so it shouldn't be smoothed again by physics.
 	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
+	base_fov = fov
+	speed_lines = preload("res://scripts/speed_lines.gd").new()
+	add_child(speed_lines)
 	if target == null:
 		return
 	if target.has_signal("bumped"):
@@ -37,6 +45,15 @@ func _process(delta: float) -> void:
 		_shake = lerpf(_shake, 0.0, 1.0 - exp(-GameConfig.CAMERA_SHAKE_FADE * delta))
 	global_position = _rest_position + jolt
 	_aim()
+	_sprint_feel(delta)
+
+
+## Sprinting: widen the view a little and show the speed lines; ease back afterwards.
+func _sprint_feel(delta: float) -> void:
+	var sprint := 1.0 if target.get("sprinting") == true else 0.0
+	var follow := 1.0 - exp(-GameConfig.SPRINT_FOV_SPEED * delta)
+	fov = lerpf(fov, base_fov + GameConfig.SPRINT_FOV_EXTRA * sprint, follow)
+	speed_lines.strength = lerpf(speed_lines.strength, sprint, follow)
 
 
 func _on_bumped(strength: float) -> void:

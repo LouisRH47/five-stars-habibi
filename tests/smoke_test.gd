@@ -19,6 +19,9 @@ const STEPS := {
 	"sprint": 180,
 	"brake": 240,
 	"settle": 3,       # frames to wait after moving the bike to a door
+	"tap": 12,         # a quick tap of E (0.2 s): must do nothing at the door
+	"walk": 360,       # up to 6 seconds to walk to the door (or back to the bike)
+	"hold": 100,       # holding E for 1.67 s: longer than the 1.5 s pick-up / drop-off hold
 	"timeout": 30,     # half a second, longer than TEST_OFFER_TIMEOUT
 	"bump_ride": 300,  # 5 seconds of pedalling from a standstill, over a speed bump
 	"critters": 120,   # 2 seconds for a kid on a scooter to ride into the bike
@@ -32,8 +35,9 @@ const BUMP_RUN_UP := 6.0
 ## A short offer timer for the test, so it doesn't have to wait 30 seconds.
 const TEST_OFFER_TIMEOUT := 0.2
 ## Every action the test might press. All of them are let go at the end.
-const ACTIONS := ["move_forward", "move_back", "sprint", "handbrake", "interact", "skip_order"]
+const ACTIONS := ["move_forward", "move_back", "sprint", "handbrake", "interact", "skip_order", "toggle_bike"]
 const FONT_PATH := "res://assets/fonts/NotoSansArabic.ttf"
+const GRID := preload("res://tests/grid_path.gd")
 ## The test saves here, never over the real save (user://save.json).
 const TEST_SAVE := "user://smoke_test_save.json"
 
@@ -55,11 +59,16 @@ var _bump_spot := Vector3.ZERO
 var _bump_direction := Vector3.FORWARD
 var _kid_hits := 0
 var _riding_crashes := 0
+var _on_foot: Node
+var _walk_goal := Vector3.ZERO
+var _parked_at := Vector3.ZERO
 var _kid_start := Vector3.ZERO
+var _lowest_y := 0.0       # the lowest the bike got while riding in from the gate (Session 27)
+var _grid: RefCounted      # the map scan from _check_wahat, reused by _check_session27
 
 
 func _initialize() -> void:
-	var scene_path := "res://scenes/palm_grove.tscn"  # the game opens on the application, test the map
+	var scene_path := "res://scenes/wahat_al_shams.tscn"  # the game opens on the main menu, test the map
 	var user_args := OS.get_cmdline_user_args()
 	if not user_args.is_empty():
 		scene_path = user_args[0]
@@ -81,6 +90,11 @@ func _initialize() -> void:
 	_delivery = _main.get_node_or_null("DeliveryManager")
 	_minimap = _main.get_node_or_null("Minimap")
 	_meters = _main.get_node_or_null("Meters")
+	_on_foot = _main.get_node_or_null("OnFoot")
+	# Session 33: no random events during the test's own rides (_check_session33 starts them).
+	var events := _main.get_node_or_null("EventManager")
+	if events != null:
+		events.enabled = false
 	# The old test area has boxes straight ahead of the start, and riding into one at sprint
 	# speed is a big crash (Session 12). Do the riding checks in a clear lane instead.
 	if scene_path.ends_with("test_area.tscn"):
@@ -96,6 +110,8 @@ func _physics_process(_delta: float) -> bool:
 		return false
 	_frame += 1
 	_top_speed = maxf(_top_speed, _bike.speed)
+	if _phase in ["pedal", "sprint", "brake"]:
+		_lowest_y = minf(_lowest_y, _bike.global_position.y)
 	match _phase:
 		"pedal":
 			if _frame >= STEPS.pedal:
@@ -125,10 +141,29 @@ func _physics_process(_delta: float) -> bool:
 			if _frame >= STEPS.settle:
 				_check("bike is near the restaurant door", _delivery.is_near_target(), "")
 				_check_minimap_pin(_order.restaurant_name)
-				_check("E at the restaurant picks up the food", _delivery.try_interact(), "")
+				_check_get_off()
+				Input.action_press("interact")
+				_frame = 0
+				_phase = "pickup_tap"
+		"pickup_tap":
+			if _frame == STEPS.tap - 2:
+				_check("the orange bar fills while E is held", _delivery.hold_progress() > 0.0
+						and _main.get_node("Phone/Panel/Margin/Rows/HoldBar").visible, "%.0f%%" % (_delivery.hold_progress() * 100.0))
+			if _frame >= STEPS.tap:
+				Input.action_release("interact")
+				_check("a quick tap of E at the restaurant does nothing", _game_state.stage_name() == "TO_RESTAURANT", "")
+				Input.action_press("interact")
+				_frame = 0
+				_phase = "pickup_hold"
+		"pickup_hold":
+			if _frame >= STEPS.hold:
+				Input.action_release("interact")
+				_check("holding E for 1.5 s at the restaurant picks up the food", _game_state.stage_name() == "TO_VILLA", "")
 				_check_stage("TO_VILLA")
+				if _on_foot != null:
+					_check("F next to the bike gets you back on", _on_foot.get_on() and not _on_foot.on_foot, "")
 				# Still at the restaurant, so the villa may be off the map: the pin must stay on it.
-				_check_minimap_pin(str(_order.villa_number))
+				_check_minimap_pin(_order.address)
 				_check_minimap_turns()
 				_check_meters()
 				_move_bike_to(_delivery.target_door())
@@ -137,13 +172,30 @@ func _physics_process(_delta: float) -> bool:
 		"at_villa":
 			if _frame >= STEPS.settle:
 				_check("bike is near the villa door", _delivery.is_near_target(), "")
-				_check_minimap_pin(str(_order.villa_number))
+				_check_minimap_pin(_order.address)
 				var spot: Vector2 = _minimap.world_to_map(_delivery.target_door())
-				var middle: Vector2 = _minimap.get_node("Panel/Margin/Map").size * 0.5
+				var middle: Vector2 = _minimap._view.size * 0.5
 				_check("at the villa the pin is right next to you", spot.distance_to(middle) < 10.0,
 						"%.1f px from the middle" % spot.distance_to(middle))
 				_order.leave_at_door = false  # this one: the customer comes out
-				_check("E at the villa delivers", _delivery.try_interact(), "")
+				_check_get_off()
+				Input.action_press("interact")
+				_frame = 0
+				_phase = "dropoff_tap"
+		"dropoff_tap":
+			if _frame >= STEPS.tap:
+				Input.action_release("interact")
+				_check("a quick tap of E at the villa does nothing", _game_state.stage_name() == "TO_VILLA", "")
+				Input.action_press("interact")
+				_frame = 0
+				_phase = "dropoff_hold"
+		"dropoff_hold":
+			if _frame >= STEPS.hold:
+				Input.action_release("interact")
+				_check("holding E for 1.5 s at the villa delivers", _game_state.stage_name() == "NONE", "")
+				_check_delivered_card()
+				if _on_foot != null:
+					_on_foot.get_on()
 				_check_customer()
 				_check("money goes up by the pay, minus 2 Dh insurance", _game_state.money == _money_before + _order.pay - GameConfig.INSURANCE_PER_DELIVERY, "Dh %d" % _game_state.money)
 				_check("delivery is saved in the history", _game_state.history.size() == 1, "%d in history" % _game_state.history.size())
@@ -156,6 +208,40 @@ func _physics_process(_delta: float) -> bool:
 				_check_stage("NONE")
 				_delivery.offer_timeout = GameConfig.ORDER_OFFER_TIMEOUT
 				_check_scoring()
+				_start_walk_check()
+		"walk_to_door":
+			if _delivery.is_near_target() or _frame >= STEPS.walk:
+				Input.action_release("move_forward")
+				_check("you can walk from the bike to the door", _delivery.is_near_target(), "%.1f m to go" % _flat(_walk_goal - _on_foot.walker.global_position).length())
+				_check("the parked bike stays where it is", _bike.global_position.distance_to(_parked_at) < 0.1, "")
+				Input.action_press("interact")
+				_frame = 0
+				_phase = "walk_hold"
+		"walk_hold":
+			if _frame >= STEPS.hold:
+				Input.action_release("interact")
+				_check("on foot, holding E at the door delivers", _game_state.stage_name() == "NONE", "")
+				_close_card()
+				_face(_on_foot.walker, _bike.global_position)
+				Input.action_press("move_forward")
+				_frame = 0
+				_phase = "walk_back"
+		"walk_back":
+			if _on_foot.near_bike() or _frame >= STEPS.walk:
+				Input.action_release("move_forward")
+				_check("you can walk back to the bike", _on_foot.near_bike(), "")
+				Input.action_press("toggle_bike")
+				_frame = 0
+				_phase = "press_f"
+		"press_f":
+			if _frame == 2:
+				Input.action_release("toggle_bike")
+				_check("F next to the bike gets you riding again", not _on_foot.on_foot and not _bike.parked, "")
+				_parked_at = _bike.global_position
+				Input.action_press("move_forward")
+			if _frame >= 60:
+				Input.action_release("move_forward")
+				_check("and you can ride away", _bike.global_position.distance_to(_parked_at) > 1.0, "%.1f m" % _bike.global_position.distance_to(_parked_at))
 				_start_crash(false)
 		"crash_small":
 			if _frame >= STEPS.crash_small:
@@ -195,6 +281,7 @@ func _physics_process(_delta: float) -> bool:
 
 ## Fresh start, a new order pops up, accept it, then jump to the restaurant door.
 func _start_delivery_check() -> void:
+	_check_wahat()
 	_check_application()
 	_check_signs()
 	if _game_state == null:
@@ -206,6 +293,10 @@ func _start_delivery_check() -> void:
 		_finish()
 		return
 	_game_state.reset()
+	# The older checks want plain orders (a neighbour order would send them next door, a rush
+	# order changes the target time). _check_session32 turns specials and regulars back on.
+	_delivery.special_chance = 0.0
+	_delivery.regular_chance = 0.0
 	_game_state.connect("order_skipped", _on_order_skipped)
 	_order = _delivery.offer_now()
 	var places: Node = _delivery.place_builder
@@ -214,7 +305,8 @@ func _start_delivery_check() -> void:
 		for child in places.get_children():
 			if child.name.begins_with("Villa"):
 				built += 1
-	var listed: int = 0 if places == null else places.villas.size()
+	# Drop-off spots that aren't homes (the school booth, the stable office) get no villa.
+	var listed: int = 0 if places == null else places.villas.filter(func(v): return v.get("kind", "") != "spot").size()
 	_check("every villa in the data list was built", listed > 0 and built == listed, "%d of %d" % [built, listed])
 	_check("an order pops up", _order != null, "")
 	if _order == null:
@@ -326,6 +418,8 @@ func _start_decor_check() -> void:
 				"%d of %d" % [built, listed.size()])
 	var map: Dictionary = decor.data.get_script_constant_map()
 	for pair in [["Mosque", "MOSQUE"], ["Supermarket", "SUPERMARKET"]]:
+		if not map.has(pair[1]):
+			continue
 		var node_name: String = pair[0]
 		var place: Dictionary = map[pair[1]]
 		var english: String = place["name"]
@@ -334,8 +428,9 @@ func _start_decor_check() -> void:
 		if building != null:
 			_check(node_name + " has an Arabic sign", _has_arabic_label(building), "")
 			_check(node_name + " has an English sign", _has_label_text(building, english), english)
-	var park := decor.get_node_or_null("Park")
-	_check("the park sign has Arabic", park != null and _has_arabic_label(park), "")
+	if map.has("PARK"):
+		var park := decor.get_node_or_null("Park")
+		_check("the park sign has Arabic", park != null and _has_arabic_label(park), "")
 	if decor.speed_bumps.is_empty():
 		_finish()
 		return
@@ -393,7 +488,7 @@ func _start_critter_check() -> void:
 	_delivery.offer_now()
 	_delivery.accept()
 	_game_state.pick_up()
-	_move_bike_to(kid._from + ahead * 2.5)
+	_move_bike_to(kid._from + ahead * 3.5)  # far enough for a clear run, close enough to hit in 2 s
 	_frame = 0
 	_phase = "critters"
 
@@ -437,11 +532,15 @@ func _check_customer() -> void:
 		return
 	var lines: Array = load("res://data/customer_lines.gd").LINES
 	_check("there are at least 15 customer lines", lines.size() >= 15, "%d lines" % lines.size())
+	# Session 32: at the school or the stables a teacher, kid, rider or groom says one of theirs.
+	var spot_lines: Dictionary = load("res://data/customer_lines.gd").SPOT_LINES
+	if spot_lines.has(_order.who):
+		lines = spot_lines[_order.who]
 	var said: String = customer.line
 	print("      customer says: ", said)
 	var known := false
 	for line in lines:
-		known = known or line.replace("{name}", GameConfig.DEFAULT_RIDER_NAME) == said
+		known = known or spawner.fill_line(line, _game_state.rider_name) == said
 	_check("the customer says a line from the list", known, "")
 	var different := {}
 	for i in 60:
@@ -505,6 +604,16 @@ func _check_big_crash() -> void:
 	before = gs.money
 	var uninsured: Dictionary = gs.big_crash()
 	_check("without insurance a big crash costs 230 Dh", uninsured["paid"] == 230 and gs.money == before - 230, "Dh %d" % gs.money)
+	clinic.open(uninsured, true)
+	_check("the clinic says what you hit and how fast", "You hit a villa wall at" in clinic._story.text and "km/h" in clinic._story.text, clinic._story.text)
+	_check("the clinic counts this week's big crashes", gs.crashes_this_week() == 3 and clinic._week_text.text == "3 of 3", clinic._week_text.text)
+	_check("uninsured: the tip and Turn on insurance show", clinic._tip_box.visible and clinic._insure_button.visible, "")
+	clinic.turn_on_insurance()
+	_check("Turn on insurance switches it on", gs.insurance_on and not clinic._insure_button.visible, "")
+	clinic.close()
+	var summary_screen: Node = _main.get_node("ShiftScreen")
+	if summary_screen.showing:
+		summary_screen._next_shift()
 	gs.set_insurance(true)
 	_check("insurance starts switched on", true, "")
 	var phone := _main.get_node("Phone")
@@ -516,6 +625,51 @@ func _check_big_crash() -> void:
 			and "OFF" in phone.get_node("Panel/Margin/Rows/Insurance").text, "")
 	gs.reset()
 	_check("a fresh game starts with insurance on", gs.insurance_on, "")
+
+
+## Session 25: Wahat Al Shams. 60 homes with addresses like "C3 · Villa 7", the bike rode
+## from the gate into the Plaza, every door spot can be reached by bike, 5-minute shifts.
+func _check_wahat() -> void:
+	var places: Node = _main.get_node_or_null("PlaceBuilder")
+	if places == null or not places.data.get_script_constant_map().has("MAP_HALF"):
+		print("      not Wahat Al Shams, its checks skipped")
+		return
+	var data: Dictionary = places.data.get_script_constant_map()
+	var homes: Array = places.villas.filter(func(v): return v.get("kind", "") != "spot")
+	_check("Wahat Al Shams has 60 homes", homes.size() == 60, "%d" % homes.size())
+	var good := 0
+	var clusters := {}
+	for villa in homes:
+		var house: int = villa["house"]
+		if villa["address"] == "%s · Villa %d" % [villa["cluster"], house] and house >= 1 and house <= 12:
+			good += 1
+		clusters[villa["cluster"]] = clusters.get(villa["cluster"], 0) + 1
+	_check("every home has an address like \"C3 · Villa 7\"", good == 60, "%d of 60" % good)
+	_check("5 clusters of 12 homes", clusters.size() == 5 and clusters.values().all(func(n): return n == 12), "%s" % [clusters])
+	var plaza: Dictionary = data["PLAZA"]
+	var reached: float = Vector2(_bike.global_position.x, _bike.global_position.z).distance_to(plaza["centre"])
+	_check("the ride from the gate ends in the Plaza", reached < plaza["radius"], "%.0f m from the middle" % reached)
+	_check("a shift is 5 minutes", GameConfig.SHIFT_LENGTH == 300.0, "")
+	var started := Time.get_ticks_msec()
+	var grid: RefCounted = GRID.new()
+	_grid = grid
+	grid.build(_bike.get_world_3d(), data["MAP_HALF"], [_bike, _on_foot.walker if _on_foot != null else null])
+	var house: Vector3 = places.villas[0]["position"]
+	_check("the map scan sees houses as solid and lanes as free", not grid.is_free(Vector2(house.x, house.z))
+			and grid.is_free(Vector2(data["START"]["position"].x, data["START"]["position"].z)), "")
+	var start: Vector3 = data["START"]["position"]
+	var stuck := []
+	for villa in places.villas:
+		var door: Vector3 = places.villa_door(villa["number"])
+		if grid.path(Vector2(start.x, start.z), Vector2(door.x, door.z)).is_empty():
+			stuck.append(villa["address"])
+	for shop in places.restaurants:
+		var door: Vector3 = places.restaurant_door(shop["id"])
+		if grid.path(Vector2(start.x, start.z), Vector2(door.x, door.z)).is_empty():
+			stuck.append(shop["name"])
+	_check("every home, shop and drop-off spot door can be reached by bike", stuck.is_empty(),
+			"%s (%.1f s)" % [stuck, (Time.get_ticks_msec() - started) / 1000.0])
+	_check("bollards stop cars at the lane entrances", data["BOLLARDS"].size() >= 20, "%d" % data["BOLLARDS"].size())
 
 
 ## Session 14: fill in the rider application and get hired. Runs before the map loads.
@@ -540,7 +694,7 @@ func _check_application() -> void:
 func _check_tutorial() -> void:
 	var gs: Node = _game_state
 	var tutorial := _main.get_node_or_null("Tutorial")
-	var model: Node3D = _bike.get_node("Model")
+	var model: Node3D = _bike.get_node("Model/Rider")  # the rider on the bike (Session 29)
 	var parts := []
 	for number in 3:
 		RiderLook.apply(model, number)
@@ -562,12 +716,13 @@ func _check_tutorial() -> void:
 	gs.tutorial_done = false
 	tutorial.start()
 	var first: Object = gs.offered_order
-	_check("the tutorial's first order is pizza to villa 4", first != null and first.restaurant_id == "pizza"
-			and first.villa_number == 4, "" if first == null else first.describe())
+	var tutorial_villa: int = _delivery.place_builder.data.get_script_constant_map()["TUTORIAL_ORDER"]["villa"]
+	_check("the tutorial's first order is the easy pizza", first != null and first.restaurant_id == "pizza"
+			and first.villa_number == tutorial_villa, "" if first == null else first.describe())
 	tutorial._process(0.0)
 	_check("tip: press E to accept", "Press E to accept" in tutorial.tip, tutorial.tip)
 	_delivery.skip()
-	_check("skipping the tutorial order brings it back", gs.stage_name() == "OFFERED" and gs.offered_order.villa_number == 4, "")
+	_check("skipping the tutorial order brings it back", gs.stage_name() == "OFFERED" and gs.offered_order.villa_number == tutorial_villa, "")
 	var clock: float = gs.shift_time_left
 	_main.get_node("ShiftManager")._physics_process(5.0)
 	_delivery._physics_process(100.0)
@@ -578,12 +733,13 @@ func _check_tutorial() -> void:
 	_check("tip: ride to the pizza place with the mini-map", "Ride to Pizza" in tutorial.tip and "mini-map" in tutorial.tip, "")
 	_move_bike_to(_delivery.target_door())
 	tutorial._process(0.0)
-	_check("tip at the door: press E to pick up", "pick up" in tutorial.tip, tutorial.tip)
+	_check("tip at the door: get off and hold E to pick up", "press F to get off" in tutorial.tip and "hold E" in tutorial.tip, tutorial.tip)
 	gs.pick_up()
 	_move_bike_to(Vector3(2.0, 0.05, 140.0))
 	tutorial._process(0.0)
-	_check("tip: take it to villa 4, watch the meters", "villa 4" in tutorial.tip and "meters" in tutorial.tip, "")
+	_check("tip: take it to the tutorial address, watch the meters", gs.current_order.address in tutorial.tip and "meters" in tutorial.tip, tutorial.tip)
 	gs.deliver()
+	_close_card()
 	_check("after the first delivery: a tip that insurance is on", "insurance is ON" in tutorial.tip, tutorial.tip)
 	tutorial.finish()
 	_check("the tutorial finishes and normal orders start", gs.tutorial_done and not gs.tutorial_running, "")
@@ -634,6 +790,7 @@ func _check_sound() -> void:
 	gs.pick_up()
 	_check("picking up rings the bike bell", sounds.last_played == "bell", sounds.last_played)
 	gs.deliver()
+	_close_card()
 	_check("delivering goes ka-ching", sounds.last_played == "cash", sounds.last_played)
 	_bike.went_over_bump.emit(0.5)
 	_check("a speed bump goes thump", sounds.last_played == "bump", sounds.last_played)
@@ -667,10 +824,13 @@ func _check_saving() -> void:
 	_check("saved numbers stay whole numbers", typeof(gs.money) == TYPE_INT and typeof(gs.history[0]["pay"]) == TYPE_INT, "")
 	var menu: Control = load("res://scenes/main_menu.tscn").instantiate()
 	root.add_child(menu)
-	_check("main menu: Continue goes to Palm Grove once hired", menu.play_button.text == "Continue"
-			and menu.play_scene() == "res://scenes/palm_grove.tscn", menu.play_button.text)
+	_check("main menu: Continue goes to Wahat Al Shams once hired", menu.play_button.text == "Continue"
+			and menu.play_scene() == "res://scenes/wahat_al_shams.tscn", menu.play_button.text)
 	gs.hired = false
-	_check("main menu: Play goes to the application the first time", menu.play_scene() == "res://scenes/application.tscn", "")
+	_check("main menu: Play opens the application on the phone the first time", menu.play_scene() == "form", "")
+	menu.play()
+	_check("the phone turns into the rider application", menu.page == "form" and menu.name_box.is_visible_in_tree(), menu.page)
+	_check("the start screen has a 3D look card for each look", menu._look_cards.size() == 3 and menu._look_riders.size() == 3, "")
 	menu._open_settings()
 	_check("main menu: Settings opens", menu.settings_panel.visible and menu.settings_panel.fullscreen_box != null, "")
 	menu.free()
@@ -713,6 +873,8 @@ func _check_shift_carrying() -> void:
 	_check("carrying an order: you can still finish it", not screen.showing and gs.stage_name() == "TO_VILLA", "")
 	_check("no new orders once the clock is out", _delivery.offer_now() == null, "")
 	gs.deliver()
+	_check("the Delivered card shows first", _main.get_node("DeliveredCard").showing and not screen.showing, "")
+	_close_card()
 	_check("the shift ends right after the last delivery", screen.showing and paused, "")
 	var summary: Dictionary = screen.last_summary
 	var want: Dictionary = gs.shift_summary()
@@ -720,7 +882,8 @@ func _check_shift_carrying() -> void:
 	var pay: int = gs.history[0]["pay"] + gs.history[1]["pay"]
 	var tips: int = gs.history[0]["tip"] + gs.history[1]["tip"]
 	_check("the summary money adds up", summary["pay"] == pay and summary["tips"] == tips
-			and summary["earned"] == pay + tips - 2 * GameConfig.INSURANCE_PER_DELIVERY and summary["earned"] == gs.money, "%d Dh" % summary["earned"])
+			and summary["earned"] == pay + tips + summary["goal_bonus"] - 2 * GameConfig.INSURANCE_PER_DELIVERY  # Session 32: + shift goals
+			and summary["earned"] == gs.money, "%d Dh (goal bonus %d)" % [summary["earned"], summary["goal_bonus"]])
 	_check("the summary has stars and XP", summary["stars"] == want["stars"] and summary["xp"] == gs.xp, "%.1f stars, %d XP" % [summary["stars"], summary["xp"]])
 	screen._next_shift()
 	_check("the next shift starts with a full clock", not paused and not gs.shift_clock_out
@@ -735,6 +898,97 @@ func _check_shift_empty() -> void:
 	screen._next_shift()
 	_main.get_node("ShiftManager").shift_length = GameConfig.SHIFT_LENGTH
 	gs.reset()
+
+
+## Session 22: after the delivery the Delivered card is up, the game is paused, its numbers
+## are the real ones, the camera shows the door, and E closes it.
+func _check_delivered_card() -> void:
+	var card := _main.get_node_or_null("DeliveredCard")
+	if card == null:
+		_check("DeliveredCard node exists in the scene", false, "")
+		return
+	var earned: int = _game_state.money - _money_before
+	_check("the Delivered card shows after a delivery", card.showing and paused, "")
+	_check("the card's total is the money you got", card.shown.get("earned") == earned, "%s Dh" % card.shown.get("earned"))
+	_check("the card shows the stars and the villa", card.shown.get("stars") == _game_state.last_result["stars"]
+			and card.shown.get("villa") == _order.villa_number, "")
+	_check("the camera cuts to the door", get_root_camera() == card._camera, "")
+	var key := InputEventAction.new()
+	key.action = "interact"
+	key.pressed = true
+	card._unhandled_input(key)
+	_check("E closes the card and the game carries on", not card.showing and not paused
+			and get_root_camera() != card._camera, "")
+
+
+func get_root_camera() -> Camera3D:
+	return root.get_camera_3d()
+
+
+## Closes the Delivered card if it's up (the checks that deliver many orders at once).
+func _close_card() -> void:
+	var card := _main.get_node_or_null("DeliveredCard")
+	if card != null and card.showing:
+		card.close()
+
+
+## Session 19: F gets you off the bike only when it's nearly stopped, and you can only pick up
+## and drop off on foot. Called with the bike parked at a door.
+func _check_get_off() -> void:
+	if _on_foot == null:
+		return
+	_bike.speed = 5.0  # 18 km/h: too fast to get off
+	_check("F doesn't get you off while moving fast", not _on_foot.get_off(), "")
+	_bike.speed = 0.0
+	_check("on the bike, holding E at the door does nothing", not _delivery._slow_enough() or _delivery.needs_walking, "")
+	_check("F gets you off when you're stopped", _on_foot.get_off() and _on_foot.on_foot and _bike.parked, "")
+	_check("the camera and the mini-map follow you on foot", _main.get_node("FollowCamera").target == _on_foot.walker
+			and _minimap.bike == _on_foot.walker and _minimap.parked_bike == _bike, "")
+
+
+## Session 19: the full run. Park 6 m from a villa door, F, walk to the door, hold E, walk
+## back, F, ride away.
+func _start_walk_check() -> void:
+	if _on_foot == null:
+		print("      no OnFoot in this scene, walking not checked")
+		_start_crash(false)
+		return
+	var gs: Node = _game_state
+	gs.reset()
+	_delivery.offer_now()
+	_delivery.accept()
+	gs.pick_up()
+	_walk_goal = _delivery.target_door()
+	print("      walk check order: ", gs.current_order.describe())
+	var villa: Dictionary = {}
+	for place in _delivery.place_builder.villas:
+		if place["number"] == gs.current_order.villa_number:
+			villa = place
+	var angle := deg_to_rad(villa["facing"])
+	var front := Vector3(sin(angle), 0.0, cos(angle))
+	var along := Vector3(front.z, 0.0, -front.x)  # along the street or lane
+	_move_bike_to(_walk_goal + along * 6.0)  # 6 m down the street from the door spot
+	_bike.rotation = Vector3(0.0, atan2(along.x, along.z), 0.0)
+	var phone := _main.get_node("Phone")
+	phone._process(0.0)
+	var hint: String = phone.get_node("Panel/Margin/Rows/Hint").text
+	_check("on the bike 6 m from the door the phone says park near the door", hint == "Park near the door", hint)
+	_on_foot.get_off()
+	_parked_at = _bike.global_position
+	_face(_on_foot.walker, _walk_goal)
+	Input.action_press("move_forward")
+	_frame = 0
+	_phase = "walk_to_door"
+
+
+## Turns a body so its front (-Z) points at a spot.
+func _face(body: Node3D, spot: Vector3) -> void:
+	var way := spot - body.global_position
+	body.rotation = Vector3(0.0, atan2(-way.x, -way.z), 0.0)
+
+
+func _flat(v: Vector3) -> Vector2:
+	return Vector2(v.x, v.z)
 
 
 ## Session 10: stars from the meters, tips only on 5-star jobs, XP and Rider Level, and a
@@ -797,6 +1051,7 @@ func _quick_delivery(meters: float, boring: bool) -> Dictionary:
 	gs.pick_up()
 	gs.set_meters(meters, meters, meters)
 	gs.deliver()
+	_close_card()
 	return gs.last_result
 
 
@@ -809,7 +1064,7 @@ func _check_meters() -> void:
 	var gs: Node = _game_state
 	var places: Node = _delivery.place_builder
 	var want: float = _meters.target_time_for(places.restaurant_door(_order.restaurant_id), places.villa_door(_order.villa_number))
-	_check("meters are full at pickup", gs.meter_time == 100.0 and gs.meter_freshness == 100.0 and gs.meter_damage == 100.0, "")
+	_check("meters are full at pickup", gs.meter_time >= 99.0 and gs.meter_freshness >= 99.0 and gs.meter_damage == 100.0, "%.1f / %.1f / %.1f" % [gs.meter_time, gs.meter_freshness, gs.meter_damage])
 	_check("the target time follows the PRD rule", absf(gs.target_time - want) < 0.01 and gs.target_time > GameConfig.TIME_TARGET_EXTRA,
 			"%.0f s" % gs.target_time)
 	var panel: Control = _main.get_node("MetersPanel/Panel")
@@ -851,7 +1106,7 @@ func _check_minimap_pin(expected: String) -> void:
 	if _minimap == null:
 		_check("Minimap node exists in the scene", false, "add ui/minimap.tscn to the scene")
 		return
-	var view: Control = _minimap.get_node("Panel/Margin/Map")
+	var view: Control = _minimap._view
 	_check("the mini-map is on screen", view.is_visible_in_tree() and view.size.x > 100.0, "%.0f px wide" % view.size.x)
 	_check("the mini-map has a pin during the order", _minimap.has_target(), "")
 	_check("the pin says " + expected, _minimap.target_label() == expected, _minimap.target_label())
@@ -863,7 +1118,7 @@ func _check_minimap_pin(expected: String) -> void:
 func _check_minimap_turns() -> void:
 	if _minimap == null:
 		return
-	var middle: Vector2 = _minimap.get_node("Panel/Margin/Map").size * 0.5
+	var middle: Vector2 = _minimap._view.size * 0.5
 	var old_turn := _bike.rotation.y
 	var ok := true
 	for turn in [0.0, 1.2, -2.5]:
@@ -875,9 +1130,8 @@ func _check_minimap_turns() -> void:
 	_check("the mini-map turns with the bike (ahead is up)", ok, "")
 	var far: Vector2 = _minimap.pin_spot(middle + Vector2(5000.0, -3000.0))
 	var inset := GameConfig.MINIMAP_EDGE_INSET
-	_check("a stop far away is pinned to the mini-map's edge",
-			Rect2(Vector2.ZERO, middle * 2.0).has_point(far) and absf(far.x - (middle.x * 2.0 - inset)) < 0.5,
-			"at %s" % far)
+	_check("a stop far away is pinned to the round mini-map's edge",
+			absf(far.distance_to(middle) - (middle.x - inset)) < 0.5, "at %s" % far)
 
 
 ## Some orders come with a note from the customer, most don't, and every note is from the list.
@@ -925,10 +1179,1026 @@ func _check(label: String, ok: bool, detail: String) -> void:
 
 
 func _finish() -> void:
+	# Session 33's check waits a few physics frames: nothing else runs meanwhile.
+	_phase = "finishing"
+	for action in ACTIONS:
+		Input.action_release(action)
 	_check_sound()
+	_check_session28()
+	_check_session26()
+	_check_session27()
+	_check_session29()
+	_check_session31()
+	_check_session30()
+	await _check_session33()
+	await _check_life_meets_events()
+	_check_session32()
 	_check_saving()
 	for action in ACTIONS:
 		Input.action_release(action)
 	_phase = "done"
 	print("RESULT: ", "FAIL" if _failed else "PASS")
 	quit(1 if _failed else 0)
+
+
+## Session 28: the sun follows the clock (morning, noon and sunset differ, sunset is the
+## lowest and warmest), and the Graphics setting (Low / Medium / High) switches SSAO, haze
+## and shimmer. It never saves the settings file: it sets the values, calls Settings.apply()
+## and puts them back afterwards.
+func _check_session28() -> void:
+	var cycle := _main.get_node_or_null("SunCycle")
+	_check("the map has a SunCycle node", cycle != null, "")
+	if cycle == null:
+		return
+	var sun: DirectionalLight3D = cycle.sun
+	var env: Environment = cycle.world_environment.environment
+	var looks := {}
+	for hour in [8.0, 12.0, 18.0]:
+		cycle.apply_hour(hour)
+		looks[hour] = {"height": rad_to_deg(-sun.rotation.x), "turn": rad_to_deg(sun.rotation.y),
+				"blue": sun.light_color.b, "sky": cycle._sky.sky_horizon_color if cycle._sky else Color.BLACK}
+	var detail := "height 08:00 %.0f, 12:00 %.0f, 18:00 %.0f degrees" % [looks[8.0]["height"], looks[12.0]["height"], looks[18.0]["height"]]
+	_check("the sun is highest at noon and lowest at sunset",
+			looks[12.0]["height"] > looks[8.0]["height"] and looks[8.0]["height"] > looks[18.0]["height"], detail)
+	_check("the sun moves from east to west", looks[8.0]["turn"] > looks[18.0]["turn"], "")
+	_check("sunset is the warmest light, noon the whitest",
+			looks[18.0]["blue"] < looks[8.0]["blue"] and looks[8.0]["blue"] < looks[12.0]["blue"],
+			"blue 08:00 %.2f, 12:00 %.2f, 18:00 %.2f" % [looks[8.0]["blue"], looks[12.0]["blue"], looks[18.0]["blue"]])
+	_check("the sky colour changes from noon to sunset", looks[12.0]["sky"] != looks[18.0]["sky"], "")
+	var before: int = Settings.graphics
+	var seen := {}
+	for level in [0, 1, 2]:
+		Settings.graphics = level
+		Settings.apply()  # applies straight away, without saving the settings file
+		cycle.apply_hour(12.5)
+		seen[level] = {"ssao": env.ssao_enabled, "haze": env.fog_enabled, "glow": env.glow_enabled,
+				"shimmer": cycle._shimmer.visible, "shadows": sun.directional_shadow_max_distance}
+	_check("Low: no SSAO, haze or shimmer",
+			not seen[0]["ssao"] and not seen[0]["haze"] and not seen[0]["shimmer"], str(seen[0]))
+	_check("Medium: SSAO, haze, glow and noon shimmer on",
+			seen[1]["ssao"] and seen[1]["haze"] and seen[1]["glow"] and seen[1]["shimmer"], str(seen[1]))
+	_check("High: everything on", seen[2]["ssao"] and seen[2]["haze"] and seen[2]["shimmer"], str(seen[2]))
+	_check("shadows reach further on higher settings",
+			seen[0]["shadows"] < seen[1]["shadows"] and seen[1]["shadows"] < seen[2]["shadows"], "")
+	cycle.apply_hour(8.0)
+	_check("no heat shimmer in the morning", not cycle._shimmer.visible, "")
+	Settings.graphics = before
+	Settings.apply()
+	cycle.apply_hour(cycle.hour_now())
+	var panel := SettingsPanel.new()
+	root.add_child(panel)
+	_check("Settings has the Graphics option (Low / Medium / High)", panel.graphics_option != null
+			and panel.graphics_option.item_count == 3 and panel.graphics_option.selected == Settings.graphics, "")
+	panel.free()
+
+
+## Session 26: the house kit. Every Wahat home is a built house of its kind (10 courtyard,
+## 1 garden and 1 signature villa per cluster) showing its door number, homes look different
+## but the same every time, each is one merged mesh, nothing from a house stands on a door
+## spot or a lane, and the bilingual cluster signs are up. Other maps: skipped.
+func _check_session26() -> void:
+	var places: Node = _main.get_node_or_null("PlaceBuilder") if is_instance_valid(_main) else null
+	if places == null or not places.data.get_script_constant_map().has("CLUSTER_NAMES"):
+		print("      not Wahat Al Shams, the house checks skipped")
+		return
+	var data: Dictionary = places.data.get_script_constant_map()
+	var homes: Array = places.villas.filter(func(v): return v.get("kind", "") != "spot")
+	var kinds := {}
+	var looks := {}
+	var good := 0
+	var most_meshes := 0
+	for villa in homes:
+		var home: Node = places.get_node_or_null("Villa%d" % villa["number"])
+		if home == null:
+			continue
+		var number: Node = home.get_node_or_null("Number")
+		if home.get_meta("kind", "") == villa["kind"] and home.get_node_or_null("House") is MeshInstance3D \
+				and number is Label3D and number.text == str(villa["house"]):
+			good += 1
+		var key: String = "%s %s" % [villa["cluster"], villa["kind"]]
+		kinds[key] = kinds.get(key, 0) + 1
+		looks[home.get_meta("extras", "")] = true
+		most_meshes = maxi(most_meshes, home.find_children("*", "MeshInstance3D", true, false).size())
+	_check("every home is a house of its kind with its door number", good == homes.size() and good > 0,
+			"%d of %d" % [good, homes.size()])
+	var split_ok := true
+	for cluster in data["CLUSTER_NAMES"]:
+		if kinds.get(cluster + " courtyard", 0) != 10 or kinds.get(cluster + " garden", 0) != 1 \
+				or kinds.get(cluster + " signature", 0) != 1:
+			split_ok = false
+	_check("each cluster: 10 courtyard, 1 garden, 1 signature villa", split_ok, "%s" % [kinds])
+	_check("homes look different from each other", looks.size() >= homes.size() * 0.8, "%d looks" % looks.size())
+	var first: Node = places.get_node("Villa%d" % homes[0]["number"])
+	var again: Node = load("res://scripts/villa_builder.gd").build(homes[0], places.villa_size)
+	_check("a home looks the same every time it's built", again.get_meta("extras") == first.get_meta("extras"),
+			again.get_meta("extras"))
+	again.free()
+	_check("each home is drawn as one merged mesh", most_meshes == 1, "%d" % most_meshes)
+	# Nothing solid from a house may stand on a door spot or on a road or lane.
+	var space := _bike.get_world_3d().direct_space_state
+	var ball := SphereShape3D.new()
+	ball.radius = 1.0
+	var in_the_way := []
+	for villa in homes:
+		var door: Vector3 = places.villa_door(villa["number"])
+		if _house_hits(space, ball, Transform3D(Basis(), door + Vector3.UP * 0.9)) > 0:
+			in_the_way.append(villa["address"])
+	for road in data["ROADS"]:
+		var strip := BoxShape3D.new()
+		var width: float = road.get("width", data["ROAD_WIDTH"])
+		strip.size = Vector3(width, 1.0, road["from"].distance_to(road["to"]) + width)
+		var way: Vector2 = road["to"] - road["from"]
+		var middle: Vector2 = (road["from"] + road["to"]) * 0.5
+		var spot := Transform3D(Basis(Vector3.UP, atan2(way.x, way.y)), Vector3(middle.x, 0.9, middle.y))
+		if _house_hits(space, strip, spot) > 0:
+			in_the_way.append(road["name"])
+	_check("no house part on a door spot or a lane", in_the_way.is_empty(), "%s" % [in_the_way])
+	var signs: Node = _main.get_node_or_null("WahatBuilder/ClusterSigns")
+	var signed := {}
+	if signs != null:
+		for board in signs.get_children():
+			var id: String = String(board.name).get_slice("_", 1)
+			if _has_arabic_label(board) and _has_label_text(board, data["CLUSTER_NAMES"].get(id, "?")) \
+					and _has_label_text(board, "Cluster " + id.substr(1)):
+				signed[id] = signed.get(id, 0) + 1
+	_check("bilingual cluster signs at the lane ends of every cluster",
+			signed.size() == data["CLUSTER_NAMES"].size() and signed.values().all(func(n): return n >= 2), "%s" % [signed])
+
+
+## How many house parts (bodies called Villa...) a shape at this spot touches.
+func _house_hits(space: PhysicsDirectSpaceState3D, shape: Shape3D, spot: Transform3D) -> int:
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape = shape
+	query.transform = spot
+	var count := 0
+	for hit in space.intersect_shape(query, 32):
+		if String((hit["collider"] as Node).name).begins_with("Villa"):
+			count += 1
+	return count
+
+
+## Session 27: the Plaza, the spine and the landmarks. The bike rode down into the sunken
+## square, the new shops and the farm stall each give a working order (to a reachable door),
+## the mosque never gets an order, and the school and stables only use their one spot.
+func _check_session27() -> void:
+	var places: Node = _main.get_node_or_null("PlaceBuilder")
+	if places == null or not places.data.get_script_constant_map().has("SCHOOL"):
+		print("      not Wahat Al Shams, Session 27 checks skipped")
+		return
+	var data: Dictionary = places.data.get_script_constant_map()
+	paused = false
+	_check("the ride from the gate went down into the sunken square", _lowest_y < -0.2, "lowest %.2f m" % _lowest_y)
+	var plaza: Dictionary = data["PLAZA"]
+	var floor_spot := Vector3(plaza["centre"].x + plaza["floor_radius"] - 2.0, 5.0, plaza["centre"].y)
+	var hit := _bike.get_world_3d().direct_space_state.intersect_ray(
+			PhysicsRayQueryParameters3D.create(floor_spot, floor_spot + Vector3.DOWN * 10.0, 1, [_bike.get_rid()]))
+	_check("the Plaza floor is sunken (lower than the street)", not hit.is_empty() and hit["position"].y < -0.3,
+			"%s" % [hit.get("position", "nothing hit")])
+	var built := ["PlazaBuilder/Fountain", "LandmarkBuilder/School", "LandmarkBuilder/SchoolBooth",
+			"LandmarkBuilder/StableOffice", "LandmarkBuilder/Stables", "LandmarkBuilder/BuildingSite/Crane",
+			"DecorBuilder/Mosque"]
+	for path in built:
+		_check(path.get_file() + " was built", _main.get_node_or_null(path) != null, path)
+	var domes := _main.get_node("SpineBuilder").get_children().filter(func(n): return n.name.begins_with("Dome"))
+	_check("the spine has 6 greenhouse domes", domes.size() == 6, "%d" % domes.size())
+	var site_sign: Node = _main.get_node("LandmarkBuilder/BuildingSite")
+	_check("the building site sign says Phase 2 coming soon in Arabic and English",
+			_has_arabic_label(site_sign) and _has_label_text(site_sign, "Phase 2 coming soon"), "")
+	# One order from each new pickup spot, delivered: the food has numbers in game_config.gd.
+	var gs: Node = _game_state
+	var foods := {"shawarma": ["shawarma"], "bakery": ["cake"], "market": ["groceries"],
+			"farm": ["farm juice", "salad box"]}
+	var start: Vector3 = data["START"]["position"]
+	for id in foods:
+		gs.reset()
+		var order: Object = _delivery.make_order(id, 101)
+		var door: Vector3 = places.restaurant_door(id)
+		var reachable: bool = _grid != null and not _grid.path(Vector2(start.x, start.z), Vector2(door.x, door.z)).is_empty()
+		var tables := [GameConfig.FRESHNESS_DRAIN, GameConfig.DAMAGE_SPEED_BUMP, GameConfig.DAMAGE_HARD_BRAKE,
+				GameConfig.DAMAGE_COLLISION, GameConfig.DAMAGE_CRITTER]
+		var tuned := tables.all(func(t): return t.has(order.food))
+		var money: int = gs.money
+		var done: bool = gs.offer_order(order) and gs.accept_offer() and gs.pick_up() and gs.deliver()
+		_close_card()
+		_check("an order from %s works" % order.restaurant_name, order.restaurant_id == id and order.food in foods[id]
+				and reachable and tuned and done and gs.money > money, "%s, door reachable %s" % [order.describe(), reachable])
+	# Lots of random orders: never to or from the mosque; the school and stables only use their spot.
+	var plots := {}
+	for plot in data["PLOTS"]:
+		plots[plot["name"]] = plot["area"]
+	var mosque: Rect2 = plots["Mosque"]
+	var school: Rect2 = plots["Al Shams School"].grow(8.0)  # the booth is just outside the fence
+	var stables: Rect2 = plots["Stables"].grow(2.0)
+	var to_mosque := 0
+	var wrong_spot := 0
+	var spots := {}
+	gs.reset()
+	for i in 300:
+		var order: Object = _delivery.make_order()
+		var to: Vector3 = places.villa_door(order.villa_number)
+		var from: Vector3 = places.restaurant_door(order.restaurant_id)
+		if mosque.grow(3.0).has_point(Vector2(to.x, to.z)) or mosque.grow(3.0).has_point(Vector2(from.x, from.z)):
+			to_mosque += 1
+		if school.has_point(Vector2(to.x, to.z)) and order.villa_number != 901:
+			wrong_spot += 1
+		if stables.has_point(Vector2(to.x, to.z)) and order.villa_number != 902:
+			wrong_spot += 1
+		if order.villa_number >= 900:
+			spots[order.villa_number] = true
+	_check("300 orders: the mosque never gets one", to_mosque == 0, "%d" % to_mosque)
+	_check("school orders only go to the gate booth, stables orders only to the office", wrong_spot == 0
+			and spots.has(901) and spots.has(902), "%d wrong, spots used %s" % [wrong_spot, spots.keys()])
+	for number in [901, 902]:
+		gs.reset()
+		var order: Object = _delivery.make_order("pizza", number)
+		var done: bool = gs.offer_order(order) and gs.accept_offer() and gs.pick_up() and gs.deliver()
+		_close_card()
+		_check("a delivery to %s works" % order.address, done and order.villa_number == number, order.describe())
+	gs.reset()
+	paused = false
+
+
+## Session 29: animated people, the real bike (pedals, handlebars, kickstand) and the bell.
+func _check_session29() -> void:
+	var rider: Node3D = _bike.get_node("Model/Rider")
+	var all_moves := true
+	for action in ["idle", "walk", "jog", "wave", "pedal", "lie"]:
+		all_moves = all_moves and rider.can_do(action)
+	_check("the rider has idle, walk, jog, wave, pedal and lie", all_moves, "")
+	_check("the rider pedals on the bike", rider.action == "pedal", rider.action)
+	var walker_model: Node3D = _main.get_node("Walker/Model")
+	_check("the rider on foot is an animated person", walker_model.can_do("walk") and walker_model.can_do("jog"), "")
+	# Customers in all 5 outfits, and the new types for later sessions.
+	var looks: Script = load("res://scripts/people_looks.gd")
+	var made := 0
+	var folks: Array = []
+	for outfit in 5:
+		folks.append(looks.resident(outfit))
+	folks.append_array([looks.teacher(), looks.school_kid(), looks.horse_rider(), looks.groom()])
+	for person: Node3D in folks:
+		if person.can_do("walk") and person.can_do("wave") and person.can_do("idle"):
+			made += 1
+		person.free()
+	_check("residents, teachers, kids, riders and grooms walk, wave and stand", made == 9, "%d of 9" % made)
+	var customer: Node3D = load("res://scripts/customer.gd").new()
+	_main.add_child(customer)
+	customer.setup("Shukran!")
+	_check("a customer is an animated person who can wave", customer.person != null and customer.person.can_do("wave"), "")
+	customer.free()
+	# The pedals turn faster at higher speed.
+	var keep := _bike.global_transform
+	_bike.set_parked(false)
+	_bike.speed = 2.0
+	var before: float = _bike.crank_angle
+	_bike._spin_wheels(0.1)
+	var slow: float = absf(_bike.crank_angle - before)
+	_bike.speed = 6.0
+	before = _bike.crank_angle
+	_bike._spin_wheels(0.1)
+	var fast: float = absf(_bike.crank_angle - before)
+	_check("the pedals turn faster at higher speed", slow > 0.0 and fast > slow * 2.5, "%.2f then %.2f rad" % [slow, fast])
+	_bike.speed = 0.0
+	# The handlebars turn when you steer.
+	_bike._steer = 1.0
+	_bike._move_parts(1.0)
+	var turned: float = _bike.get_node("Model/Fork").rotation.y
+	_bike._steer = 0.0
+	_bike._move_parts(1.0)
+	_check("the handlebars turn when you steer", turned > 0.2, "%.0f degrees" % rad_to_deg(turned))
+	# The kickstand drops when you get off, and folds up when you ride.
+	_bike.set_parked(true)
+	_bike._move_parts(1.0)
+	var down: float = _bike.kickstand_down
+	var stand_angle: float = _bike.get_node("Model/Kickstand").rotation.x
+	_check("the kickstand is down when parked, and the rider is off", down == 1.0 and stand_angle > 0.0 and not rider.visible,
+			"%.1f, %.0f degrees" % [down, rad_to_deg(stand_angle)])
+	_bike.set_parked(false)
+	_bike._move_parts(1.0)
+	_check("the kickstand folds up when riding", _bike.kickstand_down == 0.0 and rider.visible, "")
+	# B rings the bell: the ring plays, and a cat nearby gets out of the way.
+	var b_key := false
+	for event in InputMap.action_get_events("ring_bell"):
+		if event is InputEventKey and (event as InputEventKey).physical_keycode == KEY_B:
+			b_key = true
+	_check("B is the bell key", b_key, "")
+	var sounds := _main.get_node("Sounds")
+	var cat: Node3D = null
+	for critter in get_nodes_in_group("critter"):
+		if String(critter.name).begins_with("Cat"):
+			cat = critter
+			break
+	if cat != null:
+		cat.scared_left = 0.0
+		_bike.global_position = cat.global_position + Vector3(3, 0, 0)
+	_bike.ring_bell()
+	_check("B plays the bell", sounds.last_played == "ring", sounds.last_played)
+	if cat != null:
+		_check("a cat near the bell moves aside", cat.scared_left > 0.0, "%.1f s" % cat.scared_left)
+	else:
+		print("      no cats in this scene, bell scare not checked")
+	_bike.global_transform = keep
+	# Parked cars are the CC0 models.
+	var car := _main.find_child("ParkedCar_0", true, false)
+	if car != null:
+		_check("parked cars use the CC0 car models", car.get_node_or_null("Model") != null, "")
+	var credits := FileAccess.get_file_as_string("res://CREDITS.md")
+	_check("the people and car packs are credited", "Quaternius" in credits and "Car Kit" in credits, "")
+
+
+## Session 31: juice. Sprinting widens the camera and shows speed lines, and both go back
+## afterwards; a new order makes the phone buzz (with the buzz sound); a delivery pops the
+## stars and coins on the Delivered card; the tyre dust shows on sand and when braking hard,
+## not on the road; Low graphics has fewer dust puffs than High.
+func _check_session31() -> void:
+	var gs: Node = _game_state
+	# Sprinting: a wider camera and speed lines.
+	var camera: Camera3D = _main.get_node("FollowCamera")
+	var keep_target: Node3D = camera.target
+	camera.target = _bike
+	_bike.sprinting = true
+	for i in 30:
+		camera._process(0.05)
+	var wide: float = camera.fov
+	var lines: float = camera.speed_lines.strength
+	_bike.sprinting = false
+	for i in 60:
+		camera._process(0.05)
+	_check("sprinting widens the camera and shows speed lines", wide > camera.base_fov + 4.0 and lines > 0.8,
+			"%.1f degrees (normal %.1f), lines %.2f" % [wide, camera.base_fov, lines])
+	_check("the camera and the speed lines go back after sprinting",
+			absf(camera.fov - camera.base_fov) < 0.3 and camera.speed_lines.strength < 0.05,
+			"%.1f degrees, lines %.2f" % [camera.fov, camera.speed_lines.strength])
+	camera.target = keep_target
+	# A new order: the phone shakes and buzzes.
+	var phone: Node = _main.get_node("Phone")
+	var sounds: Node = _main.get_node("Sounds")
+	gs.reset()
+	var buzzes: int = phone.buzzes
+	var buzz_sounds: int = sounds.play_counts.get("buzz", 0)
+	_delivery.offer_now()
+	_check("a new order makes the phone buzz", phone.buzzes == buzzes + 1 and phone._buzz_tween != null
+			and phone._buzz_tween.is_valid(), "%d buzz" % (phone.buzzes - buzzes))
+	_check("the buzz sound plays (and the ping)", sounds.play_counts.get("buzz", 0) == buzz_sounds + 1
+			and sounds.last_played == "ping", sounds.last_played)
+	# A delivery: the stars pop in one by one, then the coins fly out.
+	var card: Node = _main.get_node("DeliveredCard")
+	_delivery.accept()
+	gs.pick_up()
+	var pops: int = card.pops
+	var pop_sounds: int = sounds.play_counts.get("pop", 0)
+	var coin_sounds: int = sounds.play_counts.get("coins", 0)
+	gs.deliver()
+	var stars: float = gs.last_result["stars"]
+	var stars_at_start: float = card._stars.stars
+	if card._pop_tween != null:
+		card._pop_tween.custom_step(5.0)  # skip ahead to the end of the pops
+	var icons := get_nodes_in_group("pop_icon").size()
+	_check("the Delivered card pops the stars and the coins", card.showing and stars_at_start == 0.0
+			and card._stars.stars == stars and card.pops == pops + ceili(stars) + 1 and icons > 0,
+			"%.1f stars, %d pops, %d icons" % [stars, card.pops - pops, icons])
+	_check("the pops play their sounds", sounds.play_counts.get("pop", 0) == pop_sounds + ceili(stars)
+			and sounds.play_counts.get("coins", 0) == coin_sounds + 1, "")
+	_close_card()
+	_check("closing the card stops the pops", card._pop_tween == null, "")
+	gs.reset()
+	# Tyre dust: on sand when riding, on any ground when braking hard, not on the road.
+	var dust: GPUParticles3D = _bike.get_node("TyreDust")
+	var keep := _bike.global_transform
+	var keep_parked: bool = _bike.parked
+	_bike.set_parked(false)
+	_bike.fallen_left = 0.0
+	_bike.wrecked = false
+	_bike.speed = 6.0
+	var ground: Script = load("res://scripts/ground_type.gd")
+	var sand := Vector3.INF
+	var road := Vector3.INF
+	for x in range(-180, 181, 6):
+		for z in range(-140, 141, 6):
+			var on_sand: bool = ground.is_sand(dust._map, Vector2(x, z))
+			if on_sand and sand == Vector3.INF:
+				sand = Vector3(x, keep.origin.y, z)
+			if not on_sand and road == Vector3.INF:
+				road = Vector3(x, keep.origin.y, z)
+	dust._brake_left = 0.0
+	if sand != Vector3.INF:
+		_bike.global_position = sand
+		dust._check_left = 0.0
+		dust._physics_process(0.016)
+		_check("dust puffs from the tyre when riding on sand", dust.on_sand and dust.emitting, "at %s" % sand)
+	else:
+		print("      no sand on this map, sand dust not checked")
+	if road != Vector3.INF:
+		_bike.global_position = road
+		dust._check_left = 0.0
+		dust._physics_process(0.016)
+		_check("no dust when riding on the road", not dust.on_sand and not dust.emitting, "at %s" % road)
+	else:
+		print("      no roads on this map (all sand), road check skipped")
+	_bike.hard_braked.emit()
+	dust._physics_process(0.016)
+	_check("braking hard makes a dust puff", dust.emitting and dust.amount_ratio == 1.0, "")
+	_bike.speed = 0.0
+	dust._brake_left = 0.0
+	dust._physics_process(0.016)
+	_bike.global_transform = keep
+	if keep_parked:
+		_bike.set_parked(true)
+	# Fewer puffs on Low graphics (never saves the settings file).
+	var keep_graphics := Settings.graphics
+	Settings.graphics = 0
+	Settings.apply()
+	var low: int = dust.amount
+	Settings.graphics = 2
+	Settings.apply()
+	var high: int = dust.amount
+	Settings.graphics = keep_graphics
+	Settings.apply()
+	_check("Low graphics has fewer dust puffs than High", low < high, "%d vs %d" % [low, high])
+	var files := 0
+	for file in ["buzz", "pop", "coins"]:
+		var stream := load("res://assets/audio/%s.wav" % file) as AudioStreamWAV
+		if stream != null and stream.get_length() > 0.1:
+			files += 1
+	_check("the buzz, pop and coins sounds load", files == 3, "%d of 3" % files)
+
+
+## Session 30: life on the map. Everything in the data lists was built, nothing's route goes
+## through a wall, buggies drive along their route and stop for the bike (without pushing
+## it), then turn round if it stays; horses, walkers, ducks and donkeys move; palms sway and
+## the water moves; Low shows fewer things than High. Other maps: skipped.
+func _check_session30() -> void:
+	var life: Node = _main.get_node_or_null("LifeBuilder")
+	if life == null:
+		print("      no LifeBuilder on this map, Session 30 checks skipped")
+		return
+	var data: Dictionary = life.data.get_script_constant_map()
+	var want := 0
+	for list in ["BUGGIES", "HORSE_RIDERS", "PEOPLE_ROUTES", "GARDENERS", "PLAY_KIDS", "DUCKS"]:
+		want += data[list].size()
+	_check("every buggy, horse, person, kid and duck in the data was built", life.movers.size() == want,
+			"%d of %d" % [life.movers.size(), want])
+	# Nothing walks through walls: every route, sampled each metre, is clear on the map scan.
+	if _grid != null:
+		var inside := {}
+		for mover in life.movers:
+			var pts: Array = mover.points
+			if pts.size() == 1:
+				pts = [pts[0], pts[0]]
+			for i in pts.size() - (0 if mover.loop else 1):
+				var a: Vector3 = pts[i]
+				var b: Vector3 = pts[(i + 1) % pts.size()]
+				for k in int(a.distance_to(b)) + 1:
+					var spot := a.move_toward(b, float(k))
+					if not _grid.is_free(Vector2(spot.x, spot.z)) and not inside.has(mover.name):
+						inside[mover.name] = spot
+		_check("no buggy, horse or walker route goes through a wall or building", inside.is_empty(), str(inside))
+	var keep := _bike.global_transform
+	var was_parked: bool = _bike.parked
+	_bike.set_parked(true)
+	_move_bike_to(data["START"]["position"])
+	# A buggy drives along its route.
+	var buggy: Node3D = life.get_node("Buggy_0")
+	buggy.scared_left = 0.0
+	buggy._pause_left = 0.0
+	buggy._blocked = 0.0
+	var start: Vector3 = buggy.position
+	for i in 60:
+		buggy._physics_process(1.0 / 30.0)
+	var moved: float = buggy.position.distance_to(start)
+	_check("a golf buggy drives along its route", moved > 2.0 and buggy.distance_to_route() < 0.2,
+			"%.1f m, %.2f m off the route" % [moved, buggy.distance_to_route()])
+	# It stops for the bike parked in front of it, and doesn't push it.
+	buggy._pause_left = 0.0
+	var ahead: Vector3 = buggy.heading()
+	_move_bike_to(buggy.position + ahead * (buggy.size.z * 0.5 + 2.0))
+	var bike_spot := _bike.global_position
+	var at: Vector3 = buggy.position
+	for i in 30:
+		buggy._physics_process(1.0 / 30.0)
+	_check("a buggy stops and waits when the bike is in the way", buggy.position.distance_to(at) < 0.01
+			and _bike.global_position.distance_to(bike_spot) < 0.01, "moved %.2f m" % buggy.position.distance_to(at))
+	for i in int(GameConfig.LIFE_GIVE_UP_TIME * 30.0) + 90:
+		buggy._physics_process(1.0 / 30.0)
+	_check("if the bike stays, the buggy turns round and drives off", buggy.position.distance_to(_bike.global_position) > at.distance_to(bike_spot) + 1.0
+			and _bike.global_position.distance_to(bike_spot) < 0.01, "%.1f m away" % buggy.position.distance_to(_bike.global_position))
+	_move_bike_to(data["START"]["position"])
+	# Horses, walkers, kids and ducks move too.
+	var still := []
+	for name in ["Horse_0", "Person_0", "Person_2", "Kid_0", "Duck_0"]:
+		var thing: Node3D = life.get_node(name)
+		thing.scared_left = 0.0
+		thing._pause_left = 0.0
+		var from: Vector3 = thing.position
+		for i in 60:
+			thing._physics_process(1.0 / 30.0)
+		if thing.position.distance_to(from) < 0.3:
+			still.append(name)
+	_check("horses, joggers, walkers, kids and ducks move along their routes", still.is_empty(), str(still))
+	# Palms sway, the stream has moving water, the donkeys stroll.
+	var ambient: Node = life.ambient
+	var crown: Node3D = ambient._crowns[0][0]
+	var tilt := crown.rotation
+	var donkey: Node3D = ambient._donkeys[0]["node"]
+	ambient._donkeys[0]["pause"] = 0.0
+	var donkey_from := donkey.position
+	for i in 30:
+		ambient._process(1.0 / 30.0)
+	_check("palm tops sway in the breeze", crown.rotation.distance_to(tilt) > 0.001, "")
+	_check("the donkeys stroll round their pen", donkey.position.distance_to(donkey_from) > 0.1, "")
+	var stream := _main.get_node("WahatBuilder/Stream").get_child(0) as MeshInstance3D
+	_check("the stream has moving water", stream.material_override is ShaderMaterial, "")
+	# Fewer things on Low than on High (sets the setting without saving it).
+	var before: int = Settings.graphics
+	Settings.graphics = 0
+	Settings.apply()
+	var low: int = life.shown_count()
+	var low_off: bool = not life.get_node("Buggy_2").visible and life.get_node("Buggy_2").process_mode == Node.PROCESS_MODE_DISABLED
+	Settings.graphics = 2
+	Settings.apply()
+	var high: int = life.shown_count()
+	Settings.graphics = before
+	Settings.apply()
+	_check("Low shows fewer moving things than High", low > 0 and low < high and low_off, "Low %d, High %d" % [low, high])
+	_bike.global_transform = keep
+	_bike.set_parked(was_parked)
+
+
+## Session 33: random events. Each shift plans 1 or 2 (never more), the phone warns
+## before each one, only one runs at a time, road works go up with a cone on the mini-map
+## and come down after 1 to 2 in-game hours, the horses cross and go, riding into a horse
+## is only a small crash, and with each possible road works closure every home and shop
+## door can still be reached. Maps without events: skipped.
+func _check_session33() -> void:
+	var events: Node = _main.get_node_or_null("EventManager") if is_instance_valid(_main) else null
+	if events == null or not events.has_events():
+		print("      no random events on this map, Session 33 checks skipped")
+		return
+	var gs: Node = root.get_node("GameState")
+	var phone: Node = _main.get_node("Phone")
+	var places: Node = _main.get_node("PlaceBuilder")
+	var data: Dictionary = places.data.get_script_constant_map()
+	var keep_bike := _bike.global_transform
+	var keep_clock: float = gs.shift_time_left
+	var keep_out: bool = gs.shift_clock_out
+	var start: Vector3 = data["START"]["position"]
+	_move_bike_to(start)
+	events.clear_all()
+	events.started_this_shift = 0
+	# The plan: 1 or 2 events, different kinds, in order, inside the shift.
+	var plans_ok := true
+	for i in 30:
+		var plan: Array = events.make_plan()
+		plans_ok = plans_ok and plan.size() >= 1 and plan.size() <= GameConfig.EVENTS_PER_SHIFT_MAX
+		if plan.size() == 2:
+			plans_ok = plans_ok and plan[0]["kind"] != plan[1]["kind"] \
+					and plan[1]["hour"] >= plan[0]["hour"] + GameConfig.EVENT_GAP_HOURS
+		for step in plan:
+			plans_ok = plans_ok and step["hour"] >= GameConfig.SHIFT_START_HOUR and step["hour"] < GameConfig.SHIFT_END_HOUR
+	_check("each shift plans 1 or 2 events, one after the other", plans_ok, "")
+	_check("events never start during the smoke test's rides", events.started_this_shift == 0 and not events.busy(), "")
+	# Road works: the phone warns first, then they go up.
+	gs.shift_clock_out = true  # the shift clock stands still while this runs
+	gs.shift_time_left = GameConfig.SHIFT_LENGTH * 0.5  # 13:00
+	var warned: bool = events.warn("road_works", 0)
+	_check("the phone warns before road works start", warned and events.active_kind == ""
+			and "Road works" in phone.event_text() and "Heads up" in phone.event_text(), phone.event_text())
+	_check("only one event at a time", not events.warn("horses", 0), "")
+	var waited := 0.0
+	while events.active_kind == "" and waited < 30.0:
+		events.tick(1.0 / 60.0)
+		waited += 1.0 / 60.0
+	var works: Node3D = events.road_works
+	_check("road works start after the warning", events.active_kind == "road_works" and works != null
+			and waited >= GameConfig.EVENT_WARNING_TIME - 0.1, "after %.1f s" % waited)
+	_check("the road works have a digger, barriers and cones", works != null and works.get_child_count() > 30, "")
+	_check("the mini-map shows a cone at the road works", _minimap.road_works_at.size() == 1, "")
+	_check("the phone says how long the road is closed", "closed till" in phone.event_text(), phone.event_text())
+	var hours: float = events.road_works_end_hour - gs.clock_hours()
+	_check("road works last 1 to 2 in-game hours", hours >= 1.0 and hours <= 2.0, "%.2f hours" % hours)
+	# They come down when the time is up.
+	gs.shift_time_left = GameConfig.SHIFT_LENGTH * (1.0 - (events.road_works_end_hour + 0.01 - GameConfig.SHIFT_START_HOUR)
+			/ (GameConfig.SHIFT_END_HOUR - GameConfig.SHIFT_START_HOUR))
+	events.tick(1.0 / 60.0)
+	_check("road works end after their time", events.active_kind == "" and events.road_works == null
+			and _minimap.road_works_at.is_empty() and phone.event_text() == "", "")
+	# Every place on the road works list leaves every home and shop door reachable.
+	var stuck := []
+	var not_solid := []
+	var started := Time.get_ticks_msec()
+	var list: Array = events.road_works_places()
+	for i in list.size():
+		events.clear_all()
+		events.started_this_shift = 0
+		events.warn("road_works", i)
+		events._warn_left = 0.0
+		events.tick(0.0)
+		if events.road_works == null:
+			stuck.append("%d not built" % i)
+			continue
+		for frame in 2:
+			await physics_frame  # the physics world takes the new barriers in on its next step
+		var grid: RefCounted = GRID.new()
+		grid.build(_bike.get_world_3d(), data["MAP_HALF"], [_bike, _on_foot.walker])
+		var centre: Vector2 = list[i]["centre"]
+		var along := Vector2(1, 0) if list[i]["along"] == "x" else Vector2(0, 1)
+		if grid.is_free(centre + along * list[i]["length"] * 0.5):
+			not_solid.append(i)
+		for villa in places.villas:
+			var door: Vector3 = places.villa_door(villa["number"])
+			if grid.path(Vector2(start.x, start.z), Vector2(door.x, door.z)).is_empty():
+				stuck.append("%s (works %d)" % [villa["address"], i])
+		for shop in places.restaurants:
+			var door: Vector3 = places.restaurant_door(shop["id"])
+			if grid.path(Vector2(start.x, start.z), Vector2(door.x, door.z)).is_empty():
+				stuck.append("%s (works %d)" % [shop["name"], i])
+	events.clear_all()
+	_check("the road works barriers are solid", not_solid.is_empty(), "not solid: %s" % [not_solid])
+	_check("with each of the %d possible road works, every home and shop can still be reached" % list.size(),
+			stuck.is_empty(), "%s (%.1f s)" % [stuck, (Time.get_ticks_msec() - started) / 1000.0])
+	# Horses crossing: warned, then a groom and 2 or 3 horses cross and go.
+	events.started_this_shift = 1
+	warned = events.warn("horses", 0)
+	_check("the phone warns before the horses cross", warned and "Horses" in phone.event_text(), phone.event_text())
+	waited = 0.0
+	while events.active_kind == "" and waited < 30.0:
+		events.tick(1.0 / 60.0)
+		waited += 1.0 / 60.0
+	var crossing: Node = events.crossing
+	_check("horses start crossing after the warning", events.active_kind == "horses" and crossing != null, "")
+	var horses := 0
+	var soft := true
+	if crossing != null:
+		for member in crossing.members:
+			horses += 1 if String(member.name).begins_with("Horse") else 0
+			soft = soft and member.is_in_group("critter")
+		_check("a groom leads 2 or 3 horses", horses >= 2 and horses <= 3 and crossing.get_node_or_null("Groom") != null, "%d horses" % horses)
+		var horse: Node = crossing.get_node("Horse_1")
+		_check("horses only ever cause a small crash", soft and _bike.what_is(horse) == "a horse", _bike.what_is(horse))
+	var across := 0.0
+	while events.active_kind == "horses" and across < 60.0:
+		events.tick(1.0 / 60.0)
+		across += 1.0 / 60.0
+	_check("the horses cross and go", events.active_kind == "" and events.crossing == null, "%.1f s" % across)
+	_check("no more than 2 events in a shift", events.started_this_shift == 2 and not events.warn("road_works", 0), "")
+	# Road works never go up right next to you: they pick another place.
+	events.started_this_shift = 0
+	var first: Vector2 = list[0]["centre"]
+	_move_bike_to(Vector3(first.x, 0, first.y))
+	events.warn("road_works", 0)
+	events._warn_left = 0.0
+	events.tick(0.0)
+	var put: Vector3 = events.road_works.position if events.road_works != null else Vector3(first.x, 0, first.y)
+	_check("road works never go up next to you or your bike", Vector2(put.x, put.z).distance_to(first) > 1.0, "")
+	events.clear_all()
+	# The horses wait for you if you're in their way (they never shove the parked bike).
+	events.started_this_shift = 0
+	var line: Dictionary = data["HORSE_CROSSINGS"][0]
+	_move_bike_to(start)
+	events.warn("horses", 0)
+	events._warn_left = 0.0
+	events.tick(0.0)
+	var in_way: Vector3 = line["from"].lerp(line["to"], 0.4)
+	_move_bike_to(in_way)
+	_bike.look_at(in_way + Vector3(0, 0.05, -1))
+	_bike.set_parked(true)
+	for frame in 240:
+		await physics_frame
+	var groom: Node3D = events.crossing.get_node("Groom") if events.crossing != null else null
+	var groom_gap := 0.0 if groom == null else groom.global_position.distance_to(line["from"])
+	var bike_moved := Vector2(_bike.global_position.x - in_way.x, _bike.global_position.z - in_way.z).length()
+	_check("the horses wait for the parked bike and don't push it", groom != null
+			and groom_gap < line["from"].distance_to(in_way) and bike_moved < 0.1,
+			"groom %.1f m along, bike moved %.2f m" % [groom_gap, bike_moved])
+	_bike.set_parked(false)
+	events.clear_all()
+	# Riding into a horse at speed is a small crash, never a big one.
+	events.started_this_shift = 0
+	events.warn("horses", 0)
+	events._warn_left = 0.0
+	events.tick(0.0)
+	if events.crossing != null:
+		_bike.speed = (GameConfig.CRASH_BIG_KMH + 5.0) / 3.6
+		var crashed: bool = _bike._check_crash(1.0, events.crossing.get_node("Groom"))
+		_check("riding fast into the horses is a small crash", crashed and not _bike.wrecked and _bike.fallen_left > 0.0, "")
+		_bike.fallen_left = 0.0
+		_bike.speed = 0.0
+	events.clear_all()
+	events.started_this_shift = 0
+	gs.shift_time_left = keep_clock
+	gs.shift_clock_out = keep_out
+	_bike.global_transform = keep_bike
+
+
+## Sessions 30 + 33 together: a golf buggy stops at road works instead of driving through.
+func _check_life_meets_events() -> void:
+	var life: Node = _main.get_node_or_null("LifeBuilder")
+	var events: Node = _main.get_node_or_null("EventManager")
+	if life == null or events == null or events._works_list.size() < 11:
+		print("      no buggies or road works on this map, buggy-meets-road-works check skipped")
+		return
+	# Road works on the north ring road (x 134 to 146), where Buggy_0 drives east at z -128.5.
+	var works: Node3D = load("res://scripts/road_works.gd").build(events, events._works_list[10])
+	await physics_frame
+	await physics_frame
+	var buggy: Node3D = life.get_node("Buggy_0")
+	buggy.scared_left = 0.0
+	buggy._pause_left = 0.0
+	buggy._blocked = 0.0
+	buggy.start_at(0, (125.0 + 150.0) / 328.5, true)  # x 125, heading east to the works
+	var furthest := buggy.position.x
+	for i in 90:  # 3 seconds: long enough to reach the barrier, not to give up and turn round
+		buggy._physics_process(1.0 / 30.0)
+		furthest = maxf(furthest, buggy.position.x)
+	_check("a golf buggy stops at road works instead of driving through", furthest > 127.0 and furthest < 134.0,
+			"got to x %.1f (barrier starts at 134)" % furthest)
+	events.remove_child(works)
+	works.queue_free()
+	await physics_frame
+
+## Session 32: special orders (rush, fragile cake, neighbour, big family) each with their rule
+## and reward, school orders only 08:00 to 15:00 and more at lunch, stables and farm orders,
+## the regulars (heart on the phone, your name, saved), and the shift goals (a done goal adds
+## its 15 Dh to the summary). Maps without a school, Sunrise Bakery or regulars skip those parts.
+func _check_session32() -> void:
+	if _delivery == null or _game_state == null or not is_instance_valid(_main):
+		return
+	paused = false
+	var gs: Node = _game_state
+	var dm: Node = _delivery
+	var places: Node = dm.place_builder
+	dm.special_chance = GameConfig.SPECIAL_ORDER_CHANCE
+	dm.regular_chance = GameConfig.REGULAR_ORDER_CHANCE
+	if _on_foot != null and _on_foot.on_foot:
+		_on_foot.get_on()
+	gs.reset()
+	var homes: Array = places.villas.filter(func(v): return v.get("kind", "") != "spot")
+	var home: int = homes[0]["number"]
+	# About 1 in 6 orders is special, and never more than one kind at once.
+	dm.regular_chance = 0.0
+	var specials := 0
+	var kinds_ok := true
+	for i in 600:
+		var order: Object = dm.make_order()
+		if order.special != "":
+			specials += 1
+			kinds_ok = kinds_ok and order.special in GameConfig.SPECIAL_KINDS
+	dm.regular_chance = GameConfig.REGULAR_ORDER_CHANCE
+	_check("about 1 in 6 orders is special", specials > 60 and specials < 150 and kinds_ok, "%d of 600" % specials)
+	# Rush: 70% of the target time, 50% more pay.
+	var plain: Object = dm.make_order("pizza", home)
+	var rush: Object = dm.make_order("pizza", home, "rush")
+	_check("a rush order pays 50% more", rush.pay == roundi(rush.base_pay * GameConfig.RUSH_PAY_SHARE)
+			and rush.base_pay == plain.base_pay and rush.base_pay >= GameConfig.ORDER_PAY_MIN, "%d Dh (normal %d)" % [rush.pay, rush.base_pay])
+	var normal_target: float = _meters.target_time_for(places.restaurant_door("pizza"), places.villa_door(home))
+	_start_order(rush)
+	_check("a rush order has 70% of the normal time", absf(gs.target_time - normal_target * GameConfig.RUSH_TIME_SHARE) < 0.01,
+			"%.0f s instead of %.0f s" % [gs.target_time, normal_target])
+	var phone := _main.get_node("Phone")
+	phone._process(0.0)
+	var chip: Label = phone._chips["special"]
+	_check("the phone shows a coloured Rush chip", chip.visible and chip.text == "Rush", chip.text)
+	var money: int = gs.money
+	gs.deliver()
+	var got: int = gs.money - money - gs.last_result["tip"]
+	_check("a rush delivery pays the extra", got == rush.pay - GameConfig.INSURANCE_PER_DELIVERY
+			and gs.last_result["special"] == "rush", "+%d Dh" % got)
+	_close_card()
+	# Fragile cake: from Sunrise Bakery, double damage, 60% tip chance.
+	if places.restaurants.any(func(r): return r["id"] == GameConfig.FRAGILE_SHOP):
+		var cake: Object = dm.make_order("", 0, "fragile")
+		_check("a fragile order is a cake from Sunrise Bakery", cake.restaurant_id == GameConfig.FRAGILE_SHOP and cake.food == "cake", cake.describe())
+		_start_order(cake)
+		_meters.hurt_food(10.0)
+		_check("bumps do double damage to a fragile cake", absf(gs.meter_damage - (100.0 - 10.0 * GameConfig.FRAGILE_DAMAGE_TIMES)) < 0.01, "%.0f%%" % gs.meter_damage)
+		_check("a fragile cake tips more often (60%)", gs.tip_chance(cake) == GameConfig.FRAGILE_TIP_CHANCE and gs.tip_chance(plain) == GameConfig.TIP_CHANCE, "")
+		gs.deliver()
+		_close_card()
+	else:
+		print("      no Sunrise Bakery here, fragile cakes skipped")
+	# Neighbour: at the door "Not home!", on to another home in the same cluster, clock running, +5 Dh.
+	var next_door: Object = dm.make_order("", home, "neighbour")
+	_check("a neighbour order pays 5 Dh extra", next_door.pay == next_door.base_pay + GameConfig.NEIGHBOUR_BONUS, "%d Dh" % next_door.pay)
+	_start_order(next_door)
+	gs.ride_time = 12.0
+	_put_actor_at(dm.target_door())
+	var first_cluster: String = next_door.cluster
+	var sent: bool = dm.try_interact()
+	_check("at the door: not home, take it to the neighbour", sent and gs.stage_name() == "TO_VILLA" and next_door.villa_number != home
+			and next_door.cluster == first_cluster and "Not home!" in next_door.note, "%s: %s" % [next_door.address, next_door.note])
+	_check("the clock keeps running for the neighbour", gs.ride_time == 12.0 and gs.target_time > 0.0, "%.0f s" % gs.ride_time)
+	_check("the beam moves to the neighbour's door", dm.target_door().distance_to(places.villa_door(next_door.villa_number)) < 0.01, "")
+	_put_actor_at(dm.target_door())
+	money = gs.money
+	_check("then you can deliver to the neighbour", dm.try_interact() and gs.stage_name() == "NONE"
+			and gs.money - money - gs.last_result["tip"] == next_door.pay - GameConfig.INSURANCE_PER_DELIVERY, "")
+	_close_card()
+	# Big family: two bags (slower, wobblier), double pay.
+	var family: Object = dm.make_order("", home, "family")
+	_check("a big family order pays double", family.pay == family.base_pay * GameConfig.FAMILY_PAY_TIMES, "%d Dh" % family.pay)
+	_start_order(family)
+	var bag: Node3D = _bike.get_node_or_null("Model/Fork/ExtraBag")
+	_check("big family: two bags on the bike", _bike.heavy_load and bag != null and bag.visible, "")
+	_check("big family: lower top speed", _top_speed_ridden(true) < _top_speed_ridden(false) * 0.9, "")
+	_put_actor_at(dm.target_door())
+	dm.try_interact()
+	_close_card()
+	_check("the second bag comes off after the delivery", not _bike.heavy_load and not bag.visible, "")
+	_check_school_orders()
+	_check_regulars()
+	_check_goals()
+	dm.special_chance = GameConfig.SPECIAL_ORDER_CHANCE
+	dm.regular_chance = GameConfig.REGULAR_ORDER_CHANCE
+	gs.rider_name = ""
+	gs.reset()
+	paused = false
+
+
+## Offers, accepts and picks up an order (the meters start, the bags go on the bike).
+func _start_order(order: Object) -> void:
+	_game_state.offer_order(order)
+	_game_state.accept_offer()
+	_game_state.pick_up()
+
+
+## Puts you (on the bike or on foot) right at a door.
+func _put_actor_at(spot: Vector3) -> void:
+	var who: Node3D = _delivery.actor if _delivery.actor != null else _bike
+	who.global_position = spot + Vector3.UP * 0.05
+	if who == _bike:
+		_bike.velocity = Vector3.ZERO
+		_bike.speed = 0.0
+
+
+## Pedals the bike for 4 seconds of physics (by hand, on the spot) and returns the top speed.
+func _top_speed_ridden(heavy: bool) -> float:
+	var keep: Transform3D = _bike.global_transform
+	var was: bool = _bike.heavy_load
+	_bike.heavy_load = heavy
+	_bike.speed = 0.0
+	Input.action_press("move_forward")
+	for i in 240:
+		_bike._update_stamina_and_speed(1.0 / 60.0)
+	Input.action_release("move_forward")
+	var top: float = _bike.speed
+	_bike.speed = 0.0
+	_bike.heavy_load = was
+	_bike.global_transform = keep
+	return top
+
+
+## The shift clock at a given hour (11.5 = 11:30).
+func _set_hour(hour: float) -> void:
+	var share := (hour - GameConfig.SHIFT_START_HOUR) / (GameConfig.SHIFT_END_HOUR - GameConfig.SHIFT_START_HOUR)
+	_game_state.shift_time_left = GameConfig.SHIFT_LENGTH * (1.0 - share)
+
+
+## School orders: never after 15:00, about 1 in 3 at lunch, teachers and kids at the door.
+## Stables orders: riders and grooms. Farm stall: about 1 in 8 pickups.
+func _check_school_orders() -> void:
+	var dm: Node = _delivery
+	var places: Node = dm.place_builder
+	if not places.villas.any(func(v): return v["number"] == GameConfig.SCHOOL_SPOT):
+		print("      no school here, school, stables and farm checks skipped")
+		return
+	var share := func(hour: float) -> float:
+		_set_hour(hour)
+		var count := 0
+		for i in 600:
+			if dm.make_order().villa_number == GameConfig.SCHOOL_SPOT:
+				count += 1
+		return count / 600.0
+	var morning: float = share.call(9.0)
+	var lunch: float = share.call(12.0)
+	var late: float = share.call(15.5)
+	_check("a school order never comes after 15:00", late == 0.0, "%.0f%% at 15:30" % (late * 100.0))
+	_check("lunch rush: about 1 in 3 orders is for the school", lunch > 0.2 and lunch < 0.45 and lunch > morning * 2.0,
+			"%.0f%% at 12:00, %.0f%% at 09:00" % [lunch * 100.0, morning * 100.0])
+	_set_hour(12.0)
+	var who_ok := true
+	var lunch_flag := true
+	var farm := 0
+	for i in 800:
+		var order: Object = dm.make_order()
+		if order.villa_number == GameConfig.SCHOOL_SPOT:
+			who_ok = who_ok and order.who in ["teacher", "kid"]
+			lunch_flag = lunch_flag and order.lunch
+		elif order.villa_number == GameConfig.STABLES_SPOT:
+			who_ok = who_ok and order.who in ["rider", "groom"]
+		if order.restaurant_id == GameConfig.FARM_SHOP:
+			farm += 1
+	_check("teachers and kids order to the school, riders and grooms to the stables", who_ok, "")
+	_check("school orders at lunch count as lunch orders", lunch_flag, "")
+	_check("about 1 in 8 orders is picked up at the farm stall", farm > 60 and farm < 170, "%d of 800" % farm)
+	# Deliver one to the stables: a rider or a groom comes out.
+	var order: Object = dm.make_order("pizza", GameConfig.STABLES_SPOT)
+	order.leave_at_door = false  # this one: someone comes out (not a bag on the step)
+	_start_order(order)
+	_game_state.deliver()
+	var spawner := _main.get_node_or_null("CustomerSpawner")
+	var customer: Node = spawner.last_spawned if spawner != null else null
+	_check("a rider or groom comes out at the stable office", customer != null and order.who in ["rider", "groom"]
+			and customer.get("person") != null, order.who)
+	_close_card()
+	_set_hour(8.0)
+
+
+## The regulars: heart on the phone, their own lines with your name, 60% tips, saved visits.
+func _check_regulars() -> void:
+	var gs: Node = _game_state
+	var dm: Node = _delivery
+	var regulars: Array = dm.place_builder.regulars
+	if regulars.is_empty():
+		print("      no regulars on this map, regular checks skipped")
+		return
+	_check("4 regular customers", regulars.size() == 4, "%d" % regulars.size())
+	gs.rider_name = "Louis"
+	var maker: Object = dm.order_maker()
+	var mariam: Object = maker.make_regular(regulars[0])
+	_check("Auntie Mariam orders bubble tea to Villa 7, Cluster 2", mariam.food == "bubble tea" and mariam.address == "C2 · Villa 7", mariam.describe())
+	gs.offer_order(mariam)
+	var phone := _main.get_node("Phone")
+	phone._process(0.0)
+	var heart: Label = phone._chips["regular"]
+	_check("a regular has a heart on the phone", heart.visible and "♥" in heart.text and "Mariam" in heart.text, heart.text)
+	gs.accept_offer()
+	gs.pick_up()
+	_check("regulars tip more often (60%)", gs.tip_chance(mariam) == GameConfig.REGULAR_TIP_CHANCE, "")
+	gs.deliver()
+	var customer: Node = _main.get_node("CustomerSpawner").last_spawned
+	var lines: Array = load("res://data/customer_lines.gd").REGULAR_LINES["mariam"]
+	var said: String = customer.get("line") if customer != null else ""
+	var own := lines.any(func(l): return l.replace("{name}", "Louis") == said)
+	_check("Auntie Mariam says one of her own lines with your name", own and "Louis" in said, said)
+	_close_card()
+	_check("the regular's visit is counted", gs.regular_visits.get("mariam", 0) == 1, str(gs.regular_visits))
+	gs.save_game()
+	gs.regular_visits.clear()
+	gs.load_game()
+	_check("regulars' visits are saved", gs.regular_visits.get("mariam", 0) == 1, str(gs.regular_visits))
+	# Regulars order more often than anyone else; Ms Dana only while the school is open.
+	var to_mariam := 0
+	var regular_orders := 0
+	for i in 1000:
+		var order: Object = dm.make_order()
+		if order.regular != "":
+			regular_orders += 1
+		if order.villa_number == regulars[0]["villa"]:
+			to_mariam += 1
+	var homes: int = dm.place_builder.villas.size()
+	_check("regulars order more often than anyone else", to_mariam > 1000.0 / homes * 1.5 and regular_orders > 80,
+			"%d to Mariam, %d from regulars" % [to_mariam, regular_orders])
+	_set_hour(16.0)
+	var dana_late := 0
+	for i in 300:
+		if dm.order_maker().pick_regular().get("id", "") == "dana":
+			dana_late += 1
+	_check("Ms Dana (school) never orders after 15:00", dana_late == 0, "%d" % dana_late)
+	_set_hour(8.0)
+
+
+## Shift goals: 2 on the phone, a done goal adds its 15 Dh to the summary and the wallet.
+func _check_goals() -> void:
+	var gs: Node = _game_state
+	var dm: Node = _delivery
+	gs.reset()
+	_check("2 shift goals at the start of the shift", gs.shift_goals.size() == GameConfig.GOALS_PER_SHIFT
+			and gs.shift_goals[0] != gs.shift_goals[1] and gs.shift_goals.all(func(g): return g in gs.goal_pool), str(gs.shift_goals))
+	var phone := _main.get_node("Phone")
+	phone._process(0.0)
+	var goals: Label = phone.get_node("Panel/Margin/Rows/Goals")
+	_check("the phone shows the shift goals", goals.visible and goals.text.count("\n") == GameConfig.GOALS_PER_SHIFT, goals.text.replace("\n", " | "))
+	var places: Node = dm.place_builder
+	var has_school: bool = places.villas.any(func(v): return v["number"] == GameConfig.SCHOOL_SPOT)
+	_check("goals fit the map (no lunch goal without a school)", ("lunch" in gs.goal_pool) == has_school, str(gs.goal_pool))
+	gs.shift_goals.clear()
+	gs.shift_goals.append("streak")
+	gs.shift_goals.append("deliveries")
+	var home: int = places.villas.filter(func(v): return v.get("kind", "") != "spot")[0]["number"]
+	for i in GameConfig.GOAL_FIVE_STAR_STREAK:
+		_start_order(dm.make_order("pizza", home))
+		gs.set_meters(100.0, 100.0, 100.0)
+		gs.deliver()
+		_close_card()
+	_check("the Delivered card says when a goal is done", gs.last_goals_done.size() == 1 and gs.last_goals_done[0] == "streak", str(gs.last_goals_done))
+	_check("No crashes is done until you crash", _goal_done("no_crashes"), "")
+	gs.note_crash()
+	_check("a crash breaks the No crashes goal", not _goal_done("no_crashes"), "")
+	var summary: Dictionary = gs.shift_summary()
+	var want: int = summary["pay"] + summary["tips"] + GameConfig.GOAL_BONUS - summary["insurance"] - summary["bills"]
+	_check("a done goal adds 15 Dh to the summary", summary["goal_bonus"] == GameConfig.GOAL_BONUS and summary["earned"] == want
+			and summary["goals"][0]["done"] and not summary["goals"][1]["done"], "bonus %d, earned %d" % [summary["goal_bonus"], summary["earned"]])
+	var money: int = gs.money
+	var ended: Dictionary = gs.end_shift()
+	_check("the goal bonus goes into the wallet once", gs.money == money + GameConfig.GOAL_BONUS and ended["goal_bonus"] == GameConfig.GOAL_BONUS, "Dh %d" % gs.money)
+	var screen := _main.get_node_or_null("ShiftScreen")
+	if screen != null:
+		screen.show_summary(ended)
+		var texts: Array = screen._table.get_children().map(func(n): return n.text)
+		_check("the shift summary lists the goals", texts.any(func(t): return "in a row" in t), "")
+		screen._next_shift()
+
+
+## ShiftGoals.is_done for this shift (reached through a script load, not the class name).
+func _goal_done(id: String) -> bool:
+	var goals: Script = load("res://scripts/shift_goals.gd")
+	return goals.is_done(id, _game_state.history.slice(_game_state.shift_start_index), _game_state.shift_crashes)

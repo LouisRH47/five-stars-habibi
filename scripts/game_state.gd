@@ -24,6 +24,8 @@ signal big_crashed(bills: Dictionary)
 ## A new shift started / the shift is over (Session 13).
 signal shift_started
 signal shift_ended(summary: Dictionary)
+## A neighbour order was sent on to the house next door (Session 32).
+signal order_redirected(order: Order)
 
 ## The three meters for the order you're carrying, 100 (green) to 0 (red). Set by
 ## scripts/meters.gd while you ride from the restaurant to the villa.
@@ -51,6 +53,8 @@ var money := 0
 var insurance_on := true
 ## True once the boss has paid for your first big crash (only happens once per game).
 var boss_paid_crash := false
+## The shift number of every big crash (Session 23: "Big crashes this week" on the clinic).
+var crash_shifts: Array[int] = []
 
 ## The shift (Session 13). scripts/shift_manager.gd counts shift_time_left down.
 var shift_number := 0  # start_shift() makes the first one shift 1
@@ -67,6 +71,17 @@ var xp := 0
 var history: Array[Dictionary] = []
 ## The last delivery's Dictionary from history (the phone shows its stars), or empty.
 var last_result: Dictionary = {}
+
+## Session 32. This shift's goals (ids from scripts/shift_goals.gd), the goals this map can
+## do (the DeliveryManager sets it), crashes this shift (big and small), the goals the last
+## delivery finished (the Delivered card shows them), and how many times you've delivered
+## to each regular customer (saved).
+var shift_goals: Array[String] = []
+var goal_pool: Array = ShiftGoals.ALL.keys()
+var shift_crashes := 0
+var last_goals_done: Array[String] = []
+var regular_visits: Dictionary = {}
+var _goal_bonus_paid := false  # the goal bonus is paid once per shift
 ## The order waiting on the phone for you to accept or skip (or null).
 var offered_order: Order = null
 ## The order you accepted and are riding with (or null).
@@ -140,9 +155,11 @@ func reset() -> void:
 	xp = 0
 	insurance_on = true
 	boss_paid_crash = false
+	crash_shifts.clear()
+	regular_visits.clear()
 	shift_number = 0
-	start_shift()
 	history.clear()
+	start_shift()
 	last_result = {}
 	offered_order = null
 	current_order = null
@@ -203,8 +220,11 @@ func deliver() -> bool:
 	var stars := stars_for(meter_time, meter_freshness, meter_damage)
 	# Tips only on 5-star jobs, and not every time. Boring orders never tip (PRD).
 	var tip := 0
-	if stars >= 5.0 and not done.boring and randf() < GameConfig.TIP_CHANCE:
+	if stars >= 5.0 and not done.boring and randf() < tip_chance(done):
 		tip = randi_range(GameConfig.TIP_MIN, GameConfig.TIP_MAX)
+	var goals_before := goals_done()
+	if done.regular_id != "":
+		regular_visits[done.regular_id] = int(regular_visits.get(done.regular_id, 0)) + 1
 	var earned_xp := GameConfig.XP_PER_DELIVERY + roundi(GameConfig.XP_PER_STAR * stars)
 	var insurance := GameConfig.INSURANCE_PER_DELIVERY if insurance_on else 0
 	money += done.pay + tip - insurance
@@ -212,6 +232,7 @@ func deliver() -> bool:
 	last_result = {
 		"restaurant": done.restaurant_name,
 		"villa": done.villa_number,
+		"address": done.address,
 		"food": done.food,
 		"pay": done.pay,
 		"tip": tip,
@@ -223,14 +244,72 @@ func deliver() -> bool:
 		"left_at_door": done.leave_at_door,
 		"insurance": insurance,
 		"cancelled": false,
+		# Session 32: special orders, regulars, school lunch orders and clusters (for the goals).
+		"special": done.special,
+		"base_pay": done.base_pay,
+		"regular": done.regular,
+		"cluster": done.cluster,
+		"lunch": done.lunch,
 	}
 	history.append(last_result)
+	last_goals_done.clear()
+	for id in goals_done():
+		if not id in goals_before and id != "no_crashes":  # "No crashes" is only decided at the end
+			last_goals_done.append(id)
 	money_changed.emit(money)
 	stats_changed.emit()
 	_set_stage(Stage.NONE)
 	# Sent last, so the phone's "Delivered!" message comes after "no order".
 	order_delivered.emit(done)
 	return true
+
+
+## Tip chance on a 5-star job: regulars and fragile cakes tip more often (Session 32).
+func tip_chance(order: Order) -> float:
+	if order.regular != "":
+		return GameConfig.REGULAR_TIP_CHANCE
+	if order.special == "fragile":
+		return GameConfig.FRAGILE_TIP_CHANCE
+	return GameConfig.TIP_CHANCE
+
+
+## A neighbour order at the door: nobody's home, so it goes to another home in the same
+## cluster. The order, its pay and the clock all carry on (Session 32).
+func send_to_neighbour(number: int, address: String, cluster: String) -> bool:
+	var order := current_order
+	if stage != Stage.TO_VILLA or order == null or order.special != "neighbour" or order.neighbour_done:
+		return false
+	order.neighbour_done = true
+	order.villa_number = number
+	order.address = address
+	order.cluster = cluster
+	order.note = GameConfig.NEIGHBOUR_NOTE % address
+	order_redirected.emit(order)
+	return true
+
+
+## You crashed (small or big). "No crashes" goal (Session 32). The ShiftManager calls this.
+func note_crash() -> void:
+	shift_crashes += 1
+
+
+## Picks this shift's goals from the goals this map can do.
+func pick_goals() -> void:
+	var pool := goal_pool.duplicate()
+	pool.shuffle()
+	shift_goals.clear()
+	for id in pool.slice(0, GameConfig.GOALS_PER_SHIFT):
+		shift_goals.append(id)
+
+
+## The ids of this shift's goals that are done.
+func goals_done() -> Array[String]:
+	var jobs := history.slice(shift_start_index)
+	var ids: Array[String] = []
+	for id in shift_goals:
+		if ShiftGoals.is_done(id, jobs, shift_crashes):
+			ids.append(id)
+	return ids
 
 
 ## Fills all three meters for a new ride. target: seconds before the time meter is empty.
@@ -268,8 +347,10 @@ func big_crash() -> Dictionary:
 		"boss": not boss_paid_crash,
 		"insured": insurance_on,
 		"lost_order": current_order != null or offered_order != null,
+		"food": current_order.food if current_order != null else "",
 		"paid": 0,
 	}
+	crash_shifts.append(shift_number)
 	if not boss_paid_crash:
 		boss_paid_crash = true
 	elif insurance_on:
@@ -279,7 +360,7 @@ func big_crash() -> Dictionary:
 	if current_order != null:
 		# Cancelled: counts as a 0-star job in your rating, no pay, no XP.
 		history.append({
-			"restaurant": current_order.restaurant_name, "villa": current_order.villa_number,
+			"restaurant": current_order.restaurant_name, "villa": current_order.villa_number, "address": current_order.address,
 			"food": current_order.food, "pay": 0, "tip": 0, "insurance": 0, "xp": 0,
 			"time": 0.0, "freshness": 0.0, "damage": 0.0, "stars": 0.0,
 			"left_at_door": false, "cancelled": true,
@@ -305,6 +386,15 @@ func hire(rider: String, country: String, look: int) -> void:
 	save_soon()
 
 
+## Big crashes in the last CRASH_WEEK_SHIFTS shifts (a "week"), for the clinic screen.
+func crashes_this_week() -> int:
+	var count := 0
+	for number in crash_shifts:
+		if number > shift_number - GameConfig.CRASH_WEEK_SHIFTS:
+			count += 1
+	return count
+
+
 ## Starts a new shift: a full clock and a fresh summary.
 func start_shift() -> void:
 	shift_number += 1
@@ -312,6 +402,10 @@ func start_shift() -> void:
 	shift_clock_out = false
 	shift_start_index = history.size()
 	shift_bills = 0
+	shift_crashes = 0
+	_goal_bonus_paid = false
+	last_goals_done.clear()
+	pick_goals()
 	shift_started.emit()
 
 
@@ -345,7 +439,15 @@ func shift_summary() -> Dictionary:
 		summary["xp"] += job["xp"]
 	if not jobs.is_empty():
 		summary["stars"] = star_total / jobs.size()
-	summary["earned"] = summary["pay"] + summary["tips"] - summary["insurance"] - summary["bills"]
+	# Session 32: the shift goals, and 15 Dh for each one done.
+	summary["goals"] = []
+	summary["goal_bonus"] = 0
+	for id in shift_goals:
+		var done := ShiftGoals.is_done(id, jobs, shift_crashes)
+		summary["goals"].append({"id": id, "text": ShiftGoals.ALL.get(id, id), "done": done})
+		if done:
+			summary["goal_bonus"] += GameConfig.GOAL_BONUS
+	summary["earned"] = summary["pay"] + summary["tips"] + summary["goal_bonus"] - summary["insurance"] - summary["bills"]
 	return summary
 
 
@@ -361,6 +463,10 @@ func clock_out() -> void:
 func end_shift() -> Dictionary:
 	shift_clock_out = true
 	var summary := shift_summary()
+	if summary["goal_bonus"] > 0 and not _goal_bonus_paid:
+		_goal_bonus_paid = true
+		money += summary["goal_bonus"]  # the goal bonus goes into the wallet (Session 32)
+		money_changed.emit(money)
 	shift_ended.emit(summary)
 	return summary
 

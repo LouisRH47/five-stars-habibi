@@ -47,14 +47,14 @@ func _process(_delta: float) -> void:
 			_show("Boss: Welcome to Snackaroo, %s! Your first order is on your phone (top right). Press E to accept it." % name)
 		GameState.Stage.TO_RESTAURANT:
 			if near:
-				_show("You're at the door. Press E to pick up the pizza.")
+				_show("You're there! Stop, press F to get off, walk to the door and hold E to pick up the pizza." if not delivery_manager.on_foot else "Hold E at the door to pick up the pizza. Then walk back to your bike and press F to ride.")
 			else:
 				_show("Ride to %s. Follow the orange pin on the mini-map (bottom left).\nW pedal, A / D steer, S brake, Space handbrake." % order.restaurant_name)
 		GameState.Stage.TO_VILLA:
 			if near:
-				_show("Press E to hand over the pizza.")
+				_show("Stop, press F to get off, walk to the door and hold E to hand over the pizza." if not delivery_manager.on_foot else "Hold E at the door to hand over the pizza.")
 			else:
-				_show("Take it to villa %d. Watch your meters (top left): be quick, and slow down for speed bumps! Hold Shift to sprint." % order.villa_number)
+				_show("Take it to %s. Watch your meters (top left): be quick, and slow down for speed bumps! Hold Shift to sprint." % order.address)
 
 
 func _offer() -> void:
@@ -113,6 +113,7 @@ func _build() -> void:
 	_panel.add_child(rows)
 	var title := Label.new()
 	title.text = "TIP"
+	title.theme_type_variation = &"Heading"
 	title.add_theme_font_size_override("font_size", 14)
 	title.add_theme_color_override("font_color", ORANGE)
 	rows.add_child(title)

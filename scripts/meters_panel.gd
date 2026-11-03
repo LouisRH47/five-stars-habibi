@@ -59,7 +59,8 @@ func _add_row(key: String) -> void:
 	var head := HBoxContainer.new()
 	var name_label := _label(key.to_upper(), 13, SOFT)
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var value := _label("", 13, TEXT)
+	var value := _label("", 15, TEXT)
+	value.theme_type_variation = &"BigNumber"
 	head.add_child(name_label)
 	head.add_child(value)
 	var bar := ProgressBar.new()

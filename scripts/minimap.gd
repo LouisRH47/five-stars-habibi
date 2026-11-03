@@ -31,10 +31,16 @@ const NUMBER_SIZE := 12
 const LABEL_SIZE := 15
 const BAR_HEIGHT := 26.0  # the strip along the bottom that names the next stop
 
+## The parked bike while you walk (Session 19), drawn as a little bike; null while riding.
+var parked_bike: Node3D
+## Where road works are (Session 33): a cone is drawn at each spot (x, z). Set by EventManager.
+var road_works_at: Array = []
+
 var _map: Dictionary = {}  # the data list's constants, e.g. _map["ROADS"]
 var _font: Font
 
-@onready var _view: Control = $Panel/Margin/Map
+@onready var _view: Control = $Panel/Margin/Window/View/Map
+var _ring: Control
 
 
 func _ready() -> void:
@@ -43,10 +49,17 @@ func _ready() -> void:
 	if place_builder != null and place_builder.data != null:
 		_map = place_builder.data.get_script_constant_map()
 	_view.draw.connect(_draw_map)
+	# Round, like the mockup (Session 20): the map is drawn into its own little viewport,
+	# which ui/round_mask.gdshader cuts to a circle, with a white ring on top.
+	_ring = Control.new()
+	_ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_ring.draw.connect(func(): _ring.draw_arc(_ring.size * 0.5, _ring.size.x * 0.5 - 2.0, 0.0, TAU, 96, PLAYER, 4.0, true))
+	$Panel/Margin.add_child(_ring)
 
 
 func _process(_delta: float) -> void:
 	_view.queue_redraw()
+	_ring.queue_redraw()
 
 
 ## Where a spot in the world shows up on the mini-map, in pixels from its top-left corner.
@@ -69,7 +82,7 @@ func target_label() -> String:
 	var order := GameState.current_order
 	if GameState.stage == GameState.Stage.TO_RESTAURANT:
 		return order.restaurant_name
-	return str(order.villa_number)
+	return order.address
 
 
 ## Where the pin is drawn: on the stop itself, or pinned to the edge if it's off the map.
@@ -89,26 +102,17 @@ func _world_xform(bike_xform: Transform3D) -> Transform2D:
 
 ## Where a pin for this map spot is drawn: on it, or pinned to the edge if it's off the map.
 func pin_spot(spot: Vector2) -> Vector2:
-	var inset := GameConfig.MINIMAP_EDGE_INSET
-	# Keep clear of the edges, and of the name strip along the bottom.
-	var box := Rect2(Vector2.ONE * inset, _view.size - Vector2(inset * 2.0, inset * 2.0 + BAR_HEIGHT))
-	if box.has_point(spot):
-		return spot
-	# Slide it back towards the middle until it touches the edge of the box.
+	# The map is round (Session 20): keep pins inside the circle, clear of the name strip.
 	var centre := _view.size * 0.5
+	var reach := centre.x - GameConfig.MINIMAP_EDGE_INSET
 	var away := spot - centre
-	var fit := minf(_fit(away.x, box.position.x - centre.x, box.end.x - centre.x),
-			_fit(away.y, box.position.y - centre.y, box.end.y - centre.y))
-	return centre + away * fit
-
-
-## How much of a step (along one axis) fits between the middle and the box edge.
-func _fit(step: float, low: float, high: float) -> float:
-	if step > 0.0:
-		return high / step
-	if step < 0.0:
-		return low / step
-	return INF
+	if away.length() > reach:
+		away = away.normalized() * reach
+	var floor_y := _view.size.y - BAR_HEIGHT - GameConfig.MINIMAP_EDGE_INSET * 0.5
+	var pin := centre + away
+	if pin.y > floor_y:
+		pin.y = floor_y
+	return pin
 
 
 func _draw_map() -> void:
@@ -123,18 +127,32 @@ func _draw_map() -> void:
 	_draw_buildings()
 	_view.draw_set_transform_matrix(Transform2D.IDENTITY)
 	_draw_villa_numbers(xform)
+	_draw_road_works(xform)
 	_draw_north(xform)
 	_draw_target(xform)
+	_draw_parked_bike(xform)
 	_draw_player()
 
 
 # --- Drawn in world metres (the map transform is on) ---
 
 func _draw_ground() -> void:
+	var half := Vector2.ZERO
 	if _map.has("HALF_SIZE"):
-		var half: float = _map["HALF_SIZE"]
-		_view.draw_rect(Rect2(-half, -half, half * 2.0, half * 2.0), GROUND)
-		_view.draw_rect(Rect2(-half, -half, half * 2.0, half * 2.0), WALL, false, 2.0)
+		half = Vector2.ONE * _map["HALF_SIZE"]
+	elif _map.has("MAP_HALF"):
+		half = _map["MAP_HALF"]
+	if half != Vector2.ZERO:
+		_view.draw_rect(Rect2(-half, half * 2.0), GROUND)
+		_view.draw_rect(Rect2(-half, half * 2.0), WALL, false, 2.0)
+	for plot in _map.get("PLOTS", []):
+		_view.draw_rect(plot["area"], plot["colour"])
+	if _map.has("SPINE"):
+		_view.draw_rect(_map["SPINE"], GRASS)
+	if _map.has("PLAZA"):
+		_view.draw_circle(_map["PLAZA"]["centre"], _map["PLAZA"]["radius"], PAVING)
+	for area in _map.get("PAVED_AREAS", []):
+		_view.draw_rect(area, PAVING)
 	if _map.has("PARK"):
 		_view.draw_rect(_map["PARK"]["area"], GRASS)
 	for area in _map.get("PARK_PATHS", []):
@@ -147,8 +165,9 @@ func _draw_roads() -> void:
 	var width: float = _map.get("ROAD_WIDTH", 8.0)
 	for road in _map.get("ROADS", []):
 		# One road-width longer, like the real roads, so corners are filled in.
-		var along: Vector2 = (road["to"] - road["from"]).normalized() * width * 0.5
-		_view.draw_line(road["from"] - along, road["to"] + along, ROAD, width)
+		var road_width: float = road.get("width", width)
+		var along: Vector2 = (road["to"] - road["from"]).normalized() * road_width * 0.5
+		_view.draw_line(road["from"] - along, road["to"] + along, ROAD if road_width >= 6.0 else PAVING.darkened(0.2), road_width)
 	if _map.has("ROUNDABOUT_CENTRE"):
 		_view.draw_circle(_map["ROUNDABOUT_CENTRE"], _map["ROUNDABOUT_RADIUS"], ROAD)
 		_view.draw_circle(_map["ROUNDABOUT_CENTRE"], _map["ROUNDABOUT_ISLAND_RADIUS"], GRASS)
@@ -163,9 +182,9 @@ func _draw_buildings() -> void:
 		target_villa = GameState.current_order.villa_number
 	for place in place_builder.villas:
 		var colour := TARGET if place["number"] == target_villa else VILLA
-		_draw_block(place["position"], place["facing"], place_builder.villa_size, colour)
+		_draw_block(place["position"], place["facing"], place_builder.villa_size_of(place), colour)
 	for place in place_builder.restaurants:
-		_draw_block(place["position"], place["facing"], place_builder.restaurant_size, place["colour"])
+		_draw_block(place["position"], place["facing"], place_builder.restaurant_size_of(place), place["colour"])
 
 
 ## A building seen from above: width across its front, depth front to back, turned to face its way.
@@ -186,12 +205,13 @@ func _draw_villa_numbers(xform: Transform2D) -> void:
 	for place in place_builder.villas:
 		var spot: Vector2 = xform * Vector2(place["position"].x, place["position"].z)
 		if view.grow(-6.0).has_point(spot):
-			_text(str(place["number"]), spot, NUMBER_SIZE, VILLA_NUMBER)
+			if not PlaceBuilder.is_spot(place):  # the school booth and stable office have no number
+				_text(str(place.get("house", place["number"])), spot, NUMBER_SIZE, VILLA_NUMBER)
 
 
 func _draw_north(xform: Transform2D) -> void:
 	var north := xform.basis_xform(Vector2.UP).normalized()
-	var spot := _view.size * 0.5 + north * (_view.size.x * 0.5 - 12.0)
+	var spot := _view.size * 0.5 + north * (_view.size.x * 0.5 - 18.0)
 	_view.draw_circle(spot, 9.0, OUTLINE)
 	_text("N", spot, NUMBER_SIZE, PLAYER)
 
@@ -214,13 +234,31 @@ func _draw_target(xform: Transform2D) -> void:
 		_view.draw_circle(spot, 12.0 if to_villa else 8.0, OUTLINE)
 		_view.draw_circle(spot, 10.0 if to_villa else 6.0, TARGET)
 		if to_villa:
-			_text(target_label(), spot, NUMBER_SIZE, PLAYER)
+			_text(_house_number(), spot, NUMBER_SIZE, PLAYER)
 	# The strip along the bottom: where to go and how far it is.
 	var metres := roundi(Vector2(bike.global_position.x - door.x, bike.global_position.z - door.z).length())
-	var name := target_label() if GameState.stage == GameState.Stage.TO_RESTAURANT else "Villa " + target_label()
-	var bar := Rect2(0.0, _view.size.y - BAR_HEIGHT, _view.size.x, BAR_HEIGHT)
+	var name := target_label()
+	var bar := Rect2(_view.size.x * 0.15, _view.size.y - BAR_HEIGHT - 10.0, _view.size.x * 0.7, BAR_HEIGHT)
 	_view.draw_rect(bar, OUTLINE)
 	_text("%s   %d m" % [name, metres], bar.get_center(), LABEL_SIZE, TARGET)
+
+
+## The parked bike: a teal dot with a white ring (pinned to the edge if it's far away).
+func _draw_parked_bike(xform: Transform2D) -> void:
+	if parked_bike == null:
+		return
+	var spot := pin_spot(xform * Vector2(parked_bike.global_position.x, parked_bike.global_position.z))
+	_view.draw_circle(spot, 8.0, PLAYER)
+	_view.draw_circle(spot, 6.0, Color(0.16470589, 0.5568628, 0.6117647, 1))
+	_text("B", spot, NUMBER_SIZE - 2, PLAYER)
+
+
+## The number on the door of the villa you're going to (inside its cluster).
+func _house_number() -> String:
+	for place in place_builder.villas:
+		if place["number"] == GameState.current_order.villa_number:
+			return "" if PlaceBuilder.is_spot(place) else str(place.get("house", place["number"]))
+	return ""
 
 
 ## You: a white arrow in the middle, always pointing up (the way you're riding).
@@ -237,3 +275,16 @@ func _text(text: String, centre: Vector2, size: int, colour: Color) -> void:
 	var width := _font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x
 	var baseline := centre + Vector2(-width * 0.5, _font.get_ascent(size) * 0.5 - 1.0)
 	_view.draw_string(_font, baseline, text, HORIZONTAL_ALIGNMENT_LEFT, -1, size, colour)
+
+
+## Road works (Session 33): a little orange cone with a white stripe, on a dark circle.
+func _draw_road_works(xform: Transform2D) -> void:
+	for at: Vector2 in road_works_at:
+		var spot := xform * at
+		if spot.distance_to(_view.size * 0.5) > _view.size.x * 0.5 - 8.0:
+			continue  # only while it's on the map
+		_view.draw_circle(spot, 11.0, OUTLINE)
+		_view.draw_colored_polygon(PackedVector2Array([spot + Vector2(0, -8), spot + Vector2(6, 6),
+				spot + Vector2(-6, 6)]), TARGET)
+		_view.draw_line(spot + Vector2(-3.5, 1), spot + Vector2(3.5, 1), PLAYER, 2.0)
+		_view.draw_line(spot + Vector2(-8, 7), spot + Vector2(8, 7), TARGET, 2.0)

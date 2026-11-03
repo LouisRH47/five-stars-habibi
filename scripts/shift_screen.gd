@@ -75,6 +75,11 @@ func show_summary(summary: Dictionary) -> void:
 	]
 	if summary["cancelled"] > 0:
 		rows.insert(1, ["Cancelled", str(summary["cancelled"])])
+	# Session 32: each shift goal, with its 15 Dh bonus if you did it.
+	for goal in summary.get("goals", []):
+		var at := rows.size() - 2  # just above "You earned"
+		rows.insert(at, ["%s %s" % ["✓" if goal["done"] else "•", goal["text"]],
+				"+%d Dh" % GameConfig.GOAL_BONUS if goal["done"] else "-"])
 	for row in rows:
 		var big: bool = row[0] == "You earned"
 		_table.add_child(_label(row[0], 22 if big else 19, ORANGE if big else SOFT))
@@ -105,7 +110,8 @@ func _build_clock() -> void:
 	var rows := VBoxContainer.new()
 	rows.add_theme_constant_override("separation", -2)
 	box.add_child(rows)
-	_clock = _label("08:00", 32, TEXT)
+	_clock = _label("08:00", 34, TEXT)
+	_clock.theme_type_variation = &"BigNumber"
 	_clock.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	rows.add_child(_clock)
 	_clock_note = _label("Shift 1", 13, SOFT)
@@ -130,7 +136,8 @@ func _build_summary() -> void:
 	var rows := VBoxContainer.new()
 	rows.add_theme_constant_override("separation", 14)
 	_summary.add_child(rows)
-	_title = _label("Shift done!", 34, ORANGE)
+	_title = _label("Shift done!", 38, ORANGE)
+	_title.theme_type_variation = &"Heading"
 	rows.add_child(_title)
 	_stars = StarRow.new()
 	_stars.star_size = 36.0

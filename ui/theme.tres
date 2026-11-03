@@ -1,0 +1,127 @@
+[gd_resource type="Theme" format=3]
+
+[ext_resource type="FontFile" path="res://assets/fonts/Nunito.ttf" id="1_nunito"]
+[ext_resource type="FontFile" path="res://assets/fonts/Baloo2.ttf" id="2_baloo"]
+[ext_resource type="FontFile" path="res://assets/fonts/NotoSansArabic.ttf" id="3_noto"]
+
+[sub_resource type="FontVariation" id="FontVariation_body"]
+fallbacks = Array[Font]([ExtResource("3_noto")])
+base_font = ExtResource("1_nunito")
+variation_opentype = {2003265652: 650}
+
+[sub_resource type="FontVariation" id="FontVariation_title"]
+fallbacks = Array[Font]([ExtResource("3_noto")])
+base_font = ExtResource("2_baloo")
+variation_opentype = {2003265652: 800}
+
+[sub_resource type="FontVariation" id="FontVariation_number"]
+fallbacks = Array[Font]([ExtResource("3_noto")])
+base_font = ExtResource("2_baloo")
+variation_opentype = {2003265652: 700}
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button"]
+content_margin_left = 18.0
+content_margin_top = 8.0
+content_margin_right = 18.0
+content_margin_bottom = 8.0
+bg_color = Color(0.05882353, 0.29803923, 0.36078432, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_hover"]
+content_margin_left = 18.0
+content_margin_top = 8.0
+content_margin_right = 18.0
+content_margin_bottom = 8.0
+bg_color = Color(0.10980392, 0.40392157, 0.47843137, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_pressed"]
+content_margin_left = 18.0
+content_margin_top = 8.0
+content_margin_right = 18.0
+content_margin_bottom = 8.0
+bg_color = Color(0.9490196, 0.54901963, 0.15686275, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_focus"]
+draw_center = false
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.9490196, 0.69803923, 0.1882353, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_disabled"]
+content_margin_left = 18.0
+content_margin_top = 8.0
+content_margin_right = 18.0
+content_margin_bottom = 8.0
+bg_color = Color(0.6, 0.64, 0.64, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_edit"]
+content_margin_left = 14.0
+content_margin_top = 8.0
+content_margin_right = 14.0
+content_margin_bottom = 8.0
+bg_color = Color(0.9882353, 0.96862745, 0.92941177, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.9529412, 0.8901961, 0.7647059, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_edit_focus"]
+draw_center = false
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.9490196, 0.54901963, 0.15686275, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[resource]
+default_font = SubResource("FontVariation_body")
+default_font_size = 18
+Button/colors/font_color = Color(1, 1, 1, 1)
+Button/colors/font_hover_color = Color(1, 1, 1, 1)
+Button/colors/font_pressed_color = Color(1, 1, 1, 1)
+Button/colors/font_focus_color = Color(1, 1, 1, 1)
+Button/colors/font_disabled_color = Color(0.92, 0.92, 0.92, 1)
+Button/styles/normal = SubResource("StyleBoxFlat_button")
+Button/styles/hover = SubResource("StyleBoxFlat_button_hover")
+Button/styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+Button/styles/focus = SubResource("StyleBoxFlat_button_focus")
+Button/styles/disabled = SubResource("StyleBoxFlat_button_disabled")
+LineEdit/colors/font_color = Color(0.105882354, 0.11372549, 0.13333334, 1)
+LineEdit/colors/font_placeholder_color = Color(0.55, 0.6, 0.61, 1)
+LineEdit/colors/caret_color = Color(0.9490196, 0.54901963, 0.15686275, 1)
+LineEdit/styles/normal = SubResource("StyleBoxFlat_edit")
+LineEdit/styles/focus = SubResource("StyleBoxFlat_edit_focus")
+Heading/base_type = &"Label"
+Heading/fonts/font = SubResource("FontVariation_title")
+BigNumber/base_type = &"Label"
+BigNumber/fonts/font = SubResource("FontVariation_number")

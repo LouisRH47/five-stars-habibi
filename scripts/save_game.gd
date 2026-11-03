@@ -1,7 +1,7 @@
 class_name SaveGame
 ## Saves and loads your progress (Session 15) to one small file, as JSON text:
 ## money, delivery history (your rating comes from it), XP, your name, country and look,
-## the insurance setting, and whether you're hired / did the tutorial / the boss paid a
+## the insurance setting, how often you've delivered to each regular, and whether you're hired / did the tutorial / the boss paid a
 ## crash. GameState calls these; it saves by itself whenever something changes.
 ## On a Mac the file is in ~/Library/Application Support/Godot/app_userdata/Five Stars Habibi/.
 
@@ -28,6 +28,8 @@ static func save(state: Node, path: String) -> bool:
 		"insurance_on": state.insurance_on,
 		"boss_paid_crash": state.boss_paid_crash,
 		"shift_number": state.shift_number,
+		"crash_shifts": state.crash_shifts,
+		"regular_visits": state.regular_visits,
 	}
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	if file == null:
@@ -62,6 +64,15 @@ static func load_into(state: Node, path: String) -> bool:
 	state.insurance_on = bool(data.get("insurance_on", true))
 	state.boss_paid_crash = bool(data.get("boss_paid_crash", false))
 	state.shift_number = int(data.get("shift_number", 0))
+	state.crash_shifts.clear()
+	for number in data.get("crash_shifts", []):
+		state.crash_shifts.append(int(number))
+	# How many times you've delivered to each regular customer (Session 32).
+	state.regular_visits.clear()
+	var visits = data.get("regular_visits", {})
+	if visits is Dictionary:
+		for id in visits:
+			state.regular_visits[str(id)] = int(visits[id])
 	return true
 
 

@@ -35,6 +35,11 @@ func _physics_process(delta: float) -> void:
 	if _pause_left > 0.0:
 		_pause_left -= delta
 		return
+	if bike_in_the_way():
+		# Don't stroll into the bike or the rider (it would shove a parked bike): go elsewhere.
+		_pick_target()
+		_pause_left = 0.5
+		return
 	var to_target := _target - position
 	to_target.y = 0.0
 	if to_target.length() < 0.1:

@@ -3,65 +3,126 @@
 [ext_resource type="Script" path="res://scripts/phone.gd" id="1_phone"]
 [ext_resource type="Script" path="res://scripts/star_row.gd" id="2_stars"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_phone"]
-bg_color = Color(0.05882353, 0.1254902, 0.14901961, 0.9)
-border_width_left = 4
-border_width_top = 4
-border_width_right = 4
-border_width_bottom = 4
-border_color = Color(0.16470589, 0.5568628, 0.6117647, 1)
-corner_radius_top_left = 28
-corner_radius_top_right = 28
-corner_radius_bottom_right = 28
-corner_radius_bottom_left = 28
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 6
+border_width_top = 6
+border_width_right = 6
+border_width_bottom = 6
+border_color = Color(0.105882354, 0.11372549, 0.13333334, 1)
+corner_radius_top_left = 30
+corner_radius_top_right = 30
+corner_radius_bottom_right = 30
+corner_radius_bottom_left = 30
+shadow_color = Color(0, 0, 0, 0.25)
+shadow_size = 14
+shadow_offset = Vector2(0, 6)
 
-[node name="Phone" type="CanvasLayer" unique_id=1507245101]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wallet"]
+content_margin_left = 12.0
+content_margin_top = 2.0
+content_margin_right = 12.0
+content_margin_bottom = 2.0
+bg_color = Color(0.05882353, 0.29803923, 0.36078432, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pill"]
+content_margin_left = 10.0
+content_margin_top = 1.0
+content_margin_right = 10.0
+content_margin_bottom = 1.0
+bg_color = Color(0.9490196, 0.54901963, 0.15686275, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_note"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.9882353, 0.9372549, 0.78431374, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar_back"]
+bg_color = Color(0.9529412, 0.8901961, 0.7647059, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xp_fill"]
+bg_color = Color(0.05882353, 0.29803923, 0.36078432, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hold_fill"]
+bg_color = Color(0.9490196, 0.54901963, 0.15686275, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="Phone" type="CanvasLayer"]
 script = ExtResource("1_phone")
 
-[node name="Panel" type="PanelContainer" parent="." unique_id=1507245102]
-custom_minimum_size = Vector2(300, 300)
+[node name="Panel" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(330, 0)
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -324.0
+offset_left = -354.0
 offset_top = 24.0
 offset_right = -24.0
-offset_bottom = 324.0
+offset_bottom = 300.0
 grow_horizontal = 0
-theme_override_styles/panel = SubResource("StyleBoxFlat_phone")
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
 
-[node name="Margin" type="MarginContainer" parent="Panel" unique_id=1507245103]
+[node name="Margin" type="MarginContainer" parent="Panel"]
 layout_mode = 2
 theme_override_constants/margin_left = 22
-theme_override_constants/margin_top = 18
+theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 22
 theme_override_constants/margin_bottom = 18
 
-[node name="Rows" type="VBoxContainer" parent="Panel/Margin" unique_id=1507245104]
+[node name="Rows" type="VBoxContainer" parent="Panel/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 
-[node name="Header" type="HBoxContainer" parent="Panel/Margin/Rows" unique_id=1507245105]
+[node name="Header" type="HBoxContainer" parent="Panel/Margin/Rows"]
 layout_mode = 2
 
-[node name="Title" type="Label" parent="Panel/Margin/Rows/Header" unique_id=1507245106]
+[node name="Title" type="Label" parent="Panel/Margin/Rows/Header"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 24
+theme_type_variation = &"Heading"
 theme_override_colors/font_color = Color(0.9490196, 0.54901963, 0.15686275, 1)
+theme_override_font_sizes/font_size = 28
 text = "Snackaroo"
 
-[node name="Wallet" type="Label" parent="Panel/Margin/Rows/Header" unique_id=1507245107]
+[node name="Wallet" type="Label" parent="Panel/Margin/Rows/Header"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
-theme_override_colors/font_color = Color(1, 0.9529412, 0.87058824, 1)
+size_flags_vertical = 4
+theme_type_variation = &"BigNumber"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_wallet")
 text = "Dh 0"
 
 [node name="Rider" type="Label" parent="Panel/Margin/Rows"]
 visible = false
 layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.42, 0.44, 1)
 theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0.79, 0.89, 0.92, 1)
 text = "Rider"
 text_overrun_behavior = 3
 
@@ -79,31 +140,43 @@ star_size = 18.0
 [node name="Rating" type="Label" parent="Panel/Margin/Rows/Profile"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.105882354, 0.11372549, 0.13333334, 1)
 theme_override_font_sizes/font_size = 15
-theme_override_colors/font_color = Color(1, 0.9529412, 0.87058824, 1)
 text = "New"
 
 [node name="Level" type="Label" parent="Panel/Margin/Rows/Profile"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 15
-theme_override_colors/font_color = Color(0.49803922, 0.827451, 0.8784314, 1)
+theme_type_variation = &"BigNumber"
+theme_override_colors/font_color = Color(0.05882353, 0.29803923, 0.36078432, 1)
+theme_override_font_sizes/font_size = 16
 text = "Lv 1"
 
 [node name="XP" type="ProgressBar" parent="Panel/Margin/Rows"]
-custom_minimum_size = Vector2(0, 5)
+custom_minimum_size = Vector2(0, 6)
 layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_bar_back")
+theme_override_styles/fill = SubResource("StyleBoxFlat_xp_fill")
 max_value = 50.0
 show_percentage = false
 
-[node name="Line" type="ColorRect" parent="Panel/Margin/Rows" unique_id=1507245108]
+[node name="Line" type="ColorRect" parent="Panel/Margin/Rows"]
 custom_minimum_size = Vector2(0, 2)
 layout_mode = 2
-color = Color(0.16470589, 0.5568628, 0.6117647, 1)
+color = Color(0.9529412, 0.8901961, 0.7647059, 1)
 
-[node name="Status" type="Label" parent="Panel/Margin/Rows" unique_id=1507245109]
+[node name="Pill" type="Label" parent="Panel/Margin/Rows"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
-theme_override_colors/font_color = Color(1, 0.9529412, 0.87058824, 1)
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_pill")
+text = "WAITING"
+
+[node name="Status" type="Label" parent="Panel/Margin/Rows"]
+layout_mode = 2
+theme_type_variation = &"Heading"
+theme_override_colors/font_color = Color(0.105882354, 0.11372549, 0.13333334, 1)
+theme_override_font_sizes/font_size = 24
 text = "Waiting for orders..."
 autowrap_mode = 3
 
@@ -115,22 +188,60 @@ size_flags_horizontal = 0
 script = ExtResource("2_stars")
 star_size = 32.0
 
-[node name="Detail" type="Label" parent="Panel/Margin/Rows" unique_id=1507245110]
+[node name="Stops" type="VBoxContainer" parent="Panel/Margin/Rows"]
 visible = false
 layout_mode = 2
-theme_override_font_sizes/font_size = 17
-theme_override_colors/font_color = Color(0.7882353, 0.89411765, 0.91764706, 1)
+theme_override_constants/separation = 2
+
+[node name="PickUp" type="Label" parent="Panel/Margin/Rows/Stops"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.105882354, 0.11372549, 0.13333334, 1)
+theme_override_font_sizes/font_size = 16
+text = "●  Pick up · Pizza"
+
+[node name="DropOff" type="Label" parent="Panel/Margin/Rows/Stops"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.105882354, 0.11372549, 0.13333334, 1)
+theme_override_font_sizes/font_size = 16
+text = "●  Drop off · Villa 12"
+
+[node name="Chips" type="HBoxContainer" parent="Panel/Margin/Rows"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Note" type="Label" parent="Panel/Margin/Rows"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.3, 0.05, 1)
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_note")
 autowrap_mode = 3
 
-[node name="Hint" type="Label" parent="Panel/Margin/Rows" unique_id=1507245111]
+[node name="Detail" type="Label" parent="Panel/Margin/Rows"]
 visible = false
 layout_mode = 2
+theme_override_colors/font_color = Color(0.105882354, 0.11372549, 0.13333334, 1)
 theme_override_font_sizes/font_size = 16
-theme_override_colors/font_color = Color(1, 1, 1, 1)
+autowrap_mode = 3
+
+[node name="Hint" type="Label" parent="Panel/Margin/Rows"]
+visible = false
+layout_mode = 2
+theme_type_variation = &"Heading"
+theme_override_font_sizes/font_size = 18
+autowrap_mode = 3
+
+[node name="HoldBar" type="ProgressBar" parent="Panel/Margin/Rows"]
+visible = false
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_bar_back")
+theme_override_styles/fill = SubResource("StyleBoxFlat_hold_fill")
+show_percentage = false
 
 [node name="Insurance" type="Label" parent="Panel/Margin/Rows"]
 layout_mode = 2
-size_flags_vertical = 10
+theme_override_colors/font_color = Color(0.36, 0.42, 0.44, 1)
 theme_override_font_sizes/font_size = 13
-theme_override_colors/font_color = Color(0.49803922, 0.62745098, 0.65882355, 1)
 text = "Insurance ON  (I to switch)"
