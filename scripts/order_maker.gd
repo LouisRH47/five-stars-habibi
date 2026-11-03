@@ -46,8 +46,8 @@ func make(restaurant_id := "", villa_number := 0, special := "", boring := false
 	order.food = restaurant.get("foods", [restaurant["food"]]).pick_random()  # the farm stall sells two
 	order.boring = boring
 	order.base_pay = GameConfig.ORDER_PAY_MIN if boring else pay_for(from.distance_to(places.villa_door(villa["number"])))
-	# Some customers add a short note, like "Leave it at the door, please".
-	if randf() < GameConfig.ORDER_LEAVE_AT_DOOR_CHANCE:
+	# Reception staff take indoor deliveries at the counter.
+	if randf() < GameConfig.ORDER_LEAVE_AT_DOOR_CHANCE and not villa.get("interior", false):
 		order.leave_at_door = true
 		order.note = GameConfig.ORDER_LEAVE_AT_DOOR_NOTE
 	elif randf() < GameConfig.ORDER_NOTE_CHANCE:

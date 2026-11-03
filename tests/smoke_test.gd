@@ -1341,12 +1341,79 @@ func _finish() -> void:
 	await _check_session33()
 	await _check_life_meets_events()
 	_check_session32()
+	await _check_venue_handoffs()
 	_check_saving()
 	for action in ACTIONS:
 		Input.action_release(action)
 	_phase = "done"
 	print("RESULT: ", "FAIL" if _failed else "PASS")
 	quit(1 if _failed else 0)
+
+
+## Sessions 41–42: drive the real on-foot handoff at the school gate and both receptions.
+## The normal delivery test already exercises accepting an offer and holding E at pickup.
+func _check_venue_handoffs() -> void:
+	var places: PlaceBuilder = _delivery.place_builder
+	if not places.data.get_script_constant_map().has("INSTITUTE"):
+		return
+	var gs: Node = _game_state
+	var card: Node = _main.get_node("DeliveredCard")
+	var counter: Node = _main.get_node("CounterPanel")
+	seed(41042)
+	for number in [903, 904]:
+		var doorstep := 0
+		for sample in 80:
+			var order: Order = _delivery.make_order("pizza", number)
+			if order.leave_at_door:
+				doorstep += 1
+		_check("indoor reception orders always hand over to staff at %s" % number, doorstep == 0,
+				"%d doorstep orders out of 80" % doorstep)
+	for number in [GameConfig.SCHOOL_SPOT, 903, 904]:
+		gs.reset()
+		var order: Order = _delivery.make_order("pizza", number)
+		if number == GameConfig.SCHOOL_SPOT:
+			order.leave_at_door = false  # exercise the outdoor gate with a recipient present
+		_check("start a delivery to " + order.address,
+				order.villa_number == number and gs.offer_order(order) and _delivery.accept() and gs.pick_up(), "")
+		_move_bike_to(places.villa_approach(number))
+		var target: Vector3 = places.villa_door(number)
+		_face(_bike, target)
+		await physics_frame
+		Input.action_press("interact")
+		for frame in STEPS.hold:
+			await physics_frame
+		Input.action_release("interact")
+		await physics_frame
+		_check("the bike approach does not complete the handoff at " + order.address,
+				gs.stage_name() == "TO_VILLA", "")
+		var dismounted: bool = _on_foot.get_off()
+		var distance: float = _on_foot.walker.global_position.distance_to(target)
+		var walk_frames := ceili((distance / (GameConfig.WALK_SPEED_KMH / 3.6) + 2.0) * Engine.physics_ticks_per_second)
+		_face(_on_foot.walker, target)
+		Input.action_press("move_forward")
+		for frame in walk_frames:
+			if _delivery.is_near_target():
+				break
+			await physics_frame
+		Input.action_release("move_forward")
+		_check("the rider can reach the handoff point on foot at " + order.address,
+				dismounted and _delivery.target_door() == target and _delivery.is_near_target(),
+				"%.1f m from target" % _on_foot.walker.global_position.distance_to(target))
+		if number != GameConfig.SCHOOL_SPOT:
+			await process_frame
+			_check("the staffed counter panel opens at " + order.address,
+					counter != null and counter._panel.visible and counter._panel.heading.text == order.address
+					and counter._staff != null, "")
+		Input.action_press("interact")
+		for frame in STEPS.hold:
+			await physics_frame
+		Input.action_release("interact")
+		_check("holding E delivers and stamps " + order.address,
+				card.showing and card.shown.get("villa") == number and gs.history.size() == 1
+				and gs.money > 0 and gs.visited_venues.get(str(number)) == order.address, "")
+		_close_card()
+		_on_foot.get_on(true)
+	gs.reset()
 
 
 ## Session 28: the sun follows the clock (morning, noon and sunset differ, sunset is the
