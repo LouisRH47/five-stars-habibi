@@ -1170,6 +1170,7 @@ func _finish() -> void:
 	_check_session26()
 	_check_session27()
 	_check_session29()
+	_check_session31()
 	_check_saving()
 	for action in ACTIONS:
 		Input.action_release(action)
@@ -1480,3 +1481,120 @@ func _check_session29() -> void:
 		_check("parked cars use the CC0 car models", car.get_node_or_null("Model") != null, "")
 	var credits := FileAccess.get_file_as_string("res://CREDITS.md")
 	_check("the people and car packs are credited", "Quaternius" in credits and "Car Kit" in credits, "")
+
+
+## Session 31: juice. Sprinting widens the camera and shows speed lines, and both go back
+## afterwards; a new order makes the phone buzz (with the buzz sound); a delivery pops the
+## stars and coins on the Delivered card; the tyre dust shows on sand and when braking hard,
+## not on the road; Low graphics has fewer dust puffs than High.
+func _check_session31() -> void:
+	var gs: Node = _game_state
+	# Sprinting: a wider camera and speed lines.
+	var camera: Camera3D = _main.get_node("FollowCamera")
+	var keep_target: Node3D = camera.target
+	camera.target = _bike
+	_bike.sprinting = true
+	for i in 30:
+		camera._process(0.05)
+	var wide: float = camera.fov
+	var lines: float = camera.speed_lines.strength
+	_bike.sprinting = false
+	for i in 60:
+		camera._process(0.05)
+	_check("sprinting widens the camera and shows speed lines", wide > camera.base_fov + 4.0 and lines > 0.8,
+			"%.1f degrees (normal %.1f), lines %.2f" % [wide, camera.base_fov, lines])
+	_check("the camera and the speed lines go back after sprinting",
+			absf(camera.fov - camera.base_fov) < 0.3 and camera.speed_lines.strength < 0.05,
+			"%.1f degrees, lines %.2f" % [camera.fov, camera.speed_lines.strength])
+	camera.target = keep_target
+	# A new order: the phone shakes and buzzes.
+	var phone: Node = _main.get_node("Phone")
+	var sounds: Node = _main.get_node("Sounds")
+	gs.reset()
+	var buzzes: int = phone.buzzes
+	var buzz_sounds: int = sounds.play_counts.get("buzz", 0)
+	_delivery.offer_now()
+	_check("a new order makes the phone buzz", phone.buzzes == buzzes + 1 and phone._buzz_tween != null
+			and phone._buzz_tween.is_valid(), "%d buzz" % (phone.buzzes - buzzes))
+	_check("the buzz sound plays (and the ping)", sounds.play_counts.get("buzz", 0) == buzz_sounds + 1
+			and sounds.last_played == "ping", sounds.last_played)
+	# A delivery: the stars pop in one by one, then the coins fly out.
+	var card: Node = _main.get_node("DeliveredCard")
+	_delivery.accept()
+	gs.pick_up()
+	var pops: int = card.pops
+	var pop_sounds: int = sounds.play_counts.get("pop", 0)
+	var coin_sounds: int = sounds.play_counts.get("coins", 0)
+	gs.deliver()
+	var stars: float = gs.last_result["stars"]
+	var stars_at_start: float = card._stars.stars
+	if card._pop_tween != null:
+		card._pop_tween.custom_step(5.0)  # skip ahead to the end of the pops
+	var icons := get_nodes_in_group("pop_icon").size()
+	_check("the Delivered card pops the stars and the coins", card.showing and stars_at_start == 0.0
+			and card._stars.stars == stars and card.pops == pops + ceili(stars) + 1 and icons > 0,
+			"%.1f stars, %d pops, %d icons" % [stars, card.pops - pops, icons])
+	_check("the pops play their sounds", sounds.play_counts.get("pop", 0) == pop_sounds + ceili(stars)
+			and sounds.play_counts.get("coins", 0) == coin_sounds + 1, "")
+	_close_card()
+	_check("closing the card stops the pops", card._pop_tween == null, "")
+	gs.reset()
+	# Tyre dust: on sand when riding, on any ground when braking hard, not on the road.
+	var dust: GPUParticles3D = _bike.get_node("TyreDust")
+	var keep := _bike.global_transform
+	var keep_parked: bool = _bike.parked
+	_bike.set_parked(false)
+	_bike.fallen_left = 0.0
+	_bike.wrecked = false
+	_bike.speed = 6.0
+	var ground: Script = load("res://scripts/ground_type.gd")
+	var sand := Vector3.INF
+	var road := Vector3.INF
+	for x in range(-180, 181, 6):
+		for z in range(-140, 141, 6):
+			var on_sand: bool = ground.is_sand(dust._map, Vector2(x, z))
+			if on_sand and sand == Vector3.INF:
+				sand = Vector3(x, keep.origin.y, z)
+			if not on_sand and road == Vector3.INF:
+				road = Vector3(x, keep.origin.y, z)
+	dust._brake_left = 0.0
+	if sand != Vector3.INF:
+		_bike.global_position = sand
+		dust._check_left = 0.0
+		dust._physics_process(0.016)
+		_check("dust puffs from the tyre when riding on sand", dust.on_sand and dust.emitting, "at %s" % sand)
+	else:
+		print("      no sand on this map, sand dust not checked")
+	if road != Vector3.INF:
+		_bike.global_position = road
+		dust._check_left = 0.0
+		dust._physics_process(0.016)
+		_check("no dust when riding on the road", not dust.on_sand and not dust.emitting, "at %s" % road)
+	else:
+		print("      no roads on this map (all sand), road check skipped")
+	_bike.hard_braked.emit()
+	dust._physics_process(0.016)
+	_check("braking hard makes a dust puff", dust.emitting and dust.amount_ratio == 1.0, "")
+	_bike.speed = 0.0
+	dust._brake_left = 0.0
+	dust._physics_process(0.016)
+	_bike.global_transform = keep
+	if keep_parked:
+		_bike.set_parked(true)
+	# Fewer puffs on Low graphics (never saves the settings file).
+	var keep_graphics := Settings.graphics
+	Settings.graphics = 0
+	Settings.apply()
+	var low: int = dust.amount
+	Settings.graphics = 2
+	Settings.apply()
+	var high: int = dust.amount
+	Settings.graphics = keep_graphics
+	Settings.apply()
+	_check("Low graphics has fewer dust puffs than High", low < high, "%d vs %d" % [low, high])
+	var files := 0
+	for file in ["buzz", "pop", "coins"]:
+		var stream := load("res://assets/audio/%s.wav" % file) as AudioStreamWAV
+		if stream != null and stream.get_length() > 0.1:
+			files += 1
+	_check("the buzz, pop and coins sounds load", files == 3, "%d of 3" % files)

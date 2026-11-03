@@ -169,6 +169,43 @@ def bump():
     return add(track, noise(0.15, 25, 0.7, 0.4))
 
 
+def buzz():
+    """The phone buzzing on the table (Session 31): two short low hums, bzz-bzz."""
+    track = silence(0.5)
+    for start in (0.0, 0.2):
+        hum = array("f")
+        for i in range(int(0.14 * RATE)):
+            t = i / RATE
+            env = min(1.0, t / 0.01) * min(1.0, (0.14 - t) / 0.02)
+            wobble = 1.0 + 0.35 * math.sin(2 * math.pi * 31 * t)  # the rattly motor
+            hum.append((math.sin(2 * math.pi * 150 * t) + 0.4 * math.sin(2 * math.pi * 300 * t)) * env * wobble)
+        mix_in(track, hum, start)
+    return track
+
+
+def pop():
+    """A star popping in on the Delivered card (Session 31): a tiny bright blip."""
+    track = silence(0.25)
+    blip = array("f")
+    for i in range(int(0.12 * RATE)):
+        t = i / RATE
+        freq = 900 + 900 * min(1.0, t / 0.04)  # slides up quickly
+        blip.append(math.sin(2 * math.pi * freq * t) * min(1.0, t / 0.003) * math.exp(-t * 30))
+    mix_in(track, blip, 0.0)
+    mix_in(track, tone(2700, 0.2, 25, 0.3, 0.002), 0.03)
+    return track
+
+
+def coins():
+    """Coins flying out of the total (Session 31): a quick sprinkle of little chimes."""
+    track = silence(0.8)
+    notes = (3136, 3520, 3951, 4186, 3729, 4699, 4186)
+    for k, f in enumerate(notes):
+        mix_in(track, tone(f, 0.35, 14, 0.7 if k % 2 == 0 else 0.5, 0.002), k * 0.055)
+        mix_in(track, tone(f * 1.5, 0.2, 22, 0.2, 0.002), k * 0.055)
+    return track
+
+
 def roll_loop():
     """Tyres on the road: a soft hiss. The game turns it up with your speed."""
     hiss = noise(2.4, 0, 0.75, 1.0)
@@ -275,3 +312,6 @@ if __name__ == "__main__":
     save("ambience_loop.wav", ambience_loop(), 0.5)
     save("music_loop.wav", music_loop(), 0.8)
     save("ring.wav", ring())
+    save("buzz.wav", buzz())    # Session 31: the phone buzz
+    save("pop.wav", pop())      # Session 31: a star pops in
+    save("coins.wav", coins())  # Session 31: the coins fly out

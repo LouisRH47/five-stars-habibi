@@ -265,3 +265,23 @@ const HANDLEBAR_SMOOTHING := 10.0     # how quickly the handlebars follow the ke
 const KICKSTAND_SPEED := 6.0          # how quickly the kickstand swings down or up
 const BELL_HEAR_RANGE := 15.0         # metres: people and cats this close hear the bell
 const BELL_SCARE_TIME := 1.2          # seconds a cat runs off (or a kid stops) after the bell
+# --- Juice (Session 31) ---
+# Dust puffs from the back tyre (scripts/tyre_dust.gd).
+const DUST_AMOUNT := [10, 22, 36]     # puffs alive at once for Graphics Low, Medium, High
+const DUST_LIFETIME := 0.7            # seconds one puff lasts
+const DUST_MIN_KMH := 6.0             # slower than this on sand: no dust
+const DUST_BRAKE_TIME := 0.45         # seconds of extra dust after you brake hard
+const DUST_PUFF_SIZE := 0.22          # metres across a puff when it starts (it grows)
+# Sprinting: a slightly wider camera and speed lines at the screen edges.
+const SPRINT_FOV_EXTRA := 7.0         # degrees wider while sprinting
+const SPRINT_FOV_SPEED := 4.0         # how quickly the camera widens and comes back
+const SPEED_LINES_COUNT := 22         # streaks at the edges of the screen
+const SPEED_LINES_ALPHA := 0.45       # how see-through they are at full strength (0 to 1)
+# Delivered card pops (scripts/delivered_card.gd and scripts/pop_icon.gd).
+const POP_FIRST_DELAY := 0.25         # seconds after the card shows before the first star pops
+const POP_STAR_GAP := 0.13            # seconds between one star pop and the next
+const POP_COINS := 7                  # coins that fly out of the "You earned" total
+const POP_ICON_TIME := 0.8            # seconds one little icon lives
+# The phone buzz when a new order comes in (scripts/phone.gd).
+const PHONE_BUZZ_PIXELS := 6.0        # how far the phone shakes sideways
+const PHONE_BUZZ_TIME := 0.35         # seconds the shake lasts

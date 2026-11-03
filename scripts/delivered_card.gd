@@ -7,6 +7,8 @@ extends CanvasLayer
 ## Freshness, Damage) with a word and a colour each, then Delivery pay, 5-star tip (if you
 ## got one), Insurance, a bold "You earned" total and the XP. "Next order · E" carries on.
 ## The numbers come from GameState.last_result.
+## Session 31: the stars pop in one by one (a blip each) and coins fly out of the total
+## with a jingle. The tweens run while the game is paused, like the card itself.
 
 ## Sent when the card closes (the ShiftManager waits for this at the end of a shift).
 signal closed
@@ -48,6 +50,9 @@ var _tiles: HBoxContainer
 var _rows: GridContainer
 var _earned: Label
 var _xp: Label
+## How many stars and coin bursts have popped (the smoke test checks it).
+var pops := 0
+var _pop_tween: Tween
 
 
 func _ready() -> void:
@@ -71,6 +76,7 @@ func close() -> void:
 	if not showing:
 		return
 	showing = false
+	_stop_pops()
 	_card.visible = false
 	_show_hud(true)
 	if _old_camera != null and is_instance_valid(_old_camera):
@@ -111,6 +117,60 @@ func _on_delivered(_order: Order) -> void:
 	if customer_spawner != null and customer_spawner.last_spawned != null:
 		customer_spawner.last_spawned.set("held", true)  # stay at the door while the card is up
 	get_tree().paused = true
+	_start_pops(job["stars"])
+
+
+## Session 31: the stars fill in one at a time with a little pop each, then coins fly out
+## of the "You earned" total and it gives a small bounce.
+func _start_pops(stars: float) -> void:
+	_stop_pops()
+	_stars.stars = 0.0
+	_pop_tween = create_tween()
+	_pop_tween.tween_interval(GameConfig.POP_FIRST_DELAY)
+	for i in ceili(stars):
+		_pop_tween.tween_callback(_pop_star.bind(i, stars))
+		_pop_tween.tween_interval(GameConfig.POP_STAR_GAP)
+	_pop_tween.tween_callback(_pop_coins)
+	_pop_tween.tween_property(_earned, "scale", Vector2.ONE * 1.2, 0.08)
+	_pop_tween.tween_property(_earned, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+func _pop_star(index: int, stars: float) -> void:
+	_stars.stars = minf(index + 1.0, stars)
+	var star_size := _stars.star_size
+	var spot := _stars.global_position + Vector2(index * (star_size + StarRow.GAP) + star_size * 0.5, _stars.size.y * 0.5)
+	for side in [-1.0, 1.0]:
+		PopIcon.spawn(self, "star", spot, Vector2(side * randf_range(14.0, 26.0), -randf_range(26.0, 40.0)), star_size * 0.55)
+	_play("pop", 1.0 + index * 0.08)  # each star a little higher
+	pops += 1
+
+
+func _pop_coins() -> void:
+	_earned.pivot_offset = _earned.size * 0.5
+	var spot := _earned.global_position + _earned.size * 0.5
+	for i in GameConfig.POP_COINS:
+		var angle := lerpf(-PI * 0.85, -PI * 0.15, i / maxf(GameConfig.POP_COINS - 1.0, 1.0))
+		var move := Vector2(cos(angle), sin(angle)) * randf_range(70.0, 110.0)
+		PopIcon.spawn(self, "coin", spot, move, randf_range(20.0, 26.0))
+	_play("coins", 1.0)
+	pops += 1
+
+
+func _stop_pops() -> void:
+	if _pop_tween != null:
+		_pop_tween.kill()
+		_pop_tween = null
+	if _earned != null:
+		_earned.scale = Vector2.ONE
+	for icon in get_children():
+		if icon.is_in_group("pop_icon"):
+			icon.queue_free()
+
+
+func _play(sound: String, pitch: float) -> void:
+	var sounds := get_parent().get_node_or_null("Sounds")
+	if sounds != null:
+		sounds.play(sound, pitch)
 
 
 ## A shot of the door from the side, so you and the customer show on the left of the screen.

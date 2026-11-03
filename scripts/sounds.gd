@@ -5,6 +5,7 @@ extends Node
 ##   new order: phone ping        pick up: bike bell     delivered: cash register
 ##   crash: crash                 speed bump: thump      riding: tyre noise (louder when faster)
 ##   B: the bike bell rings (Session 29)
+##   new order: the phone buzzes too   Delivered card: stars pop, coins jingle (Session 31)
 ##   all the time: birds and distant traffic (ambience)
 ## The sounds are made by tools/make_sounds.py. Effects play on the Effects bus, the
 ## ambience on the Ambience bus, so the sliders in Settings control them.
@@ -19,6 +20,9 @@ const FILES := {
 	"crash": "res://assets/audio/crash.wav",
 	"bump": "res://assets/audio/bump.wav",
 	"ring": "res://assets/audio/ring.wav",  # the bike bell (B, Session 29)
+	"buzz": "res://assets/audio/buzz.wav",  # the phone buzzing (Session 31)
+	"pop": "res://assets/audio/pop.wav",    # a star pops in on the Delivered card
+	"coins": "res://assets/audio/coins.wav",  # coins fly out of the total
 }
 const ROLL := "res://assets/audio/roll_loop.wav"
 const AMBIENCE := "res://assets/audio/ambience_loop.wav"
@@ -27,6 +31,8 @@ const ROLL_QUIETEST_DB := -40.0 # tyre noise when crawling
 
 ## The name of the last sound played (the smoke test checks it).
 var last_played := ""
+## How many times each sound has played, by name (the smoke test checks it).
+var play_counts: Dictionary = {}
 
 var _players: Dictionary = {}
 var _roll: AudioStreamPlayer
@@ -49,12 +55,14 @@ func _ready() -> void:
 		var player := AudioStreamPlayer.new()
 		player.stream = load(FILES[key])
 		player.bus = "Effects"
+		# Keep playing while the game is paused (the Delivered card pauses it).
+		player.process_mode = Node.PROCESS_MODE_ALWAYS
 		add_child(player)
 		_players[key] = player
 	_roll = _loop_player(ROLL, "Effects")
 	_roll.volume_db = ROLL_QUIETEST_DB
 	_ambience = _loop_player(AMBIENCE, "Ambience")
-	GameState.order_offered.connect(func(_order): play("ping"))
+	GameState.order_offered.connect(_on_order_offered)
 	GameState.order_delivered.connect(func(_order): play("cash"))
 	GameState.order_stage_changed.connect(_on_stage_changed)
 	if bike != null:
@@ -71,12 +79,20 @@ func _process(_delta: float) -> void:
 	_roll.pitch_scale = lerpf(0.8, 1.25, fast)
 
 
-## Plays one of the sounds in FILES by name.
-func play(key: String) -> void:
+## Plays one of the sounds in FILES by name. pitch: 1 = normal, higher = squeakier.
+func play(key: String, pitch := 1.0) -> void:
 	if _players.has(key):
 		if Settings.can_play_audio():
+			_players[key].pitch_scale = pitch
 			_players[key].play()
 		last_played = key
+		play_counts[key] = play_counts.get(key, 0) + 1
+
+
+## A new order: the phone buzzes (Session 31) and pings.
+func _on_order_offered(_order) -> void:
+	play("buzz")
+	play("ping")
 
 
 func _on_stage_changed(stage: int) -> void:

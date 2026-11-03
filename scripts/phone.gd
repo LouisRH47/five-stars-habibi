@@ -52,6 +52,7 @@ func _ready() -> void:
 	GameState.order_delivered.connect(_on_order_delivered)
 	GameState.stats_changed.connect(_on_stats_changed)
 	GameState.insurance_changed.connect(_on_insurance_changed)
+	GameState.order_offered.connect(func(_order): buzz())  # Session 31
 	_on_insurance_changed(GameState.insurance_on)
 	_on_money_changed(GameState.money)
 	_on_stats_changed()
@@ -188,6 +189,23 @@ func _show(status: String, detail: String, hint: String, hint_lit: bool) -> void
 	_hint.text = hint
 	_hint.visible = hint != ""
 	_hint.add_theme_color_override("font_color", HINT_LIT if hint_lit else HINT_DIM)
+
+
+## Session 31: the phone buzzes when a new order comes in, a quick little side-to-side
+## shake (the buzz sound is played by scripts/sounds.gd). buzzes counts them (smoke test).
+var buzzes := 0
+var _buzz_tween: Tween
+
+
+func buzz() -> void:
+	buzzes += 1
+	if _buzz_tween != null:
+		_buzz_tween.kill()
+	_buzz_tween = create_tween()
+	var px := GameConfig.PHONE_BUZZ_PIXELS
+	var step := GameConfig.PHONE_BUZZ_TIME / 6.0
+	for x in [px, -px, px * 0.7, -px * 0.7, px * 0.3, 0.0]:
+		_buzz_tween.tween_property(self, "offset", Vector2(x, 0.0), step)
 
 
 func _on_money_changed(new_money: int) -> void:

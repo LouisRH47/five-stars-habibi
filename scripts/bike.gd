@@ -92,6 +92,10 @@ func _ready() -> void:
 	_rider.play("pedal")
 	# Dress the rider in the look picked on the application (Session 14).
 	RiderLook.apply(_rider, GameState.rider_look)
+	# Dust puffs from the back tyre on sand and when braking hard (Session 31).
+	var dust := preload("res://scripts/tyre_dust.gd").new()
+	dust.name = "TyreDust"
+	add_child(dust)
 
 
 func _physics_process(delta: float) -> void:
