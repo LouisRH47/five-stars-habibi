@@ -285,3 +285,23 @@ const POP_ICON_TIME := 0.8            # seconds one little icon lives
 # The phone buzz when a new order comes in (scripts/phone.gd).
 const PHONE_BUZZ_PIXELS := 6.0        # how far the phone shakes sideways
 const PHONE_BUZZ_TIME := 0.35         # seconds the shake lasts
+
+# --- Life on the map (Session 30) ---
+const BUGGY_SPEED := 3.0              # m/s, about 11 km/h: golf buggies drive slowly
+const HORSE_WALK_SPEED := 1.6         # m/s, a horse walking
+const HORSE_TROT_SPEED := 3.4         # m/s, a horse trotting
+const HORSE_GAIT_TIME := Vector2(8.0, 16.0)  # seconds before a horse switches between walk and trot
+const WALKER_SPEED := 1.3             # m/s, people out for a walk
+const JOGGER_SPEED := 2.8             # m/s, joggers on the bike track
+const PLAY_KID_SPEED := 2.0           # m/s, kids running round the playgrounds
+const DUCK_SPEED := 0.45              # m/s, ducks paddling along the stream
+const DONKEY_SPEED := 0.5             # m/s, donkeys strolling in their pen
+const LIFE_END_PAUSE := 2.0           # seconds a buggy, horse or walker waits at the end of its route
+const LIFE_GIVE_UP_TIME := 5.0        # seconds one waits for you to move before turning round
+const LIFE_TURN_SPEED := 4.0          # how quickly they turn to face where they're going
+## Low / Medium / High: further away than this, people stop animating and are hidden (faster).
+const LIFE_VIEW_DISTANCE := [70.0, 100.0, 140.0]
+const BIRD_SPEED := 8.0               # m/s, birds circling over the community
+const PALM_SWAY_DEG := 2.5            # how far the palm tops sway in the breeze
+const PALM_SWAY_SPEED := 0.9          # how fast they sway
+const WATER_FLOW_SPEED := 0.6         # how fast the ripples on the stream and fountain move

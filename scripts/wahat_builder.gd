@@ -116,12 +116,15 @@ func _build_tracks() -> void:
 
 ## A winding blue stream through the spine (flat: you can ride through it).
 func _build_stream(stream: Dictionary) -> void:
+	var holder := Node3D.new()
+	holder.name = "Stream"  # Session 30: AmbientMotion gives these pieces moving water
+	add_child(holder)
 	var x: float = stream["from_x"]
 	var step := 8.0
 	while x < stream["to_x"]:
 		var z: float = stream["z"] + sin(x * 0.06) * 3.0
 		var z2: float = stream["z"] + sin((x + step) * 0.06) * 3.0
-		var piece := LowPoly.box(self, Vector3(stream["width"], 0.02, Vector2(step, z2 - z).length() + 0.8),
+		var piece := LowPoly.box(holder, Vector3(stream["width"], 0.02, Vector2(step, z2 - z).length() + 0.8),
 				WATER, Vector3(x + step * 0.5, 0.03, (z + z2) * 0.5))
 		piece.rotation.y = atan2(step, z2 - z)
 		x += step

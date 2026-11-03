@@ -87,14 +87,15 @@ func _build_fountain(depth: float) -> void:
 	body.position = _centre + Vector3(0, -depth, 0)
 	add_child(body)
 	LowPoly.cylinder(body, radius, radius + 0.15, 0.6, FOUNTAIN_STONE, Vector3(0, 0.3, 0))
-	LowPoly.cylinder(body, radius - 0.25, radius - 0.25, 0.05, WATER, Vector3(0, 0.58, 0))
+	LowPoly.cylinder(body, radius - 0.25, radius - 0.25, 0.05, WATER, Vector3(0, 0.58, 0)).name = "Water"
 	LowPoly.cylinder(body, 0.35, 0.45, 1.6, FOUNTAIN_STONE, Vector3(0, 1.2, 0))
 	LowPoly.cylinder(body, 1.2, 0.5, 0.35, FOUNTAIN_STONE, Vector3(0, 2.1, 0))
-	LowPoly.cylinder(body, 1.0, 1.0, 0.05, WATER, Vector3(0, 2.26, 0))
+	LowPoly.cylinder(body, 1.0, 1.0, 0.05, WATER, Vector3(0, 2.26, 0)).name = "BowlWater"
 	LowPoly.cylinder(body, 0.15, 0.2, 0.8, FOUNTAIN_STONE, Vector3(0, 2.6, 0))
 	LowPoly.sphere(body, 0.25, 0.4, Color(0.85, 0.68, 0.25, 1), Vector3(0, 3.05, 0))
 	var jet := LowPoly.cylinder(body, 0.05, 0.12, 0.9, WATER, Vector3(0, 3.6, 0))
 	jet.transparency = 0.4
+	jet.name = "Jet"  # Session 30: AmbientMotion makes the water move and the jet bubble
 	LowPoly.solid_cylinder(body, radius + 0.1, 1.2, Vector3(0, 0.6, 0))
 
 

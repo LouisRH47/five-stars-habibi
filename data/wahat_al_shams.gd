@@ -343,3 +343,88 @@ const SCOOTER_KIDS := [
 	{"from": Vector3(20, 0, 123.5), "to": Vector3(150, 0, 123.5), "shirt": Color(0.9, 0.3, 0.5, 1)},
 	{"from": Vector3(-90, 0, 1.5), "to": Vector3(90, 0, 1.5), "shirt": Color(0.3, 0.75, 0.35, 1)},
 ]
+
+# --- Life on the map (Session 30, built by scripts/life_builder.gd) ---
+# No traffic AI: everything follows its own route, point to point. "points" is the line it
+# moves along (x, 0, z). Routes go back and forth (turning round at each end) unless
+# "loop" is true (then round and round). level: the lowest Graphics setting that shows it
+# (0 Low, 1 Medium, 2 High), so Low has fewer. Nothing goes near the main gate (the west
+# side between z -30 and 30), on a door spot or on a cluster lane.
+
+## Golf buggies on the outside lane of the ring road (2.5 m off its middle line) and on the
+## north edge of the spine path. Kids on scooters use the inside edges, so they never meet.
+const BUGGIES := [
+	{"points": [Vector3(-150, 0, -128.5), Vector3(178.5, 0, -128.5), Vector3(178.5, 0, -20)],
+			"colour": Color(0.96, 0.96, 0.94, 1), "level": 0},
+	{"points": [Vector3(-150, 0, 128.5), Vector3(178.5, 0, 128.5), Vector3(178.5, 0, 20)],
+			"colour": Color(0.45, 0.55, 0.38, 1), "level": 0},
+	{"points": [Vector3(-108, 0, -1.0), Vector3(126, 0, -1.0)],
+			"colour": Color(0.3, 0.4, 0.55, 1), "level": 1},
+	{"points": [Vector3(-178.5, 0, -30), Vector3(-178.5, 0, -128.5), Vector3(-162, 0, -128.5)],
+			"colour": Color(0.9, 0.85, 0.7, 1), "level": 2},
+	{"points": [Vector3(-178.5, 0, 30), Vector3(-178.5, 0, 128.5), Vector3(-162, 0, 128.5)],
+			"colour": Color(0.96, 0.96, 0.94, 1), "level": 2},
+]
+
+## Horses with riders on the sandy horse track round the edge (HORSE_TRACK above).
+const HORSE_RIDERS := [
+	{"points": [Vector3(-188.5, 0, -40), Vector3(-188.5, 0, -138.5), Vector3(188.5, 0, -138.5), Vector3(188.5, 0, -20)],
+			"colour": Color(0.45, 0.28, 0.15, 1), "level": 0},
+	{"points": [Vector3(188.5, 0, 20), Vector3(188.5, 0, 138.5), Vector3(-188.5, 0, 138.5), Vector3(-188.5, 0, 40)],
+			"colour": Color(0.85, 0.82, 0.78, 1), "level": 1},
+	{"points": [Vector3(-100, 0, 137), Vector3(120, 0, 137)],
+			"colour": Color(0.2, 0.15, 0.12, 1), "level": 2},
+]
+
+## People out for a jog (on the red bike track) or a walk (on the grass beside the spine path).
+## look: which resident outfit (0 to 4). jog: true jogs, false walks.
+const PEOPLE_ROUTES := [
+	{"points": [Vector3(-183.5, 0, -30), Vector3(-183.5, 0, -133.5), Vector3(183.5, 0, -133.5),
+			Vector3(183.5, 0, 133.5), Vector3(-183.5, 0, 133.5), Vector3(-183.5, 0, 30)], "jog": true, "look": 2, "level": 0},
+	{"points": [Vector3(-182.5, 0, -30), Vector3(-182.5, 0, -132.5), Vector3(182.5, 0, -132.5),
+			Vector3(182.5, 0, 132.5), Vector3(-182.5, 0, 132.5), Vector3(-182.5, 0, 30)], "jog": true, "look": 3, "level": 2},
+	{"points": [Vector3(-106, 0, -3.5), Vector3(124, 0, -3.5)], "jog": false, "look": 0, "level": 0},
+	{"points": [Vector3(-106, 0, 3.5), Vector3(124, 0, 3.5)], "jog": false, "look": 1, "level": 1},
+	{"points": [Vector3(-100, 0, -2.8), Vector3(110, 0, -2.8)], "jog": false, "look": 4, "level": 2},
+]
+
+## Gardeners watering a flower bed in the gap between two homes, behind the front walls.
+## facing: the way they look (degrees, 90 = east, -90 = west). The bed is 2.5 m in front.
+const GARDENERS := [
+	{"position": Vector3(-91.5, 0, -95.5), "facing": 90.0, "level": 1},
+	{"position": Vector3(-11.5, 0, -95.5), "facing": 90.0, "level": 1},
+	{"position": Vector3(73.5, 0, -95.5), "facing": -90.0, "level": 2},
+	{"position": Vector3(-91.5, 0, 95.5), "facing": 90.0, "level": 1},
+	{"position": Vector3(-6.5, 0, 95.5), "facing": -90.0, "level": 2},
+]
+
+## Kids running back and forth by the playground in each cluster mini-plaza (in the gap
+## between the homes, never on the paved strip): one on the strip side, one on the far side.
+const PLAY_KIDS := [
+	{"points": [Vector3(-71, 0, -67.8), Vector3(-63, 0, -67.8)], "level": 0},  # C1
+	{"points": [Vector3(-71, 0, -60.8), Vector3(-65, 0, -60.8)], "level": 1},
+	{"points": [Vector3(9, 0, -67.8), Vector3(17, 0, -67.8)], "level": 0},  # C2
+	{"points": [Vector3(9, 0, -60.8), Vector3(15, 0, -60.8)], "level": 1},
+	{"points": [Vector3(89, 0, -67.8), Vector3(97, 0, -67.8)], "level": 0},  # C3
+	{"points": [Vector3(89, 0, -60.8), Vector3(95, 0, -60.8)], "level": 2},
+	{"points": [Vector3(-71, 0, 76.2), Vector3(-63, 0, 76.2)], "level": 0},  # C4
+	{"points": [Vector3(-71, 0, 83.2), Vector3(-65, 0, 83.2)], "level": 1},
+	{"points": [Vector3(9, 0, 76.2), Vector3(17, 0, 76.2)], "level": 0},  # C5
+	{"points": [Vector3(9, 0, 83.2), Vector3(15, 0, 83.2)], "level": 2},
+]
+
+## Ducks paddling up and down the stream (STREAM above). side: metres off its middle.
+const DUCKS := [
+	{"from_x": -70.0, "to_x": -30.0, "side": 0.4, "level": 0},
+	{"from_x": -55.0, "to_x": -15.0, "side": -0.4, "level": 1},
+	{"from_x": 25.0, "to_x": 60.0, "side": 0.4, "level": 1},
+	{"from_x": 35.0, "to_x": 80.0, "side": -0.4, "level": 2},
+]
+
+## Flocks of birds circling over the community. centre: the middle of the circle (y is how
+## high they fly). radius: metres.
+const BIRD_FLOCKS := [
+	{"centre": Vector3(-60, 30, -60), "radius": 40.0, "birds": 4, "level": 0},
+	{"centre": Vector3(80, 34, 40), "radius": 55.0, "birds": 5, "level": 1},
+	{"centre": Vector3(-20, 26, 10), "radius": 90.0, "birds": 3, "level": 2},
+]

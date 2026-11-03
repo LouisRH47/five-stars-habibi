@@ -612,6 +612,27 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - Built by a helper agent in parallel; the smoke test checks the wider view while sprinting,
   the buzz, the pops, the dust and fewer particles on Low.
 
+### Session 30
+- Golf buggies with drivers go slowly back and forth on fixed routes (the outer lane of the
+  north and south ring road and the spine path; two more on High). They stop and wait when
+  the bike or you on foot are in front; stay in the way 5 seconds and they turn round.
+- Bumping a buggy, horse, walker, gardener, kid or duck is like bumping a kid: a small knock
+  to the food, never a big crash.
+- Horses with riders walk and trot on the horse track round the edge; joggers run on the red
+  bike track; walkers stroll beside the spine path; gardeners water flower beds with a hose;
+  kids run about by every cluster playground.
+- Ducks paddle along the stream, birds circle overhead, palms sway, the donkeys stroll round
+  their pen, and the stream and fountain water ripple (`assets/shaders/water.gdshader`).
+- Every route is its own line in `data/wahat_al_shams.gd` (BUGGIES, HORSE_RIDERS,
+  PEOPLE_ROUTES, GARDENERS, PLAY_KIDS, DUCKS, BIRD_FLOCKS): no traffic AI. Built by
+  `scripts/life_builder.gd`, moved by `scripts/route_mover.gd`.
+- 12 moving things on Low graphics, 36 on High; people far from the camera stop animating.
+  Still 120 fps (the screen's limit) on Medium.
+- Fixed while merging: a parked bike no longer slides at all when something walks into it
+  (a test failed about 1 run in 6 on Palm Grove because of that); 8 of 8 runs passed after.
+- Built by a helper agent in parallel. The smoke test checks every route stays clear of
+  walls, buggies stop for the bike and turn round, everything moves, and Low has fewer.
+
 ## Known bugs
 - Play-test bot findings on Wahat Al Shams (to tune in Session 34):
   - A careful 5-minute shift gets 5 to 6 deliveries (target 6 to 8). The rides are long

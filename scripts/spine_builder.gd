@@ -16,7 +16,6 @@ const COURT := Color(0.75, 0.4, 0.28, 1)
 const COURT_LINE := Color(0.97, 0.97, 0.95, 1)
 const HIVE := Color(0.98, 0.85, 0.35, 1)
 const PEN := Color(0.6, 0.42, 0.26, 1)
-const DONKEY := Color(0.55, 0.52, 0.5, 1)
 const STRAW := Color(0.9, 0.78, 0.45, 1)
 
 var _map: Dictionary = {}
@@ -82,7 +81,7 @@ func _build_hives(area: Rect2) -> void:
 			LowPoly.box(self, Vector3(0.85, 0.1, 0.75), Color(0.95, 0.95, 0.92, 1), spot + Vector3(0, 1.15, 0))
 
 
-## The donkey pen: a wooden fence round a patch of straw, a water trough and the donkeys.
+## The donkey pen: a wooden fence round a patch of straw and a water trough.
 func _build_pen(pen: Dictionary) -> void:
 	var area: Rect2 = pen["area"]
 	LowPoly.box(self, Vector3(area.size.x, 0.02, area.size.y), STRAW, _ground(area.get_center()) + Vector3(0, 0.02, 0))
@@ -93,9 +92,7 @@ func _build_pen(pen: Dictionary) -> void:
 	for side in [[a, b], [b, c], [c, d], [d, a]]:
 		Props.fence(self, side[0], side[1], 1.2, PEN)
 	LowPoly.box(self, Vector3(2.0, 0.5, 0.6), Props.WOOD, _ground(area.get_center()) + Vector3(-area.size.x * 0.3, 0.25, 0))
-	for i in pen["donkeys"]:
-		var spot := _ground(area.get_center()) + Vector3(-3.0 + i * 6.0, 0, 0.6 - i * 1.2)
-		Props.animal(self, spot, 90.0 + i * 140.0, DONKEY.darkened(i * 0.15), false)
+	# The donkeys themselves stroll round the pen: scripts/ambient_motion.gd (Session 30).
 
 
 ## The basketball court: a red court with white lines and a hoop at each end.

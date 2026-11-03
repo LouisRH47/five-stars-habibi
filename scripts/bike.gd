@@ -23,6 +23,10 @@ signal crashed(big: bool)
 ## Sent when you ring the bell with B (Session 29). Sounds plays the ring.
 signal bell_rung
 
+## Words for the moving life on the map (Session 30), by the start of their node name.
+const LIFE_WORDS := {"Buggy": "a golf buggy", "Horse": "a horse", "Person": "someone walking",
+		"Gardener": "a gardener", "Kid": "a kid", "Duck": "a duck"}
+
 ## Current speed in metres per second. Positive = forwards.
 var speed := 0.0
 ## Sprint energy, 0 to STAMINA_MAX.
@@ -179,7 +183,12 @@ func _stand(delta: float) -> void:
 	speed = 0.0
 	velocity.x = 0.0
 	velocity.z = 0.0
-	velocity.y = 0.0 if is_on_floor() else velocity.y - GameConfig.GRAVITY * delta
+	if is_on_floor():
+		# Standing on its kickstand: don't move at all, so a cat, kid or buggy that walks
+		# into it can't slide it along.
+		velocity.y = 0.0
+		return
+	velocity.y -= GameConfig.GRAVITY * delta
 	move_and_slide()
 
 
@@ -333,6 +342,9 @@ static func what_is(thing: Object) -> String:
 		if n == "Supermarket":
 			return "the mini market"
 		if node.is_in_group("critter"):
+			for start in LIFE_WORDS:
+				if n.begins_with(start):
+					return LIFE_WORDS[start]
 			return "a cat" if n.begins_with("Cat") else "a kid on a scooter"
 		node = node.get_parent()
 	return "a wall"

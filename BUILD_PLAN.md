@@ -603,8 +603,7 @@ Done when:
 - [ ] The bike's pedals, handlebars and kickstand move, and B rings the bell
 - [ ] Every new asset is CC0 and listed in CREDITS.md
 
-### Session 30: Life on the map
-
+### Session 30: Life on the map (built, needs testing)
 ```text
 Session 30. Read PRD.md (Graphics and feel: Life on the map). Add:
 golf buggies that drive slowly on fixed routes round the ring road and spine
