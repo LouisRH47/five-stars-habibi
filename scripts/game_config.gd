@@ -182,10 +182,11 @@ const CRASH_WEEK_SHIFTS := 7          # "this week" on the clinic screen = the l
 const CRASH_WEEK_WARNING := 3         # the clinic's crash bar is full at this many big crashes
 
 # --- Shifts (Session 13) ---
-const SHIFT_LENGTH := 300.0           # seconds of real time in one shift (5 minutes, 30 s per in-game hour)
+const SHIFT_LENGTH := 480.0           # active seconds per shift (8 minutes, 48 s per in-game hour)
 const SHIFT_START_HOUR := 8.0         # the clock shows 08:00 when the shift starts...
 const SHIFT_END_HOUR := 18.0          # ...and 18:00 when it's over (day shift only in Tier 1)
-const SHIFT_WARNING_TIME := 30.0      # the clock turns orange this many seconds before the end (one in-game hour)
+const CLOCK_STEP_MINUTES := 10        # display only: one step every 8 active seconds
+const SHIFT_WARNING_TIME := 30.0      # the clock turns orange this many active seconds before the end
 
 # --- Application and tutorial (Session 14) ---
 const APPLICATION_REVIEW_TIME := 2.0  # seconds of "Reviewing..." before you're hired

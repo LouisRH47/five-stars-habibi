@@ -1,6 +1,12 @@
 # Progress
 
 ## Current session
+**Session 35A is built** on `codex/detail-pass-35a`, from main `ac47818`.
+Shifts now last 8 active minutes. The clock shows AM/PM in 10-minute steps with a
+small sun icon; event messages use the same clock. Automated checks and a rendered
+clock check pass. **Next: Session 35B**, the real-size placeholder map, 500 addresses
+and route/pacing checks. The playable map is still the Session 34 layout.
+
 **Sessions 18 to 34 are built** (the polish pass and the graphics pass), on branch
 `polish-and-graphics`. Each one passes the Godot checks and the smoke test on all three maps;
 Wahat Al Shams passes 5 runs out of 5. Sessions 26 to 33 were built by helper agents in
@@ -726,6 +732,39 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - Not done yet: removing the old Palm Grove map. It's still the smoke test's second map; remove
   it once Louis has played Wahat Al Shams and is happy.
 - **Louis's turn:** play a full shift and write down what felt off.
+
+### Session 35A
+- `SHIFT_LENGTH` is 480 seconds. The internal 08:00–18:00 time stays continuous:
+  48 active seconds per in-game hour. Only the visible clock steps every 10 game
+  minutes (8 active seconds). It reads `8:00 AM`, `11:50 AM`, `12:00 PM`, `6:00 PM`.
+- New shared formatter `scripts/game_clock.gd` keeps the HUD and event messages
+  consistent. The sun is drawn directly, so it does not need a font symbol.
+- Tutorial and pause still stop the shift; the final carried delivery can finish
+  after 6:00 PM. No new orders arrive after clock-out. The existing 30-second
+  last-orders warning, food rates, rewards, goals and map remain as before.
+- Godot 4.7.2 import and headless quit completed. Smoke tests: Wahat Al Shams
+  **387 PASS**, Palm Grove **297 PASS**, test area **263 PASS**, no failed checks.
+  New coverage includes noon/midnight formatting, exact display boundaries,
+  continuous time between steps, the 48-second lunch window, real-frame
+  pause/tutorial/resume, event times and preserved regular-customer visits.
+- One careful eight-minute bot shift on the current map: **9 deliveries, 5.00 stars,
+  121 Dh net, 180 XP, 0 crashes and 0 resets**; 5 backing-up manoeuvres and 29 seconds
+  walking. This is one random shift, not the future larger map's economy target.
+- Rendered clock check at 1280×720 on Apple M3 / Forward+: morning, before noon,
+  noon and end of day all fit the panel, with a visible sun and correct AM/PM text.
+- Checks ran in an isolated temporary copy with saves/settings redirected there.
+  Initial headless import rebuilt absent asset caches and reported sandbox-blocked
+  editor-settings writes; headless runs also reported the macOS certificate lookup
+  warning. The bot's existing shutdown path intentionally cannot save. These did not
+  produce game-script errors or failed smoke checks. A final import with a portable
+  temporary editor passed without script/resource/editor-settings errors; only the
+  sandbox macOS certificate lookup message remained.
+- **Louis's manual check:** import this branch's `project.godot` in Godot and press F5.
+  Continue (or complete the application/tutorial), then watch the clock: `8:00 AM`
+  becomes `8:10 AM` after 8 active seconds. Press Esc and verify time waits; resume
+  and verify it continues. Check noon becomes `12:00 PM`, and a final delivery can
+  finish after `6:00 PM`. On road works, the phone's end time also uses AM/PM.
+- Session 35B and the rest of the Detail pass remain to be built.
 
 ## Known bugs
 - Play-test bot findings on Wahat Al Shams (to tune in Session 34):

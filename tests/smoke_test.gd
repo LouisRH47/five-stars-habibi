@@ -65,6 +65,7 @@ var _parked_at := Vector3.ZERO
 var _kid_start := Vector3.ZERO
 var _lowest_y := 0.0       # the lowest the bike got while riding in from the gate (Session 27)
 var _grid: RefCounted      # the map scan from _check_wahat, reused by _check_session27
+var _clock_before := 0.0  # Session 35A: check pause/tutorial behaviour over real frames
 
 
 func _initialize() -> void:
@@ -136,6 +137,25 @@ func _physics_process(_delta: float) -> bool:
 				_check("no crash while testing the riding", _riding_crashes == 0, "")
 				_check("stamina refills", _bike.stamina > 30.0, "stamina %.0f" % _bike.stamina)
 				Input.action_release("move_back")
+				_start_clock_check()
+		"clock_paused":
+			if _frame >= 30:
+				_check("pausing freezes the shift over actual physics frames", _game_state.shift_time_left == _clock_before, "")
+				paused = false
+				_game_state.tutorial_running = true
+				_frame = 0
+				_phase = "clock_tutorial"
+		"clock_tutorial":
+			if _frame >= 30:
+				_check("the tutorial freezes the shift over actual physics frames", _game_state.shift_time_left == _clock_before, "")
+				_game_state.tutorial_running = false
+				_frame = 0
+				_phase = "clock_running"
+		"clock_running":
+			if _frame >= 60:
+				var elapsed: float = _clock_before - _game_state.shift_time_left
+				_check("resuming advances one shift second per real second", elapsed > 0.9 and elapsed < 1.1, "%.3f s" % elapsed)
+				_bike.set_parked(false)
 				_start_delivery_check()
 		"at_restaurant":
 			if _frame >= STEPS.settle:
@@ -277,6 +297,72 @@ func _physics_process(_delta: float) -> bool:
 				_check_critters()
 				_finish()
 	return false
+
+
+## Session 35A: a readable ten-minute display must not quantize simulation time.
+## Run on every test map, before any delivery changes the clock or pauses the game.
+func _start_clock_check() -> void:
+	var gs: Node = _game_state
+	var manager: Node = _main.get_node("ShiftManager")
+	var screen: Node = _main.get_node("ShiftScreen")
+	gs.reset()
+	_check("a normal shift lasts eight real minutes", GameConfig.SHIFT_LENGTH == 480.0
+			and manager.shift_length == 480.0 and gs.shift_time_left == 480.0, "%.0f s" % gs.shift_time_left)
+	var examples := [
+		[0.0, "12:00 AM"],
+		[8.0, "8:00 AM"],
+		[8.0 + 9.99 / 60.0, "8:00 AM"],
+		[8.0 + 10.0 / 60.0, "8:10 AM"],
+		[11.0 + 59.0 / 60.0, "11:50 AM"],
+		[12.0, "12:00 PM"],
+		[13.5, "1:30 PM"],
+		[18.0, "6:00 PM"],
+		[23.0 + 59.0 / 60.0, "11:50 PM"],
+	]
+	for example in examples:
+		var shown: String = GameClock.format_time(example[0])
+		_check("clock format at %.5f hours is %s" % [example[0], example[1]], shown == example[1], shown)
+	screen._process(0.0)
+	_check("the live HUD starts at 8:00 AM with a sun icon", screen._clock.text == "8:00 AM"
+			and screen._sun_icon != null and screen._sun_icon.is_visible_in_tree(), screen._clock.text)
+	manager._physics_process(7.99)
+	screen._process(0.0)
+	_check("the clock display waits eight seconds before its next step", screen._clock.text == "8:00 AM", screen._clock.text)
+	_check("simulation time advances between display steps", gs.clock_hours() > 8.16
+			and gs.clock_hours() < 8.0 + 10.0 / 60.0, "%.6f hours" % gs.clock_hours())
+	manager._physics_process(0.01)
+	screen._process(0.0)
+	_check("eight seconds advances the live display to 8:10 AM", screen._clock.text == "8:10 AM", screen._clock.text)
+	manager._physics_process(40.0)
+	_check("one game hour takes 48 real seconds", absf(gs.clock_hours() - 9.0) < 0.000001, "%.6f hours" % gs.clock_hours())
+	gs.reset()
+	manager._physics_process(168.0)
+	_check("lunch starts 168 seconds into the eight-minute shift", absf(gs.clock_hours() - 11.5) < 0.000001
+			and OrderMaker.is_lunch(gs.clock_hours()), "%.6f hours" % gs.clock_hours())
+	manager._physics_process(47.5)
+	_check("lunch remains active just before its 48-second window ends", OrderMaker.is_lunch(gs.clock_hours()), "")
+	manager._physics_process(0.5)
+	_check("lunch ends after 48 real seconds", absf(gs.clock_hours() - 12.5) < 0.000001
+			and not OrderMaker.is_lunch(gs.clock_hours()), "%.6f hours" % gs.clock_hours())
+	_set_hour(11.0 + 50.0 / 60.0)
+	screen._process(0.0)
+	_check("the live clock displays 11:50 AM before noon", screen._clock.text == "11:50 AM", screen._clock.text)
+	_set_hour(12.0)
+	screen._process(0.0)
+	_check("the live clock changes to 12:00 PM at noon", screen._clock.text == "12:00 PM", screen._clock.text)
+	_set_hour(18.0)
+	screen._process(0.0)
+	_check("the live clock ends at 6:00 PM", screen._clock.text == "6:00 PM", screen._clock.text)
+	var events: Node = _main.get_node_or_null("EventManager")
+	if events != null:
+		_check("event times use the same AM/PM display", events._clock_text(13.5) == "1:30 PM"
+				and events._clock_text(22.0) == "6:00 PM", events._clock_text(13.5))
+	gs.reset()
+	_clock_before = gs.shift_time_left
+	_bike.set_parked(true)
+	paused = true
+	_frame = 0
+	_phase = "clock_paused"
 
 
 ## Fresh start, a new order pops up, accept it, then jump to the restaurant door.
@@ -628,7 +714,7 @@ func _check_big_crash() -> void:
 
 
 ## Session 25: Wahat Al Shams. 60 homes with addresses like "C3 · Villa 7", the bike rode
-## from the gate into the Plaza, every door spot can be reached by bike, 5-minute shifts.
+## from the gate into the Plaza, every door spot can be reached by bike.
 func _check_wahat() -> void:
 	var places: Node = _main.get_node_or_null("PlaceBuilder")
 	if places == null or not places.data.get_script_constant_map().has("MAP_HALF"):
@@ -649,7 +735,6 @@ func _check_wahat() -> void:
 	var plaza: Dictionary = data["PLAZA"]
 	var reached: float = Vector2(_bike.global_position.x, _bike.global_position.z).distance_to(plaza["centre"])
 	_check("the ride from the gate ends in the Plaza", reached < plaza["radius"], "%.0f m from the middle" % reached)
-	_check("a shift is 5 minutes", GameConfig.SHIFT_LENGTH == 300.0, "")
 	var started := Time.get_ticks_msec()
 	var grid: RefCounted = GRID.new()
 	_grid = grid
@@ -809,6 +894,7 @@ func _check_saving() -> void:
 	_quick_delivery(100.0, false)
 	_quick_delivery(50.0, false)
 	gs.set_insurance(false)
+	gs.regular_visits = {"mariam": 3, "rashid": 1}
 	var keep := {"money": gs.money, "xp": gs.xp, "jobs": gs.history.size(), "rating": gs.rating()}
 	_check("the game saves", gs.save_game() and FileAccess.file_exists(TEST_SAVE), TEST_SAVE)
 	gs.reset()
@@ -821,6 +907,7 @@ func _check_saving() -> void:
 			"Dh %d, %d XP, %d jobs" % [gs.money, gs.xp, gs.history.size()])
 	_check("name, country, look and insurance come back", gs.rider_name == "Lina" and gs.rider_country == "Oman"
 			and gs.rider_look == 1 and gs.hired and not gs.insurance_on, "")
+	_check("loading keeps existing regular-customer visits", gs.regular_visits == {"mariam": 3, "rashid": 1}, str(gs.regular_visits))
 	_check("saved numbers stay whole numbers", typeof(gs.money) == TYPE_INT and typeof(gs.history[0]["pay"]) == TYPE_INT, "")
 	var menu: Control = load("res://scenes/main_menu.tscn").instantiate()
 	root.add_child(menu)
@@ -856,7 +943,7 @@ func _start_shift_check(carrying: bool) -> void:
 	var clock: Label = _main.get_node("ShiftScreen")._clock
 	_main.get_node("ShiftScreen")._process(0.0)
 	if carrying:
-		_check("the shift clock starts at 08:00", clock.text == "08:00", clock.text)
+		_check("the shift clock starts at 8:00 AM", clock.text == "8:00 AM", clock.text)
 		_quick_delivery(100.0, false)  # one finished job this shift
 		_delivery.offer_now()
 		_delivery.accept()

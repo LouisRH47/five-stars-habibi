@@ -713,6 +713,12 @@ simpler far-away versions (visibility ranges) to keep it at 60 fps.
 
 ### Session 35: Real-size map, the new layout, 8-minute shifts and the AM/PM clock
 
+**35A is built:** eight-minute shifts and the AM/PM clock, including the sun icon and
+matching event times. Timing, pause/tutorial, final-delivery and save checks pass.
+**Next: 35B**, the real-size placeholder map and its addresses/routes; the map is still
+the Session 34 version. Measure route times and earnings on the full placeholder map
+before adding detailed buildings. See PROGRESS.md for the 35A results and manual test.
+
 ```text
 Session 35. Read CLAUDE.md, PRD.md ("Wahat Al Shams" in the city map section,
 Shifts) and PROGRESS.md, and look at docs/wahat_al_shams_map.svg.
@@ -741,7 +747,7 @@ with the sketch.
 Done when:
 
 - [ ] The map is real size and laid out like the sketch, with nothing big left blank
-- [ ] A shift lasts 8 minutes and the clock says AM and PM
+- [x] A shift lasts 8 minutes and the clock says AM and PM
 - [ ] You start in front of the bus station and a full delivery works
 
 ### Session 36: Joined rows of homes and the camera fix

@@ -1,5 +1,5 @@
 extends CanvasLayer
-## The shift on screen: a clock at the top middle (in-game time, 08:00 to 18:00) and,
+## The shift on screen: an AM/PM clock at the top middle (8:00 AM to 6:00 PM) and,
 ## when the shift is over, the summary screen: deliveries, average stars, money earned,
 ## tips, insurance, bills, XP. "Start next shift" (or E) carries on. The game is paused
 ## while the summary shows. The numbers come from GameState.shift_summary().
@@ -19,6 +19,7 @@ var showing := false
 var last_summary: Dictionary = {}
 
 var _clock: Label
+var _sun_icon: Control
 var _clock_note: Label
 var _summary: PanelContainer
 var _title: Label
@@ -35,8 +36,7 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	var hours := GameState.clock_hours()
-	_clock.text = "%02d:%02d" % [int(hours), int(fmod(hours, 1.0) * 60.0)]
+	_clock.text = GameClock.format_time(GameState.clock_hours())
 	if GameState.shift_clock_out:
 		_clock_note.text = "Shift over: finish your delivery" if GameState.current_order != null else "Shift over"
 		_clock.modulate = ORANGE
@@ -104,19 +104,38 @@ func _build_clock() -> void:
 	box.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	box.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	box.offset_top = 24
-	box.custom_minimum_size = Vector2(170, 0)
+	box.custom_minimum_size = Vector2(220, 0)
 	box.add_theme_stylebox_override("panel", _style(18, 2, 10))
 	add_child(box)
 	var rows := VBoxContainer.new()
 	rows.add_theme_constant_override("separation", -2)
 	box.add_child(rows)
-	_clock = _label("08:00", 34, TEXT)
+	var clock_row := HBoxContainer.new()
+	clock_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	clock_row.add_theme_constant_override("separation", 10)
+	rows.add_child(clock_row)
+	_sun_icon = Control.new()
+	_sun_icon.custom_minimum_size = Vector2(22, 22)
+	_sun_icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_sun_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_sun_icon.draw.connect(_draw_sun)
+	clock_row.add_child(_sun_icon)
+	_clock = _label(GameClock.format_time(GameState.clock_hours()), 34, TEXT)
 	_clock.theme_type_variation = &"BigNumber"
 	_clock.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	rows.add_child(_clock)
+	clock_row.add_child(_clock)
 	_clock_note = _label("Shift 1", 13, SOFT)
 	_clock_note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	rows.add_child(_clock_note)
+
+
+## Draw the sun directly so it doesn't depend on a font's symbol coverage.
+func _draw_sun() -> void:
+	var centre := _sun_icon.size * 0.5
+	_sun_icon.draw_circle(centre, 4.0, ORANGE)
+	for ray in range(8):
+		var direction := Vector2.from_angle(ray * TAU / 8.0)
+		_sun_icon.draw_line(centre + direction * 7.0, centre + direction * 10.0, ORANGE, 2.0, true)
 
 
 func _build_summary() -> void:
