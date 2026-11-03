@@ -186,12 +186,12 @@ func something_in_the_way(way: Vector3) -> bool:
 			return true
 		if turning and gap.length() < sweep + reach:
 			return true
-	# Other moving things (kids, cats, buggies, walkers...): ask the physics world.
+	# Other moving things (kids, cats, buggies, walkers...) and road works: ask the physics world.
 	var middle := position + way * (size.z * 0.5 + look_ahead * 0.5) + Vector3.UP * size.y * 0.5
 	_ahead.transform = Transform3D(Basis.looking_at(way), middle)
 	for hit in get_world_3d().direct_space_state.intersect_shape(_ahead, 6):
 		var thing: Object = hit["collider"]
-		if thing is Node and (thing as Node).is_in_group("critter"):
+		if thing is Node and ((thing as Node).is_in_group("critter") or (thing as Node).is_in_group("road_works")):
 			return true
 	return false
 

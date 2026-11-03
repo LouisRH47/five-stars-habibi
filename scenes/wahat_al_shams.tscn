@@ -28,6 +28,7 @@
 [ext_resource type="Script" path="res://scripts/spine_builder.gd" id="26_spine"]
 [ext_resource type="Script" path="res://scripts/landmark_builder.gd" id="27_landmarks"]
 [ext_resource type="Script" path="res://scripts/life_builder.gd" id="30_life"]
+[ext_resource type="Script" path="res://scripts/event_manager.gd" id="33_events"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_pg"]
 sky_top_color = Color(0.30980393, 0.6627451, 0.8392157, 1)
@@ -167,3 +168,11 @@ minimap = NodePath("../Minimap")
 script = ExtResource("24_card")
 delivery_manager = NodePath("../DeliveryManager")
 customer_spawner = NodePath("../CustomerSpawner")
+
+[node name="EventManager" type="Node3D" parent="." node_paths=PackedStringArray("place_builder", "bike", "walker", "phone", "minimap")]
+script = ExtResource("33_events")
+place_builder = NodePath("../PlaceBuilder")
+bike = NodePath("../Bike")
+walker = NodePath("../Walker")
+phone = NodePath("../Phone")
+minimap = NodePath("../Minimap")

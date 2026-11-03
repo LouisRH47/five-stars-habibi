@@ -53,6 +53,7 @@ var _frames := 0
 var _grid: RefCounted
 var _timeline := false  # "-- timeline": print each stage change and each back-up
 var _stage_was := ""
+var _rescan_at := -1          # Session 33: scan the map again at this frame (road works)
 
 
 func _initialize() -> void:
@@ -73,6 +74,14 @@ func _initialize() -> void:
 	_dm = _main.get_node("DeliveryManager")
 	_on_foot = _main.get_node("OnFoot")
 	_gs.shift_ended.connect(_on_shift_ended)
+	# Session 33: random events. Print them, and scan the map again when road works go up or
+	# come down (a couple of frames later, once the physics world has them), then re-plan.
+	var events := _main.get_node_or_null("EventManager")
+	if events != null:
+		events.warned.connect(func(kind, place): print("  event warning: %s at %s" % [kind, place]))
+		events.event_started.connect(func(kind, place): print("  event started: %s at %s, %.1f s into the shift" % [kind, place, GameConfig.SHIFT_LENGTH - _gs.shift_time_left]))
+		events.event_ended.connect(func(kind): print("  event ended: %s" % kind))
+		events.road_works_changed.connect(func(): _rescan_at = _frames + 2)
 	_gs.order_delivered.connect(func(_order): _rides.append([_gs.ride_time, _gs.target_time]))
 	_bike.crashed.connect(func(big):
 		_crashes["big" if big else "small"] += 1
@@ -97,6 +106,10 @@ func _physics_process(delta: float) -> bool:
 		_let_go()
 		clinic.close()  # OK, back to work (this ends the shift)
 		return false
+	if _rescan_at >= 0 and _frames >= _rescan_at:
+		_rescan_at = -1
+		_grid = null
+		_route_for = ""
 	if _grid == null or _grid.solid_count == 0:
 		if _frames < 10:
 			return false  # let the map build and get into the physics world first

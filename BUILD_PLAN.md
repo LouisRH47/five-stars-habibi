@@ -663,8 +663,7 @@ Done when:
 - [ ] The regulars show up and know your name
 - [ ] Goals show at the start and pay out on the summary
 
-### Session 33: Random events
-
+### Session 33: Random events (built, needs testing)
 ```text
 Session 33. Read PRD.md (Random events). Add road works (cones, a barrier and a
 small digger close one cluster lane or one part of the ring road for 1 to 2

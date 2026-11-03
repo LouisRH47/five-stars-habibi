@@ -341,6 +341,10 @@ static func what_is(thing: Object) -> String:
 			return "the mosque"
 		if n == "Supermarket":
 			return "the mini market"
+		if n.begins_with("Horse_") or n == "Groom":  # Session 33: horses crossing
+			return "a horse" if n.begins_with("Horse") else "a groom with horses"
+		if n == "RoadWorks":
+			return "road works"
 		if node.is_in_group("critter"):
 			for start in LIFE_WORDS:
 				if n.begins_with(start):

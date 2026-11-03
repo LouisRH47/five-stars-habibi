@@ -633,6 +633,30 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - Built by a helper agent in parallel. The smoke test checks every route stays clear of
   walls, buggies stop for the bike and turn round, everything moves, and Low has fewer.
 
+### Session 33
+- Each shift has 1 or 2 surprise events at random times between 09:00 and 16:00, one at a
+  time, never during the tutorial. The phone warns you first ("Heads up!", orange, 6
+  seconds), then a teal line says what's on ("Road works: C3 Lane closed till 14:35").
+- Road works: barriers, cones, a small yellow digger and bilingual "أعمال طرق / Road works"
+  signs close a stretch of a cluster lane or the ring road for 1 to 2 in-game hours, with an
+  orange cone on the mini-map. Only the 14 places on the ROAD_WORKS list in
+  `data/wahat_al_shams.gd`; the smoke test closes each one in turn and checks every home and
+  shop door can still be reached. Never within 15 m of you or your parked bike.
+- Horses crossing: a groom leads 2 or 3 horses across a road near the stables (4 places,
+  HORSE_CROSSINGS); the road is blocked for about 6 to 8 seconds. Riding into them is only a
+  small crash. They wait for you or the parked bike, never shove.
+- Files: `scripts/event_manager.gd`, `scripts/road_works.gd`, `scripts/horse_crossing.gd`;
+  numbers in the "Random events (Session 33)" block of `game_config.gd`. Palm Grove and the
+  test area have no events.
+- Fixed while merging with Session 30: golf buggies, horses and walkers now stop at road
+  works instead of driving through the barrier (and turn round after a few seconds); the
+  crossing groom's speed got its own name (CROSSING_WALK_SPEED) so it doesn't clash with the
+  horse riders' speed. New smoke check: a buggy stops at the north ring road works.
+- The play-test bot re-plans its route when road works go up or come down, and rides round.
+- Known: barriers only span the road, so on the ring road you can ride round on the sand.
+  The crossing horses pop in and out at the ends of their path and their legs don't move.
+- Built by a helper agent in parallel.
+
 ## Known bugs
 - Play-test bot findings on Wahat Al Shams (to tune in Session 34):
   - A careful 5-minute shift gets 5 to 6 deliveries (target 6 to 8). The rides are long

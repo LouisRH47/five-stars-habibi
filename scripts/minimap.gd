@@ -33,6 +33,8 @@ const BAR_HEIGHT := 26.0  # the strip along the bottom that names the next stop
 
 ## The parked bike while you walk (Session 19), drawn as a little bike; null while riding.
 var parked_bike: Node3D
+## Where road works are (Session 33): a cone is drawn at each spot (x, z). Set by EventManager.
+var road_works_at: Array = []
 
 var _map: Dictionary = {}  # the data list's constants, e.g. _map["ROADS"]
 var _font: Font
@@ -125,6 +127,7 @@ func _draw_map() -> void:
 	_draw_buildings()
 	_view.draw_set_transform_matrix(Transform2D.IDENTITY)
 	_draw_villa_numbers(xform)
+	_draw_road_works(xform)
 	_draw_north(xform)
 	_draw_target(xform)
 	_draw_parked_bike(xform)
@@ -272,3 +275,16 @@ func _text(text: String, centre: Vector2, size: int, colour: Color) -> void:
 	var width := _font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x
 	var baseline := centre + Vector2(-width * 0.5, _font.get_ascent(size) * 0.5 - 1.0)
 	_view.draw_string(_font, baseline, text, HORIZONTAL_ALIGNMENT_LEFT, -1, size, colour)
+
+
+## Road works (Session 33): a little orange cone with a white stripe, on a dark circle.
+func _draw_road_works(xform: Transform2D) -> void:
+	for at: Vector2 in road_works_at:
+		var spot := xform * at
+		if spot.distance_to(_view.size * 0.5) > _view.size.x * 0.5 - 8.0:
+			continue  # only while it's on the map
+		_view.draw_circle(spot, 11.0, OUTLINE)
+		_view.draw_colored_polygon(PackedVector2Array([spot + Vector2(0, -8), spot + Vector2(6, 6),
+				spot + Vector2(-6, 6)]), TARGET)
+		_view.draw_line(spot + Vector2(-3.5, 1), spot + Vector2(3.5, 1), PLAYER, 2.0)
+		_view.draw_line(spot + Vector2(-8, 7), spot + Vector2(8, 7), TARGET, 2.0)
