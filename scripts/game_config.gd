@@ -182,10 +182,11 @@ const CRASH_WEEK_SHIFTS := 7          # "this week" on the clinic screen = the l
 const CRASH_WEEK_WARNING := 3         # the clinic's crash bar is full at this many big crashes
 
 # --- Shifts (Session 13) ---
-const SHIFT_LENGTH := 480.0           # active seconds per shift (8 minutes, 48 s per in-game hour)
 const SHIFT_START_HOUR := 8.0         # the clock shows 08:00 when the shift starts...
 const SHIFT_END_HOUR := 18.0          # ...and 18:00 when it's over (day shift only in Tier 1)
-const CLOCK_STEP_MINUTES := 10        # display only: one step every 8 active seconds
+const GAME_MINUTES_PER_REAL_SECOND := 1.0  # fixed clock rate while gameplay is running
+const SHIFT_LENGTH := (SHIFT_END_HOUR - SHIFT_START_HOUR) * 60.0 / GAME_MINUTES_PER_REAL_SECOND  # 600 active seconds
+const CLOCK_STEP_MINUTES := 1         # display every game minute (once per active second)
 const SHIFT_WARNING_TIME := 30.0      # the clock turns orange this many active seconds before the end
 
 # --- Application and tutorial (Session 14) ---
@@ -374,6 +375,6 @@ const GOALS_PER_SHIFT := 2
 const GOAL_BONUS := 15                # Dh per goal done
 const GOAL_DELIVERIES := 6            # "Make 6 deliveries" (PRD said 8: too many for a 5-minute shift)
 const GOAL_FIVE_STAR_STREAK := 3      # "3 five-star deliveries in a row"
-const GOAL_LUNCH_ORDERS := 1          # "A school lunch order" (PRD said 2: the lunch rush is only 30 real seconds)
+const GOAL_LUNCH_ORDERS := 1          # "A school lunch order" (11:30–12:30 is 60 active seconds)
 const GOAL_CLUSTERS := 3              # "Deliver to 3 different clusters" (PRD said all 5: too many for 5 minutes)
 const GOAL_NO_CRASH_MIN_DELIVERIES := 1  # "No crashes" also needs at least this many deliveries

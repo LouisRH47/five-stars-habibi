@@ -1,6 +1,6 @@
 class_name ShiftManager
 extends Node
-## Runs the shift (PRD "Shifts"): the clock counts down 8 active minutes. When it runs out,
+## Runs the shift (PRD "Shifts"): 8:00 AM–6:00 PM takes 10 active minutes. When it runs out,
 ## no new orders pop up; if you're carrying an order you still finish it, and the shift
 ## ends right after you drop it off. A big crash ends the shift too (after the clinic).
 ## Then the summary screen shows (scripts/shift_screen.gd). The data lives in GameState.

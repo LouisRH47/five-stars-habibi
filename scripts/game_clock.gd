@@ -1,6 +1,6 @@
 class_name GameClock
 extends RefCounted
-## Shared clock text for the HUD and event messages. Only the display is stepped;
+## Shared minute-by-minute clock text for the HUD and event messages. Only the display is stepped;
 ## deliveries, sunlight and events still use GameState's continuous game time.
 
 

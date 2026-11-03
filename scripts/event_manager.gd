@@ -245,6 +245,6 @@ func _tell_phone(text: String, warning: bool) -> void:
 		phone.show_event(text, warning)
 
 
-## Same ten-minute AM/PM display as the HUD; the actual event time stays continuous.
+## Same minute-by-minute AM/PM display as the HUD; the actual event time stays continuous.
 func _clock_text(hour: float) -> String:
 	return GameClock.format_time(minf(hour, GameConfig.SHIFT_END_HOUR))

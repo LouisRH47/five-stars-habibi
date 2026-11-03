@@ -414,10 +414,12 @@ func shift_open() -> bool:
 	return not shift_clock_out
 
 
-## The time on the in-game clock, in hours (8.5 = 08:30).
+## Continuous game time at the fixed rate (one active second = one game minute).
+## The display rounds to whole minutes; schedules and sunlight use this precise value.
 func clock_hours() -> float:
-	var done := 1.0 - shift_time_left / GameConfig.SHIFT_LENGTH
-	return lerpf(GameConfig.SHIFT_START_HOUR, GameConfig.SHIFT_END_HOUR, clampf(done, 0.0, 1.0))
+	var elapsed := clampf(GameConfig.SHIFT_LENGTH - shift_time_left, 0.0, GameConfig.SHIFT_LENGTH)
+	return minf(GameConfig.SHIFT_START_HOUR + elapsed * GameConfig.GAME_MINUTES_PER_REAL_SECOND / 60.0,
+			GameConfig.SHIFT_END_HOUR)
 
 
 ## The shift's numbers for the summary screen: deliveries, cancelled, average stars,

@@ -142,7 +142,7 @@ Every delivery is a race against three meters: time, heat and damage. How well y
 
 **Shifts**
 
-- One shift is 8 real minutes (one in-game day, 08:00 to 18:00, so one in-game hour is 48 seconds). It ends with a golden sunset. The clock reads like a real clock, "9:40 AM", and moves in 10-minute steps (one step every 8 real seconds) with a small sun icon, so it doesn't look like a sped-up timer. Tier 1 is day shift only. Night shifts unlock at Tier 2.
+- The clock rate is fixed: **one real gameplay second = one in-game minute**. The shift runs from 8:00 AM to 6:00 PM, so it lasts **10 active real minutes (600 seconds)**. One in-game hour takes 60 real seconds. The AM/PM clock advances one displayed minute each second, with a small sun icon, and the shift ends with a golden sunset. Pause menus, delivery-result screens and the tutorial freeze gameplay time. Tier 1 is day shift only. Night shifts unlock at Tier 2.
 - If the clock runs out while you're carrying an order, you still finish that delivery. The shift ends right after you drop it off. No new orders pop up once the clock is out.
 - At the end you get a summary screen: deliveries, stars, money earned, XP.
 
@@ -269,7 +269,7 @@ Money and Rider Level finally buy things. Two shops in the Plaza, both walk-in l
 - Owned items say "Owned", locked ones show the level they need, new ones have a "NEW" tag.
 - Restaurant counters, the C Institute reception and the gym reception use the same side panel, smaller: it shows the order while the person hands you the bag or takes it.
 
-**Pedal Point Bikes (بيدال بوينت)**, the bike shop and mechanic. Bikes hang on the wall, tools on a pegboard, and a mechanic stands at the workbench. Your bike turns slowly on a stand while you shop. Prices are starting ideas for 8-minute shifts; tune them in the play-test.
+**Pedal Point Bikes (بيدال بوينت)**, the bike shop and mechanic. Bikes hang on the wall, tools on a pegboard, and a mechanic stands at the workbench. Your bike turns slowly on a stand while you shop. Prices are starting ideas; tune them in the ten-minute-shift play-test.
 
 | Upgrade | Level | Price | What it does |
 | --- | --- | --- | --- |
@@ -596,6 +596,8 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 3 Nov 2026 | Fair Grade International School copies the real school from Louis's photos. The C Institute (glass front and stepped seats facing the spine, walk-in lobby with a receptionist) is a drop-off. Gym (rounded at the back, lap pool beside it) and a separate community pool in the spine; gym reception is a drop-off |
 | 3 Nov 2026 | Spine gets grass texture, flowers and gentle hills (0.5 to 1.5 m), and one path linking all the domes. Textures and props everywhere. Camera never goes inside houses. Heat shimmer removed. Top speed 28, sprint 36 km/h with stronger speed lines and wind sound. Fix people with no head and the glitchy dome doors |
 | 3 Nov 2026 | Shops: Pedal Point Bikes (upgrades, stamina +10% buyable up to 10 times, aluminium then carbon frame, a 10,000 Dh rocket booster on X at Level 10, paint and box colours) and Dune Drip (clothes, try on in front of a mirror like GTA). Menu on the left while you stay in the 3D shop, with a cart and checkout. Same side-panel style at every walk-in place |
+
+| 3 Nov 2026 | Clock correction requested by Michael: one real gameplay second equals one game minute, displayed minute by minute. Keep 8:00 AM–6:00 PM, deriving a 600-second (ten-minute) shift from the fixed rate. This supersedes the eight-minute / ten-minute-display-step choice. Pause, tutorial and delivery-result screens still freeze gameplay time; action timers retain their real-second units |
 
 ## Sources
 

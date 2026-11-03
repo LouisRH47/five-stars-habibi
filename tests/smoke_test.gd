@@ -155,6 +155,8 @@ func _physics_process(_delta: float) -> bool:
 			if _frame >= 60:
 				var elapsed: float = _clock_before - _game_state.shift_time_left
 				_check("resuming advances one shift second per real second", elapsed > 0.9 and elapsed < 1.1, "%.3f s" % elapsed)
+				_check("resuming advances one game minute per active second",
+						absf((_game_state.clock_hours() - 8.0) * 60.0 - elapsed) < 0.000001, "%.6f hours" % _game_state.clock_hours())
 				_bike.set_parked(false)
 				_start_delivery_check()
 		"at_restaurant":
@@ -299,25 +301,27 @@ func _physics_process(_delta: float) -> bool:
 	return false
 
 
-## Session 35A: a readable ten-minute display must not quantize simulation time.
+## Session 35A correction: one active second is one game minute. The minute display
+## must not quantize simulation time or depend on the size of individual frames.
 ## Run on every test map, before any delivery changes the clock or pauses the game.
 func _start_clock_check() -> void:
 	var gs: Node = _game_state
 	var manager: Node = _main.get_node("ShiftManager")
 	var screen: Node = _main.get_node("ShiftScreen")
 	gs.reset()
-	_check("a normal shift lasts eight real minutes", GameConfig.SHIFT_LENGTH == 480.0
-			and manager.shift_length == 480.0 and gs.shift_time_left == 480.0, "%.0f s" % gs.shift_time_left)
+	_check("a normal 8 AM to 6 PM shift lasts ten real minutes", GameConfig.SHIFT_LENGTH == 600.0
+			and manager.shift_length == 600.0 and gs.shift_time_left == 600.0, "%.0f s" % gs.shift_time_left)
 	var examples := [
 		[0.0, "12:00 AM"],
 		[8.0, "8:00 AM"],
-		[8.0 + 9.99 / 60.0, "8:00 AM"],
+		[8.0 + 0.99 / 60.0, "8:00 AM"],
+		[8.0 + 1.0 / 60.0, "8:01 AM"],
 		[8.0 + 10.0 / 60.0, "8:10 AM"],
-		[11.0 + 59.0 / 60.0, "11:50 AM"],
+		[11.0 + 59.0 / 60.0, "11:59 AM"],
 		[12.0, "12:00 PM"],
 		[13.5, "1:30 PM"],
 		[18.0, "6:00 PM"],
-		[23.0 + 59.0 / 60.0, "11:50 PM"],
+		[23.0 + 59.0 / 60.0, "11:59 PM"],
 	]
 	for example in examples:
 		var shown: String = GameClock.format_time(example[0])
@@ -325,25 +329,44 @@ func _start_clock_check() -> void:
 	screen._process(0.0)
 	_check("the live HUD starts at 8:00 AM with a sun icon", screen._clock.text == "8:00 AM"
 			and screen._sun_icon != null and screen._sun_icon.is_visible_in_tree(), screen._clock.text)
-	manager._physics_process(7.99)
+	manager._physics_process(0.99)
 	screen._process(0.0)
-	_check("the clock display waits eight seconds before its next step", screen._clock.text == "8:00 AM", screen._clock.text)
-	_check("simulation time advances between display steps", gs.clock_hours() > 8.16
-			and gs.clock_hours() < 8.0 + 10.0 / 60.0, "%.6f hours" % gs.clock_hours())
+	_check("the clock display waits one second before its next minute", screen._clock.text == "8:00 AM", screen._clock.text)
+	_check("simulation time advances between displayed minutes", gs.clock_hours() > 8.016
+			and gs.clock_hours() < 8.0 + 1.0 / 60.0, "%.6f hours" % gs.clock_hours())
 	manager._physics_process(0.01)
 	screen._process(0.0)
-	_check("eight seconds advances the live display to 8:10 AM", screen._clock.text == "8:10 AM", screen._clock.text)
-	manager._physics_process(40.0)
-	_check("one game hour takes 48 real seconds", absf(gs.clock_hours() - 9.0) < 0.000001, "%.6f hours" % gs.clock_hours())
+	_check("one real second advances the live display to 8:01 AM", screen._clock.text == "8:01 AM", screen._clock.text)
+	manager._physics_process(59.0)
+	screen._process(0.0)
+	_check("one game hour takes 60 real seconds", absf(gs.clock_hours() - 9.0) < 0.000001
+			and screen._clock.text == "9:00 AM", "%.6f hours, %s" % [gs.clock_hours(), screen._clock.text])
+	var one_step_clock: float = gs.clock_hours()
 	gs.reset()
-	manager._physics_process(168.0)
-	_check("lunch starts 168 seconds into the eight-minute shift", absf(gs.clock_hours() - 11.5) < 0.000001
+	for step in [0.125, 0.375, 4.5, 15.0, 40.0]:  # 60 seconds in differently-sized frames
+		manager._physics_process(step)
+	_check("mixed frame durations preserve the one-second-to-one-minute rate", absf(gs.clock_hours() - one_step_clock) < 0.000001
+			and absf(gs.shift_time_left - 540.0) < 0.000001, "%.6f hours, %.6f s left" % [gs.clock_hours(), gs.shift_time_left])
+	gs.reset()
+	manager._physics_process(209.99)
+	_check("lunch is not active before 11:30 AM", not OrderMaker.is_lunch(gs.clock_hours()), "")
+	manager._physics_process(0.01)
+	_check("lunch starts 210 seconds into the ten-minute shift", absf(gs.clock_hours() - 11.5) < 0.000001
 			and OrderMaker.is_lunch(gs.clock_hours()), "%.6f hours" % gs.clock_hours())
-	manager._physics_process(47.5)
-	_check("lunch remains active just before its 48-second window ends", OrderMaker.is_lunch(gs.clock_hours()), "")
-	manager._physics_process(0.5)
-	_check("lunch ends after 48 real seconds", absf(gs.clock_hours() - 12.5) < 0.000001
+	manager._physics_process(30.0)
+	screen._process(0.0)
+	_check("the live clock reaches noon after 240 real seconds", absf(gs.clock_hours() - 12.0) < 0.000001
+			and screen._clock.text == "12:00 PM", screen._clock.text)
+	manager._physics_process(29.99)
+	_check("lunch remains active just before its 60-second window ends", OrderMaker.is_lunch(gs.clock_hours()), "")
+	manager._physics_process(0.01)
+	_check("lunch ends after 60 real seconds", absf(gs.clock_hours() - 12.5) < 0.000001
 			and not OrderMaker.is_lunch(gs.clock_hours()), "%.6f hours" % gs.clock_hours())
+	manager._physics_process(149.99)
+	_check("the school still takes orders just before 3:00 PM", OrderMaker.school_open(gs.clock_hours()), "")
+	manager._physics_process(0.01)
+	_check("school orders close 420 seconds into the shift", absf(gs.clock_hours() - 15.0) < 0.000001
+			and not OrderMaker.school_open(gs.clock_hours()), "%.6f hours" % gs.clock_hours())
 	_set_hour(11.0 + 50.0 / 60.0)
 	screen._process(0.0)
 	_check("the live clock displays 11:50 AM before noon", screen._clock.text == "11:50 AM", screen._clock.text)
@@ -357,6 +380,20 @@ func _start_clock_check() -> void:
 	if events != null:
 		_check("event times use the same AM/PM display", events._clock_text(13.5) == "1:30 PM"
 				and events._clock_text(22.0) == "6:00 PM", events._clock_text(13.5))
+	# Exercise the full default duration as well as the accelerated final-delivery checks.
+	var bike_pose: Transform3D = _bike.global_transform
+	gs.reset()
+	manager._physics_process(599.0)
+	screen._process(0.0)
+	_check("a normal shift is still open at 5:59 PM", not gs.shift_clock_out and not screen.showing
+			and screen._clock.text == "5:59 PM", screen._clock.text)
+	manager._physics_process(1.0)
+	screen._process(0.0)
+	_check("a normal shift clocks out at 6:00 PM after 600 seconds", gs.shift_clock_out and screen.showing
+			and paused and screen._clock.text == "6:00 PM", screen._clock.text)
+	_check("a completed ten-minute shift cannot offer another job", _delivery.offer_now() == null, "")
+	screen._next_shift()
+	_bike.global_transform = bike_pose  # next-shift reset must not undo the map's initial riding check
 	gs.reset()
 	_clock_before = gs.shift_time_left
 	_bike.set_parked(true)
