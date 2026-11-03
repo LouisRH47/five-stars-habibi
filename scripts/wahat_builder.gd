@@ -120,14 +120,31 @@ func _build_stream(stream: Dictionary) -> void:
 	holder.name = "Stream"  # Session 30: AmbientMotion gives these pieces moving water
 	add_child(holder)
 	var x: float = stream["from_x"]
-	var step := 8.0
-	while x < stream["to_x"]:
-		var z: float = stream["z"] + sin(x * 0.06) * 3.0
-		var z2: float = stream["z"] + sin((x + step) * 0.06) * 3.0
-		var piece := LowPoly.box(holder, Vector3(stream["width"], 0.02, Vector2(step, z2 - z).length() + 0.8),
-				WATER, Vector3(x + step * 0.5, 0.03, (z + z2) * 0.5))
-		piece.rotation.y = atan2(step, z2 - z)
-		x += step
+	var end_x: float = stream["to_x"]
+	var width: float = stream["width"]
+	var centre_z: float = stream["z"]
+	const STEP := 8.0
+	const PIECES_PER_CHUNK := 6
+	while x < end_x:
+		# Keep the original overlapping pieces in short chunks so distant water can be culled.
+		var origin := Vector3(x, 0.0, centre_z)
+		var chunk := SurfaceTool.new()
+		chunk.begin(Mesh.PRIMITIVE_TRIANGLES)
+		for index in PIECES_PER_CHUNK:
+			if x >= end_x:
+				break
+			var z := centre_z + sin(x * 0.06) * 3.0
+			var z2 := centre_z + sin((x + STEP) * 0.06) * 3.0
+			var piece := BoxMesh.new()
+			piece.size = Vector3(width, 0.02, Vector2(STEP, z2 - z).length() + 0.8)
+			var middle := Vector3(x + STEP * 0.5, 0.03, (z + z2) * 0.5) - origin
+			chunk.append_from(piece, 0, Transform3D(Basis(Vector3.UP, atan2(STEP, z2 - z)), middle))
+			x += STEP
+		chunk.set_material(LowPoly.material(WATER))
+		var view := MeshInstance3D.new()
+		view.mesh = chunk.commit()
+		view.position = origin
+		holder.add_child(view)
 
 
 ## Two rows of tall trees all the way round the edge, drawn as one MultiMesh (fast).

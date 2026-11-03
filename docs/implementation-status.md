@@ -105,6 +105,12 @@ The current portable exports are at /private/tmp/habibi-ui-export-check/distribu
 
 The follow-up release profiler returned zero for GPU timings. A shorter-shadow sample recorded a median 312 shadow draw calls against 905 in the baseline segment, but focus loss and heavy background load made the frame times incomparable. Medium quality settings were retained. Evidence: /private/tmp/habibi-spine-profile/fixed-input-results.json and CSVs.
 
+Dispatch now evaluates each door distance once per sort. In 162 paired seeded comparisons across Wahat, Palm Grove, the test area and an edited fixture, the orders and next random value matched. A forced fallback with 30 equally distant homes and two equivalent shops also matched. On Wahat, measured medians were 30.7 to 6.0 ms for ordinary generation, 64.6 to 10.1 ms for the short-ride path and 79.3 to 14.6 ms for better-offer generation. These are headless call timings on this Mac. Evidence: /private/tmp/habibi-dispatch-check/compare.log and fallback.log.
+
+The stream now uses 12 short mesh chunks for its 68 original pieces. All 2,448 triangle corners matched within 0.00004 m, with normal error below 0.0001. Every chunk retained the world-space water shader and flow speed. Replay, replay UI and shared navigation/GPS suites passed on this revision. Evidence: /private/tmp/habibi-dispatch-check/stream.log and the focused suite logs.
+
+All 416 Wahat smoke checks passed on the dispatch and stream revision. Current Mac and Windows archives at /private/tmp/habibi-dispatch-check/distribution match runtime fingerprint c87daee91b01019acae71114b544b7b5137e1a78c75a80eb74022fd5a7de4a89 and passed archive, checksum, architecture and Mac signature checks. The private Mac release comparison loaded Wahat with the native Metal renderer and built the district, but the desktop tool could not attach in time to start the foreground samples. Evidence: /private/tmp/habibi-dispatch-check/wahat.log, distribution/manifest.json and /private/tmp/habibi-spine-foreground/native.log.
+
 ## Remaining acceptance
 
 - Establish at least 60 FPS during representative moving gameplay at Medium. Repeat the Mac release probe with sustained foreground focus and the full HUD.

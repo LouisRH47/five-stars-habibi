@@ -96,7 +96,7 @@ func neighbour_for(villa_number: int) -> Dictionary:
 		others = others.filter(func(v): return v.get("cluster", "") == cluster)
 	else:
 		var door := places.villa_door(villa_number)
-		others.sort_custom(func(a, b): return _villa_point(a).distance_to(door) < _villa_point(b).distance_to(door))
+		_sort_by_villa_distance(others, door)
 		others = others.slice(0, GameConfig.NEIGHBOUR_CHOICES)
 	return {} if others.is_empty() else others.pick_random()
 
@@ -169,7 +169,7 @@ func _pick_drop_off(spots_ok: bool, from: Vector3) -> Dictionary:
 	var homes := _homes()
 	if randf() < GameConfig.ORDER_NEARBY_HOME_CHANCE:
 		# Like a real delivery app: many orders are for homes not far from the shop.
-		homes.sort_custom(func(a, b): return _villa_point(a).distance_to(from) < _villa_point(b).distance_to(from))
+		_sort_by_villa_distance(homes, from)
 		homes = homes.slice(0, maxi(1, homes.size() / 2))
 	return homes.pick_random()
 
@@ -205,7 +205,7 @@ func _homes() -> Array:
 ## after 15:00.
 func _short_ride_villa(from: Vector3) -> Dictionary:
 	var villas: Array = places.villas.filter(func(v): return v["number"] != GameConfig.SCHOOL_SPOT or school_open(hour))
-	villas.sort_custom(func(a, b): return _villa_point(a).distance_to(from) < _villa_point(b).distance_to(from))
+	_sort_by_villa_distance(villas, from)
 	return villas.slice(0, GameConfig.ORDER_BORING_CHOICES).pick_random()
 
 
@@ -235,7 +235,7 @@ func better_than(order: Order) -> Order:
 		if home_choices.is_empty():
 			break
 		var from := places.restaurant_door(restaurant["id"])
-		home_choices.sort_custom(func(a, b): return from.distance_to(_villa_point(a)) < from.distance_to(_villa_point(b)))
+		_sort_by_villa_distance(home_choices, from)
 		for villa in [home_choices.front(), home_choices.back()]:
 			var candidate := make(restaurant["id"], villa["number"])
 			if is_better(candidate, order):
@@ -269,7 +269,16 @@ func _tip_chance(order: Order) -> float:
 	return clampf(base, 0.0, 1.0)
 
 
-## Sorting already has each villa's data. Avoid a linear catalogue search per comparison.
+## Calculate each door distance once while preserving the sort's input order and comparisons.
+func _sort_by_villa_distance(villas: Array, from: Vector3) -> void:
+	var ranked: Array = []
+	for villa: Dictionary in villas:
+		ranked.append([villa, _villa_point(villa).distance_to(from)])
+	ranked.sort_custom(func(a, b): return a[1] < b[1])
+	for index in villas.size():
+		villas[index] = ranked[index][0]
+
+
 func _villa_point(villa: Dictionary) -> Vector3:
 	if villa.get("interior", false):
 		return VenueBuilder.world_point(villa, VenueBuilder.counter_local(places.villa_size_of(villa)))
