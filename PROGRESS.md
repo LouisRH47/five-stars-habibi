@@ -348,7 +348,11 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - Louis play-tests everything with the "Done when" checklists in BUILD_PLAN.md
   (start the game with F5: main menu, application, tutorial, then shifts).
 - Merge the branches into main (pull requests on GitHub).
-- Session 17 again with Louis's own notes, then a friend plays for 10 minutes.
-- After that: export for itch.io and write the Tier 2 sessions (see "After Tier 1" in BUILD_PLAN.md).
+- Session 17 again with Louis's own notes.
+- Then Sessions 18 to 24, "Tier 1 extras: reasons to come back" in BUILD_PLAN.md
+  (celebrations, gear shop, streaks, regular customers, order choice, special days,
+  collections), designed in PRD.md "Reasons to come back".
+- After that: a friend plays for 10 minutes, export for itch.io, and write the Tier 2
+  sessions (see "After Tier 1" in BUILD_PLAN.md).
 - Open question for Louis: rides in Palm Grove take up to about a minute, the PRD hoped
   for 2 to 3 minutes. See "Still open" in PRD.md.

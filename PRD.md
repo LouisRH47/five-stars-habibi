@@ -208,6 +208,52 @@ One uninsured big crash on the bicycle costs about 20 deliveries of pay. That is
 
 **Real prices this is based on:** a UAE ER visit costs about 500 to 1,500 AED before tests ([Zavis](https://www.zavis.ai/directory/pricing/guide/for-tourists)). A bike service in Dubai runs from about 50 to 300 AED ([UAEcycle](https://www.uaecycle.com/pages/bike-service-charging-list), [Adventure HQ](https://adventurehq.ae/pages/bike-service)). Real riders can earn 4 to 13 AED per delivery in incentives ([job ad](https://app.qureos.com/jobs/bike-rider-1773450516512)), which is why insurance had to be scaled down.
 
+## Reasons to come back (Tier 1 extras)
+
+Research on games like Crazy Taxi, PowerWash Simulator, Stardew Valley, Euro Truck Simulator 2 and Death Stranding (Nov 2026) says players return when they always have a clear next goal, every action feels satisfying, their skill pays off, and there are characters they care about. In Tier 1 the money and XP don't buy anything yet, so these extras come before the itch.io release. Rule for all of them: the reasons to come back must be fun, never fear of missing out. No daily login rewards, no streaks you lose by not playing, no countdowns that nag you to return.
+
+**Celebrations (instant feedback)**
+
+- After a delivery the stars pop in one by one, each with its own "ding", and the wallet counts up.
+- All three meters green: a big "PERFECT!" with a happy jingle.
+- A tip gets its own little jingle and a coin burst on the phone.
+
+**Gear shop and the next goal**
+
+- The phone gets a Shop page. Gear costs money and a Rider Level (see XP):
+
+| Gear | Level | Price | What it does |
+| --- | --- | --- | --- |
+| Louder bell | 2 | 30 Dh | Press B to ring it. Cats and kids get out of the way a bit sooner |
+| GPS line | 3 | 80 Dh | A line on the road to the next stop |
+| Bigger stamina bar | 5 | 150 Dh | 30% more sprint |
+
+- Cosmetics (no level needed, 20 to 60 Dh): delivery box colours, bike paint, a few hats. Only the look changes.
+- The phone and the shift summary always show the next goal with a progress bar, e.g. "GPS line: 40 Dh and Level 3 to go".
+
+**5-star streak and personal bests**
+
+- Each 5-star delivery in a row adds +5% to your tip chance, up to +30%. Any crash or a delivery under 5 stars resets it. The phone shows the streak ("4 in a row").
+- Personal bests, shown on the shift summary when you beat them: best shift earnings, longest 5-star streak, most deliveries in a shift, fastest ride to each villa.
+
+**Regular customers**
+
+- 5 villas have named regulars who order more often than others, each with their own lines that change as you keep delivering to them (first visit, getting friendly, best friends). A regular who likes you tips a bit more often.
+- Starting cast: Auntie Mariam (always ice cream), Omar the gamer ("one more round, habibi"), the Khans with a new baby (they whisper), Mr. Jaber the retired teacher (corrects your timing), and Lina the student (always ordering bubble tea before exams).
+
+**Choosing orders**
+
+- At a rating of 4.5 or more, half the time the phone shows two orders side by side. 1 or 2 picks one, Q skips both. This is how "higher rating = better orders" from the Stars section works: one of the two is a better order (higher pay, shorter ride or a tip-friendly customer).
+
+**Special days**
+
+- Each shift is a kind of day: a normal day, Hot Noon (ice cream melts faster), Rush Hour (more orders, a little more pay), or a restaurant special ("2-for-1 at Brain Freeze": double tip chance on ice cream). The shift summary says what tomorrow will be.
+
+**Collections**
+
+- A Palm Grove stamp card: a stamp for every villa you've delivered to (36 in all), with a small reward when it's full.
+- Cats you've met (each cat gets a name) and customer lines you've heard. All on a Profile page on the phone.
+
 ## The motorbike test (Tier 1 to Tier 2) (NOT NOW, vision only)
 
 To leave the bicycle behind you book and pay for a test at the Al Sarab Riding School. It has two parts, a practical yard test and a theory quiz, and you need to pass both.
@@ -339,8 +385,9 @@ Build it in milestones and play-test at the end of each one. Only move on when t
 5. **Money, tips, XP and customers:** wallet, random tips on 5-star jobs, Rider Level, customers at the door.
 6. **Crashes and shifts:** small and big crashes, insurance, the 10-minute shift and the summary screen.
 7. **Start screen and polish:** application form and the 3 presets, menu, saving, sounds and music.
-8. **Motorbike test:** yard course, instructor, theory quiz, fail and retake rules.
-9. **Tier 2 and beyond:** motorbike, Old Town, then the next tiers one by one.
+8. **Reasons to come back:** celebrations, gear shop, streaks and personal bests, regular customers, order choice, special days, collections. Then release Tier 1 on itch.io.
+9. **Motorbike test:** yard course, instructor, theory quiz, fail and retake rules.
+10. **Tier 2 and beyond:** motorbike, Old Town, then the next tiers one by one.
 
 ## Still open
 
@@ -392,6 +439,7 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 2 Nov 2026 | Saving: one JSON save (user://save.json) that saves itself after every change and when you close the game. New game wipes it. Settings (fullscreen, later volume) live in their own file so New game keeps them |
 | 2 Nov 2026 | All music and sounds are made by our own script (tools/make_sounds.py), so they're CC0 and need no downloads. Music: a 53 s loop in maqam Hijaz (oud-like pluck, darbuka maqsum, drone). Volume sliders: Volume, Music, Effects, Ambience |
 | 2 Nov 2026 | Session 17 tuning from a play-test bot that rides whole shifts: the time bar now reaches 60% at the target time and 0% at twice the target (it used to be empty at the target, so even on-time rides were red). Freshness drain lowered to 0.25 / 0.4 / 0.55 % a second (pizza / bubble tea / ice cream). Speed bumps only hurt the food much above 10 km/h. Hard braking starts at 22 km/h. A careful shift now gets about 12 deliveries, 5 stars and 120 Dh; a careless one crashes and earns about half |
+| 3 Nov 2026 | New "Reasons to come back" section from research on similar games: celebrations, a gear shop with a visible next goal, 5-star streaks and personal bests, regular customers, choosing between two orders at a high rating, special days, collections. No fear-of-missing-out tricks. Built as Sessions 18 to 24, before the itch.io release |
 | 2 Nov 2026 | Palm Grove layout: 300 m square with a wall and a closed gate in the south, Palm Grove Avenue from the gate to a central roundabout, three cross streets, 36 villas, restaurant strip just inside the gate |
 
 ## Sources

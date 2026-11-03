@@ -334,9 +334,121 @@ Read PROGRESS.md and BUILD_PLAN.md and tell me which session I'm on
 and what's left in it.
 ```
 
+## Tier 1 extras: reasons to come back (Sessions 18 to 24)
+
+Research on similar games (Crazy Taxi, PowerWash Simulator, Stardew Valley, Euro Truck Simulator 2, Death Stranding) says players come back when they always have a clear next goal, every action feels satisfying, their skill pays off, and there are characters they care about. Right now the money and XP don't buy anything, so these sessions come before the itch.io release. The design is in PRD.md, "Reasons to come back". Same rules as before: one session at a time, play it before the next one.
+
+### Session 18: Celebrations
+
+```text
+Session 18. Read PRD.md "Reasons to come back", Celebrations. Make finishing
+a delivery feel great: the stars pop in one by one on the phone, each with a
+"ding" (higher for each star), and the wallet counts up instead of jumping.
+All three meters green: a big "PERFECT!" with a happy jingle. A tip gets its
+own jingle and a coin burst. Make the new sounds in tools/make_sounds.py.
+```
+
+Done when:
+
+- [ ] Every delivery has a little celebration, and a perfect one feels special
+- [ ] It's quick: it never slows you down before the next order
+
+### Session 19: Gear shop and the next goal
+
+```text
+Session 19. Read PRD.md "Reasons to come back", Gear shop. Add a Shop page
+to the phone (Tab opens it, the game pauses while it's open) with the louder
+bell (B rings it), the GPS line, the bigger stamina bar and a few cosmetics
+(box colours, bike paint, hats). Gear needs money and a Rider Level. Show
+the next goal with a progress bar on the phone and on the shift summary.
+Prices go in game_config.gd, the item list in a data file. Save what you own.
+```
+
+Done when:
+
+- [ ] You can buy the bell after about one good shift and the GPS line after about two
+- [ ] You always know what you're saving up for
+
+### Session 20: Streaks and personal bests
+
+```text
+Session 20. Read PRD.md "Reasons to come back", 5-star streak and personal
+bests. Each 5-star delivery in a row adds +5% tip chance (max +30%); a crash
+or a delivery under 5 stars resets it. Show the streak on the phone. Track
+personal bests (best shift earnings, longest streak, most deliveries in a
+shift, fastest ride to each villa) and show "New best!" on the shift summary.
+Save them.
+```
+
+Done when:
+
+- [ ] A streak makes you ride more carefully, and losing it stings a little
+- [ ] Beating a personal best feels good
+
+### Session 21: Regular customers
+
+```text
+Session 21. Read PRD.md "Reasons to come back", Regular customers. Give 5
+villas a named regular (put them in a data file) who orders more often, with
+their own look and lines for first visit, getting friendly and best friends.
+The phone shows the regular's name on their orders. A regular who likes you
+tips a bit more often. Save how well you know each one.
+```
+
+Done when:
+
+- [ ] You recognise the regulars and look forward to their orders
+- [ ] Their lines change as you get to know them
+
+### Session 22: Choosing orders
+
+```text
+Session 22. Read PRD.md "Reasons to come back", Choosing orders, and the
+"better order" rule in Stars. At a rating of 4.5 or more, half the time show
+two orders side by side on the phone: 1 or 2 picks one, Q skips both (counts
+as one skip). One of the two is a better order. Keep the 30-second timer.
+```
+
+Done when:
+
+- [ ] Choosing between two orders is a real decision
+- [ ] A high rating feels worth having
+
+### Session 23: Special days
+
+```text
+Session 23. Read PRD.md "Reasons to come back", Special days. Each shift is
+a kind of day: normal, Hot Noon (ice cream melts faster), Rush Hour (more
+orders, a bit more pay) or a restaurant special (double tip chance on one
+food). Show today's kind of day on the clock and tomorrow's on the shift
+summary. Numbers in game_config.gd.
+```
+
+Done when:
+
+- [ ] Shifts feel different from each other
+- [ ] Seeing tomorrow's special makes you want one more shift
+
+### Session 24: Collections and the profile page
+
+```text
+Session 24. Read PRD.md "Reasons to come back", Collections. Add a Profile
+page to the phone: the Palm Grove stamp card (a stamp for each villa you've
+delivered to, a small reward when all 36 are done), the cats you've met
+(give each cat a name in the data file) and the customer lines you've heard.
+Save it all.
+```
+
+Done when:
+
+- [ ] You can see how much of Palm Grove you've collected
+- [ ] Filling the stamp card is a goal you want to finish
+
+**Then:** play-test again (Session 17's prompt, with your notes), and when a friend plays for 10 minutes and wants to keep going, release on itch.io.
+
 ## After Tier 1
 
-Once Session 17 feels fun, upload it to itch.io for free so friends can play it and give feedback (ask Claude Code to export Mac and Windows versions). After that, the next block of sessions is the motorbike test (yard course, instructor, theory quiz), then the motorbike, Old Town, night shifts and running costs. Ask Claude Code to "write the Tier 2 sessions for BUILD_PLAN.md in the same style as Tier 1" so the plan keeps growing as you go.
+Once Sessions 18 to 24 feel fun, upload it to itch.io for free so friends can play it and give feedback (ask Claude Code to export Mac and Windows versions). After that, the next block of sessions is the motorbike test (yard course, instructor, theory quiz), then the motorbike, Old Town, night shifts and running costs. Ask Claude Code to "write the Tier 2 sessions for BUILD_PLAN.md in the same style as Tier 1" so the plan keeps growing as you go.
 
 ## Confirmed choices
 
