@@ -293,7 +293,9 @@ func _start_delivery_check() -> void:
 		for child in places.get_children():
 			if child.name.begins_with("Villa"):
 				built += 1
-	var listed: int = 0 if places == null else places.villas.size()
+	var listed: int = 0
+	if places != null:  # "spot" entries are drop-off spots, not homes (Session 26)
+		listed = places.villas.filter(func(v): return v.get("kind", "") != "spot").size()
 	_check("every villa in the data list was built", listed > 0 and built == listed, "%d of %d" % [built, listed])
 	_check("an order pops up", _order != null, "")
 	if _order == null:
@@ -1160,6 +1162,7 @@ func _check(label: String, ok: bool, detail: String) -> void:
 func _finish() -> void:
 	_check_sound()
 	_check_session28()
+	_check_session26()
 	_check_saving()
 	for action in ACTIONS:
 		Input.action_release(action)
@@ -1217,3 +1220,88 @@ func _check_session28() -> void:
 	_check("Settings has the Graphics option (Low / Medium / High)", panel.graphics_option != null
 			and panel.graphics_option.item_count == 3 and panel.graphics_option.selected == Settings.graphics, "")
 	panel.free()
+
+
+## Session 26: the house kit. Every Wahat home is a built house of its kind (10 courtyard,
+## 1 garden and 1 signature villa per cluster) showing its door number, homes look different
+## but the same every time, each is one merged mesh, nothing from a house stands on a door
+## spot or a lane, and the bilingual cluster signs are up. Other maps: skipped.
+func _check_session26() -> void:
+	var places: Node = _main.get_node_or_null("PlaceBuilder") if is_instance_valid(_main) else null
+	if places == null or not places.data.get_script_constant_map().has("CLUSTER_NAMES"):
+		print("      not Wahat Al Shams, the house checks skipped")
+		return
+	var data: Dictionary = places.data.get_script_constant_map()
+	var homes: Array = places.villas.filter(func(v): return v.get("kind", "") != "spot")
+	var kinds := {}
+	var looks := {}
+	var good := 0
+	var most_meshes := 0
+	for villa in homes:
+		var home: Node = places.get_node_or_null("Villa%d" % villa["number"])
+		if home == null:
+			continue
+		var number: Node = home.get_node_or_null("Number")
+		if home.get_meta("kind", "") == villa["kind"] and home.get_node_or_null("House") is MeshInstance3D \
+				and number is Label3D and number.text == str(villa["house"]):
+			good += 1
+		var key: String = "%s %s" % [villa["cluster"], villa["kind"]]
+		kinds[key] = kinds.get(key, 0) + 1
+		looks[home.get_meta("extras", "")] = true
+		most_meshes = maxi(most_meshes, home.find_children("*", "MeshInstance3D", true, false).size())
+	_check("every home is a house of its kind with its door number", good == homes.size() and good > 0,
+			"%d of %d" % [good, homes.size()])
+	var split_ok := true
+	for cluster in data["CLUSTER_NAMES"]:
+		if kinds.get(cluster + " courtyard", 0) != 10 or kinds.get(cluster + " garden", 0) != 1 \
+				or kinds.get(cluster + " signature", 0) != 1:
+			split_ok = false
+	_check("each cluster: 10 courtyard, 1 garden, 1 signature villa", split_ok, "%s" % [kinds])
+	_check("homes look different from each other", looks.size() >= homes.size() * 0.8, "%d looks" % looks.size())
+	var first: Node = places.get_node("Villa%d" % homes[0]["number"])
+	var again: Node = load("res://scripts/villa_builder.gd").build(homes[0], places.villa_size)
+	_check("a home looks the same every time it's built", again.get_meta("extras") == first.get_meta("extras"),
+			again.get_meta("extras"))
+	again.free()
+	_check("each home is drawn as one merged mesh", most_meshes == 1, "%d" % most_meshes)
+	# Nothing solid from a house may stand on a door spot or on a road or lane.
+	var space := _bike.get_world_3d().direct_space_state
+	var ball := SphereShape3D.new()
+	ball.radius = 1.0
+	var in_the_way := []
+	for villa in homes:
+		var door: Vector3 = places.villa_door(villa["number"])
+		if _house_hits(space, ball, Transform3D(Basis(), door + Vector3.UP * 0.9)) > 0:
+			in_the_way.append(villa["address"])
+	for road in data["ROADS"]:
+		var strip := BoxShape3D.new()
+		var width: float = road.get("width", data["ROAD_WIDTH"])
+		strip.size = Vector3(width, 1.0, road["from"].distance_to(road["to"]) + width)
+		var way: Vector2 = road["to"] - road["from"]
+		var middle: Vector2 = (road["from"] + road["to"]) * 0.5
+		var spot := Transform3D(Basis(Vector3.UP, atan2(way.x, way.y)), Vector3(middle.x, 0.9, middle.y))
+		if _house_hits(space, strip, spot) > 0:
+			in_the_way.append(road["name"])
+	_check("no house part on a door spot or a lane", in_the_way.is_empty(), "%s" % [in_the_way])
+	var signs: Node = _main.get_node_or_null("WahatBuilder/ClusterSigns")
+	var signed := {}
+	if signs != null:
+		for board in signs.get_children():
+			var id: String = String(board.name).get_slice("_", 1)
+			if _has_arabic_label(board) and _has_label_text(board, data["CLUSTER_NAMES"].get(id, "?")) \
+					and _has_label_text(board, "Cluster " + id.substr(1)):
+				signed[id] = signed.get(id, 0) + 1
+	_check("bilingual cluster signs at the lane ends of every cluster",
+			signed.size() == data["CLUSTER_NAMES"].size() and signed.values().all(func(n): return n >= 2), "%s" % [signed])
+
+
+## How many house parts (bodies called Villa...) a shape at this spot touches.
+func _house_hits(space: PhysicsDirectSpaceState3D, shape: Shape3D, spot: Transform3D) -> int:
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape = shape
+	query.transform = spot
+	var count := 0
+	for hit in space.intersect_shape(query, 32):
+		if String((hit["collider"] as Node).name).begins_with("Villa"):
+			count += 1
+	return count

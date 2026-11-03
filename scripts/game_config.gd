@@ -224,3 +224,23 @@ const SHIMMER_FULL := 55.0         # metres: full shimmer from here on
 const SHIMMER_AMOUNT := 0.0018     # how far the picture wobbles (part of the screen width)
 # The Graphics setting (0 Low, 1 Medium, 2 High): how far away shadows are still drawn (metres).
 const SHADOW_DISTANCE := [60.0, 150.0, 260.0]
+# --- Houses (Session 26) ---
+const HOUSE_STOREY := 2.6             # metres per floor (homes have 2 floors)
+const HOUSE_PARAPET := 0.5            # the low wall round the roof terrace
+const HOUSE_ANNEX_HEIGHT := 3.0       # the one-floor side part with the wind tower
+const HOUSE_COURTYARD_WALL := 1.3     # how high the low courtyard wall is
+const HOUSE_SIDE_YARD := 2.5          # metres beside a home where buggies, bikes and lawns may go
+const HOUSE_FRONT_STRIP := 0.8        # pot plants may stand this far in front of the front wall
+const SIGNATURE_EXTRA_DEPTH := 3.0    # signature villas are this much deeper (at the back)...
+const SIGNATURE_EXTRA_WIDTH := 2.0    # ...and this much wider on the courtyard side
+const HOUSE_NUMBER_FONT := 130        # size of the house number by the door
+const CLUSTER_SIGN_INSET := 5.0       # cluster signs stand this far in from the lane's end...
+const CLUSTER_SIGN_SIDE := 3.4        # ...and this far to the side of the lane's middle line
+# How likely each extra is (0 = never, 1 = always). Picked from the home's number, so the
+# same home always looks the same.
+const HOUSE_BUGGY_CHANCE := 0.45      # a golf buggy beside the house
+const HOUSE_BIKES_CHANCE := 0.5       # bikes beside the house (when there's no buggy)
+const HOUSE_DISH_CHANCE := 0.4        # a satellite dish
+const HOUSE_TOYS_CHANCE := 0.45       # kids' toys
+const HOUSE_FLIP_CHANCE := 0.5        # the house is built mirror-image (courtyard on the other side)
+const HOUSE_POOL_CHANCE := 0.5        # garden and signature villas: a pool, otherwise a trampoline

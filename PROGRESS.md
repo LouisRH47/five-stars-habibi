@@ -513,6 +513,31 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - Built by a helper agent in parallel; the smoke test has 11 new checks for the sun and the
   Graphics levels.
 
+### Session 26
+- The 60 Wahat Al Shams homes are real houses now, built in code from a house kit
+  (`scripts/villa_builder.gd`, details in `scripts/villa_extras.gd`, merged into one mesh per
+  home by `scripts/mesh_kit.gd` so it stays fast): cream or sand two-storey L-shapes with a flat
+  roof, parapet and roof terrace, tilted solar panels on posts, a wind tower (barjeel) with
+  slots, small deep windows, a wooden door with a step and a little shade, and a teal plate
+  with the house number (1 to 12).
+- 3 types per cluster: 10 courtyard villas (side wing with the wind tower, a paved courtyard
+  behind a low wall), 1 garden villa (big lawn, hedge, shade tree) and 1 signature villa
+  (house 12: bigger, double door, wooden mashrabiya screen upstairs).
+- Every home looks different, and the same every time (its number picks): door colour,
+  courtyard left or right, golf buggy or bikes, AC units, satellite dish, pot plants, a tree in
+  the courtyard, flowers on the wall, toys, panels front or back, and a pool or trampoline on
+  garden and signature villas.
+- Homes are solid; door spots and lanes stay clear (checked).
+- Bilingual cluster signs ("المجموعة ١ / Cluster 1") at all 4 lane ends of every cluster
+  (`scripts/cluster_signs.gd`), readable from both sides.
+- About 55 to 59 fps in screenshot runs on the Mac.
+- Palm Grove keeps its old villas. A data entry with "kind": "spot" gets no house (for the
+  school and stables drop-off spots in Session 27).
+- Worth knowing: signature villas are a little bigger than the 11 x 11 plot (SIGNATURE_EXTRA_*
+  in `game_config.gd`); the mini-map still draws every home as the same square.
+- Built by a helper agent in parallel; new smoke test checks for the house kinds, the door
+  numbers, the signs and that nothing blocks a door.
+
 ## Known bugs
 - None found by the checks. Not play-tested by Louis yet.
 - The bot once got stuck nose-to-nose with a kid on a scooter (the kid waits for the bike,

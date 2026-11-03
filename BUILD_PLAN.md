@@ -506,8 +506,7 @@ Done when:
 - [ ] Every home has an address like "Villa 7, Cluster 3" on the phone and mini-map
 - [ ] No car can get into a cluster, but the bike can
 
-### Session 26: The house kit and the 3 villa types
-
+### Session 26: The house kit and the 3 villa types (built, needs testing)
 ```text
 Session 26. Read PRD.md ("The houses" in the Wahat Al Shams section) and look at
 docs/villa_types.svg. Make a
