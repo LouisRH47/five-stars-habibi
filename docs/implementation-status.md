@@ -143,6 +143,8 @@ The focus-guarded moving benchmark rejected both spine warmups after window focu
 - On a native Windows x64 machine, extract the portable ZIP, launch the executable, start a shift and verify movement and a pickup and delivery. The archive and executable structure have already been checked on Mac.
 - The user put itch.io on hold. The separate [MiddleLeap web deployment](https://fivestarshabibi.middleleap.com) serves v0.1.0 from main commit `85c116a6282d986b8b1916c88eab7cb8d050f7a4`. The [live manifest](https://fivestarshabibi.middleleap.com/version.json) and Cloudflare production deployment agree. The live game package matches the v0.1.0 release ZIP by SHA-256.
 - In a fresh desktop browser context, the live build loaded from Play in browser, hired a test rider, entered Wahat, accepted the tutorial pizza order and responded to pedal input. After reload, Continue restored the same test rider in Wahat. The browser reported zero console errors. Scope was first-run gameplay and browser rider persistence. Full delivery, iPad touch, the friend playtest and the native desktop gates remain separate.
+- The v0.1.0 revision used a five-minute 8 AM–6 PM shift, a generic tip for minor crashes and fixed major-crash charges. The corrected ten-minute shift and impact-based crashes were verified on the local integration candidate below.
+- On 4 November, GitHub main and the [production manifest](https://fivestarshabibi.middleleap.com/version.json) both moved to `a2d0dd923a88073ddf22aaa575c323d286401373` (v0.1.1). The update addresses Safari and iPad controls. The clock and crash gameplay source at that public revision matches v0.1.0.
 
 ## Local browser and desktop integration candidate
 
@@ -156,5 +158,22 @@ A browser ride into a restaurant wall at 28 km/h produced a visible tumble. The 
 
 The Mac and Windows review and distribution exports match the integration tree. All four archives passed CRC and SHA-256 checks. The Mac builds passed signature and arm64/x86-64 checks, and the Mac review app launched for 120 headless frames. The Windows executables passed PE x64 checks. The native Windows gameplay and moving Mac performance gates remain open. The desktop manifests and logs are under `/private/tmp/habibi-integration-desktop.COQ6oO`.
 
-The production site still serves the separate v0.1.0 build documented above. itch.io is on hold.
-- The live revision uses a five-minute 8 AM–6 PM shift, a generic tip for minor crashes and fixed major-crash charges. The local detail branch contains the requested ten-minute shift, separate rider fall reactions and impact-based charges. The web smoke applies to the deployed revision.
+The public build at the time of these checks was v0.1.0. itch.io is on hold.
+
+## Safari and touch integration follow-up
+
+Product commit `4ff383fb8a0bb5152e5bfdfec5a3afaca7bc422e` merges GitHub main `a2d0dd9` with the local gameplay candidate. A clinic regression now distinguishes an accepted order from a pending offer. Only an accepted order displays the cancellation badge and records a zero-star job. The original failed the new pending-offer check. The fix passed all 43 crash checks and the 416 Wahat smoke assertions.
+
+In the 1024 × 768 CSS layout, shop and profile buttons created after the initial touch layout measured 29.33 pixels high. They now use the same 44-pixel touch sizing as static buttons. The regression covers shop rows on first creation and after rebuild, and the Profile button for fastest rides. The touch, shop and replay UI suites passed. Isolated test logs are under `/private/tmp/habibi-touch-sizing.b6dEiu`.
+
+On the preceding integration commit `cc3bd59`, Chromium tablet emulation verified trusted touch hiring and order acceptance, simultaneous pedalling and steering, touch Pause and release of held inputs. A separate foreground Mac run at Medium and 1920 × 1080 used Forward+ Metal, an active delivery, and 14-second mounted samples. At 28 km/h with zero focus losses or crashes, the spine averaged 59.59 FPS, Plaza to C1 averaged 60.14 FPS, and the north ring averaged 60.01 FPS. The spine remains below the strict 60 FPS gate. Evidence is under `/private/tmp/habibi-detail-touch.6ZVS5B` and `/private/tmp/habibi-integrated-native.A7oaPn`.
+
+On `4ff383f`, WebKit iPad Pro emulation covered hiring, first-order acceptance, Pause/Resume, Profile, simultaneous Go and Left, rotation while Go was held, the DPR cap and simulated safe-area insets. It recorded zero browser errors. Form controls measured 45 CSS pixels at 1024 × 768. The drive inputs in this WebKit run used synthetic DOM touch events. The earlier Chromium run used trusted browser touch events. Physical iPad testing remains open. Evidence is under `/private/tmp/habibi-detail-webkit.qDEnjY`.
+
+Chrome completed the full tutorial on `4ff383f` with ordinary player inputs. The rider walked inside 1000 Pizza, held E at the counter, remounted, rode to Villa 1 in Cluster 1 and handed over the food on foot. The receipt recorded 14 Dh gross, 2 Dh insurance, 12 Dh net and 16 XP. After dismissing the receipt, the HUD showed 8:13 AM, the 12 Dh balance, one completed delivery and a normal new offer. Browser evidence is under `/private/tmp/habibi-browser-delivery.9IHYkP`.
+
+The same ride exposed traffic clipping through the rear of the north restaurant row. The original lane at z=-202.8 intersected those walls. Product commit `b680ad6e0c026e0eda5d295796fd2d765c08ebd8` puts the north traffic route on the authored road center at z=-205 and preserves the other three edges. A swept-body regression failed for all ten cars and the bus before the fix. All 39 district traffic checks passed afterward. The refreshed product also passed the 416 Wahat assertions, touch suite, Web export and seven packaging tests. The prepared site manifest identifies `b680ad6`.
+
+The `b680ad6` Mac and Windows review and distribution packages passed checksum and ZIP integrity checks. Mac bundles passed signature and universal architecture checks, the private Mac app passed a 120-frame headless launch, and the Windows executables are x64 PE32+. The matching runtime fingerprint is `01aba3d6f654c8eec99a94f256c2e091a2c3e9400510160657d4838d984b68dd`. Packages and manifests are under `/private/tmp/habibi-traffic-desktop.pd2T70`.
+
+The exact `b680ad6` foreground rerun started Wahat on M3 Forward+ Metal, Medium, 1920 × 1080, with the active display reporting 60.0 Hz. The Mac was locked and the game never gained focus. The 90-second guard rejected the run with zero valid route samples and the Apple HUD returned zero presentation records. The valid earlier samples remain the available rendered performance evidence. Logs are in the desktop output's `performance` directory.
