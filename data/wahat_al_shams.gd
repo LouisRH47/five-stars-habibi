@@ -106,7 +106,7 @@ const WELCOME_SIGN := {
 	"facing": -90.0,
 }
 
-## Bilingual cluster signs at the lane entrances (Session 26 adds them; listed here now).
+## Bilingual cluster signs at the lane entrances (built by scripts/cluster_signs.gd, Session 26).
 const CLUSTER_NAMES := {"C1": "المجموعة ١", "C2": "المجموعة ٢", "C3": "المجموعة ٣", "C4": "المجموعة ٤", "C5": "المجموعة ٥"}
 
 ## The tutorial's first order: an easy pizza to the first home in Cluster 1.
@@ -136,7 +136,8 @@ const SUPERMARKET := {
 ## The 60 homes: 12 per cluster, numbered 1 to 12 inside each cluster.
 ## number: a unique id (cluster x 100 + house). house: the number on the door.
 ## address: what the phone and the mini-map show. kind: courtyard, garden or signature
-## (the 3 house types, Session 26). Placeholder boxes until then.
+## (the 3 house types, built by scripts/villa_builder.gd, Session 26), or "spot" for a
+## drop-off spot that is not a home (no house is built for it).
 const VILLA_SIZE := Vector3(11.0, 6.5, 11.0)
 const VILLAS := [
 	{"number": 101, "house": 1, "cluster": "C1", "address": "C1 · Villa 1", "kind": "courtyard", "position": Vector3(-100, 0, -98.5), "facing": 0.0},

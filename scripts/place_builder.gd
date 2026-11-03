@@ -3,7 +3,8 @@ extends Node3D
 ## Builds the restaurants and villas from a data list when the game starts, and tells
 ## other scripts where each front door is. Which list is set in the scene (the "data"
 ## property): data/palm_grove.gd for the real map, data/test_area_places.gd for the test area.
-## Villas are scenes/villa.tscn and restaurants are scenes/restaurant.tscn (with
+## Palm Grove villas are scenes/villa.tscn, Wahat Al Shams homes come from the house kit
+## (scripts/villa_builder.gd, Session 26), and restaurants are scenes/restaurant.tscn (with
 ## Arabic + English signs). Each restaurant node is called Restaurant_<id>, e.g. Restaurant_pizza.
 
 ## The data list to build from. It must have RESTAURANTS, VILLAS,
@@ -42,6 +43,12 @@ func _ready() -> void:
 		restaurant.setup(place["name"], place["arabic"], place["colour"], restaurant_size)
 		add_child(restaurant)
 	for place in villas:
+		# Session 26: Wahat Al Shams homes have a "kind" and are built by the house kit.
+		# "spot" entries are drop-off spots (like the school gate), not homes: no house.
+		if place.has("kind"):
+			if place["kind"] != "spot":
+				add_child(VillaBuilder.build(place, villa_size))
+			continue
 		var villa = VILLA_SCENE.instantiate()
 		villa.position = place["position"]
 		villa.rotation_degrees = Vector3(0.0, place["facing"], 0.0)

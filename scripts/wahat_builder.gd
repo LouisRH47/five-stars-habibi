@@ -62,6 +62,7 @@ func _ready() -> void:
 	_build_tree_belt()
 	_build_walls_and_gate()
 	_build_welcome()
+	ClusterSigns.build(self, _map)  # Session 26: "Cluster 1" signs at the lane ends
 
 
 ## A flat coloured slab. middle: x/z. height: its thickness. top: how high its top is.
