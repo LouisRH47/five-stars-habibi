@@ -34,6 +34,9 @@ Look and feel: the mockup linked at the top of PRD.md.
   To see how a whole shift plays (for tuning), run the play-test bot. It rides a full
   shift and prints every delivery and the summary (add "-- careless" to ride flat out):
   /Applications/Godot.app/Contents/MacOS/Godot --path . --headless --fixed-fps 60 -s tests/playtest_bot.gd
+  If Godot isn't in /Applications on this Mac (on Michael's Mac it's in ~/Downloads), find
+  Godot.app first (e.g. with mdfind "kMDItemCFBundleIdentifier == 'org.godotengine.godot'")
+  and use that path in the commands above.
 - Shared game data (money, rating, current order) lives in one autoload,
   scripts/game_state.gd (from Session 3). Don't store it anywhere else.
 - Build the map from a data list (data/) plus a builder script, not by hand-editing
