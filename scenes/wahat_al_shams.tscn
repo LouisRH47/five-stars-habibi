@@ -23,6 +23,7 @@
 [ext_resource type="Script" path="res://scripts/delivered_card.gd" id="24_card"]
 [ext_resource type="Script" path="res://scripts/tutorial.gd" id="20_tutorial"]
 [ext_resource type="Script" path="res://scripts/obstacle_builder.gd" id="15_obstacles"]
+[ext_resource type="Script" path="res://scripts/sun_cycle.gd" id="28_sun"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_pg"]
 sky_top_color = Color(0.30980393, 0.6627451, 0.8392157, 1)
@@ -49,6 +50,11 @@ transform = Transform3D(0.81915206, 0.43938506, -0.36868784, 0, 0.64278764, 0.76
 light_color = Color(1, 0.94509804, 0.8392157, 1)
 light_energy = 1.2
 shadow_enabled = true
+
+[node name="SunCycle" type="Node" parent="." node_paths=PackedStringArray("sun", "world_environment")]
+script = ExtResource("28_sun")
+sun = NodePath("../Sun")
+world_environment = NodePath("../WorldEnvironment")
 
 [node name="WahatBuilder" type="Node3D" parent="."]
 script = ExtResource("9_map")

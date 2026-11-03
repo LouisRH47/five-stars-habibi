@@ -183,3 +183,44 @@ const SHIFT_WARNING_TIME := 30.0      # the clock turns orange this many seconds
 const APPLICATION_REVIEW_TIME := 2.0  # seconds of "Reviewing..." before you're hired
 const RIDER_NAME_MAX := 16            # letters allowed in your name
 const TUTORIAL_LAST_TIPS_TIME := 7.0  # seconds each of the last two tips stays up
+
+# --- Light and sky (Session 28) ---
+# The sun follows the shift clock (scripts/sun_cycle.gd). Each line is one moment of the
+# day; in between, everything blends smoothly. hour = clock time, height = how high the
+# sun is (degrees above the ground), sun = sun colour, energy = how bright the sun is,
+# top / horizon = sky colours, ambient = how bright the shadows are.
+const LIGHT_KEYS := [
+	{"hour": 8.0, "height": 16.0, "sun": Color(1.0, 0.8, 0.6), "energy": 0.95,
+			"top": Color(0.36, 0.6, 0.82), "horizon": Color(0.98, 0.86, 0.72), "ambient": 0.75},
+	{"hour": 10.0, "height": 45.0, "sun": Color(1.0, 0.94, 0.85), "energy": 1.0,
+			"top": Color(0.3, 0.63, 0.85), "horizon": Color(0.84, 0.92, 0.95), "ambient": 0.85},
+	{"hour": 12.5, "height": 72.0, "sun": Color(1.0, 0.99, 0.96), "energy": 0.9,
+			"top": Color(0.27, 0.6, 0.86), "horizon": Color(0.86, 0.93, 0.96), "ambient": 0.75},
+	{"hour": 15.0, "height": 45.0, "sun": Color(1.0, 0.95, 0.86), "energy": 1.0,
+			"top": Color(0.3, 0.62, 0.85), "horizon": Color(0.86, 0.91, 0.92), "ambient": 0.85},
+	{"hour": 16.5, "height": 26.0, "sun": Color(1.0, 0.86, 0.66), "energy": 1.1,
+			"top": Color(0.33, 0.56, 0.8), "horizon": Color(0.98, 0.84, 0.66), "ambient": 0.85},
+	{"hour": 17.25, "height": 14.0, "sun": Color(1.0, 0.72, 0.42), "energy": 1.05,
+			"top": Color(0.34, 0.48, 0.74), "horizon": Color(1.0, 0.72, 0.46), "ambient": 0.8},
+	{"hour": 18.0, "height": 5.0, "sun": Color(1.0, 0.58, 0.3), "energy": 0.85,
+			"top": Color(0.3, 0.38, 0.64), "horizon": Color(0.98, 0.58, 0.36), "ambient": 0.6},
+]
+const SUN_TURN_MORNING := 95.0     # degrees: the sun starts in the east...
+const SUN_TURN_EVENING := -95.0    # ...and ends in the west
+const SUN_TURN_TILT := 20.0        # turns the whole path a little, so shadows don't run along the roads
+const SKY_UPDATE_HOURS := 0.05     # sky colours update every 0.05 in-game hours (1.5 s), cheaper than every frame
+# Haze (fog), glow, soft corner shadows (SSAO) and heat shimmer.
+const HAZE_DENSITY := 0.0025       # thicker = the far end of the map fades into the sky sooner
+const HAZE_SKY_MIX := 0.4          # how much the haze takes the sky's colour (0 to 1)
+const GLOW_STRENGTH := 0.35        # the gentle glow on bright things
+const GLOW_THRESHOLD := 1.0        # only things brighter than this glow
+const SSAO_RADIUS := 1.2           # metres: how far the soft corner shadows reach
+const SSAO_INTENSITY := 1.6        # how dark the corner shadows are
+const SHIMMER_START_HOUR := 10.5   # heat shimmer fades in from here...
+const SHIMMER_PEAK_HOURS := Vector2(12.0, 14.0)  # ...is strongest between these hours...
+const SHIMMER_END_HOUR := 15.5     # ...and is gone again by here
+const SHIMMER_NEAR := 18.0         # metres: no shimmer closer than this
+const SHIMMER_FULL := 55.0         # metres: full shimmer from here on
+const SHIMMER_AMOUNT := 0.0018     # how far the picture wobbles (part of the screen width)
+# The Graphics setting (0 Low, 1 Medium, 2 High): how far away shadows are still drawn (metres).
+const SHADOW_DISTANCE := [60.0, 150.0, 260.0]

@@ -1159,9 +1159,61 @@ func _check(label: String, ok: bool, detail: String) -> void:
 
 func _finish() -> void:
 	_check_sound()
+	_check_session28()
 	_check_saving()
 	for action in ACTIONS:
 		Input.action_release(action)
 	_phase = "done"
 	print("RESULT: ", "FAIL" if _failed else "PASS")
 	quit(1 if _failed else 0)
+
+
+## Session 28: the sun follows the clock (morning, noon and sunset differ, sunset is the
+## lowest and warmest), and the Graphics setting (Low / Medium / High) switches SSAO, haze
+## and shimmer. It never saves the settings file: it sets the values, calls Settings.apply()
+## and puts them back afterwards.
+func _check_session28() -> void:
+	var cycle := _main.get_node_or_null("SunCycle")
+	_check("the map has a SunCycle node", cycle != null, "")
+	if cycle == null:
+		return
+	var sun: DirectionalLight3D = cycle.sun
+	var env: Environment = cycle.world_environment.environment
+	var looks := {}
+	for hour in [8.0, 12.0, 18.0]:
+		cycle.apply_hour(hour)
+		looks[hour] = {"height": rad_to_deg(-sun.rotation.x), "turn": rad_to_deg(sun.rotation.y),
+				"blue": sun.light_color.b, "sky": cycle._sky.sky_horizon_color if cycle._sky else Color.BLACK}
+	var detail := "height 08:00 %.0f, 12:00 %.0f, 18:00 %.0f degrees" % [looks[8.0]["height"], looks[12.0]["height"], looks[18.0]["height"]]
+	_check("the sun is highest at noon and lowest at sunset",
+			looks[12.0]["height"] > looks[8.0]["height"] and looks[8.0]["height"] > looks[18.0]["height"], detail)
+	_check("the sun moves from east to west", looks[8.0]["turn"] > looks[18.0]["turn"], "")
+	_check("sunset is the warmest light, noon the whitest",
+			looks[18.0]["blue"] < looks[8.0]["blue"] and looks[8.0]["blue"] < looks[12.0]["blue"],
+			"blue 08:00 %.2f, 12:00 %.2f, 18:00 %.2f" % [looks[8.0]["blue"], looks[12.0]["blue"], looks[18.0]["blue"]])
+	_check("the sky colour changes from noon to sunset", looks[12.0]["sky"] != looks[18.0]["sky"], "")
+	var before: int = Settings.graphics
+	var seen := {}
+	for level in [0, 1, 2]:
+		Settings.graphics = level
+		Settings.apply()  # applies straight away, without saving the settings file
+		cycle.apply_hour(12.5)
+		seen[level] = {"ssao": env.ssao_enabled, "haze": env.fog_enabled, "glow": env.glow_enabled,
+				"shimmer": cycle._shimmer.visible, "shadows": sun.directional_shadow_max_distance}
+	_check("Low: no SSAO, haze or shimmer",
+			not seen[0]["ssao"] and not seen[0]["haze"] and not seen[0]["shimmer"], str(seen[0]))
+	_check("Medium: SSAO, haze, glow and noon shimmer on",
+			seen[1]["ssao"] and seen[1]["haze"] and seen[1]["glow"] and seen[1]["shimmer"], str(seen[1]))
+	_check("High: everything on", seen[2]["ssao"] and seen[2]["haze"] and seen[2]["shimmer"], str(seen[2]))
+	_check("shadows reach further on higher settings",
+			seen[0]["shadows"] < seen[1]["shadows"] and seen[1]["shadows"] < seen[2]["shadows"], "")
+	cycle.apply_hour(8.0)
+	_check("no heat shimmer in the morning", not cycle._shimmer.visible, "")
+	Settings.graphics = before
+	Settings.apply()
+	cycle.apply_hour(cycle.hour_now())
+	var panel := SettingsPanel.new()
+	root.add_child(panel)
+	_check("Settings has the Graphics option (Low / Medium / High)", panel.graphics_option != null
+			and panel.graphics_option.item_count == 3 and panel.graphics_option.selected == Settings.graphics, "")
+	panel.free()

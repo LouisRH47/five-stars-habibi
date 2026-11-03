@@ -25,6 +25,8 @@ const TEXT := Color(1, 0.95, 0.87, 1)
 
 var rows: VBoxContainer
 var fullscreen_box: CheckButton
+## Low / Medium / High (Session 28).
+var graphics_option: OptionButton
 ## One slider per sound bus (Master, Music, Effects, Ambience), 0 to 100.
 var volume_sliders: Dictionary = {}
 
@@ -53,6 +55,7 @@ func _ready() -> void:
 	fullscreen_box.button_pressed = Settings.fullscreen
 	fullscreen_box.toggled.connect(_on_fullscreen)
 	rows.add_child(fullscreen_box)
+	rows.add_child(_make_graphics_row())
 	for bus in Settings.BUSES:
 		var row := HBoxContainer.new()
 		var name_label := Label.new()
@@ -78,6 +81,31 @@ func _ready() -> void:
 	back.add_theme_font_size_override("font_size", 20)
 	back.pressed.connect(_on_back)
 	rows.add_child(back)
+
+
+## The Graphics row (Session 28): Low / Medium / High.
+func _make_graphics_row() -> HBoxContainer:
+	var row := HBoxContainer.new()
+	var name_label := Label.new()
+	name_label.text = "Graphics"
+	name_label.custom_minimum_size = Vector2(130, 0)
+	name_label.add_theme_font_size_override("font_size", 20)
+	name_label.add_theme_color_override("font_color", TEXT)
+	row.add_child(name_label)
+	graphics_option = OptionButton.new()
+	graphics_option.add_theme_font_size_override("font_size", 20)
+	graphics_option.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	for level_name in Settings.GRAPHICS_NAMES:
+		graphics_option.add_item(level_name)
+	graphics_option.selected = Settings.graphics
+	graphics_option.item_selected.connect(_on_graphics)
+	row.add_child(graphics_option)
+	return row
+
+
+func _on_graphics(level: int) -> void:
+	Settings.graphics = level
+	Settings.save()
 
 
 func _on_fullscreen(on: bool) -> void:
