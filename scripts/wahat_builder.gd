@@ -147,8 +147,9 @@ func _build_stream(stream: Dictionary) -> void:
 		holder.add_child(view)
 
 
-## Two rows of tall trees all the way round the edge, drawn as one MultiMesh (fast).
+## Two rows of trees around the edge. Spatial batches let the renderer skip distant sections.
 func _build_tree_belt() -> void:
+	const CHUNK_SIZE := 120.0
 	var belt: Dictionary = _map["TREE_BELT"]
 	var inner: Vector2 = belt["inner"]
 	var half: Vector2 = _map["MAP_HALF"]
@@ -179,19 +180,34 @@ func _build_tree_belt() -> void:
 	crown.radial_segments = 8
 	crown.rings = 4
 	crown.material = LowPoly.material(LEAVES)
+	var chunks := {}
+	for i in spots.size():
+		var spot := spots[i]
+		var cell := Vector2i(floori(spot.x / CHUNK_SIZE), floori(spot.z / CHUNK_SIZE))
+		if not chunks.has(cell):
+			chunks[cell] = []
+		chunks[cell].append(i)
 	for part in [[trunk, 2.0, "TreeTrunks"], [crown, 5.6, "TreeCrowns"]]:
-		var many := MultiMesh.new()
-		many.transform_format = MultiMesh.TRANSFORM_3D
-		many.mesh = part[0]
-		many.instance_count = spots.size()
-		for i in spots.size():
-			var size := 0.85 + fmod(float(i) * 0.37, 0.4)
-			var basis := Basis().scaled(Vector3.ONE * size)
-			many.set_instance_transform(i, Transform3D(basis, spots[i] + Vector3.UP * part[1] * size))
-		var view := MultiMeshInstance3D.new()
-		view.name = part[2]
-		view.multimesh = many
-		add_child(view)
+		var group := Node3D.new()
+		group.name = part[2]
+		add_child(group)
+		for cell: Vector2i in chunks:
+			var origin := Vector3(cell.x + 0.5, 0.0, cell.y + 0.5) * CHUNK_SIZE
+			var indices: Array = chunks[cell]
+			var many := MultiMesh.new()
+			many.transform_format = MultiMesh.TRANSFORM_3D
+			many.mesh = part[0]
+			many.instance_count = indices.size()
+			for index in indices.size():
+				var i: int = indices[index]
+				var size := 0.85 + fmod(float(i) * 0.37, 0.4)
+				var basis := Basis().scaled(Vector3.ONE * size)
+				var offset: Vector3 = spots[i] - origin + Vector3.UP * part[1] * size
+				many.set_instance_transform(index, Transform3D(basis, offset))
+			var view := MultiMeshInstance3D.new()
+			view.position = origin
+			view.multimesh = many
+			group.add_child(view)
 
 
 ## Invisible walls inside the tree belt (so you can't ride off the map), the gate house and

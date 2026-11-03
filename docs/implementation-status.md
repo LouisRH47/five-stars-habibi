@@ -111,6 +111,14 @@ The stream now uses 12 short mesh chunks for its 68 original pieces. All 2,448 t
 
 All 416 Wahat smoke checks passed on the dispatch and stream revision. Current Mac and Windows archives at /private/tmp/habibi-dispatch-check/distribution match runtime fingerprint c87daee91b01019acae71114b544b7b5137e1a78c75a80eb74022fd5a7de4a89 and passed archive, checksum, architecture and Mac signature checks. The private Mac release comparison loaded Wahat with the native Metal renderer and built the district, but the desktop tool could not attach in time to start the foreground samples. Evidence: /private/tmp/habibi-dispatch-check/wahat.log, distribution/manifest.json and /private/tmp/habibi-spine-foreground/native.log.
 
+The perimeter now uses 24 spatial batches each for trunks and crowns. The native release check matched all 714 transforms for each part at millimetre precision, mesh arrays, materials and shadow settings. On matched foreground views, the spine went from about 1.04 million to 0.57 million rendered primitives and the north ring from 1.00 million to 0.57 million. Total draw calls rose about 1–3%. Frame rates varied between repeated baselines, so those samples establish the geometry savings and leave moving FPS open. Evidence: /private/tmp/habibi-tree-native/native.log.
+
+The fixed-camera shadow and upscaling probe lost focus during the run. Shorter shadows reduced shadow submissions at the same view, but the mixed-focus timing was inconclusive and Medium quality settings stayed unchanged. Evidence: /private/tmp/habibi-static-matched/native.log.
+
+The tree-batch revision passed all 416 Wahat smoke checks. The current desktop archives at /private/tmp/habibi-tree-check/distribution match runtime fingerprint 8cbe72e5e6a33ff3827d2bacf815e9b8fc7499b5a7c0f583a05cc7e1915f45d9 and passed checksums, archive integrity, platform architecture and Mac signature checks.
+
+The moving release probe sampled three 14-second routes at Medium, 1920×1080, with the normal HUD and an active order. All samples kept window focus, ran at 28 km/h, and had zero crashes. On the shared M3 Mac, averages were 36.3 FPS on the spine, 29.9 from plaza to C1, and 23.6 on the north ring. The p95 frame times were 52.5, 67.4 and 97.4 ms. The host had heavy background activity and memory pressure, and the run fell short of the 60 FPS target. Evidence: /private/tmp/habibi-tree-moving/fixed-input-results.json.
+
 ## Remaining acceptance
 
 - Establish at least 60 FPS during representative moving gameplay at Medium. Repeat the Mac release probe with sustained foreground focus and the full HUD.
