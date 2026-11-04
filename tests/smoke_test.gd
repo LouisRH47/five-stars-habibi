@@ -1405,7 +1405,11 @@ func _check_venue_handoffs() -> void:
 				dismounted and _delivery.target_door() == target and _delivery.is_near_target(),
 				"%.1f m from target" % _on_foot.walker.global_position.distance_to(target))
 		if number != GameConfig.SCHOOL_SPOT:
-			await process_frame
+			# Session 65: give the panel a few frames when the machine is busy (it was flaky).
+			for wait in 10:
+				await process_frame
+				if counter != null and counter._panel.visible:
+					break
 			_check("the staffed counter panel opens at " + order.address,
 					counter != null and counter._panel.visible and counter._panel.heading.text == order.address
 					and counter._staff != null, "")
