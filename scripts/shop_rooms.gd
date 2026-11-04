@@ -217,7 +217,42 @@ static func bikes(p: InteriorParts) -> void:
 	p.bin(Vector3(1.75, 0, 4.35))
 	p.plant(Vector3(half.x - 0.5, 0, -2.4))
 	p.plant(Vector3(-2.0, 0, 4.4), false)
+	# The bikes that never move are drawn as one mesh (each bike is 47 little parts; Appendix I).
+	_merge(p, p.body.get_children().filter(func(n): return n.is_in_group("shop_bike") and n != display), "ShopBikes")
 	p.body.set_meta("interior_style", "bike_workshop")
+
+
+## Joins all the parts of `holders` into one mesh with one part per colour (far fewer things
+## to draw). The holders stay, empty, so the test can still count the bikes.
+static func _merge(p: InteriorParts, holders: Array, mesh_name: String) -> void:
+	var tools := {}   # material -> SurfaceTool
+	for holder: Node3D in holders:
+		for view: MeshInstance3D in holder.find_children("*", "MeshInstance3D", true, false):
+			var material: Material = view.material_override
+			if material == null:
+				material = view.mesh.surface_get_material(0)
+			if material == null and view.mesh is PrimitiveMesh:
+				material = (view.mesh as PrimitiveMesh).material
+			var place := Transform3D()
+			var at: Node = view
+			while at != null and at != p.body:
+				place = (at as Node3D).transform * place
+				at = at.get_parent()
+			if not tools.has(material):
+				var tool := SurfaceTool.new()
+				tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+				tools[material] = tool
+			(tools[material] as SurfaceTool).append_from(view.mesh, 0, place)
+		for child in holder.get_children():
+			child.free()
+	var mesh := ArrayMesh.new()
+	for material in tools:
+		(tools[material] as SurfaceTool).commit(mesh)
+		mesh.surface_set_material(mesh.get_surface_count() - 1, material)
+	var view := MeshInstance3D.new()
+	view.name = mesh_name
+	view.mesh = mesh
+	p.body.add_child(view)
 
 
 ## A bike model (the same one you ride) with no rider and no delivery box, at `at`, turned
