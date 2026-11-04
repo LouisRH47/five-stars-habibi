@@ -296,7 +296,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _on_insurance_changed(on: bool) -> void:
-	_insurance.text = "Insurance %s  (I to switch)" % ("ON, 2 Dh a job" if on else "OFF")
+	_insurance.text = "Insurance %s  (I to switch)" % ("ON, %d Dh a job" % GameConfig.INSURANCE_PER_DELIVERY if on else "OFF")
 	_insurance.add_theme_color_override("font_color", SOFT if on else RED)
 
 

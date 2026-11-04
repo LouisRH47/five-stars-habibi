@@ -1,6 +1,6 @@
 extends CanvasLayer
 ## The first-order tutorial (PRD "Start of the game"). Right after you're hired, the boss
-## sends an easy pizza order two streets away (TUTORIAL_ORDER in data/palm_grove.gd).
+## sends an easy pizza order two streets away (TUTORIAL_ORDER in data/wahat_al_shams.gd).
 ## A message box at the bottom tells you what to do at each step, and at the end it
 ## points out that crash insurance is on. It runs once (GameState.tutorial_done).
 ## While it runs, no other orders pop up and the shift clock waits.
@@ -83,7 +83,7 @@ func _on_delivered(_order: Order) -> void:
 		return
 	_ending = true
 	var run_id := _run_id
-	_show("Great first job! Your crash insurance is ON (2 Dh a job): if you crash hard, it pays the bills. Press I to switch it off or on.")
+	_show("Great first job! Your crash insurance is ON (%d Dh a job): if you crash hard, it pays the bills. Press I to switch it off or on." % GameConfig.INSURANCE_PER_DELIVERY)
 	await get_tree().create_timer(GameConfig.TUTORIAL_LAST_TIPS_TIME).timeout
 	if run_id != _run_id:
 		return

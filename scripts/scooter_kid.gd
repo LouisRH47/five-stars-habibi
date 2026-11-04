@@ -2,7 +2,7 @@ extends Critter
 ## A kid on a kick scooter riding back and forth along the edge of a street, waiting a
 ## moment at each end before turning round. Bump into them and they stop and wobble for a
 ## moment, then carry on. ObstacleBuilder makes one per line in SCOOTER_KIDS
-## (data/palm_grove.gd) and calls setup(). Speeds are in game_config.gd.
+## (data/wahat_al_shams.gd) and calls setup(). Speeds are in game_config.gd.
 
 const BODY_SIZE := Vector3(0.5, 1.3, 1.0)
 

@@ -1,16 +1,15 @@
 extends Node3D
 ## Builds the Session 6 decorations and static obstacles when the game starts, from the
-## data list in data/palm_grove.gd: the mosque, the mini market, the park, palm trees,
+## data list (data/wahat_al_shams.gd): the mosque, the mini market, palm trees,
 ## parked cars, car-park asphalt with bay lines, and speed bumps.
 ## Node names: Mosque, Supermarket, Park, Palm_<n>, ParkedCar_<n>, SpeedBump_<n>
 ## (n counts from 0 in list order). The smoke test checks they were all built.
 
-## The map data to build from (set in the scene): data/palm_grove.gd.
+## The map data to build from (set in the scene): data/wahat_al_shams.gd.
 @export var data: Script
 
 const MOSQUE_SCENE := preload("res://scenes/mosque.tscn")
 const SUPERMARKET_SCENE := preload("res://scenes/supermarket.tscn")
-const PARK_SCENE := preload("res://scenes/park.tscn")
 const PALM_SCENE := preload("res://scenes/palm_tree.tscn")
 const CAR_SCENE := preload("res://scenes/parked_car.tscn")
 const BUMP_SCENE := preload("res://scenes/speed_bump.tscn")
@@ -47,11 +46,6 @@ func _ready() -> void:
 		_build_mosque()
 	if _map.has("SUPERMARKET"):
 		_build_supermarket()
-	if _map.has("PARK"):
-		var park: Node3D = PARK_SCENE.instantiate()
-		park.name = "Park"
-		add_child(park)
-		park.setup(_map)
 	_build_palms()
 	_build_cars()
 	_build_bumps()

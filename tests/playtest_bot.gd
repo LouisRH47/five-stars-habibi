@@ -12,7 +12,7 @@ extends SceneTree
 ##   /Applications/Godot.app/Contents/MacOS/Godot --path . --headless --fixed-fps 60 -s tests/playtest_bot.gd
 ## (--fixed-fps 60 makes it run faster than real time.) Add "-- careless" to ride flat out
 ## without slowing for bumps, corners or critters, "-- timeline" to print each stage change
-## and back-up, and/or a scene path ("-- res://scenes/palm_grove.tscn").
+## and back-up, and/or a scene path ("-- res://scenes/test_area.tscn").
 
 const GRID := preload("res://tests/grid_path.gd")
 const BUMP_KMH := 9.0       # slow to this for speed bumps (careful rider)

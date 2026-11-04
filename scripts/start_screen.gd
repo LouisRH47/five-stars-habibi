@@ -69,7 +69,7 @@ func _process(delta: float) -> void:
 
 # --- What the buttons do ---
 
-## Where Play takes you: Palm Grove once you're hired, the application first.
+## Where Play takes you: Wahat Al Shams once you're hired, the application first.
 func play_scene() -> String:
 	return GAME_SCENE if GameState.hired else "form"
 
@@ -119,7 +119,7 @@ func finish_review() -> void:
 	_show_page("hired")
 
 
-## "Start riding": off to Palm Grove (the tutorial starts there).
+## "Start riding": off to Wahat Al Shams (the tutorial starts there).
 func start_riding() -> void:
 	get_tree().change_scene_to_file(GAME_SCENE)
 

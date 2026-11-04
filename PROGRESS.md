@@ -1,5 +1,25 @@
 # Progress
 
+## Plan review fixes — 4 November 2026
+
+A check of the plan against the code found two bugs that were still there, now fixed:
+- **Opening the game** counted as a new shift (and moved on to tomorrow's kind of day) every
+  time, so old crashes dropped out of "Big crashes this week" without playing. Now, if you quit
+  halfway through a shift, you play that same shift again. Only a finished shift counts.
+- **Skipping orders** was forgotten when you closed the game (the acceptance rate went back to
+  100%). Your last 20 accept / skip choices are now saved.
+- The insurance price on screen now comes from `game_config.gd` (it was typed in as "2 Dh").
+- **Palm Grove is removed**: its scene, its data list, and the road, street-sign and park
+  builders only it used. Wahat Al Shams is the only map; the flat test area stays for tests.
+- A smoke test check on the ducks could fail by chance (a duck that started near the end of its
+  path stopped for a moment); it now starts each duck halfway along.
+- Decided (PRD Decisions log): the game goes on itch.io **and** in the browser, a crash "week"
+  is 7 shifts, and the school keeps the made-up name Fair Grade.
+- Checked: the smoke test on Wahat and the test area, the 15 focused test suites, the touch
+  test, and the packaging and worker tests all pass.
+- **Louis's turn:** quit halfway through a shift and open the game again: the clock note should
+  say the same shift number. Finish a shift, reopen: it goes up by one.
+
 ## Implementation review fixes — 4 November 2026
 
 All seven findings from the implementation-plan review are fixed on

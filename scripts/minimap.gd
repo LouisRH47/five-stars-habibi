@@ -188,8 +188,6 @@ func _draw_ground(canvas: CanvasItem = null) -> void:
 		canvas.draw_circle(_map["PLAZA"]["centre"], _map["PLAZA"]["radius"], PAVING)
 	for area in _map.get("PAVED_AREAS", []):
 		canvas.draw_rect(area, PAVING)
-	if _map.has("PARK"):
-		canvas.draw_rect(_map["PARK"]["area"], GRASS)
 	for area in _map.get("PARK_PATHS", []):
 		canvas.draw_rect(area, PAVING)
 	for area in _map.get("PARKING_AREAS", []):
@@ -205,9 +203,6 @@ func _draw_roads(canvas: CanvasItem = null) -> void:
 		var road_width: float = road.get("width", width)
 		var along: Vector2 = (road["to"] - road["from"]).normalized() * road_width * 0.5
 		canvas.draw_line(road["from"] - along, road["to"] + along, ROAD if road_width >= 6.0 else PAVING.darkened(0.2), road_width)
-	if _map.has("ROUNDABOUT_CENTRE"):
-		canvas.draw_circle(_map["ROUNDABOUT_CENTRE"], _map["ROUNDABOUT_RADIUS"], ROAD)
-		canvas.draw_circle(_map["ROUNDABOUT_CENTRE"], _map["ROUNDABOUT_ISLAND_RADIUS"], GRASS)
 
 
 func _build_static_map() -> void:
