@@ -44,3 +44,18 @@ static func _on_track(track: Dictionary, spot: Vector2) -> bool:
 	var outer := Rect2(-half - Vector2.ONE * w, (half + Vector2.ONE * w) * 2.0)
 	var inner := Rect2(-half + Vector2.ONE * w, (half - Vector2.ONE * w) * 2.0)
 	return outer.has_point(spot) and not inner.has_point(spot)
+
+
+## The nearest spot on a road's middle line, for the R key (PRD: "put the bike back on the
+## road"). Returns {"spot": Vector2, "along": Vector2 (the road's direction)}, or {} if the
+## map has no roads (the old test area).
+static func nearest_road(map: Dictionary, spot: Vector2) -> Dictionary:
+	var best := {}
+	var best_distance := INF
+	for road in map.get("ROADS", []):
+		var nearest := Geometry2D.get_closest_point_to_segment(spot, road["from"], road["to"])
+		var distance := spot.distance_to(nearest)
+		if distance < best_distance:
+			best_distance = distance
+			best = {"spot": nearest, "along": (road["to"] - road["from"]).normalized()}
+	return best

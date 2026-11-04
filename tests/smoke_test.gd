@@ -282,6 +282,7 @@ func _physics_process(_delta: float) -> bool:
 ## Fresh start, a new order pops up, accept it, then jump to the restaurant door.
 func _start_delivery_check() -> void:
 	_check_wahat()
+	_check_r_key()
 	_check_application()
 	_check_signs()
 	if _game_state == null:
@@ -841,12 +842,54 @@ func _check_saving() -> void:
 		names.append(button.text)
 	_check("pause menu: Resume, Settings, Main menu, Quit", names == ["Resume", "Settings", "Main menu", "Quit game"], "%s" % [names])
 	pause_menu._resume()
+	_check_reopening(gs)
 	_check("the game opens on the main menu",
 			ProjectSettings.get_setting("application/run/main_scene") == "res://scenes/main_menu.tscn", "")
 	gs.new_game()
 	_check("New game wipes everything", gs.money == 0 and gs.history.is_empty() and not gs.hired and gs.rider_name == "", "")
 	SaveGame.delete(TEST_SAVE)
 	_check("the test save is cleaned up", not FileAccess.file_exists(TEST_SAVE), "")
+
+
+## Review fixes: reopening the game halfway through a shift plays that same shift again
+## (it doesn't count a new one); a finished shift does count; skips are remembered.
+func _check_reopening(gs: Node) -> void:
+	gs.reset()
+	gs._remember_choice(true)
+	gs._remember_choice(false)
+	var number: int = gs.shift_number
+	gs.save_game()
+	gs.load_game()
+	_check("reopening mid-shift keeps the same shift number", gs.shift_number == number,
+			"%d, was %d" % [gs.shift_number, number])
+	_check("accept / skip choices come back after reopening", absf(gs.acceptance_rate() - 0.5) < 0.001,
+			"%.2f" % gs.acceptance_rate())
+	gs.end_shift()
+	gs.save_game()
+	gs.load_game()
+	_check("reopening after a finished shift starts the next one", gs.shift_number == number + 1,
+			"%d" % gs.shift_number)
+
+
+## R puts the bike on the nearest road, not back at the start (PRD Controls).
+func _check_r_key() -> void:
+	var places: Node = _main.get_node_or_null("PlaceBuilder")
+	if places == null or places.get("data") == null:
+		print("      no road data on this map, the R check is skipped")
+		return
+	var map: Dictionary = places.data.get_script_constant_map()
+	if map.get("ROADS", []).is_empty():
+		print("      no roads on this map, the R check is skipped")
+		return
+	var start: Vector3 = _bike._start_transform.origin
+	var far: Vector2 = map["ROADS"][-1]["to"]  # the end of the last road in the list
+	_bike.global_position = Vector3(far.x + 3.0, start.y, far.y + 3.0)
+	_bike.put_back_on_road()
+	var spot := Vector2(_bike.global_position.x, _bike.global_position.z)
+	var road: Dictionary = GroundType.nearest_road(map, spot)
+	_check("R puts the bike on the nearest road, not at the start", road["spot"].distance_to(spot) < 0.01
+			and spot.distance_to(Vector2(start.x, start.z)) > 20.0 and _bike.speed == 0.0, "%s" % spot)
+	_bike.reset_to_start()
 
 
 ## Session 13: a 1-second test shift. carrying: run out of time while carrying an order.
@@ -1701,6 +1744,7 @@ func _check_session30() -> void:
 	var still := []
 	for name in ["Horse_0", "Person_0", "Person_2", "Kid_0", "Duck_0"]:
 		var thing: Node3D = life.get_node(name)
+		thing.start_at(0, 0.5, true)  # halfway along the first leg, so it can't reach an end and pause
 		thing.scared_left = 0.0
 		thing._pause_left = 0.0
 		var from: Vector3 = thing.position

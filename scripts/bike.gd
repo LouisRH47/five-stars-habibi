@@ -112,7 +112,7 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("reset_bike") and fallen_left <= 0.0 and not wrecked:
-		reset_to_start()
+		put_back_on_road()
 		return
 	if Input.is_action_just_pressed("ring_bell") and not parked:
 		ring_bell()
@@ -132,8 +132,30 @@ func _physics_process(delta: float) -> void:
 	_bump_cooldown = maxf(_bump_cooldown - delta, 0.0)
 
 
-## Puts the bike back where it started, standing still. Used by the R key
-## and when the bike falls off the world.
+## R: puts the bike on the nearest road, standing still, facing the way you were going
+## (PRD Controls). Not back at the start, so R is no shortcut to the shops.
+## On a map without roads (the old test area) it goes back to the start.
+func put_back_on_road() -> void:
+	var places := get_parent().get_node_or_null("PlaceBuilder")
+	var map := {}
+	if places != null and places.get("data") != null:
+		map = (places.data as Script).get_script_constant_map()
+	var road := GroundType.nearest_road(map, Vector2(global_position.x, global_position.z))
+	if road.is_empty():
+		reset_to_start()
+		return
+	var heading := -global_transform.basis.z
+	var along: Vector2 = road["along"]
+	if along.dot(Vector2(heading.x, heading.z)) < 0.0:
+		along = -along  # keep facing roughly the way you were going
+	reset_to_start()  # clears speed, falls and the parked state
+	var spot: Vector2 = road["spot"]
+	global_position = Vector3(spot.x, _start_transform.origin.y, spot.y)
+	global_transform.basis = Basis.looking_at(Vector3(along.x, 0.0, along.y), Vector3.UP)
+
+
+## Puts the bike back where it started, standing still. Used at the start of a shift,
+## after the clinic, and when the bike falls off the world.
 func reset_to_start() -> void:
 	global_transform = _start_transform
 	velocity = Vector3.ZERO

@@ -109,7 +109,7 @@ Every delivery is a race against three meters: time, heat and damage. How well y
 - Each meter is a bar from 100% (green) down to 0% (red). Above 60% is green, 30% to 60% is orange, below 30% is red.
 - **Time:** the target time is the straight-line distance from restaurant to villa at a normal riding pace (20 km/h), times 1.5 for corners, plus 20 seconds. The bar is full at pickup, at 60% (the edge of green) when you reach the target time, and empty at twice the target time. So on time = green, a bit late = orange, very late = red. Once empty it stays empty, the order isn't cancelled.
 - **Freshness:** drains at a fixed rate per food type (pizza slow, bubble tea medium, ice cream fast). Numbers live in game_config.gd.
-- **Damage:** starts full. Every bump, speed bump, kerb, hard brake or crash takes off a chunk. Bubble tea loses the most per bump.
+- **Damage:** starts full. Every bump, speed bump, kerb, hard brake or crash takes off a chunk. Fragile cakes lose the most per bump, then bubble tea.
 - A meter at 0% never cancels the order. You can always deliver, you just get fewer stars.
 
 **Stars (1 to 5)**
@@ -129,7 +129,7 @@ Every delivery is a race against three meters: time, heat and damage. How well y
 
 - Every delivery gives XP. Higher-tier jobs give more.
 - XP builds your **Rider Level** (shown on your profile). Each level needs more XP than the last.
-- Rider Level is what gear needs. Gear costs money **and** a level: a louder bell at level 2, the GPS line at level 3, a bigger stamina bar at level 5. Levels don't change the career ladder, stars and money do.
+- Rider Level is what gear needs. Gear costs money **and** a level (the levels are in the Pedal Point Bikes table under "Shops and upgrades": for example the GPS line and a louder bell at level 2, more stamina at level 3). Levels don't change the career ladder, stars and money do.
 - Doing jobs from a lower tier gives less money and less XP (starting idea: 50% of normal).
 
 **Tier 1 food types (first version)**
@@ -195,7 +195,7 @@ These stop deliveries from feeling the same after a few. All numbers are startin
 
 ## Controls (Tier 1, keyboard)
 
-Keys are placeholders until the controls are tested. Controller support comes later.
+Keys are placeholders until the controls are tested. Controller support comes later. In the browser version on an iPad, on-screen touch buttons do the same jobs (scripts/touch_controls.gd); new keys need a touch button too.
 
 | Key | What it does |
 | --- | --- |
@@ -213,7 +213,7 @@ Keys are placeholders until the controls are tested. Controller support comes la
 | X | Rocket booster (once you own it, see "Shops and upgrades") |
 | In a shop | ‹ › or W/S: type, A/D or click: try on, E: add to cart, C: checkout, drag: turn, Esc: leave |
 | Esc | Pause (and resume) |
-| R | Put the bike back on the road if you get stuck |
+| R | Put the bike back on the nearest road if you get stuck (not back at the start) |
 
 ## Screens (look and feel)
 
@@ -530,6 +530,8 @@ Build it in milestones and play-test at the end of each one. Only move on when t
 - Pay for the new foods, special orders and goal bonuses: starting ideas are in the PRD, tune them after the graphics pass play-test
 - Upgrade prices and how much a shift pays at real size and 8 minutes: tune in the detail pass play-test
 - What goes on the building sites later (a sixth cluster, a hotel, something else)
+- Where the finished game goes in Session 51: itch.io (the plan) or the browser site fivestarshabibi.middleleap.com (built 3 Nov), or both
+- Crashes "this week": the code counts 7 shifts as a week (CRASH_WEEK_SHIFTS); the career ladder above says 3 big crashes within 5 shifts. Pick one
 
 ## Decisions log
 
@@ -596,8 +598,8 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 3 Nov 2026 | Fair Grade International School copies the real school from Louis's photos. The C Institute (glass front and stepped seats facing the spine, walk-in lobby with a receptionist) is a drop-off. Gym (rounded at the back, lap pool beside it) and a separate community pool in the spine; gym reception is a drop-off |
 | 3 Nov 2026 | Spine gets grass texture, flowers and gentle hills (0.5 to 1.5 m), and one path linking all the domes. Textures and props everywhere. Camera never goes inside houses. Heat shimmer removed. Top speed 28, sprint 36 km/h with stronger speed lines and wind sound. Fix people with no head and the glitchy dome doors |
 | 3 Nov 2026 | Shops: Pedal Point Bikes (upgrades, stamina +10% buyable up to 10 times, aluminium then carbon frame, a 10,000 Dh rocket booster on X at Level 10, paint and box colours) and Dune Drip (clothes, try on in front of a mirror like GTA). Menu on the left while you stay in the 3D shop, with a cart and checkout. Same side-panel style at every walk-in place |
-
 | 3 Nov 2026 | Browser distribution requested by Michael: publish the current game at fivestarshabibi.middleleap.com for Louis to test on MacBook and potentially iPad, with GitHub deployment and releases. Keep desktop Forward+; use Compatibility/Low for web and add landscape touch controls. Browser saves stay on each device. |
+| 4 Nov 2026 | Review fixes: R puts the bike on the nearest road, not back at the start (that was a free ride back to the shops). Quitting halfway through a shift and opening the game again plays that same shift again; only a finished shift counts towards "this week". Your accept / skip choices are saved, so the acceptance rate survives a restart. The Gear levels line now points to the Pedal Point Bikes table (they disagreed); cakes, not bubble tea, lose the most per bump (as the code and the fragile cakes already did) |
 
 ## Sources
 

@@ -27,7 +27,7 @@ func _physics_process(_delta: float) -> void:
 		toggle()
 	elif on_foot and Input.is_action_just_pressed("reset_bike"):
 		get_on(true)
-		bike.reset_to_start()
+		bike.put_back_on_road()
 
 
 ## F: off the bike if it's slow enough, back on if you're next to it.

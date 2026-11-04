@@ -1,60 +1,50 @@
 # Progress
 
-## Browser distribution — 3 November 2026
-
-- Added a single-threaded browser export, a Play/loading screen, and web-only Low
-  graphics settings. Desktop Forward+ stays enabled for desktop builds.
-- Added multi-touch driving buttons for testing on iPad in landscape.
-- GitHub workflow checks pull requests, deploys successful main builds to
-  `fivestarshabibi.middleleap.com`, and packages tagged releases. Publishing
-  requires the Cloudflare credential described in `docs/WEB_RELEASE.md`.
-- Added a separate preview deployment and a live WebAssembly decoding check.
-  A small Pages Worker serves the compressed engine with manual encoding to
-  prevent Cloudflare from compressing it twice. Other assets remain static.
-- Made the traffic smoke probe start from a fixed route position, so a randomly
-  spawned buggy's normal endpoint pause cannot fail the deployment checks.
-- Browser saves stay on the current device. Real iPad performance still needs
-  Louis's test; emulated touch checks are not a physical-device acceptance test.
-- Safari/iPad follow-up: touch menus, name fields, settings sliders and country
-  choices now have at least 44 CSS-pixel targets. Gameplay labels are larger and
-  use plain actions. Layout checks cover landscape, portrait and browser bars.
-- The web canvas now respects device safe areas and caps Retina rendering to one
-  backing pixel per CSS pixel after Safari/WebKit graphics failures. Software
-  keyboard fields keep viewport positioning and a 16-pixel font to avoid offset
-  and automatic-zoom problems during name entry.
-
 ## Current session
-**Sessions 18 to 34 are built** (the polish pass and the graphics pass), on branch
-`polish-and-graphics`. Each one passes the Godot checks and the smoke test on all three maps;
-Wahat Al Shams passes 5 runs out of 5. Sessions 26 to 33 were built by helper agents in
-parallel and merged together. They still need Louis's own play-test on the Mac.
+**Sessions 1 to 34 are built and merged into `main`** (all of Tier 1, the polish pass and the
+graphics pass). Louis played the graphics pass on 3 Nov. He likes the houses, playgrounds,
+stables and the number of people about.
 
-**Louis played the graphics pass (3 Nov).** He likes the houses, playgrounds, stables and the
-number of NPCs. **Next: Sessions 35 to 46, the Detail pass**, in BUILD_PLAN.md: Wahat Al Shams at
-real size copied from the real community (joined rows of 500 homes, solar car parks between
-clusters, horse and cycle tracks, checkpoints, bus station), 8-minute shifts with an AM/PM clock,
-walk-in restaurants with spoof names, Fair Grade International School, the C Institute, the gym
-and pools, hills and textures, building sites on the empty patches, a faster-feeling bike, the
-camera fix, and two shops (Pedal Point Bikes with upgrades and a rocket booster, Dune Drip
-clothes) with a cart and checkout. Sketches are in docs/. Then Sessions 47 to 51, "Reasons to
-come back" (the old Sessions 36 to 40; the old gear shop Session 35 is now Session 45).
+**Next: Session 35**, the first of the Detail pass (Sessions 35 to 46, in BUILD_PLAN.md).
+Before starting it, decide two things (see "Next" below): what happens to the old Palm Grove
+map, and how the smoke test changes for the real-size map.
 
 Things Louis noticed that the Detail pass fixes: the clock looks like a sped-up timer, the camera
 goes inside houses, villas should be joined rows, a warpy smear in front of the bike (the heat
 shimmer), some NPCs have no head, the dome doors flicker, the school is hard to find, buggies
 drive on the ring road, and riding feels slow.
 
-Sessions 7 to 17 are built (all of Tier 1), each checked with the Godot headless checks,
-the smoke test and screenshots, on branch `sessions-8-17` (Session 7 on `session-7-minimap`).
-Louis asked for all of them in one go; they still need Louis's own play-test on the Mac.
+### Review fixes (4 Nov 2026)
+A check of the plan against the code found three bugs, now fixed on branch `review-fixes`:
+- **R** put the bike back at the start, right next to the shops (a free ride). Now it puts the
+  bike on the nearest road, facing the way you were going.
+- **Opening the game** counted as a new shift every time, so old crashes dropped out of "Big
+  crashes this week" without playing. Now, if you quit halfway through a shift, you play that
+  same shift again. Only a finished shift counts.
+- **Skipping orders** was forgotten when you closed the game (the acceptance rate went back to
+  100%). Your last 20 accept / skip choices are now saved.
+- Also: the insurance price on screen now comes from `game_config.gd` (it was typed in as
+  "2 Dh" in 3 places), and a smoke test check on the ducks could fail by chance (a duck that
+  started near the end of its path stopped for a moment). The PRD's small contradictions are
+  fixed and logged (Decisions log, 4 Nov).
+- Smoke test: new checks for all three bugs. 5 out of 5 runs pass on Wahat Al Shams, and Palm
+  Grove and the test area pass too.
 
-**Godot checks on the Mac (start of Session 7):** the headless import, the quit check and
-the smoke test all ran on Godot 4.7.2 for Sessions 1 to 6 with no errors and RESULT: PASS,
-on both Palm Grove and the test area. Nothing needed fixing.
+### Playing in a web browser (3 Nov 2026)
+Michael set up a version of the game that plays in a web browser, so Louis can try it on a
+MacBook or an iPad without installing anything: fivestarshabibi.middleleap.com.
+- It uses simpler graphics than the Mac version (the browser can't do the full lighting).
+- On an iPad, held sideways, there are touch buttons on screen for riding and the menus.
+- Each time `main` changes on GitHub, GitHub runs the Godot checks and the smoke test, then
+  puts the new version on the website. **If the smoke test fails, the website doesn't update.**
+  How it's set up: `docs/WEB_RELEASE.md`.
+- Saves made in the browser stay on that device.
+- Still to do: Louis tries it on a real iPad (so far it's only been checked with a pretend iPad
+  on a computer).
 
 ## What works
-- Godot 4.7 project (Forward+). The main scene is `scenes/palm_grove.tscn` (since Session 4).
-  The old flat test area is `scenes/test_area.tscn`.
+- Godot 4.7 project (Forward+). The game opens on the start screen (`scenes/main_menu.tscn`),
+  which starts Wahat Al Shams. The old maps are `scenes/palm_grove.tscn` and `scenes/test_area.tscn`.
 - Flat sandy test area with 8 coloured boxes to ride around.
 - A simple bicycle with a rider and an orange delivery box, made from basic shapes.
 - Controls (set in Project > Project Settings > Input Map):
@@ -534,24 +524,6 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - The play-test bot uses the same route finder on any map, looks ahead and slows down for
   walls. It still gets stuck in the narrow cluster lanes; fixing that is next.
 
-### Session 28
-- The sun follows the shift clock (`scripts/sun_cycle.gd`, a SunCycle node in each map):
-  low and warm at 08:00, high and white at noon, a golden sunset from 17:00 to 18:00. The sky
-  colours and the shadow light change smoothly with it. It crosses from east to west.
-- Soft corner shadows (SSAO), a light haze so the far edge of the map fades into the sky,
-  a gentle glow on bright things, and heat shimmer far away above the ground around noon
-  (10:30 to 15:30, `assets/shaders/heat_shimmer.gdshader`, very subtle: SHIMMER_AMOUNT).
-- Settings has a Graphics option: Low / Medium (default) / High, saved with the other
-  settings and applied straight away. Low: no SSAO, haze, shimmer or glow, shadows only to
-  60 m. Medium: everything on, shadows to 150 m. High: better SSAO, softer shadows to 260 m.
-- 60 fps on all three levels on the Mac (Apple M3, 1280x720).
-- All light numbers, one line per time of day, are in the "Light and sky (Session 28)" block
-  of `game_config.gd`.
-- Not done yet: "fewer people on Low" (comes with the people in Sessions 29 and 30); the main
-  menu's desert doesn't use the moving sun.
-- Built by a helper agent in parallel; the smoke test has 11 new checks for the sun and the
-  Graphics levels.
-
 ### Session 26
 - The 60 Wahat Al Shams homes are real houses now, built in code from a house kit
   (`scripts/villa_builder.gd`, details in `scripts/villa_extras.gd`, merged into one mesh per
@@ -605,6 +577,24 @@ on both Palm Grove and the test area. Nothing needed fixing.
   door can be reached.
 - Groceries being "a bit heavy" is only in the damage numbers for now.
 
+### Session 28
+- The sun follows the shift clock (`scripts/sun_cycle.gd`, a SunCycle node in each map):
+  low and warm at 08:00, high and white at noon, a golden sunset from 17:00 to 18:00. The sky
+  colours and the shadow light change smoothly with it. It crosses from east to west.
+- Soft corner shadows (SSAO), a light haze so the far edge of the map fades into the sky,
+  a gentle glow on bright things, and heat shimmer far away above the ground around noon
+  (10:30 to 15:30, `assets/shaders/heat_shimmer.gdshader`, very subtle: SHIMMER_AMOUNT).
+- Settings has a Graphics option: Low / Medium (default) / High, saved with the other
+  settings and applied straight away. Low: no SSAO, haze, shimmer or glow, shadows only to
+  60 m. Medium: everything on, shadows to 150 m. High: better SSAO, softer shadows to 260 m.
+- 60 fps on all three levels on the Mac (Apple M3, 1280x720).
+- All light numbers, one line per time of day, are in the "Light and sky (Session 28)" block
+  of `game_config.gd`.
+- Not done yet: "fewer people on Low" (comes with the people in Sessions 29 and 30); the main
+  menu's desert doesn't use the moving sun.
+- Built by a helper agent in parallel; the smoke test has 11 new checks for the sun and the
+  Graphics levels.
+
 ### Session 29
 - People are real animated low-poly humans now (free CC0 model "Animated Human" by Quaternius,
   with idle, walk and run animations; credited in CREDITS.md). Waving, pedalling and lying in
@@ -633,24 +623,6 @@ on both Palm Grove and the test area. Nothing needed fixing.
   handlebars turn, kickstand down when parked, B rings the bell and scares a cat, every people
   type can walk, wave and stand, cars are the CC0 models.
 
-### Session 31
-- Dust puffs come off the back tyre when you ride on sand, and when you brake hard on any
-  ground (`scripts/tyre_dust.gd`; where the sand is comes from the map's data list,
-  `scripts/ground_type.gd`). Fewer puffs on Low graphics, more on High.
-- While you sprint (Shift) the view widens by 7 degrees and thin white speed lines rush out at
-  the screen edges (`scripts/speed_lines.gd`); both fade back when you stop.
-- On the Delivered card the stars fill in one at a time, each with sparkles and a blip that
-  gets higher each time; then gold coins fly out of "You earned" with a coin jingle and the
-  total bounces (`scripts/pop_icon.gd`).
-- A new order makes the phone shake for a moment and go "bzz-bzz" (plus the old ping).
-- 3 new home-made sounds (buzz, pop, coins) from `tools/make_sounds.py`, in CREDITS.md.
-- Sound effects now keep playing while the game is paused (the "ka-ching" used to be cut off
-  when the Delivered card paused the game).
-- No measurable effect on frame rate. Numbers in the "Juice (Session 31)" block of
-  `game_config.gd` (SPEED_LINES_ALPHA if the speed lines should be stronger).
-- Built by a helper agent in parallel; the smoke test checks the wider view while sprinting,
-  the buzz, the pops, the dust and fewer particles on Low.
-
 ### Session 30
 - Golf buggies with drivers go slowly back and forth on fixed routes (the outer lane of the
   north and south ring road and the spine path; two more on High). They stop and wait when
@@ -672,29 +644,23 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - Built by a helper agent in parallel. The smoke test checks every route stays clear of
   walls, buggies stop for the bike and turn round, everything moves, and Low has fewer.
 
-### Session 33
-- Each shift has 1 or 2 surprise events at random times between 09:00 and 16:00, one at a
-  time, never during the tutorial. The phone warns you first ("Heads up!", orange, 6
-  seconds), then a teal line says what's on ("Road works: C3 Lane closed till 14:35").
-- Road works: barriers, cones, a small yellow digger and bilingual "أعمال طرق / Road works"
-  signs close a stretch of a cluster lane or the ring road for 1 to 2 in-game hours, with an
-  orange cone on the mini-map. Only the 14 places on the ROAD_WORKS list in
-  `data/wahat_al_shams.gd`; the smoke test closes each one in turn and checks every home and
-  shop door can still be reached. Never within 15 m of you or your parked bike.
-- Horses crossing: a groom leads 2 or 3 horses across a road near the stables (4 places,
-  HORSE_CROSSINGS); the road is blocked for about 6 to 8 seconds. Riding into them is only a
-  small crash. They wait for you or the parked bike, never shove.
-- Files: `scripts/event_manager.gd`, `scripts/road_works.gd`, `scripts/horse_crossing.gd`;
-  numbers in the "Random events (Session 33)" block of `game_config.gd`. Palm Grove and the
-  test area have no events.
-- Fixed while merging with Session 30: golf buggies, horses and walkers now stop at road
-  works instead of driving through the barrier (and turn round after a few seconds); the
-  crossing groom's speed got its own name (CROSSING_WALK_SPEED) so it doesn't clash with the
-  horse riders' speed. New smoke check: a buggy stops at the north ring road works.
-- The play-test bot re-plans its route when road works go up or come down, and rides round.
-- Known: barriers only span the road, so on the ring road you can ride round on the sand.
-  The crossing horses pop in and out at the ends of their path and their legs don't move.
-- Built by a helper agent in parallel.
+### Session 31
+- Dust puffs come off the back tyre when you ride on sand, and when you brake hard on any
+  ground (`scripts/tyre_dust.gd`; where the sand is comes from the map's data list,
+  `scripts/ground_type.gd`). Fewer puffs on Low graphics, more on High.
+- While you sprint (Shift) the view widens by 7 degrees and thin white speed lines rush out at
+  the screen edges (`scripts/speed_lines.gd`); both fade back when you stop.
+- On the Delivered card the stars fill in one at a time, each with sparkles and a blip that
+  gets higher each time; then gold coins fly out of "You earned" with a coin jingle and the
+  total bounces (`scripts/pop_icon.gd`).
+- A new order makes the phone shake for a moment and go "bzz-bzz" (plus the old ping).
+- 3 new home-made sounds (buzz, pop, coins) from `tools/make_sounds.py`, in CREDITS.md.
+- Sound effects now keep playing while the game is paused (the "ka-ching" used to be cut off
+  when the Delivered card paused the game).
+- No measurable effect on frame rate. Numbers in the "Juice (Session 31)" block of
+  `game_config.gd` (SPEED_LINES_ALPHA if the speed lines should be stronger).
+- Built by a helper agent in parallel; the smoke test checks the wider view while sprinting,
+  the buzz, the pops, the dust and fewer particles on Low.
 
 ### Session 32
 - About 1 in 6 orders is special, with a coloured chip on the phone: **Rush** (red: 70% of the
@@ -719,11 +685,36 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - **Goal numbers to decide (Session 34):** with 5-minute shifts and 4 to 6 deliveries,
   "Make 8 deliveries" and "2 school lunch orders" (the lunch rush is only 30 real seconds)
   are effectively impossible, "all 5 clusters" is very unlikely, and "a fragile cake with 5
-  stars" only works in about 1 shift in 5. Kept as in the PRD for now.
+  stars" only works in about 1 shift in 5. Kept as in the PRD for now. (Session 34 changed them
+  to 6 deliveries, 1 school lunch order and 3 different clusters.)
 - Fixed while merging: the old "kids on scooters move" check was flaky (the kid could touch
   the bike after only 0.4 m); the bike now waits 3.5 m ahead instead of 2.5 m.
 - Built by a helper agent in parallel. Smoke checks: each special's rule and reward, no school
   order after 15:00, lunch rush share, regulars (heart, name, tips, saved), goal bonus once.
+
+### Session 33
+- Each shift has 1 or 2 surprise events at random times between 09:00 and 16:00, one at a
+  time, never during the tutorial. The phone warns you first ("Heads up!", orange, 6
+  seconds), then a teal line says what's on ("Road works: C3 Lane closed till 14:35").
+- Road works: barriers, cones, a small yellow digger and bilingual "أعمال طرق / Road works"
+  signs close a stretch of a cluster lane or the ring road for 1 to 2 in-game hours, with an
+  orange cone on the mini-map. Only the 14 places on the ROAD_WORKS list in
+  `data/wahat_al_shams.gd`; the smoke test closes each one in turn and checks every home and
+  shop door can still be reached. Never within 15 m of you or your parked bike.
+- Horses crossing: a groom leads 2 or 3 horses across a road near the stables (4 places,
+  HORSE_CROSSINGS); the road is blocked for about 6 to 8 seconds. Riding into them is only a
+  small crash. They wait for you or the parked bike, never shove.
+- Files: `scripts/event_manager.gd`, `scripts/road_works.gd`, `scripts/horse_crossing.gd`;
+  numbers in the "Random events (Session 33)" block of `game_config.gd`. Palm Grove and the
+  test area have no events.
+- Fixed while merging with Session 30: golf buggies, horses and walkers now stop at road
+  works instead of driving through the barrier (and turn round after a few seconds); the
+  crossing groom's speed got its own name (CROSSING_WALK_SPEED) so it doesn't clash with the
+  horse riders' speed. New smoke check: a buggy stops at the north ring road works.
+- The play-test bot re-plans its route when road works go up or come down, and rides round.
+- Known: barriers only span the road, so on the ring road you can ride round on the sand.
+  The crossing horses pop in and out at the ends of their path and their legs don't move.
+- Built by a helper agent in parallel.
 
 ### Session 34
 - Play-test bot on Wahat Al Shams. Before tuning, a careful 5-minute shift got 5 deliveries:
@@ -751,7 +742,7 @@ on both Palm Grove and the test area. Nothing needed fixing.
 - **Louis's turn:** play a full shift and write down what felt off.
 
 ## Known bugs
-- Play-test bot findings on Wahat Al Shams (to tune in Session 34):
+- Play-test bot findings on Wahat Al Shams (Session 34 made the trips shorter; the rest is still open):
   - A careful 5-minute shift gets 5 to 6 deliveries (target 6 to 8). The rides are long
     (Plaza to cluster 100 to 250 m), not the bot; target times look generous (time meter
     ends around 76 to 84%).
@@ -766,22 +757,24 @@ on both Palm Grove and the test area. Nothing needed fixing.
   agent: it looks ahead on its route, slows for corners, bumps, cats and doors, steers round
   cats and kids, backs up when blocked. 0 crashes and 0 resets in 11 careful shifts.
   `-- timeline` prints every step.
-- None found by the checks. Not play-tested by Louis yet.
 - The bot once got stuck nose-to-nose with a kid on a scooter (the kid waits for the bike,
   the bot kept pushing). A person just steers round, but say if it happens to you.
 - Palm Grove rides take up to about a minute, not the 2 to 3 minutes the PRD hoped for
   (see "Still open" in PRD.md).
-- Godot is in the Downloads folder, not Applications, so the commands in CLAUDE.md
-  (/Applications/Godot.app/...) don't find it. Drag Godot.app into Applications to fix it.
 
 - New scripts with class_name need Godot to refresh its class list once. Opening the
   project in the Godot editor does it. If F5 shows "Could not find type Order" or similar,
   close and reopen the project in the editor.
 
 ## Next
-- Louis play-tests Wahat Al Shams with the "Done when" checklists in BUILD_PLAN.md
-  (Sessions 18 to 34) and confirms the Session 34 tuning in the PRD Decisions log.
-- Merge `polish-and-graphics` into main (pull request on GitHub).
-- Remove the old Palm Grove map once Wahat Al Shams feels right (Session 34 left it in,
-  because the smoke test still uses it as a second map).
-- Then the Detail pass (Sessions 35 to 46), then Reasons to come back (Sessions 47 to 51), ending with itch.io.
+- Decide before Session 35:
+  - **Palm Grove:** remove the old map now, or keep it working through the Detail pass? It is the
+    smoke test's second map, and Session 35 changes code it shares.
+  - **The smoke test:** Session 35 breaks its Wahat checks (60 homes, start at the gate, 5-minute
+    shift, fixed spots on the map). It also finds a path to every door; with 500 doors that may
+    take longer than the 15 minutes GitHub allows. Rewrite those checks as part of Session 35.
+  - **School name:** the code still says "Al Shams School"; the PRD says Fair Grade. Pick which
+    session renames it (Session 41 builds the school).
+- Louis: try the R key and quitting mid-shift (see "Review fixes" above), and confirm the
+  Session 34 tuning in the PRD Decisions log.
+- Then the Detail pass (Sessions 35 to 46), then Reasons to come back (Sessions 47 to 51).

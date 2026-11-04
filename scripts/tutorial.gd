@@ -72,7 +72,7 @@ func _on_delivered(_order: Order) -> void:
 	if not GameState.tutorial_running or _ending:
 		return
 	_ending = true
-	_show("Great first job! Your crash insurance is ON (2 Dh a job): if you crash hard, it pays the bills. Press I to switch it off or on.")
+	_show("Great first job! Your crash insurance is ON (%d Dh a job): if you crash hard, it pays the bills. Press I to switch it off or on." % GameConfig.INSURANCE_PER_DELIVERY)
 	await get_tree().create_timer(GameConfig.TUTORIAL_LAST_TIPS_TIME).timeout
 	_show("That's it! More orders will pop up on your phone. Ride safe and have fun!")
 	await get_tree().create_timer(GameConfig.TUTORIAL_LAST_TIPS_TIME).timeout
