@@ -6,10 +6,11 @@ extends SkeletonModifier3D
 ##            the pedals. The bike tells us where the pedals and grips are each frame.
 ##   "lie":   straight legs and arms by the sides (the clinic bed)
 ##   "sit":   thighs forward, feet down and hands on the lap (cafe/reception chairs)
+##   "ragdoll": floppy, after a crash (Session 54). The bones follow a RagdollSim.
 ## It works by pointing bones at spots (like a puppet on strings). Spots are in metres on
 ## the person (facing -Z, +X is their right).
 
-## Which pose: "", "wave", "pedal", "lie" or "sit".
+## Which pose: "", "wave", "pedal", "lie", "sit" or "ragdoll".
 var mode := ""
 ## The Person we belong to.
 var person: Person
@@ -18,6 +19,8 @@ var feet: Array[Vector3] = [Vector3(-0.1, 0.3, -0.1), Vector3(0.1, 0.3, -0.1)]
 var hands: Array[Vector3] = [Vector3(-0.25, 1.05, -0.5), Vector3(0.25, 1.05, -0.5)]
 ## For "pedal": degrees the body leans forward.
 var lean := 0.0
+## For "ragdoll": the floppy body the bones follow.
+var ragdoll: RagdollSim
 
 var _time := 0.0
 var _bones := {}
@@ -33,6 +36,8 @@ func _process_modification_with_delta(delta: float) -> void:
 		_lie()
 	elif mode == "sit":
 		_sit()
+	elif mode == "ragdoll" and ragdoll != null:
+		_ragdoll()
 
 
 func _wave() -> void:
@@ -67,6 +72,18 @@ func _sit() -> void:
 		_point(side + "Leg", side + "Foot", Vector3.DOWN)
 		_reach(side + "Arm", side + "ForeArm", side + "Hand",
 				Vector3(x, hip_height - 0.1, -0.35), Vector3(x * 3, -0.3, 0.1))
+
+
+## Points each bone at the next joint of the rag-doll (parents first, so children follow).
+func _ragdoll() -> void:
+	var to_skeleton := get_skeleton().global_transform.affine_inverse()
+	for link in [["Spine", "Spine2", "chest"], ["Spine2", "Neck", "neck"], ["Neck", "HeadTop_End", "head"],
+			["LeftArm", "LeftForeArm", "l_el"], ["LeftForeArm", "LeftHand", "l_ha"],
+			["RightArm", "RightForeArm", "r_el"], ["RightForeArm", "RightHand", "r_ha"],
+			["LeftUpLeg", "LeftLeg", "l_kn"], ["LeftLeg", "LeftFoot", "l_ft"],
+			["RightUpLeg", "RightLeg", "r_kn"], ["RightLeg", "RightFoot", "r_ft"]]:
+		var target: Vector3 = to_skeleton * (ragdoll.points[link[2]] as Vector3)
+		_aim(link[0], link[1], target - _at(link[0]))
 
 
 ## Bends a limb (upper bone, lower bone, end bone) so its end reaches `target`.

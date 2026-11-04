@@ -74,6 +74,9 @@ var _fall_elapsed := 0.0
 var _fall_duration := 0.0
 var _rider_home := Transform3D.IDENTITY
 var _fall_rider_start := Transform3D.IDENTITY
+## Session 54: the floppy body the rider follows while falling (null when not falling).
+var _ragdoll: RagdollSim
+var _rider_scale := Vector3.ONE
 var _safe_transform := Transform3D.IDENTITY
 
 # Where the wheels meet a speed bump, in metres ridden after the bike's collision box
@@ -124,6 +127,7 @@ func _ready() -> void:
 	_kickstand = _model.get_node("Kickstand")
 	_rider = _model.get_node("Rider")
 	_rider_home = _rider.transform
+	_rider.remember_bones = PackedStringArray(RagdollSim.JOINTS.values())  # Session 54
 	_rider.play("pedal")
 	# Dress the rider in the look picked on the application (Session 14).
 	RiderLook.apply(_rider, GameState.rider_look)
@@ -501,12 +505,52 @@ func _begin_fall(impact: Dictionary) -> void:
 	_rider.reparent(self, true)
 	_fall_rider_start = _rider.transform
 	_rider.play("lie")
+	_start_ragdoll(impact)
 	crashed.emit(_fall_big)
+
+
+## Session 54: let the rider go floppy. They keep most of their speed along the thing they
+## hit, bounce back off it a little, get thrown up, and turn over (forwards for a tumble,
+## sideways for a tip or skid). Harder hits throw them further.
+func _start_ragdoll(impact: Dictionary) -> void:
+	_ragdoll = null
+	_rider_scale = _rider.global_basis.get_scale()
+	if not GameConfig.RAGDOLL_ON or not is_inside_tree():
+		return
+	var intensity := clampf(float(impact["score"]) / GameConfig.CRASH_SEVERE_SCORE,
+			GameConfig.CRASH_FORCE_SCALE.x, GameConfig.CRASH_FORCE_SCALE.y)
+	var normal: Vector3 = impact["normal"]
+	normal.y = 0.0
+	normal = normal.normalized() if normal.length() > 0.01 else Vector3.ZERO
+	var moving: Vector3 = (impact["direction"] as Vector3) * float(impact["riding_kmh"]) / 3.6
+	moving.y = 0.0
+	if normal != Vector3.ZERO and moving.dot(normal) < 0.0:
+		moving -= normal * moving.dot(normal)   # you can't keep going into a wall
+	moving *= GameConfig.RAGDOLL_KEEP_SPEED
+	var kind := String(impact["fall"])
+	var kick := normal * GameConfig.RAGDOLL_BOUNCE_BACK + Vector3.UP * float(GameConfig.RAGDOLL_UP_KICK[kind]) * intensity
+	var head_way := global_basis.x * float(impact["side"])
+	if kind == "tumble":
+		head_way = Vector3(impact["direction"]).slide(Vector3.UP)
+	head_way = head_way.normalized() if head_way.length() > 0.01 else -global_basis.z
+	var spin := Vector3.UP.cross(head_way) * float(GameConfig.RAGDOLL_SPIN[kind]) * intensity
+	_ragdoll = RagdollSim.new()
+	_ragdoll.start(_rider, moving, kick, spin, global_position.y, normal)
+	_rider.pose.ragdoll = _ragdoll
+	_rider.play("ragdoll")
+
+
+## Puts the rider where the floppy body is: hips on the hips point, turned like the chest.
+func _place_rider_on_ragdoll() -> void:
+	var turn := _ragdoll.torso_basis() * Basis.from_scale(_rider_scale)
+	_rider.global_transform = Transform3D(turn, (_ragdoll.points["hips"] as Vector3) - turn * _rider.spot("Hips"))
 
 
 ## A bounded authored trajectory: visibly separate rider/bike, then recover or clinic.
 ## Nothing here calls move_and_slide, so tumbling contacts cannot create another accident.
 func _step_fall(delta: float) -> void:
+	if not _fall_active:
+		return   # already back up (each fall finishes exactly once)
 	speed = 0.0
 	velocity = Vector3.ZERO
 	_fall_elapsed += delta
@@ -538,18 +582,25 @@ func _step_fall(delta: float) -> void:
 		# One forward somersault and a quarter turn to a horizontal landing.
 		rider_rotation = Vector3(PI * 2.5 * ease, side * 0.35 * ease, side * 0.2 * ease)
 		lift = sin(landing * PI) * intensity
-	_rider.position = _fall_rider_start.origin.lerp(destination, ease) + Vector3.UP * lift
-	_rider.rotation = rider_rotation
-	_keep_above_ground(_rider)
+	if _ragdoll == null:
+		_rider.position = _fall_rider_start.origin.lerp(destination, ease) + Vector3.UP * lift
+		_rider.rotation = rider_rotation
+		_keep_above_ground(_rider)
+	else:
+		_ragdoll.step(delta)
+		if not _fall_big and fall_progress > 0.8:
+			_ragdoll.pull_home(smoothstep(0.8, 1.0, fall_progress))
+		_place_rider_on_ragdoll()
 	_model.position = Vector3(side * 0.2 * ease, 0, 0) + travel * ease * 0.2
 	_model.rotation = Vector3(sin(landing * PI) * (0.6 if fall_kind == "tumble" else 0.1), 0, side * deg_to_rad(82.0) * ease)
 	_keep_above_ground(_model)
 	# A small final portion of a recoverable fall is a readable getting-up motion.
 	if not _fall_big and fall_progress > 0.8:
 		var get_up := smoothstep(0.8, 1.0, fall_progress)
-		_rider.position = _rider.position.lerp(_rider_home.origin, get_up)
-		_rider.rotation *= 1.0 - get_up
-		_keep_above_ground(_rider)
+		if _ragdoll == null:
+			_rider.position = _rider.position.lerp(_rider_home.origin, get_up)
+			_rider.rotation *= 1.0 - get_up
+			_keep_above_ground(_rider)
 		_model.position *= 1.0 - get_up
 		_model.rotation *= 1.0 - get_up
 		_keep_above_ground(_model)
@@ -580,6 +631,8 @@ func _step_back_after_fall() -> void:
 func _restore_rider() -> void:
 	if _rider == null or not is_instance_valid(_rider):
 		return
+	_ragdoll = null
+	_rider.pose.ragdoll = null
 	if _rider.get_parent() != _model:
 		_rider.reparent(_model, false)
 	_rider.transform = _rider_home

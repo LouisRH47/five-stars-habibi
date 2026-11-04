@@ -19,6 +19,49 @@ next to the clusters, a red walking track and buggy road on the spine, buggies e
 except the ring road, and half-built buildings on the building sites. Render:
 docs/plaza_carpark_spine.svg. Step-by-step detail for every session: docs/looks_pass_detailed_plan.md.
 
+## Session 54 — Ragdoll falls (4 November 2026)
+
+Built by Claude in a cloud session, on the `looks-build` branch.
+
+What works:
+- **The rider goes floppy when they fall off.** Before, the whole rider turned like one stiff
+  stick. Now (scripts/ragdoll_sim.gd) the rider's 16 joints (head, neck, chest, hips,
+  shoulders, elbows, hands, hips, knees, feet) are points joined by sticks. On a crash they
+  keep part of the bike's speed along the thing you hit, bounce back off it a little, get
+  thrown up and turn over: forwards over the handlebars for a hard head-on hit, sideways for
+  a scrape or a slow tip. Then gravity, the ground (they bounce and slide, then stop) and the
+  thing you hit (nothing goes through it) take over, and every bone points along its stick
+  (the new "ragdoll" pose in PersonPose). Arms and legs flop about; knees and elbows can bend
+  but not fold flat.
+- **Small crash:** after the flop the rider blends smoothly back onto the bike and you ride on
+  (same timing as before). **Big crash:** the rider stays in a heap until the clinic opens.
+- All of 44A's rules are kept: controls locked while you fall, one bill per accident, bounces
+  never count twice, the same fall times. The bike keeps its own tip-over (separate from the
+  rider), so it can't hit anything and start a second crash.
+- Why not Godot's own ragdoll (PhysicalBoneSimulator3D)? The character model is imported at
+  23 times size with a turned head, which makes physical bones unreliable. The hand-made one
+  is about 200 tiny steps a second for one person: cheap on iPads and in the browser too.
+- Godot only keeps the "sitting on the bike" pose until the skeleton finishes updating, so
+  Person.remember_bones keeps the rider's real joint spots each frame for the ragdoll to start
+  from (otherwise the rider jumped to a standing pose first).
+- Fix: calling the fall step after the fall had already ended could move the bike back again
+  every frame. It now does nothing once the fall is over.
+- Tuning numbers: RAGDOLL_* in game_config.gd (how much speed you keep, the up-kick and turn
+  speed for each kind of fall, ground friction, bounce). RAGDOLL_ON = false brings back the old
+  stiff fall.
+
+Checks: new tests/ragdoll_test.gd (31 checks: a slow tip, a scrape and a hard crash each go
+floppy, never sink into the ground, never go through the wall, stay within 10 m, bones keep
+their length, the arms move, the fall always ends, big crashes stay down, small crashes put
+the rider back on the bike exactly; a 30-second step is cut short; a new shift resets it).
+crash_impact (45) passes, smoke test PASS with a new ragdoll check. It's in the browser
+build's list of focused tests. Play-test bot riding flat out (careless): 10 small crashes in one
+shift, every one ended and the bot rode on (0 stuck, 0 resets).
+
+**Louis's check:** open the project, press F5, start a shift. Ride slowly into a wall (a tip:
+you flop sideways and get back up), scrape along a villa wall at speed (you slide and roll),
+then ride flat out into a wall (over the handlebars, you land in a heap, then the clinic).
+
 ## Session 53 — Loading screen, small fixes and the layout check (4 November 2026)
 
 Built by Claude in a cloud session (Godot 4.7.2 on Linux, screenshots rendered with software

@@ -194,6 +194,22 @@ const CRASH_TIP_SCORE := 12.0
 const CRASH_TUMBLE_HEAD_ON := 0.65
 const CRASH_MATERIAL_HARDNESS := {"soft": 0.35, "wood": 0.8, "vehicle": 1.15, "rigid": 1.0}
 const CRASH_FALL_DURATIONS := {"tip": 1.4, "skid": 1.8, "tumble": 2.2}
+# Session 54: rag-doll falls (the rider goes floppy instead of stiff)
+const RAGDOLL_ON := true                 # false = the old stiff falls
+const RAGDOLL_STEPS_PER_SECOND := 120.0  # small fixed steps, so it stays steady
+const RAGDOLL_MAX_STEPS := 400           # most steps in one go (a long pause can't freeze the game)
+const RAGDOLL_ITERATIONS := 8            # how hard the sticks hold their length each step
+const RAGDOLL_GRAVITY := 9.8
+const RAGDOLL_AIR_DAMPING := 0.998       # a tiny bit of air drag
+const RAGDOLL_GROUND_FRICTION := 0.95    # sliding on the ground (lower = stops sooner)
+const RAGDOLL_BOUNCE := 0.25             # how much a body bounces off the ground
+const RAGDOLL_BRACE_STIFFNESS := 0.35    # the chest and pelvis bend a little, not a lot
+const RAGDOLL_STILL_SPEED := 0.15        # m/s: slower than this counts as lying still
+const RAGDOLL_SETTLE_TIME := 0.3         # seconds still before "settled"
+const RAGDOLL_KEEP_SPEED := 0.6          # share of the bike's speed the rider keeps (along the wall)
+const RAGDOLL_BOUNCE_BACK := 1.2         # m/s pushed back off the thing you hit
+const RAGDOLL_UP_KICK := {"tip": 0.6, "skid": 1.2, "tumble": 2.6}    # m/s thrown upwards
+const RAGDOLL_SPIN := {"tip": 2.5, "skid": 6.0, "tumble": 6.0}       # how fast the body turns over
 const CRASH_BILL_BANDS := {
 	"minor": {"hospital": 0, "repair": 0, "insured": 0},
 	"moderate": {"hospital": 60, "repair": 35, "insured": 8},

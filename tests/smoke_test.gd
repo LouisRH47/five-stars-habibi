@@ -2144,6 +2144,8 @@ func _check_session33() -> void:
 		_bike.speed = (GameConfig.CRASH_BIG_KMH + 5.0) / 3.6
 		var crashed: bool = _bike._check_crash(1.0, events.crossing.get_node("Groom"))
 		_check("riding fast into the horses is a small crash", crashed and not _bike.wrecked and _bike.fallen_left > 0.0, "")
+		_check("Session 54: the rider goes floppy (rag-doll) when they fall off", _bike._ragdoll != null
+				and _bike._rider.pose.mode == "ragdoll", "")
 		_bike.fallen_left = 0.0
 		_bike.speed = 0.0
 	events.clear_all()

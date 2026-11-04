@@ -18,7 +18,7 @@ const CLIPS := {
 	"jog": "Human Armature|Run",
 }
 ## Everything a person can do: the clips above, plus poses made in code.
-const ACTIONS := ["idle", "walk", "jog", "wave", "pedal", "lie", "sit"]
+const ACTIONS := ["idle", "walk", "jog", "wave", "pedal", "lie", "sit", "ragdoll"]
 ## The default colours. Anything not given to paint() comes from here.
 const COLOURS := {
 	"skin": Color(0.85, 0.66, 0.5),
@@ -40,6 +40,11 @@ var skeleton_to_me := Transform3D()
 
 var _mesh: MeshInstance3D
 var _followers: Array = []  # the holders from follow()
+## Session 54: set to some bone names to keep where they really are (after the poses,
+## e.g. sitting on the bike). Godot only keeps posed bones until the skeleton is done
+## updating, so the rag-doll starts from these. Bone name -> spot in the world.
+var remember_bones: PackedStringArray = []
+var remembered := {}
 static var _materials := {}  # one material per set of colours, shared
 var _colours: Dictionary = COLOURS.duplicate()
 
@@ -78,7 +83,7 @@ func play(what: String, speed := 1.0) -> void:
 	if what == action:
 		return
 	action = what
-	pose.mode = what if what in ["wave", "pedal", "lie", "sit"] else ""
+	pose.mode = what if what in ["wave", "pedal", "lie", "sit", "ragdoll"] else ""
 	player.play(CLIPS.get(what, CLIPS["idle"]), GameConfig.PERSON_BLEND_TIME)
 
 
@@ -205,6 +210,8 @@ func _head_reference() -> Transform3D:
 
 ## After the bones move each frame: move every holder with its bone.
 func _move_followers() -> void:
+	for bone in remember_bones:
+		remembered[bone] = skeleton.global_transform * skeleton.get_bone_global_pose(skeleton.find_bone(bone)).origin
 	_followers = _followers.filter(func(holder: Variant) -> bool: return is_instance_valid(holder))
 	for holder: Node3D in _followers:
 		_move_follower(holder)

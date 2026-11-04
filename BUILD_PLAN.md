@@ -1212,7 +1212,7 @@ Done when:
 - [x] No road lies on top of another and nothing stands in a road
 - [x] The farm stall, the lap pool and the stream look right, and the layout check passes
 
-### Session 54: Ragdoll falls
+### Session 54: Ragdoll falls (built)
 
 ```text
 Session 54. Read PRD.md "Looks pass", Rider falls like a ragdoll, and
@@ -1233,9 +1233,9 @@ Record a short clip of a slow hit, a scrape and a hard crash for Louis.
 
 Done when:
 
-- [ ] The rider flops like a ragdoll in the direction of the hit, not like a stiff stick
-- [ ] Small crashes get back up and carry on; big crashes go to the clinic after the fall
-- [ ] No double bills, no getting stuck, still 60 fps on Medium
+- [x] The rider flops like a ragdoll in the direction of the hit, not like a stiff stick
+- [x] Small crashes get back up and carry on; big crashes go to the clinic after the fall
+- [x] No double bills, no getting stuck, still 60 fps on Medium
 
 ### Session 55: The Schedule I look and real grass
 
