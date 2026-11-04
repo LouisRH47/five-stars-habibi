@@ -55,6 +55,22 @@ static func build(parent: Node3D, place: Dictionary) -> StaticBody3D:
 		var roof := LowPoly.box(body, Vector3(size.x + 0.6, 0.15, half.z + 0.5), ROOF, Vector3(0, wall_h + 0.45, side * (half.z * 0.5 + 0.1)))
 		roof.rotation.x = deg_to_rad(20.0 * side)   # slopes down to the front and the back
 	for side in [-1.0, 1.0]:   # the gable ends, filling the triangle under the roof
+		if GameConfig.INTERIOR_REVIEW_FIXES:
+			# Review fix: the two stepped boards left triangles of sky between the side walls and
+			# the roof (you saw them from inside). Now each gable is a real triangle with the
+			# roof's 20 degree slope, a little bigger so its edges tuck under the roof.
+			var gable := MeshInstance3D.new()
+			gable.name = "Gable" + ("Left" if side < 0.0 else "Right")
+			var prism := PrismMesh.new()
+			var rise := tan(deg_to_rad(20.0))
+			var base := (0.45 - 0.08 + (half.z * 0.5 + 0.1) * rise) / rise * 2.0 + 0.36
+			prism.size = Vector3(base, base * 0.5 * rise, WALL)
+			gable.mesh = prism
+			gable.material_override = LowPoly.material(PLANK)
+			gable.position = Vector3(side * (half.x - WALL * 0.5), wall_h + prism.size.y * 0.5, 0)
+			gable.rotation.y = PI * 0.5
+			body.add_child(gable, true)
+			continue
 		for k in 2:
 			LowPoly.box(body, Vector3(WALL, 0.36, size.z * (0.6 - k * 0.32)), PLANK, Vector3(side * (half.x - WALL * 0.5), wall_h + 0.18 + k * 0.36, 0))
 	var board := Vector3(size.x - 1.6, 0.6, 0.1)
