@@ -20,7 +20,7 @@ Completion requires code, automated checks, rendered evidence and the listed hum
 | 39 The Plaza, restaurant fronts, mosque, bus station and checkpoints — Mosque, bus station and checkpoints look right, and the guard waves | Implemented; feedback skipped | Source + targeted check + visible acceptance |
 | 40 Restaurant insides and the side-panel style — Every restaurant has its own inside, and no two look the same | Implemented; feedback skipped | Source + targeted check + visible acceptance |
 | 40 Restaurant insides and the side-panel style — Picking up at the counter works and the side panel shows the order | Implemented and checked | Source + targeted check + visible acceptance |
-| 41 Fair Grade International School and the C Institute — You can spot the school from across the map, and it looks like Louis's photos | Implemented; photo comparison unverified | Source + targeted check + visible acceptance |
+| 41 Fair Grade International School and the C Institute — You can spot the school from across the map, and it looks like Louis's photos | Implemented and checked; photo comparison skipped | Source + targeted check + visible acceptance |
 | 41 Fair Grade International School and the C Institute — The C Institute faces the spine, and you can walk in and hand food to the receptionist | Implemented and checked | Source + targeted check + visible acceptance |
 | 42 The green spine: hills, grass, domes path, gym and pools — The spine looks green and alive, with little hills and no big gaps between domes | Implemented and checked | Source + targeted check + visible acceptance |
 | 42 The green spine: hills, grass, domes path, gym and pools — The gym, lap pool and community pool are there, and the dome doors look right | Implemented; feedback skipped | Source + targeted check + visible acceptance |
@@ -137,7 +137,7 @@ The focus-guarded moving benchmark rejected both spine warmups after window focu
 
 ## Remaining acceptance
 
-- Compare the implemented school with Louis's reference photos when those specific photos are available. The PRD description is implemented.
+- The school-photo comparison is skipped at the user's request. The PRD description is implemented.
 - Louis and friend feedback is skipped at the user's request.
 - Additional device assurance remains available through physical iPad and Windows gameplay. Sessions 35–51 explicitly require desktop exports, which passed. These physical playthroughs were added to the release checklist and are separate from feature implementation.
 - The user put itch.io on hold. The initial [MiddleLeap web deployment](https://fivestarshabibi.middleleap.com) served v0.1.0 from main commit `85c116a6282d986b8b1916c88eab7cb8d050f7a4`. The [live manifest](https://fivestarshabibi.middleleap.com/version.json) and Cloudflare production deployment agree. The live game package matches the v0.1.0 release ZIP by SHA-256.
@@ -282,3 +282,9 @@ A fresh Chrome context loaded the production site, hired a rider, used Start rid
 On 4 November, the user directed that feedback be skipped. The Louis and friend satisfaction gates and subjective feel reviews are waived. All planned gameplay features remain implemented and deployed. The Mac and Windows export requirements passed, the Mac moving performance target passed, and production browser loading, order acceptance, movement, clock advancement and reload were verified.
 
 Physical iPad and Windows playthroughs are additional assurance checks from the release checklist. Their absence does not represent an unimplemented feature. The explicit Session 41 school-photo resemblance criterion remains unverified. The school implements the PRD description. The referenced photos are outside the repository, and a targeted search of accessible connected files did not identify Louis's reference set. Itch.io remains on hold at the user's request.
+
+## Completion after scope updates
+
+On 4 November, the user explicitly skipped the school-photo comparison after previously skipping feedback. Those acceptance criteria are waived. All remaining active requirements for Sessions 35–51 are implemented and verified through the recorded source checks, runtime checks, rendered evidence, desktop exports, Mac performance run and production deployment. The latest tested gameplay is live at [fivestarshabibi.middleleap.com](https://fivestarshabibi.middleleap.com).
+
+Physical iPad and Windows playthroughs remain additional assurance checks. Itch.io publishing remains on hold at the user's request.
