@@ -540,3 +540,22 @@ const LOADING_TIPS := [
 
 # --- Session 56: the free asset packs ---
 const KIT_COUNTER_HEIGHT := 1.05      # KitProps "counter" snap: props sit on a counter top this high
+
+# --- Session 64: buggies everywhere and building sites ---
+const BUGGIES_ROAM := true            # buggies drive anywhere on the buggy road map; false = the old fixed routes (BUGGY_FIXED_ROUTES)
+const BUGGY_SPEED_KMH := Vector2(10.0, 14.0)  # each buggy cruises somewhere between these
+const BUGGY_KEEP_RIGHT := 1.5         # metres right of the lane middle (less on narrow paths)
+const BUGGY_HALF_WIDTH := 0.6         # half a buggy's width (Appendix H: 1.2 m wide)
+const BUGGY_POST_CLEARANCE := 1.15    # a buggy's middle stays this far from a bollard's middle
+const BUGGY_BLACK_ROAD_GAP := 6.0     # buggies stay this far from the black car roads (never on or along them)
+const BUGGY_MIN_ROAD_WIDTH := 3.0     # thinner paths are for walking only
+const BUGGY_NO_GO_WORDS := ["walk", "track", "domes path", "door", "horse", "bridle", "jog"]  # paths with these in the name aren't for buggies
+const BUGGY_LOOK_AHEAD := 3.0         # metres in front it looks for people (stops about 4 m before the rider)
+const BUGGY_CORNER_SLOW := 0.45       # share of its speed left in the tightest corners
+const BUGGY_CORNER_ROUND := 2.0       # corners are cut this far, so turns are smooth
+const BUGGY_STOP_TIME := Vector2(2.0, 6.0)  # seconds it waits when it gets where it was going
+const SITE_HALF_BUILT := true         # building sites get a half-built building (false = only the old crane, cabin and sand)
+const SITE_FLOOR_HEIGHT := 3.2        # metres per floor of the half-built building
+const SITE_SCAFFOLD_LIFT := 2.0       # scaffolding: a board level every 2 m
+const SITE_SCAFFOLD_BAY := 2.0        # scaffolding: a pole every 2 m along the wall
+const SITE_WORKERS := 3               # workers in hi-vis per building site

@@ -151,9 +151,18 @@ put('PARKED_CARS',[{'position':v3(x+3,0,z+8+k*9),'facing':90.,'bay':True} for x,
 put('SPEED_BUMP_SIZE',v3(10,.12,.5))
 put('SPEED_BUMPS',[{'position':v3(x,0,z),'facing':90.} for z in [-205,205] for x in [-180,50,300]]+[{'position':v3(x,0,z),'facing':0.} for x in [-425,425] for z in [-80,80]])
 put('CATS',cats);put('SCOOTER_KIDS',kids)
-put('BUGGIES',[{'points':[v3(cx-60,0,cz),v3(cx+(30 if n==3 else 60),0,cz),v3(cx+(30 if n==3 else 60),0,-185 if cz<0 else 185)],'colour':colour(.85,.85,.76),'level':(n-1)%3} for n,cx,cz in clusters]+[{'points':[v3(-140,0,-1),v3(410,0,-1)],'colour':colour(.3,.5,.5),'level':1}])
+# Before Session 64: each buggy went up and down one fixed route (kept for GameConfig.BUGGIES_ROAM = false).
+put('BUGGY_FIXED_ROUTES',[{'points':[v3(cx-60,0,cz),v3(cx+(30 if n==3 else 60),0,cz),v3(cx+(30 if n==3 else 60),0,-185 if cz<0 else 185)],'colour':colour(.85,.85,.76),'level':(n-1)%3} for n,cx,cz in clusters]+[{'points':[v3(-140,0,-1),v3(410,0,-1)],'colour':colour(.3,.5,.5),'level':1}])
+# Session 64: 14 buggies that drive anywhere on the buggy road map (scripts/buggy_roads.gd).
+# 'start' is a spot on a lane (it starts at the nearest junction); 'points' keeps the old
+# shape for older checks. Low graphics shows level 0 (one per cluster), Medium adds level 1.
+# rider: 'resident' (one person), 'pair' (two) or 'gardener' (with tools in the back).
+buggy_colours=[colour(.96,.96,.94),colour(.9,.85,.7),colour(.45,.55,.38),colour(.3,.4,.55),colour(.85,.85,.76),colour(.3,.5,.5)]
+buggy_starts=[(cx-30,cz,0) for n,cx,cz in clusters]+[(cx+30,cz+(40 if cz<0 else -40),1) for n,cx,cz in clusters]+[(-100,0,2),(150,0,2),(250,35,2),(0,-40,2)]
+riders=['resident','pair','gardener']
+put('BUGGIES',[{'start':v3(x,0,z),'points':[v3(x,0,z)],'colour':buggy_colours[i%len(buggy_colours)],'level':level,'rider':riders[i%3]} for i,(x,z,level) in enumerate(buggy_starts)])
 put('HORSE_RIDERS',[{'points':[v3(-450,0,-230),v3(450,0,-230),v3(450,0,230),v3(-450,0,230)],'loop':True,'colour':colour(.45,.28,.15),'level':0,'collection_id':'horse_sultan','collection_name':'Sultan'},{'points':[v3(450,0,230),v3(-450,0,230),v3(-450,0,-230),v3(450,0,-230)],'loop':True,'colour':colour(.85,.82,.78),'level':1,'collection_id':'horse_noor','collection_name':'Noor'}])
-put('PEOPLE_ROUTES',[{'points':[v3(-438,0,-218),v3(438,0,-218),v3(438,0,218),v3(-438,0,218)],'loop':True,'jog':True,'look':2,'level':0}]+[{'points':[v3(-130,0,z),v3(405,0,z)],'jog':False,'look':i,'level':i%3} for i,z in enumerate([-1.5,1.5,-2.5])])
+put('PEOPLE_ROUTES',[{'points':[v3(-438,0,-218),v3(438,0,-218),v3(438,0,218),v3(-438,0,218)],'loop':True,'jog':True,'look':2,'level':0}]+[{'points':[v3(-115,0,z),v3(345,0,z)],'jog':False,'look':i,'level':i%3} for i,z in enumerate([-11.7,-10.3,-11.0])])  # Session 64: walkers keep to the walking path (Domes Path, z -11), not the buggies' Spine Path (they walked x -130 to 405 at z -1.5, 1.5, -2.5)
 put('GARDENERS',gardeners);put('PLAY_KIDS',plays)
 put('DUCKS',[{'from_x':x,'to_x':x+65,'side':.4 if i%2 else -.4,'level':i%3} for i,x in enumerate([-100,0,160,310])])  # Session 53: clear of the stream bridges at x 73 and 303
 put('BIRD_FLOCKS',[{'centre':v3(x,30,z),'radius':r,'birds':4,'level':i} for i,(x,z,r) in enumerate([(-180,-100,70),(180,80,90),(0,0,160)])])
