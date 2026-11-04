@@ -696,8 +696,8 @@ const SKY_HALO_SIZE := 12.0         # degrees: the soft glow round the sun
 const SKY_HALO_STRENGTH := 0.45
 const SKY_DISC_ENERGY := 6.0        # how bright the sun disc is (bright enough to glow)
 const CLOUDS_FROM_LEVEL := 1        # clouds from this Graphics level up (1 = Medium; none on Low)
-const CLOUD_COVER := 0.56           # higher = fewer clouds (0.45 = cloudy, 0.65 = a few)
-const CLOUD_SCALE := 1.1            # higher = smaller clouds
+const CLOUD_COVER := 0.52           # higher = fewer clouds (0.45 = cloudy, 0.6 = a few)
+const CLOUD_SCALE := 2.0            # higher = smaller clouds
 const CLOUD_OPACITY := 0.95
 const CLOUD_WIND := Vector2(0.11, 0.045)  # how far the clouds drift per game hour (and their shadows)
 const CLOUD_WARM_HEIGHTS := Vector2(8.0, 40.0)  # sun height (degrees): fully warm clouds below x, white above y

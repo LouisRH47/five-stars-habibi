@@ -28,7 +28,7 @@ uniform vec3 cloud_light : source_color = vec3(1.0);
 uniform vec3 cloud_shade : source_color = vec3(0.8, 0.85, 0.93);
 uniform vec2 cloud_shift = vec2(0.0);
 uniform float cloud_cover = 0.56;      // higher = fewer clouds
-uniform float cloud_soft = 0.06;       // how soft the cloud edges are
+uniform float cloud_soft = 0.035;      // how soft the cloud edges are
 uniform float cloud_scale = 1.1;       // bigger = smaller clouds
 uniform float cloud_opacity = 0.95;
 uniform float cloud_low_fade = 0.105;  // no clouds below this height (sin of 6 degrees)
@@ -52,7 +52,7 @@ float cloud_density(vec2 p) {
 	float n = value_noise(p) * 0.6 + value_noise(p * 2.3 + vec2(7.1, 3.4)) * 0.28
 			+ value_noise(p * 5.3 + vec2(1.7, 9.2)) * 0.12;
 	// Clouds come in groups with clear sky between them.
-	return n - (1.0 - value_noise(p * 0.31 + vec2(4.0, 1.0))) * 0.18;
+	return n - (1.0 - value_noise(p * 0.31 + vec2(4.0, 1.0))) * 0.1;
 }
 
 void sky() {
