@@ -7,6 +7,7 @@ ours and free to use (CC0, see CREDITS.md). Run it again to remake the files:
     python3 tools/make_sounds.py
 
 It writes .wav files into assets/audio/. Only plain Python is needed (no extra installs).
+Session 71: "python3 tools/make_sounds.py ui" makes only the 9 UI sounds (ui_hover, ui_click...).
 """
 import math
 import os
@@ -455,7 +456,122 @@ ROOM_SOUNDS = {"room_oven.wav": oven_crackle, "room_freezer.wav": freezer_hum, "
                "room_music.wav": shop_music}
 
 
+# ---------------- UI sounds (Session 71) ----------------
+# Short, soft sounds for menus and the HUD (scripts/ui_sounds.gd plays them by name).
+# They use their own random numbers, so every sound above comes out exactly the same.
+UI = random.Random(71)
+
+
+def _ui_noise(seconds, smooth_from, smooth_to, volume):
+    """Noise whose 'smoothness' slides from one value to another (a whoosh)."""
+    out = array("f")
+    last = 0.0
+    n = int(seconds * RATE)
+    for i in range(n):
+        k = i / max(1, n - 1)
+        smooth = smooth_from + (smooth_to - smooth_from) * k
+        last = last * smooth + UI.uniform(-1, 1) * (1 - smooth)
+        env = math.sin(math.pi * k) ** 2   # fades in and out
+        out.append(last * env * volume)
+    return out
+
+
+def glide(f_from, f_to, seconds, decay, volume=1.0):
+    """A sine that slides in pitch."""
+    out = array("f")
+    phase = 0.0
+    for i in range(int(seconds * RATE)):
+        t = i / RATE
+        f = f_from + (f_to - f_from) * min(1.0, t / seconds)
+        phase += 2 * math.pi * f / RATE
+        env = min(1.0, t / 0.004) * math.exp(-t * decay)
+        out.append(math.sin(phase) * env * volume)
+    return out
+
+
+def ui_hover():
+    """A tiny soft tick when the mouse goes over a button."""
+    return add(tone(1900, 0.05, 90, 0.6, 0.002), tone(3800, 0.03, 140, 0.15, 0.001))
+
+
+def ui_click():
+    """A click: a short tap with a little body."""
+    track = silence(0.09)
+    mix_in(track, _ui_noise(0.012, 0.2, 0.2, 0.5), 0.0)
+    mix_in(track, tone(1250, 0.08, 55, 0.8, 0.001), 0.0)
+    mix_in(track, tone(620, 0.08, 45, 0.5, 0.001), 0.004)
+    return track
+
+
+def ui_open():
+    """A panel opens: a short rising swish with a soft note."""
+    track = silence(0.26)
+    mix_in(track, _ui_noise(0.22, 0.92, 0.55, 0.5), 0.0)
+    mix_in(track, glide(520, 880, 0.22, 9, 0.35), 0.02)
+    return track
+
+
+def ui_close():
+    """A panel closes: softer and falling."""
+    track = silence(0.22)
+    mix_in(track, _ui_noise(0.18, 0.6, 0.93, 0.35), 0.0)
+    mix_in(track, glide(760, 460, 0.18, 12, 0.25), 0.0)
+    return track
+
+
+def tick():
+    """One money tick while a number counts up."""
+    return add(tone(2350, 0.04, 120, 0.7, 0.001), tone(4700, 0.025, 200, 0.2, 0.001))
+
+
+def meter_warn():
+    """A meter drops into a worse colour: two short falling blips."""
+    track = silence(0.3)
+    for i, f in enumerate((700, 520)):
+        blip = add(tone(f, 0.12, 22, 0.7, 0.003), tone(f * 2, 0.1, 30, 0.15, 0.003))
+        mix_in(track, blip, i * 0.12)
+    return track
+
+
+def level_up():
+    """Level up: a quick happy run up, then a bright chord."""
+    track = silence(0.85)
+    for i, note in enumerate([523.25, 659.25, 783.99]):
+        mix_in(track, pluck(note * 2, 0.25, 0.8, 0.5), i * 0.08)
+        mix_in(track, tone(note, 0.2, 14, 0.3), i * 0.08)
+    for note in (1046.5, 1318.5, 1567.98):
+        mix_in(track, tone(note, 0.6, 5.5, 0.3, 0.01), 0.26)
+    return track
+
+
+def stamp():
+    """The PERFECT stamp lands: a deep thunk with a papery slap."""
+    track = silence(0.32)
+    mix_in(track, glide(150, 60, 0.28, 13, 1.0), 0.0)
+    mix_in(track, _ui_noise(0.05, 0.35, 0.6, 0.7), 0.0)
+    return track
+
+
+def whoosh():
+    """A card slides in: an airy swoosh."""
+    return _ui_noise(0.34, 0.97, 0.75, 1.0)
+
+
+UI_SOUNDS = {"ui_hover": (ui_hover, 0.35), "ui_click": (ui_click, 0.6), "ui_open": (ui_open, 0.5),
+             "ui_close": (ui_close, 0.4), "tick": (tick, 0.35), "meter_warn": (meter_warn, 0.6),
+             "level_up": (level_up, 0.75), "stamp": (stamp, 0.85), "whoosh": (whoosh, 0.45)}
+
+
+def make_ui_sounds():
+    for key, (make, peak) in UI_SOUNDS.items():
+        save(key + ".wav", make(), peak)
+
+
 if __name__ == "__main__":
+    import sys
+    if sys.argv[1:] == ["ui"]:   # Session 71: "python3 tools/make_sounds.py ui" makes only the UI sounds
+        make_ui_sounds()
+        sys.exit(0)
     save("perfect.wav", perfect())
     save("tip.wav", tip())
     save("bell.wav", bell())
@@ -472,3 +588,4 @@ if __name__ == "__main__":
     save("coins.wav", coins())  # Session 31: the coins fly out
     for room_name, make in ROOM_SOUNDS.items():   # Session 58/59: one quiet loop per walk-in place
         save(room_name, make(), 0.5)
+    make_ui_sounds()   # Session 71: the menu and HUD sounds

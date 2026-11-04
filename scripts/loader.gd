@@ -5,6 +5,8 @@ extends CanvasLayer
 ## The loading screen shows at once in the game's style, loads the game scene in the
 ## background, builds the homes one row per frame (HousingRows.prebuilt) so the bar really
 ## moves, then opens the game and fades away.
+## Session 71 (GameConfig.SCREENS_V2): a little rider on a Snackaroo bike pedals along the
+## top of the bar as it fills, and each new tip slides in from the right.
 
 signal finished
 
@@ -33,6 +35,11 @@ var _title: Label
 var _tip_left := 0.0
 var _tip_index := 0
 var _shown_at := 0
+## Session 71: the pedalling rider on the bar, and the tip's slide.
+var rider_icon: Control
+var _track: Panel
+var _pedal_time := 0.0
+var _tip_slide: Tween
 
 
 func _ready() -> void:
@@ -48,6 +55,9 @@ func _process(delta: float) -> void:
 	_tip_left -= delta
 	if _tip_left <= 0.0:
 		_next_tip()
+	if rider_icon != null:
+		_pedal_time += delta
+		_place_rider()
 
 
 ## Opens the game behind a loading screen. first_shift: the wording for a brand-new rider.
@@ -153,6 +163,8 @@ func _set_progress(value: float) -> void:
 	progress = clampf(maxf(value, progress), 0.0, 1.0)  # the bar never goes backwards
 	_bar_fill.anchor_right = progress
 	_percent.text = "%d%%" % roundi(progress * 100.0)
+	if rider_icon != null:
+		_place_rider()
 
 
 func _next_tip() -> void:
@@ -160,6 +172,56 @@ func _next_tip() -> void:
 	_tip_index = (_tip_index + 1) % tips.size()
 	_tip.text = "Tip: " + tips[_tip_index]
 	_tip_left = GameConfig.LOADING_TIP_TIME
+	if GameConfig.SCREENS_V2 and _root.visible:
+		# Session 71: the tip slides in from the right (inside its own holder, so the column's
+		# layout never moves).
+		if _tip_slide != null:
+			_tip_slide.kill()
+		var quick := 0.5 if Settings.reduce_motion else 1.0
+		_tip.position.x = 0.0 if Settings.reduce_motion else 60.0
+		_tip.modulate.a = 0.0
+		_tip_slide = create_tween().set_parallel(true)
+		_tip_slide.tween_property(_tip, "position:x", 0.0, 0.4 * quick).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		_tip_slide.tween_property(_tip, "modulate:a", 1.0, 0.3 * quick)
+
+
+## Session 71: the rider sits on top of the bar, at the front of the orange fill.
+func _place_rider() -> void:
+	var width := _track.size.x
+	rider_icon.position = Vector2(lerpf(4.0, width - 4.0, progress) - rider_icon.size.x * 0.62, -rider_icon.size.y + 6.0)
+	rider_icon.queue_redraw()
+
+
+## Session 71: a tiny side view of the rider on the Snackaroo bike: two spinning wheels, the
+## teal frame, the orange box and legs that go round with the pedals.
+func _draw_rider() -> void:
+	var c := rider_icon
+	var spin := _pedal_time * 9.0
+	var rear := Vector2(16, 44)
+	var front := Vector2(58, 44)
+	var crank := Vector2(36, 42)
+	for wheel in [rear, front]:
+		c.draw_circle(wheel, 12.0, UiPalette.INK, false, 3.0, true)
+		for k in 3:
+			var a := spin + k * TAU / 3.0
+			c.draw_line(wheel, wheel + Vector2(cos(a), sin(a)) * 11.0, Color(UiPalette.INK, 0.6), 1.5, true)
+	var seat := Vector2(30, 24)
+	var bars := Vector2(54, 20)
+	for part in [[rear, crank], [crank, seat], [seat, rear], [crank, Vector2(52, 26)], [seat, Vector2(52, 26)], [Vector2(52, 26), front], [Vector2(52, 26), bars]]:
+		c.draw_line(part[0], part[1], UiPalette.TEAL, 3.5, true)
+	c.draw_rect(Rect2(4, 12, 20, 18), UiPalette.ORANGE)          # the delivery box
+	c.draw_rect(Rect2(4, 12, 20, 18), Color(0.6, 0.3, 0.05), false, 1.5)
+	var foot := crank + Vector2(cos(spin), sin(spin)) * 6.0
+	var other := crank - Vector2(cos(spin), sin(spin)) * 6.0
+	var hip := seat + Vector2(1, -4)
+	var shoulder := Vector2(42, 2)
+	for f in [other, foot]:
+		var knee := hip.lerp(f, 0.5) + Vector2(7, -3)
+		c.draw_polyline(PackedVector2Array([hip, knee, f]), Color(0.16, 0.2, 0.3), 4.0, true)
+	c.draw_line(hip, shoulder, UiPalette.ORANGE, 7.0, true)     # body in the orange jacket
+	c.draw_line(shoulder, bars, UiPalette.ORANGE, 3.5, true)    # arm
+	c.draw_circle(shoulder + Vector2(4, -8), 6.5, Color(0.55, 0.38, 0.27))  # head
+	c.draw_circle(shoulder + Vector2(4, -10), 6.8, UiPalette.TEAL, false, 3.0, true)  # helmet
 
 
 # --- Building the screen ---
@@ -208,6 +270,7 @@ func _build() -> void:
 	track_style.set_corner_radius_all(17)
 	track.add_theme_stylebox_override("panel", track_style)
 	column.add_child(track)
+	_track = track
 	_bar_fill = Panel.new()
 	var fill_style := StyleBoxFlat.new()
 	fill_style.bg_color = ORANGE
@@ -233,7 +296,36 @@ func _build() -> void:
 	_tip = _label("", 24, INK)
 	_tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_tip.custom_minimum_size = Vector2(760, 70)
-	column.add_child(_tip)
+	if GameConfig.SCREENS_V2:
+		_build_rider(column)
+		var holder := Control.new()  # Session 71: lets the tip slide without moving the column
+		holder.custom_minimum_size = Vector2(760, 70)
+		holder.clip_contents = false
+		column.add_child(holder)
+		holder.add_child(_tip)
+		_tip.size = Vector2(760, 70)
+	else:
+		column.add_child(_tip)
+
+
+## Session 71: the rider icon on the bar, and a softer track with a shine on the fill.
+func _build_rider(column: VBoxContainer) -> void:
+	column.add_theme_constant_override("separation", 18)
+	_track.custom_minimum_size.y = 26
+	rider_icon = Control.new()
+	rider_icon.name = "RiderIcon"
+	rider_icon.size = Vector2(76, 60)
+	rider_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rider_icon.draw.connect(_draw_rider)
+	_track.add_child(rider_icon)
+	var fill_style := _bar_fill.get_theme_stylebox("panel") as StyleBoxFlat
+	fill_style.bg_color = UiPalette.ORANGE
+	fill_style.border_color = Color(1, 0.8, 0.5)
+	fill_style.border_width_top = 3
+	var spacer := Control.new()  # room above the bar for the rider
+	spacer.custom_minimum_size = Vector2(0, 34)
+	column.add_child(spacer)
+	column.move_child(spacer, _track.get_index())
 
 
 func _label(text: String, size: int, colour: Color, variation := "") -> Label:
