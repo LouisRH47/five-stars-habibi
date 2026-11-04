@@ -345,6 +345,7 @@ func _street_details() -> void:
 			line.rotation.y = atan2(direction.x, direction.y)
 		for i in int(a.distance_to(b) / 45):
 			var p := a + direction * (i * 45 + 15) + side * 7
+			p = _clear_of_aisles(p, direction)  # Session 62: never in a car park's entrance
 			LowPoly.cylinder(props, 0.07, 0.13, 5.5, Color.DIM_GRAY, Vector3(p.x, 2.75, p.y))
 			LowPoly.box(props, Vector3(1.3, 0.15, 0.4), WHITE, Vector3(p.x, 5.5, p.y))
 	for cluster: Dictionary in _map["CLUSTERS"]:
@@ -352,9 +353,23 @@ func _street_details() -> void:
 		for i in 3:
 			LowPoly.box(props, Vector3(0.65, 1.1, 0.65), [TEAL, Color.DARK_GREEN, Color(0.2, 0.35, 0.65)][i], Vector3(c.x - 9 + i, 0.55, c.y + (70 if c.y < 0 else -70)))
 	for area: Rect2 in _map["PARKING_AREAS"]:
-		LowPoly.box(props, Vector3(0.5, 1.4, 0.4), TEAL, Vector3(area.position.x + 1, 0.7, area.position.y + 2))
+		# Session 62: on the grass verge by the ring road (south car parks have it at their south end)
+		var top := area.position.y if area.get_center().y < 0 or not GameConfig.CARPARK_ROWS else area.end.y - 7.0
+		LowPoly.box(props, Vector3(0.5, 1.4, 0.4), TEAL, Vector3(area.position.x + 1, 0.7, top + 2))
 		for i in 4:
-			LowPoly.box(props, Vector3(0.08, 0.8, 1.4), Color.GRAY, Vector3(area.end.x - 1, 0.4, area.position.y + 3 + i))
+			var rack_x := area.position.x + 3 if GameConfig.CARPARK_ROWS else area.end.x - 1   # Session 62: on the verge, not in an aisle
+			LowPoly.box(props, Vector3(0.08, 0.8, 1.4), Color.GRAY, Vector3(rack_x, 0.4, top + 3 + i))
+
+
+## Session 62: a ring road lamp post that would stand in a car park's aisle opening moves
+## along the road until it's on the grass beside it.
+func _clear_of_aisles(p: Vector2, direction: Vector2) -> Vector2:
+	for park: Dictionary in _map.get("CAR_PARKS", []):
+		for aisle: Rect2 in park["aisles"]:
+			var zone := aisle.grow(1.0)
+			while zone.has_point(p):
+				p += direction * 1.0
+	return p
 
 
 func _solid(body: StaticBody3D, size: Vector3, tint: Color, at: Vector3) -> void:

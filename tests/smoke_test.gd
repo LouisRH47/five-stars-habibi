@@ -1556,6 +1556,18 @@ func _check_session26() -> void:
 	# ring road, bridges over the stream, benches facing the right way).
 	for line in preload("res://tests/layout_test.gd").check_map(data, _main):
 		_check("layout: " + line[1], line[0], "")
+	# Session 62: the car parks (rows, solar roofs, kerbs). tests/carpark_test.gd checks the rest.
+	var parks: Node = _main.get_node_or_null("DistrictTraffic/CarParks")
+	if data.has("CAR_PARKS") and GameConfig.CARPARK_ROWS:
+		var roofs := 0
+		for park: Dictionary in data["CAR_PARKS"]:
+			roofs += park["roofs"].size()
+		var built := 0
+		if parks != null:
+			for child in parks.get_children():
+				built += 1 if String(child.name).begins_with("SolarRoof_") else 0
+		_check("every car park row has a solar roof, with kerbs round the car parks and the ring road",
+				built == roofs and roofs > 0 and parks.get_node_or_null("RingRoadKerbs") != null, "%d of %d roofs" % [built, roofs])
 
 
 ## How many house parts (bodies called Villa...) a shape at this spot touches.
@@ -1734,7 +1746,9 @@ func _check_session29() -> void:
 	# Parked cars are the CC0 models.
 	var car := _main.find_child("ParkedCar_0", true, false)
 	if car != null:
-		_check("parked cars use the CC0 car models", car.get_node_or_null("Model") != null, "")
+		# Session 62: car park cars are drawn together by CarParkCars (same CC0 models).
+		var batched: bool = car.get_meta("drawn_by", "") == "CarParkCars" and _main.find_child("ParkedCarLooks", true, false) != null
+		_check("parked cars use the CC0 car models", car.get_node_or_null("Model") != null or batched, "")
 	var credits := FileAccess.get_file_as_string("res://CREDITS.md")
 	_check("the people and car packs are credited", "Quaternius" in credits and "Car Kit" in credits, "")
 

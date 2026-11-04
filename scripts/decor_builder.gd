@@ -38,7 +38,7 @@ func _ready() -> void:
 	parked_cars = _map["PARKED_CARS"]
 	speed_bumps = _map["SPEED_BUMPS"]
 
-	for area: Rect2 in _map["PARKING_AREAS"]:
+	for area: Rect2 in ([] if GameConfig.CARPARK_ROWS else _map["PARKING_AREAS"]):  # Session 62: CarParkBuilder paints them
 		var middle := area.get_center()
 		LowPoly.box(self, Vector3(area.size.x, PAD_THICKNESS, area.size.y), ASPHALT_COLOUR,
 				Vector3(middle.x, PAD_THICKNESS * 0.5, middle.y))
@@ -92,10 +92,10 @@ func _build_cars() -> void:
 		var car: Node3D = CAR_SCENE.instantiate()
 		car.name = "ParkedCar_%d" % i
 		_place(car, place)
-		car.setup(size, i)
+		car.setup(size, i, place)
 		add_child(car)
 		var bay: bool = place["bay"]
-		if bay:
+		if bay and not GameConfig.CARPARK_ROWS:  # Session 62: every bay's lines are painted by CarParkBuilder
 			_add_bay_lines(place, size)
 
 
