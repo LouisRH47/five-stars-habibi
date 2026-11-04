@@ -537,3 +537,6 @@ const LOADING_TIPS := [
 	"The red track is for walkers: mind them.",
 	"Sprinting uses stamina. Coast to get it back.",
 ]
+
+# --- Session 56: the free asset packs ---
+const KIT_COUNTER_HEIGHT := 1.05      # KitProps "counter" snap: props sit on a counter top this high
