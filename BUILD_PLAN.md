@@ -700,6 +700,7 @@ Done when:
 ## The sessions (Detail pass, Sessions 35 to 46)
 
 See the [implementation and acceptance ledger](docs/implementation-status.md) for the current evidence and open gates for Sessions 35–51.
+Louis and friend feedback is skipped at the user's request on 4 November 2026.
 
 Louis played the graphics pass. The houses, playgrounds, stables and NPCs are good. What he wants
 changed: the map should copy the real community at real size, the homes should be joined rows,

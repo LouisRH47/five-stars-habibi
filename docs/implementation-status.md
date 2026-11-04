@@ -16,14 +16,14 @@ Completion requires code, automated checks, rendered evidence and the listed hum
 | 37 Car parks with solar roofs, cars, buggies and buses — Cars only on the ring road, buggies only inside, and the bus comes and goes | Implemented and checked | Source + targeted check + visible acceptance |
 | 38 Horse track, run and cycle track, jumping arena and stables — Horses go round the edge on their own track, and you ride the blue track beside it | Implemented and checked | Source + targeted check + visible acceptance |
 | 38 Horse track, run and cycle track, jumping arena and stables — The jumping arena has horses jumping | Implemented and checked | Source + targeted check + visible acceptance |
-| 39 The Plaza, restaurant fronts, mosque, bus station and checkpoints — The Plaza feels like a real little town centre with 12 different shop fronts | Implemented; playtest open | Source + targeted check + visible acceptance |
-| 39 The Plaza, restaurant fronts, mosque, bus station and checkpoints — Mosque, bus station and checkpoints look right, and the guard waves | Implemented; playtest open | Source + targeted check + visible acceptance |
-| 40 Restaurant insides and the side-panel style — Every restaurant has its own inside, and no two look the same | Implemented; playtest open | Source + targeted check + visible acceptance |
+| 39 The Plaza, restaurant fronts, mosque, bus station and checkpoints — The Plaza feels like a real little town centre with 12 different shop fronts | Implemented; feedback skipped | Source + targeted check + visible acceptance |
+| 39 The Plaza, restaurant fronts, mosque, bus station and checkpoints — Mosque, bus station and checkpoints look right, and the guard waves | Implemented; feedback skipped | Source + targeted check + visible acceptance |
+| 40 Restaurant insides and the side-panel style — Every restaurant has its own inside, and no two look the same | Implemented; feedback skipped | Source + targeted check + visible acceptance |
 | 40 Restaurant insides and the side-panel style — Picking up at the counter works and the side panel shows the order | Implemented and checked | Source + targeted check + visible acceptance |
-| 41 Fair Grade International School and the C Institute — You can spot the school from across the map, and it looks like Louis's photos | Awaiting human / release | Source + targeted check + visible acceptance |
+| 41 Fair Grade International School and the C Institute — You can spot the school from across the map, and it looks like Louis's photos | Implemented; photo comparison unverified | Source + targeted check + visible acceptance |
 | 41 Fair Grade International School and the C Institute — The C Institute faces the spine, and you can walk in and hand food to the receptionist | Implemented and checked | Source + targeted check + visible acceptance |
 | 42 The green spine: hills, grass, domes path, gym and pools — The spine looks green and alive, with little hills and no big gaps between domes | Implemented and checked | Source + targeted check + visible acceptance |
-| 42 The green spine: hills, grass, domes path, gym and pools — The gym, lap pool and community pool are there, and the dome doors look right | Implemented; playtest open | Source + targeted check + visible acceptance |
+| 42 The green spine: hills, grass, domes path, gym and pools — The gym, lap pool and community pool are there, and the dome doors look right | Implemented; feedback skipped | Source + targeted check + visible acceptance |
 | 43 Textures, details and building sites everywhere — No big blank or plain areas anywhere on the map | Implemented and checked | Source + targeted check + visible acceptance |
 | 43 Textures, details and building sites everywhere — Textures and props make it feel like a real place, still 60 fps on Medium | Moving routes meet the 60 FPS target at Medium/1080p | Unlocked Mac run on ed5ba1a below |
 | 44 Speed feel and fixes — Riding and sprinting feel fast, with no warpy smear | Implemented and checked | Source + targeted check + visible acceptance |
@@ -32,27 +32,27 @@ Completion requires code, automated checks, rendered evidence and the listed hum
 | 44A Rider falls and crash presentation (planned) — Direction and intensity reflect the captured impact, with readable camera framing | Implemented and checked | Source + targeted check + visible acceptance |
 | 44A Rider falls and crash presentation (planned) — A major crash shows the fall before the hospital; a minor fall returns control safely | Implemented and checked | Source + targeted check + visible acceptance |
 | 44A Rider falls and crash presentation (planned) — Secondary bounce contacts cannot repeat crash counts, cancellation or consequences | Implemented and checked | Source + targeted check + visible acceptance |
-| 44A Rider falls and crash presentation (planned) — Louis watches the reactions at normal speed and likes how they look and feel | Awaiting human / release | Source + targeted check + visible acceptance |
+| 44A Rider falls and crash presentation (planned) — Louis watches the reactions at normal speed and likes how they look and feel | Feedback skipped at user request | Source + targeted check + visible acceptance |
 | 44B Impact-based crash bills and insurance (planned) — Representative low/medium/high impacts produce distinct, explainable bills | Implemented and checked | Source + targeted check + visible acceptance |
 | 44B Impact-based crash bills and insurance (planned) — Head-on versus glancing and soft versus hard obstacle cases follow the intended severity order | Implemented and checked | Source + targeted check + visible acceptance |
 | 44B Impact-based crash bills and insurance (planned) — First-crash cover and insurance work, including different capped insured payments by severity | Implemented and checked | Source + targeted check + visible acceptance |
 | 44B Impact-based crash bills and insurance (planned) — One fall creates one bill, one crash count and at most one cancelled order | Implemented and checked | Source + targeted check + visible acceptance |
 | 44B Impact-based crash bills and insurance (planned) — Tests verify severity boundaries and billing; a playtest checks the costs feel proportionate | Implemented and checked | Source + targeted check + visible acceptance |
-| 45 Pedal Point Bikes (upgrades, cart and checkout, rocket booster) — The bike shop looks like the mockup, and you see your bike while you shop | Implemented; playtest open | Source + targeted check + visible acceptance |
+| 45 Pedal Point Bikes (upgrades, cart and checkout, rocket booster) — The bike shop looks like the mockup, and you see your bike while you shop | Implemented; feedback skipped | Source + targeted check + visible acceptance |
 | 45 Pedal Point Bikes (upgrades, cart and checkout, rocket booster) — Cart and checkout work, and every upgrade does what it says | Implemented and checked | Source + targeted check + visible acceptance |
 | 45 Pedal Point Bikes (upgrades, cart and checkout, rocket booster) — The rocket booster is crazy fast and only for late game | Implemented and checked | Source + targeted check + visible acceptance |
-| 46 Dune Drip clothes shop, then play-test the detail pass — Trying on clothes feels like a real game shop, and what you buy shows everywhere | Implemented; playtest open | Source + targeted check + visible acceptance |
-| 46 Dune Drip clothes shop, then play-test the detail pass — A careful ten-minute shift feels busy and pays for the first upgrade in about one shift | Implemented; playtest open | Source + targeted check + visible acceptance |
-| 46 Dune Drip clothes shop, then play-test the detail pass — Louis has played a full shift and is happy with it | Awaiting human / release | Source + targeted check + visible acceptance |
-| 47 Streaks, personal bests and PERFECT! — A streak makes you ride more carefully, and losing it stings a little | Implemented; playtest open | Source + targeted check + visible acceptance |
-| 47 Streaks, personal bests and PERFECT! — A perfect delivery and a new best feel good | Implemented; playtest open | Source + targeted check + visible acceptance |
+| 46 Dune Drip clothes shop, then play-test the detail pass — Trying on clothes feels like a real game shop, and what you buy shows everywhere | Implemented; feedback skipped | Source + targeted check + visible acceptance |
+| 46 Dune Drip clothes shop, then play-test the detail pass — A careful ten-minute shift feels busy and pays for the first upgrade in about one shift | Implemented; feedback skipped | Source + targeted check + visible acceptance |
+| 46 Dune Drip clothes shop, then play-test the detail pass — Louis has played a full shift and is happy with it | Feedback skipped at user request | Source + targeted check + visible acceptance |
+| 47 Streaks, personal bests and PERFECT! — A streak makes you ride more carefully, and losing it stings a little | Implemented; feedback skipped | Source + targeted check + visible acceptance |
+| 47 Streaks, personal bests and PERFECT! — A perfect delivery and a new best feel good | Implemented; feedback skipped | Source + targeted check + visible acceptance |
 | 48 Choosing orders — Choosing between two orders is a real decision | Implemented and checked | Source + targeted check + visible acceptance |
-| 48 Choosing orders — A high rating feels worth having | Implemented; playtest open | Source + targeted check + visible acceptance |
+| 48 Choosing orders — A high rating feels worth having | Implemented; feedback skipped | Source + targeted check + visible acceptance |
 | 49 Tomorrow's special — Shifts feel different from each other | Implemented and checked | Source + targeted check + visible acceptance |
-| 49 Tomorrow's special — Seeing tomorrow's special makes you want one more shift | Implemented; playtest open | Source + targeted check + visible acceptance |
+| 49 Tomorrow's special — Seeing tomorrow's special makes you want one more shift | Implemented; feedback skipped | Source + targeted check + visible acceptance |
 | 50 Collections, regulars and the profile page — You can see how much of Wahat Al Shams you've collected | Implemented and checked | Source + targeted check + visible acceptance |
 | 50 Collections, regulars and the profile page — The regulars feel like they know you | Implemented and checked | Source + targeted check + visible acceptance |
-| 51 Final play-test, then itch.io — A friend plays for 10 minutes and wants to keep going | Awaiting human / release | Source + targeted check + visible acceptance |
+| 51 Final play-test, then itch.io — A friend plays for 10 minutes and wants to keep going | Feedback skipped at user request | Source + targeted check + visible acceptance |
 | 51 Final play-test, then itch.io — It's on itch.io | On hold at the user's request | The separate MiddleLeap web deployment is live. See release notes below. |
 
 ## Cross-cutting invariants
@@ -137,10 +137,10 @@ The focus-guarded moving benchmark rejected both spine warmups after window focu
 
 ## Remaining acceptance
 
-- Louis can use Continue in the Mac review app for a ten-minute active shift. Record whether the shift feels busy enough and whether he would play another. Review the soft hit, glancing scrape and hard frontal fall at normal speed, including the transition to the clinic and whether the resulting bills feel proportionate. Compare the school against Louis's photos.
-- Give the friend the portable build to try from New Game. After ten minutes, record whether they want to keep playing and where they hesitated or stopped.
-- On a native Windows x64 machine, extract the portable ZIP, launch the executable, start a shift and verify movement and a pickup and delivery. The archive and executable structure have already been checked on Mac.
-- The user put itch.io on hold. The separate [MiddleLeap web deployment](https://fivestarshabibi.middleleap.com) serves v0.1.0 from main commit `85c116a6282d986b8b1916c88eab7cb8d050f7a4`. The [live manifest](https://fivestarshabibi.middleleap.com/version.json) and Cloudflare production deployment agree. The live game package matches the v0.1.0 release ZIP by SHA-256.
+- Compare the implemented school with Louis's reference photos when those specific photos are available. The PRD description is implemented.
+- Louis and friend feedback is skipped at the user's request.
+- Additional device assurance remains available through physical iPad and Windows gameplay. Sessions 35–51 explicitly require desktop exports, which passed. These physical playthroughs were added to the release checklist and are separate from feature implementation.
+- The user put itch.io on hold. The initial [MiddleLeap web deployment](https://fivestarshabibi.middleleap.com) served v0.1.0 from main commit `85c116a6282d986b8b1916c88eab7cb8d050f7a4`. The [live manifest](https://fivestarshabibi.middleleap.com/version.json) and Cloudflare production deployment agree. The live game package matches the v0.1.0 release ZIP by SHA-256.
 - In a fresh desktop browser context, the live build loaded from Play in browser, hired a test rider, entered Wahat, accepted the tutorial pizza order and responded to pedal input. After reload, Continue restored the same test rider in Wahat. The browser reported zero console errors. Scope was first-run gameplay and browser rider persistence. Full delivery, iPad touch, the friend playtest and the native desktop gates remain separate.
 - The v0.1.0 revision used a five-minute 8 AM–6 PM shift, a generic tip for minor crashes and fixed major-crash charges. The corrected ten-minute shift and impact-based crashes were verified on the local integration candidate below.
 - On 4 November, GitHub main and the [production manifest](https://fivestarshabibi.middleleap.com/version.json) both moved to `a2d0dd923a88073ddf22aaa575c323d286401373` (v0.1.1). The update addresses Safari and iPad controls. The clock and crash gameplay source at that public revision matches v0.1.0.
@@ -276,3 +276,9 @@ On 4 November, the user authorized publishing the latest tested candidate to the
 The public HTML, loader, game pack and audio worklets match the downloaded workflow artifact byte for byte. The compressed WebAssembly response also matches the artifact and decodes to the correct WebAssembly header. The deployed pack SHA-256 is `e6594e49a69aab7e1f7dd295da28860677505a323a77263dfff6d23bdbfe3dc2`. The production shell uses ordinary engine arguments and the main menu. Release records, workflow logs, downloaded artifact and asset comparison are under `/private/tmp/habibi-production.WCt7Ms`.
 
 A fresh Chrome context loaded the production site, hired a rider, used Start riding, accepted the tutorial order with E and pedalled using W. The phone switched to PICK UP and the pizza marker distance decreased from 33 m to 21 m, with a captured speed of 26 km/h. Reload and Continue restored the same isolated rider. Only that test save's tutorial completion flag was changed before the clock observation. The HUD advanced from 8:00 AM to 8:08 AM across a 10.03-second interval that included scene startup. This confirms clock advancement in the production build. The full normal-speed rate proof is recorded above. The final live run recorded zero browser errors. Screenshots and results are under `/private/tmp/habibi-live-corrected.7Q4xh2/final`.
+
+## Feedback scope update
+
+On 4 November, the user directed that feedback be skipped. The Louis and friend satisfaction gates and subjective feel reviews are waived. All planned gameplay features remain implemented and deployed. The Mac and Windows export requirements passed, the Mac moving performance target passed, and production browser loading, order acceptance, movement, clock advancement and reload were verified.
+
+Physical iPad and Windows playthroughs are additional assurance checks from the release checklist. Their absence does not represent an unimplemented feature. The explicit Session 41 school-photo resemblance criterion remains unverified. The school implements the PRD description. The referenced photos are outside the repository, and a targeted search of accessible connected files did not identify Louis's reference set. Itch.io remains on hold at the user's request.
