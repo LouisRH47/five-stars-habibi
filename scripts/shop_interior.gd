@@ -26,8 +26,14 @@ static func build(place: Dictionary) -> StaticBody3D:
 	# Session 57: in the Plaza's shop rows (a "row" in the data) the shop gets the same
 	# low glass front, logo sign band and awning as the restaurants (ShopFront).
 	var plaza_front: bool = GameConfig.PLAZA_LOOKS_PASS and place.has("row")
+	var shared := InteriorRoom.shared_sides(place, size) if GameConfig.INTERIOR_REVIEW_FIXES and plaza_front else []
 	for side in [-1, 1]:
-		_solid(room, Vector3(0.3, size.y, size.z), Vector3(side * half.x, half.y, 0), CREAM)
+		if float(side) in shared:
+			# Review fix: Pedal Point's left wall filled the same space as Bread & Zaatar's right
+			# wall next door; now it stops at the edge (inner face where it was).
+			_solid(room, Vector3(0.15, size.y, size.z), Vector3(side * (half.x - 0.075), half.y, 0), CREAM)
+		else:
+			_solid(room, Vector3(0.3, size.y, size.z), Vector3(side * half.x, half.y, 0), CREAM)
 		if plaza_front:
 			continue
 		var wide := half.x - 1.6

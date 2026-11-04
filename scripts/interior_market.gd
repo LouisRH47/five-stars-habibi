@@ -47,7 +47,10 @@ static func build(p: InteriorParts) -> void:
 				p.box(Vector3(0.02, 0.05, UNIT_TO - UNIT_FROM), YELLOW, Vector3(x + side * 0.51, y, (UNIT_FROM + UNIT_TO) * 0.5))
 		var aisle_x := x + 1.6
 		for dx in [-0.6, 0.6]:
-			p.box(Vector3(0.015, 0.9, 0.015), Color(0.3, 0.3, 0.3), Vector3(aisle_x + dx, 4.05, -1.0))
+			if GameConfig.INTERIOR_REVIEW_FIXES:
+				p.cord(Vector3(aisle_x + dx, InteriorParts.sign_top(3.35, 26), -1.025))   # down to the sign's top (there was a 5 cm gap)
+			else:
+				p.box(Vector3(0.015, 0.9, 0.015), Color(0.3, 0.3, 0.3), Vector3(aisle_x + dx, 4.05, -1.0))
 		p.sign(AISLES[i][0], AISLES[i][1], Vector3(aisle_x, 3.35, -1.0), 0.0, WHITE, GREEN, 26)
 	# Fruit and veg straight inside the entrance (with room to walk in between).
 	for x in [-2.6, 2.0]:
@@ -56,6 +59,10 @@ static func build(p: InteriorParts) -> void:
 	for k in 3:
 		p.prop(["kaykit_restaurant/crate_tomatoes", "kaykit_restaurant/crate_carrots", "kaykit_restaurant/crate_tomatoes"][k], Vector3(-4.4 + k * 0.55, 0, 2.9), 0.0, "floor")
 	p.sign("فواكه وخضار", "Fruit and veg", Vector3(-0.3, 2.6, 2.6), 0.0, WHITE, GREEN, 26)
+	if GameConfig.INTERIOR_REVIEW_FIXES:
+		# Review fix: the sign floated in the air; now it hangs from the ceiling on two cords.
+		for dx in [-0.9, 0.9]:
+			p.cord(Vector3(-0.3 + dx, InteriorParts.sign_top(2.6, 26), 2.575))
 	p.box(Vector3(0.5, 0.05, 0.4), Color(0.6, 0.62, 0.64), Vector3(-1.75, 0.025, 4.3))   # a stack of baskets
 	for k in 6:
 		p.box(Vector3(0.46, 0.09, 0.36), GREEN, Vector3(-1.75, 0.1 + k * 0.1, 4.3))
@@ -72,7 +79,9 @@ static func build(p: InteriorParts) -> void:
 			p.glow(Vector3(1.2, 0.03, 0.6), Color(1, 1, 1), Vector3(x, p.size.y - 0.02, z), 1.0)
 	for i in 4:
 		p.lamp(Vector3([-8.0, -2.7, 2.6, 8.0][i], 0, 0.0), WHITE, i == 1, true)
-	p.worker("Stacker", Vector3(-7.4, 0, -1.2), -90.0, 4)
+	# Review fix: the stacker stood in the middle of aisle 1, where a shopper pushes a trolley
+	# right through him; now he stands at the shelf he's filling.
+	p.worker("Stacker", Vector3(-8.1, 0, -1.2) if GameConfig.INTERIOR_REVIEW_FIXES else Vector3(-7.4, 0, -1.2), -90.0, 4)
 	_shoppers(p)
 
 

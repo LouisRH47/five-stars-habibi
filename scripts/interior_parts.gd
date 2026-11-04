@@ -179,29 +179,70 @@ func menu_board(centre: Vector3, width: float, items: Array, height := 1.2, boar
 	holder.position = centre + Vector3(0, 0, 0.03)
 	holder.add_to_group("menu_board")
 	holder.set_meta("items", items)
+	holder.set_meta("width", width)
 	body.add_child(holder)
 	var badge := _logo(holder, minf(height - 0.2, 0.9))
 	badge.position = Vector3(-width * 0.5 + 0.12 + (height - 0.2) * 0.5, 0, 0)
 	var columns := 2 if items.size() > 3 else 1
 	var rows := ceili(items.size() / float(columns))
 	var left := -width * 0.5 + height + 0.05
-	var column_w := (width * 0.5 - left) * 2.0 / columns if columns > 1 else width * 0.5 - left
-	column_w = (width * 0.5 - 0.1 - left) / columns
+	var column_w := (width * 0.5 - 0.1 - left) / columns
+	var spacing := 0.3
+	var font_size := 19
+	if GameConfig.MENU_TEXT_FIT:
+		# Review fix: pick 2 columns or 1, whichever gives the bigger text that fits (on
+		# narrow boards long names ran into their prices: "Zaatar manakish8 Dh").
+		var best := -1
+		for cols: int in ([2, 1] if items.size() > 3 else [1]):
+			var r := ceili(items.size() / float(cols))
+			var gap := minf(0.3, (height - 0.15) / r)
+			var w := (width * 0.5 - 0.1 - left) / cols
+			var size := menu_font_size(items, w, gap)
+			if size > best:
+				best = size
+				columns = cols
+				rows = r
+				spacing = gap
+				column_w = w
+		font_size = best
+	holder.set_meta("font_size", font_size)
+	holder.set_meta("columns", columns)
 	for i in items.size():
 		var item: Array = items[i]
 		var col := i / rows
 		var row := i % rows
-		var y := (rows - 1) * 0.5 * 0.3 - row * 0.3
-		var name_label := SignText.make_label(str(item[0]), 19, ink, Color(0, 0, 0, 0), 0)
+		var y := (rows - 1) * 0.5 * spacing - row * spacing
+		var name_label := SignText.make_label(str(item[0]), font_size, ink, Color(0, 0, 0, 0), 0)
 		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		name_label.position = Vector3(left + col * column_w, y, 0)
 		holder.add_child(name_label)
-		var price_text := str(item[1]) if item[1] is String else "%s Dh" % str(item[1])
-		var price := SignText.make_label(price_text, 19, Color(1.0, 0.82, 0.35) if board.v < 0.5 else ink.lerp(Color(0.8, 0.1, 0.1), 0.6), Color(0, 0, 0, 0), 0)
+		var price_text := _price_text(item[1])
+		var price := SignText.make_label(price_text, font_size, Color(1.0, 0.82, 0.35) if board.v < 0.5 else ink.lerp(Color(0.8, 0.1, 0.1), 0.6), Color(0, 0, 0, 0), 0)
 		price.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		price.position = Vector3(left + (col + 1) * column_w - 0.15, y, 0)
 		holder.add_child(price)
 	return holder
+
+
+static func _price_text(price) -> String:
+	return str(price) if price is String else "%s Dh" % str(price)
+
+
+## Review fix: the biggest font (up to MENU_TEXT_MAX) at which every line's name and price
+## fit side by side in one column (with a gap) and the rows (row_gap apart) don't touch. Before, every board used 19,
+## which you couldn't read from the door (letters about 6 cm tall on a 4 m board).
+static func menu_font_size(items: Array, column_w: float, row_gap := 0.3) -> int:
+	var size := GameConfig.MENU_TEXT_MAX
+	while size > 19:
+		var fits := size * SignText.PIXEL_SIZE * 1.25 <= row_gap   # one line's height fits its row
+		for item: Array in items:
+			var wide := SignText.text_width(str(item[0]), size) + SignText.text_width(_price_text(item[1]), size) + 0.15
+			if wide > column_w - 0.15:
+				fits = false
+		if fits:
+			return size
+		size -= 1
+	return 19
 
 
 ## The shop's round logo (assets/logos/<id>_badge.svg) on a little square, or nothing.
@@ -223,6 +264,17 @@ func _logo(parent: Node3D, across: float) -> Node3D:
 	badge.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	parent.add_child(badge)
 	return badge
+
+
+## Review fix: a thin cord from `bottom` straight up to the ceiling (for hanging signs).
+func cord(bottom: Vector3, colour := Color(0.3, 0.3, 0.3)) -> void:
+	var length := size.y - bottom.y + 0.01
+	box(Vector3(0.015, length, 0.015), colour, Vector3(bottom.x, bottom.y + length * 0.5 - 0.01, bottom.z))
+
+
+## Where the top of a sign's backing board is, for a sign made by sign() at height y.
+static func sign_top(y: float, font_size: int) -> float:
+	return y + (font_size * 0.012 + 0.08) * 0.5
 
 
 ## A small bilingual sign (pickup, till, aisle signs). It reads from +z unless turned.

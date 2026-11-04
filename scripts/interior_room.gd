@@ -71,11 +71,39 @@ static func _shell(p: InteriorParts, style: Dictionary) -> void:
 	p.box(Vector3(p.size.x, 0.01, p.size.z), b.darkened(0.4), Vector3(0, FLOOR_TOP - 0.01, 0))
 	var wall: Color = style["wall"]
 	var band: Color = style.get("band", wall.darkened(0.15))
+	var shared := shared_sides(p.place, p.size) if GameConfig.INTERIOR_REVIEW_FIXES else []
 	for side in [-1.0, 1.0]:
+		if side in shared:
+			# Review fix: two shops in a pair are 12 m apart, so their 0.25 m side walls (centred
+			# on the room's edge) filled exactly the same space and flickered into each other
+			# (pale stripes on the wall). A shared wall is now only the inner half, up to the edge.
+			p.solid(Vector3(0.125, p.size.y, p.size.z), wall, Vector3(side * (half.x - 0.0625), half.y, 0))
+			continue
 		p.solid(Vector3(0.25, p.size.y, p.size.z), wall, Vector3(side * half.x, half.y, 0))
 		p.box(Vector3(0.02, 1.1, p.size.z - 0.3), band, Vector3(side * (half.x - 0.135), 0.55, 0))
 	p.solid(Vector3(p.size.x, p.size.y, 0.25), style.get("back", wall), Vector3(0, half.y, -half.z))
 	p.solid(Vector3(p.size.x + 0.2, 0.25, p.size.z + 0.2), style.get("ceiling", Color(0.93, 0.92, 0.9)), Vector3(0, p.size.y + 0.12, 0))
+
+
+## Review fix: the sides (-1 left, +1 right, in room directions) where the next shop in the
+## row (a restaurant or one of the two shops) is built right against this one, sharing the wall.
+static func shared_sides(place: Dictionary, size: Vector3) -> Array:
+	var out: Array = []
+	if not place.has("row"):
+		return out
+	var me: Vector3 = place.get("position", Vector3.ZERO)
+	var turn := deg_to_rad(float(place.get("facing", 0.0)))
+	for side in [-1.0, 1.0]:
+		var edge := me + Vector3(side * size.x * 0.5, 0, 0).rotated(Vector3.UP, turn)
+		for other: Dictionary in WahatAlShams.RESTAURANTS + WahatAlShams.SHOPS:
+			if other.get("id", "") == place.get("id", "") or not other.has("row"):
+				continue
+			var there: Vector3 = other["position"]
+			var width: float = (other.get("size", WahatAlShams.RESTAURANT_SIZE) as Vector3).x
+			if absf(there.z - me.z) < 0.1 and absf(absf(there.x - edge.x) - width * 0.5) < 0.05 \
+					and signf(there.x - edge.x) == signf(edge.x - me.x):
+				out.append(side)
+	return out
 
 
 ## A soft light over the whole room, always on (the lamps add warm pools near you).

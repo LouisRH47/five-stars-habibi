@@ -665,3 +665,8 @@ const SUSHI_BELT_SPEED := 0.3        # Session 59: the sushi plates go round at 
 # --- Session 64 fix: buggies meeting in a dead-end lane ---
 const BUGGY_DEAD_END_GIVE_WAY := true # false: a buggy coming out of a dead end turns round too (and drives back in)
 const BUGGY_DEAD_END_WAIT := 15.0     # most seconds a buggy coming out of a dead end waits for one coming in to turn round
+
+# --- Review: interiors (overnight check of Sessions 58-61) ---
+const MENU_TEXT_FIT := true           # menu boards use the biggest text that fits (false: the old small 19)
+const MENU_TEXT_MAX := 34             # the biggest menu text size
+const INTERIOR_REVIEW_FIXES := true   # the small fixes from the overnight check (things inside each other, hidden tags...); false: as Sessions 58-61 built them

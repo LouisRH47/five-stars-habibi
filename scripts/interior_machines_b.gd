@@ -102,7 +102,9 @@ static func tuk_tuk(p: InteriorParts, origin: Vector3, facing: float) -> Vector3
 	var across := absf(sin(deg_to_rad(facing))) > 0.7   # turned side-on: its length runs along x
 	LowPoly.solid_box(p.body, Vector3(2.6, 1.9, 1.3) if across else Vector3(1.3, 1.9, 2.6), origin + Vector3(0, 0.95, 0))
 	# The sign on the roof reads from the door (+z), whichever way the tuk-tuk points.
-	p.sign("التقط صورة", "Photo spot!", origin + Vector3(0, 2.15, 0), 0.0, Color.WHITE, Color(0.85, 0.15, 0.2), 22)
+	# Review fix: the sign hovered 6 cm over the roof; now its board stands on the roof.
+	var sign_y := InteriorParts.sign_top(1.92, 22) - 0.008 if GameConfig.INTERIOR_REVIEW_FIXES else 2.15
+	p.sign("التقط صورة", "Photo spot!", origin + Vector3(0, sign_y, 0), 0.0, Color.WHITE, Color(0.85, 0.15, 0.2), 22)
 	return f.call(Vector3(0, 0, -0.65))
 
 
@@ -124,6 +126,12 @@ static func sushi_bar(p: InteriorParts, centre: Vector3, size_xz: Vector2, plate
 		var rect: Rect2 = sides[k]
 		if k == 3:
 			rect = Rect2(rect.position.x, rect.position.y + 0.5, rect.size.x, rect.size.y - 0.5)   # a gap for the chefs
+			if GameConfig.INTERIOR_REVIEW_FIXES:
+				# Review fix: the belt ran over the gap with nothing under it. Real conveyor
+				# bars have a lift-up flap there: the top carries on, open underneath.
+				var flap := Rect2(rect.position.x, rect.position.y - 0.5, rect.size.x, 0.5)
+				p.box(Vector3(flap.size.x + 0.04, 0.05, flap.size.y), wood, Vector3(flap.get_center().x, height - 0.025, flap.get_center().y))
+				p.counter_tops.append([flap, height])
 		p.counter(rect, wood.darkened(0.25), wood, height)
 	# The belt: a dark band round the top, with a steel edge.
 	var inset := 0.32

@@ -94,6 +94,11 @@ static func counter_line(p: InteriorParts, x0: float, x1: float, front: Color, t
 ## A small sign hanging from the ceiling over the pickup spot.
 static func pickup_sign(p: InteriorParts, at: Vector3, facing := 0.0) -> void:
 	for dx in [-0.35, 0.35]:
+		if GameConfig.INTERIOR_REVIEW_FIXES:
+			# Review fix: the cords stopped 6 cm above the sign; now they reach its top.
+			var spot := at + Vector3(dx, 0, -0.025).rotated(Vector3.UP, deg_to_rad(facing))
+			p.cord(Vector3(spot.x, InteriorParts.sign_top(at.y, 24), spot.z), Color(0.1, 0.1, 0.1))
+			continue
 		p.box(Vector3(0.015, p.size.y - at.y - 0.25, 0.015), Color(0.1, 0.1, 0.1),
 				at + Vector3(dx, (p.size.y - at.y) * 0.5 + 0.12, 0).rotated(Vector3.UP, deg_to_rad(facing)))
 	p.sign("استلام الطلبات", "Pick up", at, facing, Color.WHITE, p.brand.darkened(0.25), 24)
@@ -235,7 +240,8 @@ static func _gelato(p: InteriorParts) -> void:
 	p.drinks_fridge(Vector3(5.4, 0, -4.3), 0.0)
 	p.bin(Vector3(1.75, 0, 4.35))
 	p.plant(Vector3(-5.45, 0, -4.3))
-	p.plant(Vector3(-2.9, 0, 3.6))
+	# Review fix: at x -2.9 the plant stood in the last window stool and its diner.
+	p.plant(Vector3(-2.3, 0, 3.75) if GameConfig.INTERIOR_REVIEW_FIXES else Vector3(-2.9, 0, 3.6))
 	for i in 4:
 		p.lamp([Vector3(-4.3, 0, 1.4), Vector3(4.3, 0, 1.4), Vector3(-2.9, 0, -1.8), Vector3(2.9, 0, -1.8)][i], pink, i == 0)
 
@@ -369,16 +375,26 @@ static func picture_menu(p: InteriorParts, items: Array, food_colours: Array) ->
 	holder.set_meta("items", items)
 	p.body.add_child(holder)
 	var each := width / items.size()
+	# Review fix: bigger names and prices (they were 30 and 34, hard to read from the door),
+	# as big as the longest name allows in its picture's width.
+	var name_size := 30
+	var price_size := 34
+	if GameConfig.MENU_TEXT_FIT:
+		name_size = 38
+		while name_size > 30 and items.any(func(item): return SignText.text_width(str(item[0]), name_size) > each - 0.3):
+			name_size -= 1
+		price_size = name_size + 4
+	holder.set_meta("font_size", name_size)
 	for i in items.size():
 		var x := -width * 0.5 + (i + 0.5) * each
 		p.box(Vector3(each - 0.25, 0.75, 0.02), p.brand.lightened(0.2), Vector3(x, 3.3, back + 0.06))
 		p.cyl(0.26, 0.26, 0.02, WHITE, Vector3(x, 3.3, back + 0.08), Basis(Vector3.RIGHT, PI * 0.5), 14)
 		p.kit.ball(0.17, food_colours[i], Vector3(x, 3.3, back + 0.1), 0.5)
-		var name_label := SignText.make_label(str(items[i][0]), 30, Color(0.15, 0.1, 0.05), Color(0, 0, 0, 0), 0)
-		name_label.position = Vector3(x, -0.33, 0)
+		var name_label := SignText.make_label(str(items[i][0]), name_size, Color(0.15, 0.1, 0.05), Color(0, 0, 0, 0), 0)
+		name_label.position = Vector3(x, -0.29 if GameConfig.MENU_TEXT_FIT else -0.33, 0)
 		holder.add_child(name_label)
-		var price := SignText.make_label("%s Dh" % str(items[i][1]), 34, Color(0.8, 0.2, 0.1), Color(0, 0, 0, 0), 0)
-		price.position = Vector3(x, -0.52, 0)
+		var price := SignText.make_label("%s Dh" % str(items[i][1]), price_size, Color(0.8, 0.2, 0.1), Color(0, 0, 0, 0), 0)
+		price.position = Vector3(x, -0.49 if GameConfig.MENU_TEXT_FIT else -0.52, 0)
 		holder.add_child(price)
 
 
@@ -399,7 +415,13 @@ static func _bakery(p: InteriorParts) -> void:
 	p.solid(Vector3(2.3, 0.35, 1.05), Color(0.55, 0.5, 0.44), Vector3(0, 0.175, -4.35))
 	p.counter_tops.append([Rect2(-1.15, -4.875, 2.3, 1.05), 0.35])
 	InteriorMachines.manakish_oven(p, Vector3(0, 0.35, -4.375), 0.0)
-	InteriorMachines.peel(p, Vector3(-0.2, 1.35, -3.1), Vector3(0.0, 1.2, -3.95), 180.0, Color(0.85, 0.7, 0.4), false)
+	if GameConfig.INTERIOR_REVIEW_FIXES:
+		# Review fix: the peel was turned round: its handle went through the baker into the
+		# oven and the bread end hung in the air behind him. Now the bread end goes in the
+		# oven's mouth and the (shorter) handle runs back past his side, clear of the counter.
+		InteriorMachines.peel(p, Vector3(0.05, 1.15, -3.85), Vector3(0.05, 1.15, -4.15), 0.0, Color(0.85, 0.7, 0.4), false, 0.9)
+	else:
+		InteriorMachines.peel(p, Vector3(-0.2, 1.35, -3.1), Vector3(0.0, 1.2, -3.95), 180.0, Color(0.85, 0.7, 0.4), false)
 	# The dough table with rolled-out rounds and bowls of zaatar and cheese.
 	back_counters(p, -5.0, -1.4)
 	for k in 4:

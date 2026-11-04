@@ -136,6 +136,11 @@ static func gelato_case(p: InteriorParts, origin: Vector3, facing: float, flavou
 		tag.name = "FlavourTag"
 		tag.add_to_group("flavour_tag")
 		var card := Vector3(0, 0.98, 0.37) if row == 0 else Vector3(0, 0.98, -0.03)
+		if row == 1 and GameConfig.INTERIOR_REVIEW_FIXES:
+			# Review fix: the back row's tags were hidden behind the front row's gelato. Now
+			# they stand on little picks in the back tubs, above the front row (under the glass top).
+			card = Vector3(0, 1.13, -0.07)
+			p.box(Vector3(0.012, 0.1, 0.012), Color(0.85, 0.85, 0.85), _at(origin, facing, Vector3(spot.x, 1.06, -0.09)), t)
 		tag.position = _at(origin, facing, Vector3(spot.x, card.y + 0.02, card.z + 0.012))
 		p.box(Vector3(0.36, 0.08, 0.01), Color.WHITE, _at(origin, facing, Vector3(spot.x, card.y, card.z)), t * Basis(Vector3.RIGHT, -0.5))
 		p.body.add_child(tag)
@@ -295,7 +300,7 @@ static func manakish_oven(p: InteriorParts, origin: Vector3, facing: float, dept
 
 ## A long peel (pizza or bread) that the cook slides into the oven now and then.
 ## rest: where it lies on the prep side; reach: where it goes in the oven.
-static func peel(p: InteriorParts, rest: Vector3, reach: Vector3, facing: float, food_colour: Color, round := true) -> void:
+static func peel(p: InteriorParts, rest: Vector3, reach: Vector3, facing: float, food_colour: Color, round := true, handle_length := 1.4) -> void:
 	var holder := Node3D.new()
 	holder.name = "Peel"
 	holder.position = rest
@@ -303,7 +308,7 @@ static func peel(p: InteriorParts, rest: Vector3, reach: Vector3, facing: float,
 	var t := _turn(facing)
 	var head := LowPoly.box(holder, Vector3(0.36, 0.015, 0.36), Color(0.75, 0.6, 0.4), Vector3.ZERO)
 	head.basis = t
-	var handle := LowPoly.cylinder(holder, 0.015, 0.015, 1.4, Color(0.6, 0.45, 0.3), t * Vector3(0, 0, 0.85))
+	var handle := LowPoly.cylinder(holder, 0.015, 0.015, handle_length, Color(0.6, 0.45, 0.3), t * Vector3(0, 0, 0.15 + handle_length * 0.5))
 	handle.basis = t * Basis(Vector3.RIGHT, PI * 0.5)
 	var food := LowPoly.cylinder(holder, 0.15, 0.15, 0.02, food_colour, Vector3(0, 0.018, 0))
 	if not round:
