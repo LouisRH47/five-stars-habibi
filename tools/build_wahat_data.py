@@ -37,14 +37,17 @@ put('SPINE',rect(-145,-35,560,70)); put('STREAM',{'z':25.0,'from_x':-135.0,'to_x
 clusters=[(1,48,-126),(2,203,-126),(3,358,-126),(4,73,126),(5,303,126)]
 put('CLUSTERS',[{'id':f'C{n}','area':rect(cx-65,cz-75,130,150),'centre':v2(cx,cz)} for n,cx,cz in clusters])
 roads=[]
-def road(name,a,b,width=6.0): roads.append({'name':name,'from':v2(*a),'to':v2(*b),'width':width})
+def road(name,a,b,width=6.0,**extra): roads.append({'name':name,'from':v2(*a),'to':v2(*b),'width':width,**extra})
 for a,b in [((-425,-205),(425,-205)),((425,-205),(425,205)),((425,205),(-425,205)),((-425,205),(-425,-205))]: road('Ring Road',a,b,10.)
 for z in [-190,190]: road('Gate Road',(-490,z),(-425,z),10.)
 road('Highway',(-482,-245),(-482,245),10.)
 road('Bus Access',(-420,-170),(-310,-170),8.)
 road('Plaza Link',(-310,-170),(-280,-145),8.)
-road('Spine Path',(-350,0),(420,0),6.)
-road('Domes Path',(-118,-11),(348,-11),3.)
+# Session 63 (Appendix D): the spine's two paths, north to south: the domes, the red walking
+# track (was "Domes Path", 3 m at z -11), a kerb, a raised planted strip, a kerb, then the
+# two-way buggy road (was "Spine Path"). 'kind' tells builders and buggies which is which.
+road('Spine Buggy Road',(-350,0),(420,0),6.,kind='buggy_road')
+road('Spine Walking Track',(-186,-6.75),(358,-6.75),3.5,kind='walk_track')
 road('Western Link',(-290,-200),(-290,0),6.)
 road('Plaza to C1',(-290,-40),(420,-40),6.)
 road('South Spine Link',(-160,35),(420,35),6.)
@@ -103,7 +106,7 @@ import sys; sys.path.insert(0,str(Path(__file__).resolve().parent))
 import carpark_layout as cp
 put('PARKING_AREAS_OLD',[rect(*r) for r in parking])   # before Session 62, kept for reference
 parks,carpark_kerbs,carpark_gardens,carpark_palms,c45_site=cp.build_all(clusters,road)
-put('PARKING_AREAS',[rect(*p['area']) for p in parks])
+put('PARKING_AREAS',[rect(*cp.area_of(p)) for p in parks])   # (the 8th, Cluster 3 East, is planned sideways)
 put('CAR_PARKS',[cp.to_data(p,rect,v3) for p in parks])
 put('CARPARK_KERBS',[rect(*k) for k in carpark_kerbs])
 put('CARPARK_GARDENS',[rect(*g) for g in carpark_gardens])
@@ -116,8 +119,18 @@ put('PLOTS',[{'name':'Fair Grade International School','area':rect(-425,35,120,1
 put('WELCOME_SIGN',{'name':'Welcome to Wahat Al Shams','arabic':'أهلاً بكم في واحة الشمس','position':v3(-421,0,-180),'facing':-90.0})
 put('SPINE_DOMES',[v3(x,0,-20) for x in [-110,-20,70,160,250,340]])
 # Session 53: hills are at most 0.5 m and keep 4 m clear of pools, beds, the gym, the farm stall and paths.
-# Session 60: two more gentle hills where the old gym and lap pool were (south of the spine path).
-put('HILLS',[{'position':v3(x,0,13),'height':h} for x,h in [(-130,.4),(-60,.5),(32,.35),(55,.5),(330,.45),(392,.5),(112,.4),(160,.35)]])
+put('HILLS_OLD',[{'position':v3(x,0,13),'height':h} for x,h in [(-130,.4),(-60,.5),(32,.35),(55,.5),(330,.45),(392,.5)]])
+# Session 63: 12 gentle hills, 0.25 to 0.5 m high, 10 to 18 m across ('radius' is half that),
+# at least 4 m from every path, pool, bed, building, court and the stream. Session 60's two hills where the old gym
+# and lap pool were (x 112 and 160) are kept, made smaller so they stay 4 m from the buggy road.
+put('HILLS',[{'position':v3(x,0,z),'height':h,'radius':r} for x,z,h,r in [
+    (-133,13.5,.35,6),(-60,14,.5,7),(25,15,.45,8),(52,14,.3,6),(315,13,.25,5),(334,14,.5,7),(398,13,.4,6),
+    (112,13.5,.4,6),(160,14,.35,7),(-86,-23,.4,7),(17,-23,.5,9),(90,-23,.3,5)]])
+# The north-east corner of the spine lawn (x 376-415, z -37 to -3) is kept free for a future car park (lead, Session 62).
+# Session 63: how the spine's paths are laid out (Appendix D). The builders read the track and the
+# buggy road from ROADS by these names; kerbs 0.3 m wide and 0.12 m high, the strip 1.4 m wide.
+put('SPINE_PATHS',{'track':'Spine Walking Track','road':'Spine Buggy Road','kerb_width':0.3,'kerb_height':0.12,
+    'strip_width':1.4,'walk_every':40.0,'dash':1.5,'gap':1.5})
 # Session 60: the gym and its lap pool moved to the north side of the spine, between the domes
 # at x 70 and 160: the gym's back (rounded, with the door) faces the Plaza to C1 road, its glass
 # wall faces the lap pool, and the pool's gate faces the domes path. LAP_POOL is the whole fenced
@@ -317,7 +330,8 @@ homes += [
 ]
 put('VILLAS',homes)
 put('REGULARS',[{'id':'mariam','name':'Auntie Mariam','villa':207,'shop':'boba','food':'bubble tea','who':'resident','look':1},{'id':'rashid','name':'Mr Rashid','villa':503,'shop':'shawarma','food':'shawarma','who':'resident','look':0},{'id':'dana','name':'Ms Dana','villa':901,'shop':'bakery','food':'cake','who':'teacher','look':-1},{'id':'hamdan','name':'Hamdan','villa':902,'shop':'farm','food':'farm juice','who':'groom','look':-1}])
-palms=[v3(x,0,z) for z in [-7,7] for x in range(-130,411,45)] +[v3(-210,-.45,-155),v3(-190,-.45,-155),v3(-210,-.45,-135),v3(-190,-.45,-135)]
+# Session 63: the spine's north palm row moved off the red track (was z -7).
+palms=[v3(x,0,z) for z in [-10.5,7] for x in range(-130,411,45) if not (z<0 and (x==230 or x>=376))] +[v3(-210,-.45,-155),v3(-190,-.45,-155),v3(-210,-.45,-135),v3(-190,-.45,-135)]
 palms+=plaza_palms  # Session 57: date palms in the Plaza's grass beds
 palms+=[v3(x,0,z) for x,z in carpark_palms]   # Session 62: palms in the car parks' grass beds
 put('PALM_TREES',palms);put('PARKED_CAR_SIZE',v3(1.9,1.5,4.3))
@@ -337,8 +351,8 @@ buggy_colours=[colour(.96,.96,.94),colour(.9,.85,.7),colour(.45,.55,.38),colour(
 buggy_starts=[(cx-30,cz,0) for n,cx,cz in clusters]+[(cx+30,cz+(40 if cz<0 else -40),1) for n,cx,cz in clusters]+[(-100,0,2),(150,0,2),(250,35,2),(0,-40,2)]
 riders=['resident','pair','gardener']
 put('BUGGIES',[{'start':v3(x,0,z),'points':[v3(x,0,z)],'colour':buggy_colours[i%len(buggy_colours)],'level':level,'rider':riders[i%3]} for i,(x,z,level) in enumerate(buggy_starts)])
-put('HORSE_RIDERS',[{'points':[v3(-450,0,-230),v3(450,0,-230),v3(450,0,230),v3(-450,0,230)],'loop':True,'colour':colour(.45,.28,.15),'level':0,'collection_id':'horse_sultan','collection_name':'Sultan'},{'points':[v3(450,0,230),v3(-450,0,230),v3(-450,0,-230),v3(450,0,-230)],'loop':True,'colour':colour(.85,.82,.78),'level':1,'collection_id':'horse_noor','collection_name':'Noor'}])
-put('PEOPLE_ROUTES',[{'points':[v3(-438,0,-218),v3(438,0,-218),v3(438,0,218),v3(-438,0,218)],'loop':True,'jog':True,'look':2,'level':0}]+[{'points':[v3(-115,0,z),v3(345,0,z)],'jog':False,'look':i,'level':i%3} for i,z in enumerate([-11.7,-10.3,-11.0])])  # Session 64: walkers keep to the walking path (Domes Path, z -11), not the buggies' Spine Path (they walked x -130 to 405 at z -1.5, 1.5, -2.5)
+put('HORSE_RIDERS',[{'points':[v3(-450,0,-230),v3(450,0,-230),v3(450,0,230),v3(-450,0,230)],'loop':True,'colour':colour(.45,.28,.15),'coat':'brown','level':0,'collection_id':'horse_sultan','collection_name':'Sultan'},{'points':[v3(450,0,230),v3(-450,0,230),v3(-450,0,-230),v3(450,0,-230)],'loop':True,'colour':colour(.62,.61,.6),'coat':'grey','level':1,'collection_id':'horse_noor','collection_name':'Noor'}])
+put('PEOPLE_ROUTES',[{'points':[v3(-438,0,-218),v3(438,0,-218),v3(438,0,218),v3(-438,0,218)],'loop':True,'jog':True,'look':2,'level':0}]+[{'points':[v3(-180,0,z),v3(352,0,z)],'jog':False,'look':i,'level':i%3} for i,z in enumerate([-6.0,-7.6,-6.9])])  # Session 63: walkers on the red walking track
 put('GARDENERS',gardeners);put('PLAY_KIDS',plays)
 put('DUCKS',[{'from_x':x,'to_x':x+65,'side':.4 if i%2 else -.4,'level':i%3} for i,x in enumerate([-100,0,160,310])])  # Session 53: clear of the stream bridges at x 73 and 303
 put('BIRD_FLOCKS',[{'centre':v3(x,30,z),'radius':r,'birds':4,'level':i} for i,(x,z,r) in enumerate([(-180,-100,70),(180,80,90),(0,0,160)])])

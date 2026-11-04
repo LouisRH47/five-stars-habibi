@@ -125,7 +125,7 @@ func ground_height(x: float, z: float) -> float:
 		return NAN
 	for hill: Dictionary in hills:
 		var spot: Vector3 = hill["position"]
-		var r := Vector2(x - spot.x, z - spot.z).length() / 10.0
+		var r := Vector2(x - spot.x, z - spot.z).length() / float(hill.get("radius", 10.0))  # Session 63: own size
 		if r < 1.0:
 			top += hill["height"] * pow(1.0 - r * r, 2) * smoothstep(3.0, 6.0, absf(z))
 	return top

@@ -201,7 +201,8 @@ static func _exercise_bike(body: StaticBody3D, front: Vector3, used: bool) -> Pe
 	var frame := front + Vector3(0, 0, 0.6)
 	var bike_base := _wall(body, Vector3(0.5, 0.1, 1.1), frame + Vector3(0, 0.05, 0), 0.0, DARK)
 	bike_base.name = "ExerciseBike"
-	var wheel := LowPoly.cylinder(body, 0.25, 0.25, 0.08, STEEL, front + Vector3(0, 0.35, 0.25))
+	# The flywheel is a bit thicker (0.1) than the post (0.08) through it, so their sides don't flicker.
+	var wheel := LowPoly.cylinder(body, 0.25, 0.25, 0.1, STEEL, front + Vector3(0, 0.35, 0.25))
 	wheel.rotation.z = PI * 0.5
 	var post := LowPoly.box(body, Vector3(0.08, 0.9, 0.08), DARK, front + Vector3(0, 0.6, 0.25))
 	post.rotation.x = deg_to_rad(-15.0)

@@ -66,6 +66,8 @@ func _planting() -> void:
 		var spot := Vector3(rng.randf_range(-140, 410), 0.2, rng.randf_range(-34, 34))
 		if absf(spot.z) < 6 or absf(spot.z + 11) < 2 or spot.z > 22:
 			continue
+		if GameConfig.SPINE_LOOKS_V2 and spot.z > -9.5 and spot.z < 6:
+			continue   # Session 63: the red track, the kerb strip and the buggy road
 		var clear := true
 		for dome: Vector3 in _map["SPINE_DOMES"]:
 			if Vector2(spot.x - dome.x, spot.z - dome.z).length() < _map["DOME_RADIUS"] + 1:
@@ -78,8 +80,7 @@ func _planting() -> void:
 		if not clear:
 			continue
 		for hill: Dictionary in _map["HILLS"]:
-			var r := Vector2(spot.x - hill["position"].x, spot.z - hill["position"].z).length() / 10
-			spot.y += hill["height"] * pow(maxf(0, 1-r*r), 2) * smoothstep(3, 6, absf(spot.z))
+			spot.y += hill_height(hill, spot.x, spot.z)
 		spots.append(spot)
 	var many := MultiMesh.new()
 	many.transform_format = MultiMesh.TRANSFORM_3D
@@ -129,6 +130,11 @@ func _grass_blades() -> void:
 	add_child(field)
 	var keep_clear: Array = _map["FARM_BEDS"] + [_map["COMMUNITY_POOL"], _map["LAP_POOL"],
 			_map["BASKETBALL_COURT"], _map["PLAYGROUND"], _map["BEEHIVES"], _map["DONKEY_PEN"]["area"]]
+	if GameConfig.SPINE_LOOKS_V2:
+		# Session 63: the farms (with their props at the ends) and the bee yard's flower beds.
+		for bed: Rect2 in _map["FARM_BEDS"]:
+			keep_clear.append(bed.grow(0.6))
+		keep_clear.append((_map["BEEHIVES"] as Rect2).grow(BeeYard.BED_WIDTH + 0.3))
 	field.setup(get_parent(), lawns, _map.get("HILLS", []), keep_clear)
 
 
@@ -266,25 +272,33 @@ func _institute_steps() -> void:
 		LowPoly.box(steps, Vector3(7, 0.03, 4), GLASS.darkened(0.5), Vector3(x, 0.04, -front - 6.0))
 
 
+## How high a hill is at (x, z): a smooth bump, flat at its edge. Session 63: the hill's own
+## radius; it still flattens next to the middle of the spine (the old path_blend).
+static func hill_height(spec: Dictionary, x: float, z: float) -> float:
+	var spot: Vector3 = spec["position"]
+	var r := Vector2(x - spot.x, z - spot.z).length() / float(spec.get("radius", GameConfig.HILL_RADIUS))
+	return float(spec["height"]) * pow(maxf(0.0, 1.0 - r * r), 2) * smoothstep(3.0, 6.0, absf(z))
+
+
 func _hill(spec: Dictionary) -> void:
 	var body := StaticBody3D.new()
 	body.name = "RollingHill_%d_%d" % [spec["position"].x, spec["position"].z]
 	body.position = spec["position"]
 	add_child(body)
-	var width := 21
+	# Session 63: each hill has its own size ("radius", metres; 10 if the data doesn't say).
+	var reach := ceili(float(spec.get("radius", GameConfig.HILL_RADIUS)))
+	var width := reach * 2 + 1
 	var heights := PackedFloat32Array()
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	for z in width:
 		for x in width:
-			var radius := Vector2(x - 10, z - 10).length() / 10.0
-			var path_blend := smoothstep(3.0, 6.0, absf(body.position.z + z - 10))
-			heights.append(spec["height"] * pow(maxf(0, 1 - radius * radius), 2) * path_blend)
+			heights.append(hill_height(spec, body.position.x + x - reach, body.position.z + z - reach))
 	for z in width - 1:
 		for x in width - 1:
 			for offset: Vector2i in [Vector2i(0,0), Vector2i(1,0), Vector2i(0,1), Vector2i(1,0), Vector2i(1,1), Vector2i(0,1)]:
 				var point := Vector2i(x, z) + offset
-				tool.add_vertex(Vector3(point.x - 10, heights[point.y * width + point.x], point.y - 10))
+				tool.add_vertex(Vector3(point.x - reach, heights[point.y * width + point.x], point.y - reach))
 	tool.generate_normals()
 	var view := MeshInstance3D.new()
 	view.mesh = tool.commit()
@@ -394,13 +408,29 @@ func _street_details() -> void:
 		var c: Vector2 = cluster["centre"]
 		for i in 3:
 			LowPoly.box(props, Vector3(0.65, 1.1, 0.65), [TEAL, Color.DARK_GREEN, Color(0.2, 0.35, 0.65)][i], Vector3(c.x - 9 + i, 0.55, c.y + (70 if c.y < 0 else -70)))
-	for area: Rect2 in _map["PARKING_AREAS"]:
+	for n in _map["PARKING_AREAS"].size():
+		var area: Rect2 = _map["PARKING_AREAS"][n]
+		var parks: Array = _map.get("CAR_PARKS", [])
+		if GameConfig.CARPARK_ROWS and n < parks.size() and parks[n].get("turned", false):
+			_turned_park_props(props, parks[n])
+			continue
 		# Session 62: on the grass verge by the ring road (south car parks have it at their south end)
 		var top := area.position.y if area.get_center().y < 0 or not GameConfig.CARPARK_ROWS else area.end.y - 7.0
 		LowPoly.box(props, Vector3(0.5, 1.4, 0.4), TEAL, Vector3(area.position.x + 1, 0.7, top + 2))
 		for i in 4:
 			var rack_x := area.position.x + 3 if GameConfig.CARPARK_ROWS else area.end.x - 1   # Session 62: on the verge, not in an aisle
 			LowPoly.box(props, Vector3(0.08, 0.8, 1.4), Color.GRAY, Vector3(rack_x, 0.4, top + 3 + i))
+
+
+## The turned car park (Cluster 3 East, rows east-west): the ticket machine and the bike rack
+## stand on its verge by the east ring road, in front of the middle (back to back) rows.
+func _turned_park_props(props: Node3D, park: Dictionary) -> void:
+	var middle: Rect2 = (park["rows"][1]["area"] as Rect2).merge(park["rows"][2]["area"])
+	var verge_x: float = park["first_bay_x"] + 1.5
+	var z := middle.get_center().y
+	LowPoly.box(props, Vector3(0.4, 1.4, 0.5), TEAL, Vector3(verge_x, 0.7, z - 2.0))
+	for i in 4:
+		LowPoly.box(props, Vector3(1.4, 0.8, 0.08), Color.GRAY, Vector3(verge_x + 1.0 + i, 0.4, z + 1.5))
 
 
 ## Session 62: a ring road lamp post that would stand in a car park's aisle opening moves

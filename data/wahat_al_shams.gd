@@ -60,8 +60,8 @@ const ROADS := [
 	{"name": "Highway", "from": Vector2(-482, -245), "to": Vector2(-482, 245), "width": 10.0},
 	{"name": "Bus Access", "from": Vector2(-420, -170), "to": Vector2(-310, -170), "width": 8.0},
 	{"name": "Plaza Link", "from": Vector2(-310, -170), "to": Vector2(-280, -145), "width": 8.0},
-	{"name": "Spine Path", "from": Vector2(-350, 0), "to": Vector2(420, 0), "width": 6.0},
-	{"name": "Domes Path", "from": Vector2(-118, -11), "to": Vector2(348, -11), "width": 3.0},
+	{"name": "Spine Buggy Road", "from": Vector2(-350, 0), "to": Vector2(420, 0), "width": 6.0, "kind": "buggy_road"},
+	{"name": "Spine Walking Track", "from": Vector2(-186, -6.75), "to": Vector2(358, -6.75), "width": 3.5, "kind": "walk_track"},
 	{"name": "Western Link", "from": Vector2(-290, -200), "to": Vector2(-290, 0), "width": 6.0},
 	{"name": "Plaza to C1", "from": Vector2(-290, -40), "to": Vector2(420, -40), "width": 6.0},
 	{"name": "South Spine Link", "from": Vector2(-160, 35), "to": Vector2(420, 35), "width": 6.0},
@@ -135,6 +135,7 @@ const ROADS := [
 	{"name": "C5 Car Park Buggy Link", "from": Vector2(243, 197), "to": Vector2(238.25, 197), "width": 2.8999999999999773},
 	{"name": "C5 Car Park Buggy Lane", "from": Vector2(367.75, 198), "to": Vector2(367.75, 35), "width": 2.8999999999999773},
 	{"name": "C5 Car Park Buggy Link", "from": Vector2(363, 197), "to": Vector2(367.75, 197), "width": 2.8999999999999773},
+	{"name": "C3 East Car Park Buggy Lane", "from": Vector2(378.75, -36.6), "to": Vector2(378.75, -3.4), "width": 2.9},
 ]
 
 const PAVED_AREAS := [
@@ -292,6 +293,7 @@ const PARKING_AREAS := [
 	Rect2(139.2, 112.7, 32.6, 87.3),
 	Rect2(204.2, 112.7, 32.6, 87.3),
 	Rect2(369.2, 112.7, 32.6, 87.3),
+	Rect2(380.2, -36.3, 39.8, 32.6),
 ]
 
 const CAR_PARKS := [
@@ -302,6 +304,7 @@ const CAR_PARKS := [
 	{"name": "Cluster 4 East Parking", "arabic": "مواقف المجموعة ٤ شرق", "clusters": ["C4"], "kind": "full", "north": false, "area": Rect2(139.2, 112.7, 32.6, 87.3), "rows": [{"area": Rect2(139.5, 113, 5, 80), "facing": -90.0, "bays": 32}, {"area": Rect2(150.5, 113, 5, 80), "facing": 90.0, "bays": 32}, {"area": Rect2(155.5, 113, 5, 80), "facing": -90.0, "bays": 32}, {"area": Rect2(166.5, 113, 5, 80), "facing": 90.0, "bays": 32}], "roofs": [{"area": Rect2(139.25, 113, 5.5, 80), "double": false, "high_x": 139.5}, {"area": Rect2(150.25, 113, 10.5, 80), "double": true, "high_x": 155.5}, {"area": Rect2(166.25, 113, 5.5, 80), "double": false, "high_x": 171.5}], "aisles": [Rect2(144.5, 113, 6, 87), Rect2(160.5, 113, 6, 87)], "buggy_lane": "C4 Car Park Buggy Lane", "ring_z": 200.0, "first_bay_z": 193.0, "last_bay_z": 113.0, "visitor": {"bay": Vector3(142, 0, 184.25), "aisle_x": 147.5, "facing": -90.0}, "chargers": [Vector3(143.5, 0, 194), Vector3(167.5, 0, 194)], "sign": {"position": Vector3(143.3, 0, 196.5), "facing": 0.0}},
 	{"name": "Cluster 5 West Parking", "arabic": "مواقف المجموعة ٥ غرب", "clusters": ["C5"], "kind": "full", "north": false, "area": Rect2(204.2, 112.7, 32.6, 87.3), "rows": [{"area": Rect2(231.5, 113, 5, 80), "facing": 90.0, "bays": 32}, {"area": Rect2(220.5, 113, 5, 80), "facing": -90.0, "bays": 32}, {"area": Rect2(215.5, 113, 5, 80), "facing": 90.0, "bays": 32}, {"area": Rect2(204.5, 113, 5, 80), "facing": -90.0, "bays": 32}], "roofs": [{"area": Rect2(231.25, 113, 5.5, 80), "double": false, "high_x": 236.5}, {"area": Rect2(215.25, 113, 10.5, 80), "double": true, "high_x": 220.5}, {"area": Rect2(204.25, 113, 5.5, 80), "double": false, "high_x": 204.5}], "aisles": [Rect2(225.5, 113, 6, 87), Rect2(209.5, 113, 6, 87)], "buggy_lane": "C5 Car Park Buggy Lane", "ring_z": 200.0, "first_bay_z": 193.0, "last_bay_z": 113.0, "visitor": {"bay": Vector3(234, 0, 184.25), "aisle_x": 228.5, "facing": 90.0}, "chargers": [Vector3(232.5, 0, 194), Vector3(208.5, 0, 194)], "sign": {"position": Vector3(224.3, 0, 196.5), "facing": 0.0}},
 	{"name": "Cluster 5 East Parking", "arabic": "مواقف المجموعة ٥ شرق", "clusters": ["C5"], "kind": "full", "north": false, "area": Rect2(369.2, 112.7, 32.6, 87.3), "rows": [{"area": Rect2(369.5, 113, 5, 80), "facing": -90.0, "bays": 32}, {"area": Rect2(380.5, 113, 5, 80), "facing": 90.0, "bays": 32}, {"area": Rect2(385.5, 113, 5, 80), "facing": -90.0, "bays": 32}, {"area": Rect2(396.5, 113, 5, 80), "facing": 90.0, "bays": 32}], "roofs": [{"area": Rect2(369.25, 113, 5.5, 80), "double": false, "high_x": 369.5}, {"area": Rect2(380.25, 113, 10.5, 80), "double": true, "high_x": 385.5}, {"area": Rect2(396.25, 113, 5.5, 80), "double": false, "high_x": 401.5}], "aisles": [Rect2(374.5, 113, 6, 87), Rect2(390.5, 113, 6, 87)], "buggy_lane": "C5 Car Park Buggy Lane", "ring_z": 200.0, "first_bay_z": 193.0, "last_bay_z": 113.0, "visitor": {"bay": Vector3(372, 0, 184.25), "aisle_x": 377.5, "facing": -90.0}, "chargers": [Vector3(373.5, 0, 194), Vector3(397.5, 0, 194)], "sign": {"position": Vector3(373.3, 0, 196.5), "facing": 0.0}},
+	{"name": "Cluster 3 East Parking", "arabic": "مواقف المجموعة ٣ شرق", "clusters": ["C3"], "kind": "full", "north": false, "turned": true, "area": Rect2(380.2, -36.3, 39.8, 32.6), "rows": [{"area": Rect2(380.5, -36, 32.5, 5), "facing": -180.0, "bays": 13}, {"area": Rect2(380.5, -25, 32.5, 5), "facing": 0.0, "bays": 13}, {"area": Rect2(380.5, -20, 32.5, 5), "facing": -180.0, "bays": 13}, {"area": Rect2(380.5, -9, 32.5, 5), "facing": 0.0, "bays": 13}], "roofs": [{"area": Rect2(380.5, -36.25, 32.5, 5.5), "double": false, "high_z": -36.0}, {"area": Rect2(380.5, -25.25, 32.5, 10.5), "double": true, "high_z": -20.0}, {"area": Rect2(380.5, -9.25, 32.5, 5.5), "double": false, "high_z": -4.0}], "aisles": [Rect2(380.5, -31, 39.5, 6), Rect2(380.5, -15, 39.5, 6)], "buggy_lane": "C3 East Car Park Buggy Lane", "ring_x": 420.0, "first_bay_x": 413.0, "last_bay_x": 380.5, "visitor": {"bay": Vector3(404.25, 0, -33.5), "aisle_z": -28.0, "facing": -180.0}, "chargers": [Vector3(414, 0, -32), Vector3(414, 0, -8)], "sign": {"position": Vector3(416.5, 0, -23.8), "facing": 90.0}},
 ]
 
 const CARPARK_KERBS := [
@@ -378,6 +381,17 @@ const CARPARK_KERBS := [
 	Rect2(380.5, 193, 0.3, 6.7),
 	Rect2(390.2, 193, 0.3, 6.7),
 	Rect2(396.5, 193, 0.3, 6.7),
+	Rect2(380.5, -4, 32.5, 0.3),
+	Rect2(380.5, -36.3, 32.5, 0.3),
+	Rect2(380.2, -37, 0.3, 34),
+	Rect2(413, -9, 0.3, 5),
+	Rect2(413, -25, 0.3, 10),
+	Rect2(413, -36, 0.3, 5),
+	Rect2(377, -37, 0.3, 34),
+	Rect2(413, -25, 6.7, 0.3),
+	Rect2(413, -31.3, 6.7, 0.3),
+	Rect2(413, -9, 6.7, 0.3),
+	Rect2(413, -15.3, 6.7, 0.3),
 ]
 
 const CARPARK_GARDENS := [
@@ -413,6 +427,9 @@ const CARPARK_GARDENS := [
 	Rect2(180, 38, 16, 18),
 	Rect2(180, 188, 16, 12),
 	Rect2(401.8, 38, 18.2, 162),
+	Rect2(413.3, -9, 6.7, 5.3),
+	Rect2(413.3, -25, 6.7, 10),
+	Rect2(413.3, -36.3, 6.7, 5.3),
 ]
 
 const PLOTS := [
@@ -435,16 +452,31 @@ const SPINE_DOMES := [
 	Vector3(340, 0, -20),
 ]
 
-const HILLS := [
+const HILLS_OLD := [
 	{"position": Vector3(-130, 0, 13), "height": 0.4},
 	{"position": Vector3(-60, 0, 13), "height": 0.5},
 	{"position": Vector3(32, 0, 13), "height": 0.35},
 	{"position": Vector3(55, 0, 13), "height": 0.5},
 	{"position": Vector3(330, 0, 13), "height": 0.45},
 	{"position": Vector3(392, 0, 13), "height": 0.5},
-	{"position": Vector3(112, 0, 13), "height": 0.4},
-	{"position": Vector3(160, 0, 13), "height": 0.35},
 ]
+
+const HILLS := [
+	{"position": Vector3(-133, 0, 13.5), "height": 0.35, "radius": 6},
+	{"position": Vector3(-60, 0, 14), "height": 0.5, "radius": 7},
+	{"position": Vector3(25, 0, 15), "height": 0.45, "radius": 8},
+	{"position": Vector3(52, 0, 14), "height": 0.3, "radius": 6},
+	{"position": Vector3(315, 0, 13), "height": 0.25, "radius": 5},
+	{"position": Vector3(334, 0, 14), "height": 0.5, "radius": 7},
+	{"position": Vector3(398, 0, 13), "height": 0.4, "radius": 6},
+	{"position": Vector3(112, 0, 13.5), "height": 0.4, "radius": 6},
+	{"position": Vector3(160, 0, 14), "height": 0.35, "radius": 7},
+	{"position": Vector3(-86, 0, -23), "height": 0.4, "radius": 7},
+	{"position": Vector3(17, 0, -23), "height": 0.5, "radius": 9},
+	{"position": Vector3(90, 0, -23), "height": 0.3, "radius": 5},
+]
+
+const SPINE_PATHS := {"track": "Spine Walking Track", "road": "Spine Buggy Road", "kerb_width": 0.3, "kerb_height": 0.12, "strip_width": 1.4, "walk_every": 40.0, "dash": 1.5, "gap": 1.5}
 
 const LAP_POOL := Rect2(100.5, -23.6, 29, 10.4)
 
@@ -1051,19 +1083,17 @@ const REGULARS := [
 ]
 
 const PALM_TREES := [
-	Vector3(-130, 0, -7),
-	Vector3(-85, 0, -7),
-	Vector3(-40, 0, -7),
-	Vector3(5, 0, -7),
-	Vector3(50, 0, -7),
-	Vector3(95, 0, -7),
-	Vector3(140, 0, -7),
-	Vector3(185, 0, -7),
-	Vector3(230, 0, -7),
-	Vector3(275, 0, -7),
-	Vector3(320, 0, -7),
-	Vector3(365, 0, -7),
-	Vector3(410, 0, -7),
+	Vector3(-130, 0, -10.5),
+	Vector3(-85, 0, -10.5),
+	Vector3(-40, 0, -10.5),
+	Vector3(5, 0, -10.5),
+	Vector3(50, 0, -10.5),
+	Vector3(95, 0, -10.5),
+	Vector3(140, 0, -10.5),
+	Vector3(185, 0, -10.5),
+	Vector3(275, 0, -10.5),
+	Vector3(320, 0, -10.5),
+	Vector3(365, 0, -10.5),
 	Vector3(-130, 0, 7),
 	Vector3(-85, 0, 7),
 	Vector3(-40, 0, 7),
@@ -1756,6 +1786,32 @@ const PARKED_CARS := [
 	{"position": Vector3(399, 0, 184.25), "facing": 90.0, "bay": true, "park": 6, "model": 4, "paint": Color(0.55, 0.08, 0.1, 1)},
 	{"position": Vector3(399, 0, 186.75), "facing": 90.0, "bay": true, "park": 6, "model": 3, "paint": Color(0.95, 0.6, 0.15, 1)},
 	{"position": Vector3(399, 0, 189.25), "facing": 90.0, "bay": true, "park": 6, "model": 0, "paint": Color(0.12, 0.12, 0.13, 1)},
+	{"position": Vector3(381.75, 0, -33.5), "facing": -180.0, "bay": true, "park": 7, "model": 3, "paint": Color(0.45, 0.6, 0.78, 1)},
+	{"position": Vector3(386.75, 0, -33.5), "facing": -180.0, "bay": true, "park": 7, "model": 0, "paint": Color(0.2, 0.42, 0.33, 1)},
+	{"position": Vector3(391.75, 0, -33.5), "facing": -180.0, "bay": true, "park": 7, "model": 1, "paint": Color(0.2, 0.42, 0.33, 1)},
+	{"position": Vector3(394.25, 0, -33.5), "facing": -180.0, "bay": true, "park": 7, "model": 3, "paint": Color(0.75, 0.13, 0.12, 1)},
+	{"position": Vector3(399.25, 0, -33.5), "facing": -180.0, "bay": true, "park": 7, "model": 1, "paint": Color(0.85, 0.82, 0.74, 1)},
+	{"position": Vector3(401.75, 0, -33.5), "facing": -180.0, "bay": true, "park": 7, "model": 4, "paint": Color(0.62, 0.64, 0.67, 1)},
+	{"position": Vector3(406.75, 0, -33.5), "facing": -180.0, "bay": true, "park": 7, "model": 2, "paint": Color(0.14, 0.29, 0.6, 1)},
+	{"position": Vector3(409.25, 0, -33.5), "facing": -180.0, "bay": true, "park": 7, "model": 2, "paint": Color(0.35, 0.36, 0.38, 1)},
+	{"position": Vector3(411.75, 0, -33.5), "facing": -180.0, "bay": true, "park": 7, "model": 4, "paint": Color(0.45, 0.6, 0.78, 1)},
+	{"position": Vector3(389.25, 0, -22.5), "facing": 0.0, "bay": true, "park": 7, "model": 1, "paint": Color(0.92, 0.92, 0.9, 1)},
+	{"position": Vector3(394.25, 0, -22.5), "facing": 0.0, "bay": true, "park": 7, "model": 2, "paint": Color(0.92, 0.92, 0.9, 1)},
+	{"position": Vector3(399.25, 0, -22.5), "facing": 0.0, "bay": true, "park": 7, "model": 2, "paint": Color(0.14, 0.29, 0.6, 1)},
+	{"position": Vector3(404.25, 0, -22.5), "facing": 0.0, "bay": true, "park": 7, "model": 3, "paint": Color(0.45, 0.6, 0.78, 1)},
+	{"position": Vector3(381.75, 0, -17.5), "facing": -180.0, "bay": true, "park": 7, "model": 2, "paint": Color(0.95, 0.6, 0.15, 1)},
+	{"position": Vector3(394.25, 0, -17.5), "facing": -180.0, "bay": true, "park": 7, "model": 3, "paint": Color(0.96, 0.96, 0.96, 1)},
+	{"position": Vector3(399.25, 0, -17.5), "facing": -180.0, "bay": true, "park": 7, "model": 2, "paint": Color(0.12, 0.12, 0.13, 1)},
+	{"position": Vector3(401.75, 0, -17.5), "facing": -180.0, "bay": true, "park": 7, "model": 0, "paint": Color(0.55, 0.08, 0.1, 1)},
+	{"position": Vector3(406.75, 0, -17.5), "facing": -180.0, "bay": true, "park": 7, "model": 4, "paint": Color(0.2, 0.42, 0.33, 1)},
+	{"position": Vector3(411.75, 0, -17.5), "facing": -180.0, "bay": true, "park": 7, "model": 1, "paint": Color(0.85, 0.82, 0.74, 1)},
+	{"position": Vector3(381.75, 0, -6.5), "facing": 0.0, "bay": true, "park": 7, "model": 3, "paint": Color(0.55, 0.08, 0.1, 1)},
+	{"position": Vector3(384.25, 0, -6.5), "facing": 0.0, "bay": true, "park": 7, "model": 3, "paint": Color(0.96, 0.96, 0.96, 1)},
+	{"position": Vector3(386.75, 0, -6.5), "facing": 0.0, "bay": true, "park": 7, "model": 1, "paint": Color(0.45, 0.6, 0.78, 1)},
+	{"position": Vector3(391.75, 0, -6.5), "facing": 0.0, "bay": true, "park": 7, "model": 0, "paint": Color(0.62, 0.64, 0.67, 1)},
+	{"position": Vector3(399.25, 0, -6.5), "facing": 0.0, "bay": true, "park": 7, "model": 4, "paint": Color(0.12, 0.12, 0.13, 1)},
+	{"position": Vector3(404.25, 0, -6.5), "facing": 0.0, "bay": true, "park": 7, "model": 0, "paint": Color(0.62, 0.64, 0.67, 1)},
+	{"position": Vector3(411.75, 0, -6.5), "facing": 0.0, "bay": true, "park": 7, "model": 4, "paint": Color(0.75, 0.13, 0.12, 1)},
 ]
 
 const SPEED_BUMP_SIZE := Vector3(10, 0.12, 0.5)
@@ -1816,15 +1872,15 @@ const BUGGIES := [
 ]
 
 const HORSE_RIDERS := [
-	{"points": [Vector3(-450, 0, -230), Vector3(450, 0, -230), Vector3(450, 0, 230), Vector3(-450, 0, 230)], "loop": true, "colour": Color(0.45, 0.28, 0.15, 1), "level": 0, "collection_id": "horse_sultan", "collection_name": "Sultan"},
-	{"points": [Vector3(450, 0, 230), Vector3(-450, 0, 230), Vector3(-450, 0, -230), Vector3(450, 0, -230)], "loop": true, "colour": Color(0.85, 0.82, 0.78, 1), "level": 1, "collection_id": "horse_noor", "collection_name": "Noor"},
+	{"points": [Vector3(-450, 0, -230), Vector3(450, 0, -230), Vector3(450, 0, 230), Vector3(-450, 0, 230)], "loop": true, "colour": Color(0.45, 0.28, 0.15, 1), "coat": "brown", "level": 0, "collection_id": "horse_sultan", "collection_name": "Sultan"},
+	{"points": [Vector3(450, 0, 230), Vector3(-450, 0, 230), Vector3(-450, 0, -230), Vector3(450, 0, -230)], "loop": true, "colour": Color(0.62, 0.61, 0.6, 1), "coat": "grey", "level": 1, "collection_id": "horse_noor", "collection_name": "Noor"},
 ]
 
 const PEOPLE_ROUTES := [
 	{"points": [Vector3(-438, 0, -218), Vector3(438, 0, -218), Vector3(438, 0, 218), Vector3(-438, 0, 218)], "loop": true, "jog": true, "look": 2, "level": 0},
-	{"points": [Vector3(-115, 0, -11.7), Vector3(345, 0, -11.7)], "jog": false, "look": 0, "level": 0},
-	{"points": [Vector3(-115, 0, -10.3), Vector3(345, 0, -10.3)], "jog": false, "look": 1, "level": 1},
-	{"points": [Vector3(-115, 0, -11), Vector3(345, 0, -11)], "jog": false, "look": 2, "level": 2},
+	{"points": [Vector3(-180, 0, -6), Vector3(352, 0, -6)], "jog": false, "look": 0, "level": 0},
+	{"points": [Vector3(-180, 0, -7.6), Vector3(352, 0, -7.6)], "jog": false, "look": 1, "level": 1},
+	{"points": [Vector3(-180, 0, -6.9), Vector3(352, 0, -6.9)], "jog": false, "look": 2, "level": 2},
 ]
 
 const GARDENERS := [

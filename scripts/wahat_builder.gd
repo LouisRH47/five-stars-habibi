@@ -26,6 +26,7 @@ const WALL := Color(0.95, 0.88, 0.74, 1)
 const GATE := Color(0.85, 0.2, 0.2, 1)
 const BOLLARD := Color(0.35, 0.37, 0.4, 1)
 const BRIDGE_WOOD := Color(0.62, 0.45, 0.28, 1)
+const TRACK_RED := Color(0.72, 0.3, 0.22, 1)    # Session 63: the walking track (textured red rubber)
 const MARGIN := 20.0   # sand outside the edge
 
 # The constants from the data script, e.g. _map["ROADS"].
@@ -107,9 +108,21 @@ func _build_road(road: Dictionary) -> void:
 	var finish := to + dir * (0.0 if black and ends_on_black_road(_map, to) else width * 0.5)
 	var length := start.distance_to(finish)
 	var middle := (start + finish) * 0.5
+	var kind: String = road.get("kind", "")
+	if GameConfig.SPINE_LOOKS_V2 and kind == "walk_track":
+		# Session 63: the red rubber walking track, a little lower than the paths that cross it.
+		var top := GameConfig.SPINE_TRACK_TOP
+		var track := LowPoly.box(self, Vector3(width, top - 0.004, length), TRACK_RED, Vector3(middle.x, (top + 0.004) * 0.5, middle.y))
+		track.name = "WalkingTrack"
+		track.material_override = TerrainMaterials.make("track")
+		track.rotation.y = atan2(way.x, way.y)
+		return
 	var strip := LowPoly.box(self, Vector3(width, 0.04, length), ROAD if width >= 6.0 else LANE,
 			Vector3(middle.x, 0.02 if width >= 6.0 else 0.025, middle.y))
 	strip.rotation.y = atan2(way.x, way.y)
+	if GameConfig.SPINE_LOOKS_V2 and kind == "buggy_road":
+		strip.name = "BuggyRoad"   # Session 63: light asphalt (SpineBuilder adds the lane lines)
+		strip.set_meta("light_asphalt", true)
 
 
 ## Session 53: the "black" roads cars use. Every other path gives way to them.

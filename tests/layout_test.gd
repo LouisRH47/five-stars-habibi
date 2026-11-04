@@ -77,11 +77,12 @@ static func check_map(map: Dictionary, world: Node3D) -> Array:
 		var c := Vector2(hill["position"].x, hill["position"].z)
 		if float(hill["height"]) > GameConfig.HILL_MAX_HEIGHT + 0.001:
 			too_tall.append("(%d, %d) %.1f m" % [c.x, c.y, hill["height"]])
+		var reach: float = hill.get("radius", GameConfig.HILL_RADIUS)   # Session 63: hills have their own size
 		for name: String in keep_clear:
-			if _circle_hits(c, GameConfig.HILL_RADIUS + GameConfig.HILL_CLEARANCE, keep_clear[name]):
+			if _circle_hits(c, reach + GameConfig.HILL_CLEARANCE, keep_clear[name]):
 				hill_hits.append("hill (%d, %d) and %s" % [c.x, c.y, name])
 		for road: Dictionary in roads:
-			if _circle_hits(c, GameConfig.HILL_RADIUS - 0.01, ClusterSigns.road_rect(road, width)):
+			if _circle_hits(c, reach - 0.01, ClusterSigns.road_rect(road, width)):
 				hill_hits.append("hill (%d, %d) and %s" % [c.x, c.y, road["name"]])
 	results.append([too_tall.is_empty(), "every hill is at most %.1f m high %s" % [GameConfig.HILL_MAX_HEIGHT, too_tall]])
 	results.append([hill_hits.is_empty(), "hills keep clear of pools, beds, the gym, the stall and roads %s" % [hill_hits]])

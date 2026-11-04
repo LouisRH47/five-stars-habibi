@@ -144,12 +144,19 @@ func _build_visitors(ring: Array[Vector3]) -> void:
 		var park: Dictionary = parks[i]
 		var visit: Dictionary = park["visitor"]
 		var north: bool = park["north"]
-		var x: float = visit["aisle_x"]
-		var entry := Vector3(x, 0, _ring.position.y if north else _ring.end.y)
+		var turned: bool = park.get("turned", false)   # rows east-west, on the east ring road
 		var bay: Vector3 = visit["bay"]
-		var aisle := Vector3(x, 0, bay.z)
+		var entry: Vector3
+		var aisle: Vector3
+		if turned:
+			entry = Vector3(_ring.end.x, 0, visit["aisle_z"])
+			aisle = Vector3(bay.x, 0, visit["aisle_z"])
+		else:
+			var x: float = visit["aisle_x"]
+			entry = Vector3(x, 0, _ring.position.y if north else _ring.end.y)
+			aisle = Vector3(x, 0, bay.z)
 		var route: Array[Vector3] = [bay, aisle, entry]
-		var start := 1 if north else 3
+		var start := 2 if turned else (1 if north else 3)
 		for offset in range(4):
 			route.append(ring[(start + offset) % 4])
 		route.append(entry)
@@ -160,6 +167,10 @@ func _build_visitors(ring: Array[Vector3]) -> void:
 		car.dwell_time = GameConfig.TRAFFIC_PARK_WAIT
 		car._wait_left = GameConfig.TRAFFIC_PARK_WAIT + i
 		for opening: Rect2 in park["aisles"]:
+			if turned:
+				var across := opening.get_center().y
+				_build_access(Vector3(park["ring_x"], 0, across), Vector3(park["first_bay_x"], 0, across), opening.size.y, true)
+				continue
 			var middle := opening.get_center().x
 			_build_access(Vector3(middle, 0, park["ring_z"]), Vector3(middle, 0, park["first_bay_z"]), opening.size.x, true)
 
@@ -169,7 +180,10 @@ func _build_visitors(ring: Array[Vector3]) -> void:
 func _build_access(entry: Vector3, inside: Vector3, width := 6.0, textured := false) -> void:
 	var centre := (entry + inside) * 0.5
 	if textured:
-		var mouth := LowPoly.box(self, Vector3(width, CarParkBuilder.PAD_TOP, entry.distance_to(inside)), ASPHALT,
+		var size := Vector3(width, CarParkBuilder.PAD_TOP, entry.distance_to(inside))
+		if absf(entry.x - inside.x) > absf(entry.z - inside.z):   # a turned car park's aisle runs along x
+			size = Vector3(size.z, size.y, size.x)
+		var mouth := LowPoly.box(self, size, ASPHALT,
 				centre + Vector3.UP * CarParkBuilder.PAD_TOP * 0.5)
 		mouth.name = "ParkingAccess"
 		mouth.material_override = TerrainMaterials.make("road")
