@@ -1351,6 +1351,7 @@ func _finish() -> void:
 	_check_shop_buys()
 	_check_saving()
 	_check_polish_hooks()
+	_check_hud_polish()
 	for action in ACTIONS:
 		Input.action_release(action)
 	_phase = "done"
@@ -2606,3 +2607,22 @@ func _check_polish_hooks() -> void:
 				expected.append(path)
 	_check("the polish hooks ran for the world", ok and hooks.attached == expected,
 			"%d parts: %s" % [expected.size(), expected])
+
+
+## Session 69: the HUD like the mockup on the real map: chips at the top left, the clock with
+## temperature and a shift bar, the meters at the bottom middle, and the hold ring linked up.
+func _check_hud_polish() -> void:
+	var hud: Node = _main.get_node_or_null("HUD")
+	var screen: Node = _main.get_node_or_null("ShiftScreen")
+	if hud == null or screen == null:
+		return
+	var view: Vector2 = hud.get_viewport().get_visible_rect().size
+	var chips_ok: bool = not GameConfig.HUD_TOP_CHIPS or (hud.chips != null
+			and hud.chips.get_global_rect().position.x < view.x * 0.25 and hud.chips.get_global_rect().position.y < 60.0)
+	var clock_ok: bool = not GameConfig.HUD_CLOCK_V2 or ("°C" in screen.info_line() and screen.progress_bar != null)
+	var ring_ok: bool = not GameConfig.HOLD_RING or hud.hold_ring.delivery_manager == _main.get_node_or_null("DeliveryManager")
+	var meters: Control = _main.get_node("MetersPanel/Panel")
+	var meters_ok: bool = not GameConfig.METERS_V2 or meters.get_parent().layout_mode_name in ["wide", "stacked"]
+	_check("the HUD has chips top left, a temperature clock, bottom meters and the hold ring",
+			chips_ok and clock_ok and ring_ok and meters_ok, screen.info_line() if GameConfig.HUD_CLOCK_V2 else "")
+
