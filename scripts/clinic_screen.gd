@@ -331,7 +331,7 @@ func _build_card() -> PanelContainer:
 	tip_style.set_corner_radius_all(14)
 	tip_style.set_content_margin_all(12)
 	_tip_box.add_theme_stylebox_override("panel", tip_style)
-	var tip := _label("Insurance (2 Dh a delivery) reduces the bill. Your capped share depends on how hard you hit.", 16, Color(0.4, 0.3, 0.05, 1))
+	var tip := _label("Insurance (%d Dh a delivery) reduces the bill. Your capped share depends on how hard you hit." % GameConfig.INSURANCE_PER_DELIVERY, 16, Color(0.4, 0.3, 0.05, 1))
 	tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_tip_box.add_child(tip)
 	rows.add_child(_tip_box)

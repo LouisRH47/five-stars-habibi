@@ -81,6 +81,9 @@ var crash_shifts: Array[int] = []
 
 ## The shift (Session 13). scripts/shift_manager.gd counts shift_time_left down.
 var shift_number := 0  # start_shift() makes the first one shift 1
+## True once this shift has ended (the summary showed). Saved, so quitting halfway through
+## a shift and coming back plays that same shift again instead of counting a new one.
+var shift_finished := false
 var shift_time_left := GameConfig.SHIFT_LENGTH
 ## True once the shift clock has run out (you may still be finishing your last order).
 var shift_clock_out := false
@@ -144,10 +147,12 @@ func save_game() -> bool:
 	return SaveGame.save(self, save_path)
 
 
-## Loads the saved game (if there is one) and starts a fresh shift.
+## Loads the saved game (if there is one) and starts a fresh shift. Opening the game only
+## counts as a new shift if the last one was finished; otherwise it plays that one again
+## (same number, same kind of day).
 func load_game() -> bool:
 	var found := SaveGame.load_into(self, save_path)
-	start_shift()
+	start_shift(not found or shift_finished)
 	money_changed.emit(money)
 	stats_changed.emit()
 	insurance_changed.emit(insurance_on)
@@ -468,11 +473,14 @@ func crashes_this_week() -> int:
 
 
 ## Starts a new shift: a full clock and a fresh summary.
-func start_shift() -> void:
-	shift_number += 1
-	if shift_number > 1:
-		day_kind = tomorrow_kind
-	tomorrow_kind = ReplayCatalog.next_day(day_kind)
+## new_number false: the same shift again (you quit before it ended), so the day stays too.
+func start_shift(new_number := true) -> void:
+	if new_number:
+		shift_number += 1
+		if shift_number > 1:
+			day_kind = tomorrow_kind
+		tomorrow_kind = ReplayCatalog.next_day(day_kind)
+	shift_finished = false
 	shift_new_bests.clear()
 	collection_bonus_this_shift = 0
 	shift_time_left = GameConfig.SHIFT_LENGTH
@@ -545,6 +553,7 @@ func clock_out() -> void:
 ## Ends the shift and sends the summary.
 func end_shift() -> Dictionary:
 	shift_clock_out = true
+	shift_finished = true
 	var summary := shift_summary()
 	if summary["goal_bonus"] > 0 and not _goal_bonus_paid:
 		_goal_bonus_paid = true

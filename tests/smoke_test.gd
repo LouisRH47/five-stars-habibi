@@ -934,6 +934,27 @@ func _check_sound() -> void:
 	gs.reset()
 
 
+## Reopening the game halfway through a shift plays that same shift again (it doesn't count
+## a new one, or move on the day); a finished shift does count; skips are remembered.
+func _check_reopening(gs: Node) -> void:
+	gs.reset()
+	gs._remember_choice(true)
+	gs._remember_choice(false)
+	var number: int = gs.shift_number
+	var day: String = gs.day_kind
+	gs.save_game()
+	gs.load_game()
+	_check("reopening mid-shift keeps the same shift and day", gs.shift_number == number and gs.day_kind == day,
+			"%d, was %d" % [gs.shift_number, number])
+	_check("accept / skip choices come back after reopening", absf(gs.acceptance_rate() - 0.5) < 0.001,
+			"%.2f" % gs.acceptance_rate())
+	gs.end_shift()
+	gs.save_game()
+	gs.load_game()
+	_check("reopening after a finished shift starts the next one", gs.shift_number == number + 1,
+			"%d" % gs.shift_number)
+
+
 ## Session 15: save and load keep your progress, the menus have their buttons.
 ## Runs last (from _finish), on the test's own save file.
 func _check_saving() -> void:
@@ -980,6 +1001,7 @@ func _check_saving() -> void:
 		names.append(button.text)
 	_check("pause menu: Resume, Settings, Main menu, Quit", names == ["Resume", "Settings", "Main menu", "Quit game"], "%s" % [names])
 	pause_menu._resume()
+	_check_reopening(gs)
 	_check("the game opens on the main menu",
 			ProjectSettings.get_setting("application/run/main_scene") == "res://scenes/main_menu.tscn", "")
 	gs.new_game()
@@ -1918,6 +1940,7 @@ func _check_session30() -> void:
 	var still := []
 	for name in ["Horse_0", "Person_0", "Person_2", "Kid_0", "Duck_0"]:
 		var thing: Node3D = life.get_node(name)
+		thing.start_at(0, 0.5, true)  # halfway along the first leg, so it can't reach an end and pause
 		thing.scared_left = 0.0
 		thing._pause_left = 0.0
 		var from: Vector3 = thing.position
