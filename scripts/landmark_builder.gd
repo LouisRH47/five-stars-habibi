@@ -117,8 +117,11 @@ func _build_stables(stables: Dictionary) -> void:
 		LowPoly.box(body, Vector3(1.6, 1.0, 0.12), DARK, Vector3(x, 2.1, front + 0.06))
 		if i % 2 == 1:
 			Props.animal(body, Vector3(x, -0.4, front - 1.0), 0.0, HORSES[i % HORSES.size()], true)
-	LowPoly.box(body, Vector3(9.0, 1.4, 0.15), TEAL, Vector3(0, size.y + 0.9, front + 0.6))
-	_faces(body, stables["arabic"], stables["name"], Vector3(0, size.y + 0.9, front + 0.6), 0.0, 8.4, 0.15)
+	# Review (outdoor): the stable office (Session 61) stands right in front of the middle of the
+	# block, so its roof hid the big sign from the road. The sign moves along, clear of it.
+	var sign_x := GameConfig.STABLES_SIGN_SHIFT
+	LowPoly.box(body, Vector3(9.0, 1.4, 0.15), TEAL, Vector3(sign_x, size.y + 0.9, front + 0.6))
+	_faces(body, stables["arabic"], stables["name"], Vector3(sign_x, size.y + 0.9, front + 0.6), 0.0, 8.4, 0.15)
 	var paddock: Rect2 = stables["paddock"]
 	LowPoly.box(holder, Vector3(paddock.size.x, 0.02, paddock.size.y), Color(0.82, 0.7, 0.5, 1),
 			Vector3(paddock.get_center().x, 0.02, paddock.get_center().y))

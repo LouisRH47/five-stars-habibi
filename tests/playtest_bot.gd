@@ -173,6 +173,14 @@ func _walk(delta: float) -> void:
 			_on_foot.toggle()
 			return
 		goal = _flat(_bike.global_position)
+	if going_to_door and _gs.stage_name() == "TO_RESTAURANT" and _inside_delivery():
+		# Review (outdoor): a Plaza shop's pickup spot (Session 58) is inside, off to one side of
+		# the sliding door. The map scan saw the door shut, so the straight walk hit the glass
+		# beside the door, out of the door's 3.2 m reach, and the bot pushed there for the rest of
+		# the shift. Walk to the doorway first, like a player, then on in to the counter.
+		var entrance := _flat(_dm.place_builder.restaurant_entrance(_gs.current_order.restaurant_id))
+		if entrance != Vector2.ZERO and here.distance_to(goal) > entrance.distance_to(goal) + 0.6:
+			goal = entrance
 	_this_walk += delta
 	if int(_this_walk / 20.0) != int((_this_walk - delta) / 20.0):
 		_say_walk_trouble(here, goal, going_to_door)

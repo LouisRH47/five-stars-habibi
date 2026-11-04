@@ -677,3 +677,8 @@ const SPINE_FLOWERS_GROUNDED := true
 const SPINE_GAPS_ONLY_REAL := true
 ## The "Coming soon" words at the building sites get a dark board on two posts (they floated).
 const SITE_SIGN_BOARD := true
+## Both pool decks use the paving texture (PRD: "a paved deck"); they were a plain light slab.
+const POOL_DECK_PAVED := true
+## Metres the big "Wahat Stables" sign sits east of the block's middle, so the stable office's
+## roof doesn't hide it from Stables Road (0.0 = the old spot, right behind the office).
+const STABLES_SIGN_SHIFT := 13.0
