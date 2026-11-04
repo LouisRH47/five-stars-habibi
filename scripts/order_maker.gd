@@ -281,5 +281,5 @@ func _sort_by_villa_distance(villas: Array, from: Vector3) -> void:
 
 func _villa_point(villa: Dictionary) -> Vector3:
 	if villa.get("interior", false):
-		return VenueBuilder.world_point(villa, VenueBuilder.counter_local(places.villa_size_of(villa)))
+		return VenueBuilder.world_point(villa, VenueBuilder.counter_of(villa, places.villa_size_of(villa)))
 	return PlaceBuilder.door_point(villa["position"], villa["facing"], places.villa_size_of(villa))

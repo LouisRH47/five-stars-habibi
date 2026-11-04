@@ -116,8 +116,20 @@ put('PLOTS',[{'name':'Fair Grade International School','area':rect(-425,35,120,1
 put('WELCOME_SIGN',{'name':'Welcome to Wahat Al Shams','arabic':'أهلاً بكم في واحة الشمس','position':v3(-421,0,-180),'facing':-90.0})
 put('SPINE_DOMES',[v3(x,0,-20) for x in [-110,-20,70,160,250,340]])
 # Session 53: hills are at most 0.5 m and keep 4 m clear of pools, beds, the gym, the farm stall and paths.
-put('HILLS',[{'position':v3(x,0,13),'height':h} for x,h in [(-130,.4),(-60,.5),(32,.35),(55,.5),(330,.45),(392,.5)]])
-put('LAP_POOL',rect(140,13,42,9))
+# Session 60: two more gentle hills where the old gym and lap pool were (south of the spine path).
+put('HILLS',[{'position':v3(x,0,13),'height':h} for x,h in [(-130,.4),(-60,.5),(32,.35),(55,.5),(330,.45),(392,.5),(112,.4),(160,.35)]])
+# Session 60: the gym and its lap pool moved to the north side of the spine, between the domes
+# at x 70 and 160: the gym's back (rounded, with the door) faces the Plaza to C1 road, its glass
+# wall faces the lap pool, and the pool's gate faces the domes path. LAP_POOL is the whole fenced
+# deck; the gym's glass wall closes the north side between x 103 and 127.
+put('LAP_POOL',rect(100.5,-23.6,29,10.4))
+put('LAP_POOL_DETAIL',{'water':rect(102.5,-22,25,7),'lanes':4,'fence':'glass','fence_height':1.2,
+    'gate':v2(115,-13.2),'gate_width':1.0,'wall':[v2(103,-23.6),v2(127,-23.6)],'swimmers':3})
+# Session 60: the community pool moved east, between the domes at x 250 and 340, so it no longer
+# covers the domes path or the C2 link. Plot = the fence line; gate in the south fence.
+put('COMMUNITY_POOL_DETAIL',{'water':rect(273,-28.5,25,12),'kids':rect(303,-28.5,8,6),'fence':'bars',
+    'fence_height':1.4,'gate':v2(313,-13),'gate_width':1.0,'loungers_z':-31.8,'hut':rect(314,-35,4,3),
+    'shower':v2(318.5,-29),'lifeguard':v2(285.5,-14.6),'swimmers':4,'kids_in_pool':3,'lounging':5,'deck_walkers':2})
 put('DOME_RADIUS',7.0);put('FARM_BEDS',[rect(-115,13,35,8),rect(-40,13,35,8),rect(200,13,35,8)])
 put('BEEHIVES',rect(360,13,16,8));put('DONKEY_PEN',{'area':rect(245,12,44,10),'donkeys':2})
 put('BASKETBALL_COURT',rect(-145,-33,24,12));put('PLAYGROUND',rect(-70,-33,24,12));put('MINI_PLAZAS',plazas)
@@ -125,8 +137,9 @@ put('SCHOOL',{'name':'Fair Grade International School','arabic':'مدرسة في
 put('MOSQUE',{'name':'Wahat Al Shams Mosque','arabic':'مسجد واحة الشمس','position':v3(-387,0,-150),'facing':90.,'size':v3(54,15,60)})
 put('BUS_STATION',{'position':v3(-310,0,-174),'area':rect(-336,-202,52,52),'name':'Wahat Bus Station','arabic':'محطة حافلات الواحة'})
 put('INSTITUTE',{'position':v3(-215,0,-33),'size':v3(46,14,36),'facing':90.,'name':'C Institute','arabic':'معهد سي'})
-put('GYM',{'position':v3(115,0,22),'size':v3(36,8,22),'facing':180.,'name':'Wahat Gym','arabic':'نادي الواحة الرياضي'})
-put('COMMUNITY_POOL',rect(190,-30,50,24));put('JUMPING_ARENA',rect(-282,65,115,88))
+GYM_AT=v3(115,0,-30.1); GYM_SIZE=v3(24,6,13)   # Session 60: smaller (was 36 x 22), pool in front
+put('GYM',{'position':GYM_AT,'size':GYM_SIZE,'facing':180.,'name':'Wahat Gym','arabic':'نادي الواحة الرياضي'})
+put('COMMUNITY_POOL',rect(270,-35.5,50,22.5));put('JUMPING_ARENA',rect(-282,65,115,88))
 put('STABLES',{'name':'Wahat Stables','arabic':'إسطبلات الواحة','block':{'position':v3(-224,0,174),'size':v3(100,5,14)},'paddock':rect(-280,157,110,9),'horses':4})
 put('BUILDING_SITE',{'area':rect(-135,55,110,135),'crane':v3(-80,0,120),'sign':{'name':'Phase 2 coming soon','arabic':'المرحلة الثانية قريباً','position':v3(-140,0,110),'facing':-90.}})
 put('BUILDING_SITES',[rect(-135,55,110,135),rect(*c45_site),rect(-275,-80,105,18),rect(-301,50,15,125),rect(-413,-89,100,84)])
@@ -294,10 +307,13 @@ put('SHOPS',plaza_shops)
 put('PLAZA_ROWS',plaza_rows);put('PLAZA_LANDSCAPE',plaza_landscape)
 put('VILLA_SIZE',v3(9,8.5,8))
 homes += [
- {'number':901,'house':0,'cluster':'','address':'Fair Grade School · Gate','map_address':'School Gate','kind':'spot','look':'booth','position':v3(-365,0,32),'facing':180.,'size':v3(4,3,4),'who':'teacher'},
- {'number':902,'house':0,'cluster':'','address':'Wahat Stables · Office','map_address':'Stables Office','kind':'spot','position':v3(-224,0,190),'facing':0.,'size':v3(7,4,6),'who':'groom'},
- {'number':903,'house':0,'cluster':'','address':'C Institute · Reception','map_address':'C Institute','kind':'spot','position':v3(-215,0,-33),'facing':90.,'size':v3(46,14,36),'interior':True,'who':'staff'},
- {'number':904,'house':0,'cluster':'','address':'Wahat Gym · Reception','map_address':'Gym','kind':'spot','position':v3(115,0,22),'facing':180.,'size':v3(36,8,22),'interior':True,'who':'gym_goer'},
+ # Session 61: the glass security booth stands beside the school gate (it stood in the gateway).
+ {'number':901,'house':0,'cluster':'','address':'Fair Grade School · Gate','map_address':'School Gate','kind':'spot','look':'booth','position':v3(-357.4,0,30.6),'facing':180.,'size':v3(3.2,2.9,3.2),'who':'teacher'},
+ # Session 61: the stable office moved 1.5 m north so it no longer pokes into Stables Road.
+ {'number':902,'house':0,'cluster':'','address':'Wahat Stables · Office','map_address':'Stables Office','kind':'spot','position':v3(-224,0,188.5),'facing':0.,'size':v3(7,4,6),'who':'groom'},
+ # "counter": where you stand at the reception desk, in the building's own directions (Sessions 60-61).
+ {'number':903,'house':0,'cluster':'','address':'C Institute · Reception','map_address':'C Institute','kind':'spot','position':v3(-215,0,-33),'facing':90.,'size':v3(46,14,36),'interior':True,'who':'staff','counter':v3(0,0,9.6)},
+ {'number':904,'house':0,'cluster':'','address':'Wahat Gym · Reception','map_address':'Gym','kind':'spot','position':GYM_AT,'facing':180.,'size':GYM_SIZE,'interior':True,'who':'gym_goer','counter':v3(0,0,4.0)},
 ]
 put('VILLAS',homes)
 put('REGULARS',[{'id':'mariam','name':'Auntie Mariam','villa':207,'shop':'boba','food':'bubble tea','who':'resident','look':1},{'id':'rashid','name':'Mr Rashid','villa':503,'shop':'shawarma','food':'shawarma','who':'resident','look':0},{'id':'dana','name':'Ms Dana','villa':901,'shop':'bakery','food':'cake','who':'teacher','look':-1},{'id':'hamdan','name':'Hamdan','villa':902,'shop':'farm','food':'farm juice','who':'groom','look':-1}])

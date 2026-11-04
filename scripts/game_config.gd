@@ -570,3 +570,27 @@ const CARPARK_ROOF_HIGH := 3.0        # and at the back (the middle line of a do
 const CARPARK_POST_EVERY := 3         # a roof post every 3 bays
 const CARPARK_LINE_WIDTH := 0.1       # white bay lines
 const CARPARK_ARROW_EVERY := 16.0     # aisle arrows every 16 m
+
+# --- Session 60: Gym and pools ---
+const GYM_ROOM_ON := true             # the real gym (scripts/gym_room.gd); false = the old restaurant-style room
+const POOLS_REAL_ON := true           # fenced pools with swimmers (scripts/pool.gd); false = the old flat pools
+const POOL_WATER_Y := 0.06            # the water's surface (the deck is a little higher)
+const POOL_DECK_Y := 0.1             # top of the stone deck round the water (not solid: you walk on it)
+const POOL_WATER_COLOUR := Color(0.18, 0.66, 0.86)
+const SWIM_SPEED := 1.05              # metres a second, an easy crawl
+const SWIM_STROKES := 0.75            # arm strokes (full circles) a second
+const SWIM_TURN_TIME := 1.3           # seconds to turn round at the wall
+const SWIM_REST_CHANCE := 0.3         # how often a swimmer rests at the wall instead of turning straight away
+const SWIM_REST_TIME := Vector2(3.0, 6.0)   # seconds resting at the wall (shortest, longest)
+const POOL_WALK_SPEED := 0.9          # people strolling round the community pool deck
+const POOL_PEOPLE_RANGE := 90.0       # swimmers further than this from the camera stop moving (saves time)
+const SPLASH_DROPS := 10              # little splash drops round each kid in the kids' pool
+
+# --- Session 61: C Institute, stable office, farm stall and school booth ---
+const INSTITUTE_LOBBY_ON := true      # the two-storey lobby (scripts/institute_lobby.gd); false = the old room
+const INSTITUTE_SCREEN_SECONDS := 15.0   # the talk screen shows the next slide after this long
+const INSTITUTE_SLIDES := [["Talk today · 4 PM", "محاضرة اليوم · ٤ مساءً"], ["Solar cities of tomorrow", "مدن الطاقة الشمسية"], ["Welcome", "أهلاً"]]
+const STABLE_OFFICE_ROOM_ON := true   # the stable office you can see into; false = the old solid box
+const FARMER_ON := true               # the farmer behind the farm stall counter hands you the order
+const FARMER_LOOK_RANGE := 9.0        # the farmer turns to look at you inside this distance
+const GLASS_BOOTHS_ON := true         # glass security booths at the school gate and the checkpoints

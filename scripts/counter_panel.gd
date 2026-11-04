@@ -31,7 +31,8 @@ func _process(_delta: float) -> void:
 	elif GameState.stage == GameState.Stage.TO_VILLA and order.villa_number in [903, 904]:
 		room = _places.get_node_or_null("Institute" if order.villa_number == 903 else "Gym")
 		title = order.address
-	if room == null or not room.get_meta("walk_in", false):
+	# Session 61: the farm stall's farmer hands over orders too ("counter_handoff").
+	if room == null or not (room.get_meta("walk_in", false) or room.get_meta("counter_handoff", false)):
 		_close()
 		return
 	_panel.show_counter(title, "%s\n%s" % [order.food.capitalize(), "Hold E to collect your delivery" if GameState.stage == GameState.Stage.TO_RESTAURANT else "Hold E to hand over the food"], _delivery.hold_progress())

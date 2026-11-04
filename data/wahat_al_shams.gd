@@ -442,9 +442,15 @@ const HILLS := [
 	{"position": Vector3(55, 0, 13), "height": 0.5},
 	{"position": Vector3(330, 0, 13), "height": 0.45},
 	{"position": Vector3(392, 0, 13), "height": 0.5},
+	{"position": Vector3(112, 0, 13), "height": 0.4},
+	{"position": Vector3(160, 0, 13), "height": 0.35},
 ]
 
-const LAP_POOL := Rect2(140, 13, 42, 9)
+const LAP_POOL := Rect2(100.5, -23.6, 29, 10.4)
+
+const LAP_POOL_DETAIL := {"water": Rect2(102.5, -22, 25, 7), "lanes": 4, "fence": "glass", "fence_height": 1.2, "gate": Vector2(115, -13.2), "gate_width": 1.0, "wall": [Vector2(103, -23.6), Vector2(127, -23.6)], "swimmers": 3}
+
+const COMMUNITY_POOL_DETAIL := {"water": Rect2(273, -28.5, 25, 12), "kids": Rect2(303, -28.5, 8, 6), "fence": "bars", "fence_height": 1.4, "gate": Vector2(313, -13), "gate_width": 1.0, "loungers_z": -31.8, "hut": Rect2(314, -35, 4, 3), "shower": Vector2(318.5, -29), "lifeguard": Vector2(285.5, -14.6), "swimmers": 4, "kids_in_pool": 3, "lounging": 5, "deck_walkers": 2}
 
 const DOME_RADIUS := 7.0
 
@@ -478,9 +484,9 @@ const BUS_STATION := {"position": Vector3(-310, 0, -174), "area": Rect2(-336, -2
 
 const INSTITUTE := {"position": Vector3(-215, 0, -33), "size": Vector3(46, 14, 36), "facing": 90.0, "name": "C Institute", "arabic": "معهد سي"}
 
-const GYM := {"position": Vector3(115, 0, 22), "size": Vector3(36, 8, 22), "facing": 180.0, "name": "Wahat Gym", "arabic": "نادي الواحة الرياضي"}
+const GYM := {"position": Vector3(115, 0, -30.1), "size": Vector3(24, 6, 13), "facing": 180.0, "name": "Wahat Gym", "arabic": "نادي الواحة الرياضي"}
 
-const COMMUNITY_POOL := Rect2(190, -30, 50, 24)
+const COMMUNITY_POOL := Rect2(270, -35.5, 50, 22.5)
 
 const JUMPING_ARENA := Rect2(-282, 65, 115, 88)
 
@@ -1031,10 +1037,10 @@ const VILLAS := [
 	{"number": 598, "house": 98, "cluster": "C5", "address": "Villa 98, Cluster 5", "map_address": "C5 · Villa 98", "kind": "courtyard", "row": "C5_R4", "row_mode": true, "position": Vector3(352, 0, 159.5), "facing": 90.0, "size": Vector3(9, 8.5, 8), "approach": Vector3(360, 0, 159.5)},
 	{"number": 599, "house": 99, "cluster": "C5", "address": "Villa 99, Cluster 5", "map_address": "C5 · Villa 99", "kind": "courtyard", "row": "C5_R4", "row_mode": true, "position": Vector3(352, 0, 168.5), "facing": 90.0, "size": Vector3(9, 8.5, 8), "approach": Vector3(360, 0, 168.5)},
 	{"number": 600, "house": 100, "cluster": "C5", "address": "Villa 100, Cluster 5", "map_address": "C5 · Villa 100", "kind": "signature", "row": "C5_R4", "row_mode": true, "position": Vector3(352, 0, 177.5), "facing": 90.0, "size": Vector3(9, 8.5, 8), "approach": Vector3(360, 0, 177.5)},
-	{"number": 901, "house": 0, "cluster": "", "address": "Fair Grade School · Gate", "map_address": "School Gate", "kind": "spot", "look": "booth", "position": Vector3(-365, 0, 32), "facing": 180.0, "size": Vector3(4, 3, 4), "who": "teacher"},
-	{"number": 902, "house": 0, "cluster": "", "address": "Wahat Stables · Office", "map_address": "Stables Office", "kind": "spot", "position": Vector3(-224, 0, 190), "facing": 0.0, "size": Vector3(7, 4, 6), "who": "groom"},
-	{"number": 903, "house": 0, "cluster": "", "address": "C Institute · Reception", "map_address": "C Institute", "kind": "spot", "position": Vector3(-215, 0, -33), "facing": 90.0, "size": Vector3(46, 14, 36), "interior": true, "who": "staff"},
-	{"number": 904, "house": 0, "cluster": "", "address": "Wahat Gym · Reception", "map_address": "Gym", "kind": "spot", "position": Vector3(115, 0, 22), "facing": 180.0, "size": Vector3(36, 8, 22), "interior": true, "who": "gym_goer"},
+	{"number": 901, "house": 0, "cluster": "", "address": "Fair Grade School · Gate", "map_address": "School Gate", "kind": "spot", "look": "booth", "position": Vector3(-357.4, 0, 30.6), "facing": 180.0, "size": Vector3(3.2, 2.9, 3.2), "who": "teacher"},
+	{"number": 902, "house": 0, "cluster": "", "address": "Wahat Stables · Office", "map_address": "Stables Office", "kind": "spot", "position": Vector3(-224, 0, 188.5), "facing": 0.0, "size": Vector3(7, 4, 6), "who": "groom"},
+	{"number": 903, "house": 0, "cluster": "", "address": "C Institute · Reception", "map_address": "C Institute", "kind": "spot", "position": Vector3(-215, 0, -33), "facing": 90.0, "size": Vector3(46, 14, 36), "interior": true, "who": "staff", "counter": Vector3(0, 0, 9.6)},
+	{"number": 904, "house": 0, "cluster": "", "address": "Wahat Gym · Reception", "map_address": "Gym", "kind": "spot", "position": Vector3(115, 0, -30.1), "facing": 180.0, "size": Vector3(24, 6, 13), "interior": true, "who": "gym_goer", "counter": Vector3(0, 0, 4)},
 ]
 
 const REGULARS := [

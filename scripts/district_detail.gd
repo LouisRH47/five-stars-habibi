@@ -4,6 +4,10 @@ extends Node3D
 var _map: Dictionary = {}
 var _swimmers: Array[Node3D] = []
 var _clock := 0.0
+## Session 60: the real pools (scripts/pool.gd) and whether each is near enough to move.
+var pools: Array[Pool] = []
+var _pool_awake := {}
+var _pool_check_left := 0.0
 const WHITE := Color(0.97, 0.97, 0.94)
 const SAND := Color(0.88, 0.78, 0.6)
 const TEAL := Color(0.16, 0.56, 0.61)
@@ -18,8 +22,8 @@ func _ready() -> void:
 	for hill: Dictionary in _map.get("HILLS", []):
 		_hill(hill)
 	_planting()
-	_pool(_map["LAP_POOL"], "LapPool", false)
-	_pool(_map["COMMUNITY_POOL"], "CommunityPool", true)
+	_pool(_map["LAP_POOL"], "LapPool", false, _map.get("LAP_POOL_DETAIL", {}))
+	_pool(_map["COMMUNITY_POOL"], "CommunityPool", true, _map.get("COMMUNITY_POOL_DETAIL", {}))
 	for area: Rect2 in _map.get("BUILDING_SITES", []).slice(1):
 		_site(area)
 	_street_details()
@@ -290,7 +294,15 @@ func _hill(spec: Dictionary) -> void:
 	body.add_child(collision)
 
 
-func _pool(area: Rect2, id: String, community: bool) -> void:
+func _pool(area: Rect2, id: String, community: bool, detail: Dictionary = {}) -> void:
+	if GameConfig.POOLS_REAL_ON and (detail.has("water") or not community):
+		# Session 60: a real pool with a fence and a gate, and people who really swim.
+		var pool := Pool.new()
+		pool.name = id
+		add_child(pool)
+		pool.setup(area, detail, community)
+		pools.append(pool)
+		return
 	var room := Node3D.new()
 	room.name = id
 	add_child(room)
@@ -396,3 +408,26 @@ func _process(delta: float) -> void:
 	_clock += delta
 	for i in _swimmers.size():
 		_swimmers[i].position.x += sin(_clock * 0.6 + i) * delta * 0.5
+	# Session 60: swimmers swim, kids splash, people stroll. Pools far from the camera rest
+	# (their people stop animating too), and wake up again as you come near.
+	_pool_check_left -= delta
+	if _pool_check_left <= 0.0:
+		_pool_check_left = 0.5
+		_wake_pools()
+	for pool in pools:
+		if _pool_awake.get(pool, true):
+			for swimmer in pool.swimmers:
+				swimmer.step(delta)
+
+
+func _wake_pools() -> void:
+	var camera := get_viewport().get_camera_3d()
+	for pool in pools:
+		var awake := true
+		if camera != null:
+			var middle := Vector3(pool.area.get_center().x, 0, pool.area.get_center().y)
+			awake = camera.global_position.distance_to(middle) < GameConfig.POOL_PEOPLE_RANGE + pool.area.size.length() * 0.5
+		if awake != _pool_awake.get(pool, true):
+			_pool_awake[pool] = awake
+			for swimmer in pool.swimmers:
+				swimmer.process_mode = Node.PROCESS_MODE_INHERIT if awake else Node.PROCESS_MODE_DISABLED
