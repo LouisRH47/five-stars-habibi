@@ -123,6 +123,27 @@ static func cap(person: Person, colour: Color, parent: Node3D) -> Node3D:
 	return holder
 
 
+## Sunglasses (Session 53): two lenses, a bridge, a thin top bar and two arms back to the
+## ears, sized to the head and centred on it, so they don't stick out on one side like the old
+## single black bar did. The face is towards -z.
+static func sunglasses(person: Person, colour: Color, parent: Node3D = null) -> Node3D:
+	var holder := person.follow("Head", parent)
+	holder.name = "Sunglasses"
+	var head := person.head_spot()
+	var s := head_size(person)
+	var front := -s * 0.5
+	var y := -s * 0.13
+	var lens := Vector3(s * 0.3, s * 0.15, s * 0.03)
+	for side in [-1.0, 1.0]:
+		LowPoly.box(holder, lens, colour, head + Vector3(side * s * 0.18, y, front))
+		# The arm runs back along the side of the head to the ear.
+		LowPoly.box(holder, Vector3(s * 0.025, s * 0.035, s * 0.5), colour,
+				head + Vector3(side * s * 0.36, y + s * 0.05, front + s * 0.25))
+	LowPoly.box(holder, Vector3(s * 0.74, s * 0.035, s * 0.035), colour, head + Vector3(0, y + s * 0.07, front))  # top bar
+	LowPoly.box(holder, Vector3(s * 0.08, s * 0.03, s * 0.03), colour, head + Vector3(0, y + s * 0.02, front))   # bridge
+	return holder
+
+
 ## A rounded riding helmet with a small peak.
 static func riding_helmet(person: Person, colour: Color) -> Node3D:
 	var holder := person.follow("Head")

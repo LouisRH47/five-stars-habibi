@@ -137,6 +137,11 @@ func follow(bone: String, parent: Node3D = null) -> Node3D:
 	var holder := Node3D.new()
 	holder.name = bone
 	holder.set_meta("bone", skeleton.find_bone(bone))
+	if bone == "Head":
+		# Session 53: this model's head rest pose is turned about 45 degrees (and tipped)
+		# compared with every animation, so head things (glasses, cap peaks) pointed off to
+		# one side. Head holders measure movement from the first idle frame instead.
+		holder.set_meta("reference", _head_reference())
 	(parent if parent != null else self).add_child(holder)
 	_followers.append(holder)
 	# Try-on screens pause animation. A new hat still needs the current bone pose
@@ -152,7 +157,50 @@ func spot(bone: String) -> Vector3:
 
 ## The middle of the head, standing straight.
 func head_spot() -> Vector3:
-	return (spot("Head") + spot("HeadTop_End")) * 0.5
+	var ref := _head_reference()
+	var top := skeleton.find_bone("HeadTop_End")
+	var top_ref := ref * skeleton.get_bone_global_rest(skeleton.find_bone("Head")).affine_inverse() \
+			* skeleton.get_bone_global_rest(top)
+	return skeleton_to_me * ((ref.origin + top_ref.origin) * 0.5)
+
+
+## Where the head bone is (skeleton space) on the first frame of the idle animation, worked
+## out from the animation's own keys so it also works before the person is in the tree.
+## The same for every person (one model), so it's worked out once.
+static var _head_ref := Transform3D()
+static var _head_ref_ready := false
+
+
+func _head_reference() -> Transform3D:
+	if _head_ref_ready:
+		return _head_ref
+	var anim := player.get_animation(CLIPS["idle"])
+	var chain: Array[int] = []
+	var bone := skeleton.find_bone("Head")
+	while bone >= 0:
+		chain.push_front(bone)
+		bone = skeleton.get_bone_parent(bone)
+	var global := Transform3D()
+	for b in chain:
+		var local := skeleton.get_bone_rest(b)
+		var name := skeleton.get_bone_name(b)
+		var position := local.origin
+		var rotation := local.basis.get_rotation_quaternion()
+		var scale := local.basis.get_scale()
+		for track in anim.get_track_count():
+			if not String(anim.track_get_path(track)).ends_with(":" + name):
+				continue
+			match anim.track_get_type(track):
+				Animation.TYPE_POSITION_3D:
+					position = anim.position_track_interpolate(track, 0.0)
+				Animation.TYPE_ROTATION_3D:
+					rotation = anim.rotation_track_interpolate(track, 0.0)
+				Animation.TYPE_SCALE_3D:
+					scale = anim.scale_track_interpolate(track, 0.0)
+		global = global * Transform3D(Basis(rotation).scaled_local(scale), position)
+	_head_ref = global
+	_head_ref_ready = true
+	return _head_ref
 
 
 ## After the bones move each frame: move every holder with its bone.
@@ -164,5 +212,6 @@ func _move_followers() -> void:
 
 func _move_follower(holder: Node3D) -> void:
 	var bone: int = holder.get_meta("bone")
-	var moved := skeleton.get_bone_global_pose(bone) * skeleton.get_bone_global_rest(bone).affine_inverse()
+	var reference: Transform3D = holder.get_meta("reference", skeleton.get_bone_global_rest(bone))
+	var moved := skeleton.get_bone_global_pose(bone) * reference.affine_inverse()
 	holder.transform = skeleton_to_me * moved * skeleton_to_me.affine_inverse()

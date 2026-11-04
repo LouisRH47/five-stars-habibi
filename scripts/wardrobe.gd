@@ -42,10 +42,7 @@ static func apply(person: Person, equipped: Dictionary) -> void:
 						LowPoly.box(head, Vector3(r * 0.12, r * 0.12, r * 0.9), Color(0.1, 0.12, 0.13),
 								person.head_spot() + Vector3(r * x, r * 0.93, 0))
 			"glasses":
-				var head := person.follow("Head", clothes)
-				var r := PeopleLooks.head_size(person) * 0.6
-				LowPoly.box(head, Vector3(r * 1.7, r * 0.28, 0.04), colour.darkened(0.7),
-						person.head_spot() + Vector3(0, 0, -r * 0.92))
+				PeopleLooks.sunglasses(person, colour.darkened(0.7), clothes)
 			"tops":
 				person.repaint({"shirt": colour})
 			"shoes":

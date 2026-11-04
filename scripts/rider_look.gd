@@ -61,7 +61,7 @@ static func apply(model: Node3D, look: int) -> void:
 			var sand := Color(0.9, 0.84, 0.65)
 			LowPoly.cylinder(hat, r * 1.5, r * 1.5, 0.02, sand, head + Vector3(0, r * 0.55, 0))      # brim
 			LowPoly.cylinder(hat, r * 0.8, r * 0.95, r * 0.6, sand, head + Vector3(0, r * 0.85, 0))   # top
-			LowPoly.box(hat, Vector3(r * 1.6, r * 0.28, 0.03), Color(0.05, 0.05, 0.05), head + Vector3(0, r * 0.05, -r * 0.95))  # sunglasses
+			PeopleLooks.sunglasses(rider, Color(0.05, 0.05, 0.05), parts)
 			for side in ["Left", "Right"]:  # bare legs under the shorts
 				var shin := rider.follow(side + "Leg", parts)
 				var knee := rider.spot(side + "Leg")
