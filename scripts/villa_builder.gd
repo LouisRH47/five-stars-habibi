@@ -38,6 +38,8 @@ var rng := RandomNumberGenerator.new()
 ## -1 when this home is built mirror-image (courtyard on the left instead of the right).
 var side := 1.0
 var kind := "courtyard"
+## Joined homes have no detached side yard: all features stay inside their exact plot.
+var row_mode := false
 var wall := Color.WHITE
 ## The parts of the home, as rectangles seen from above (x, z, width, depth) and heights.
 var main := Rect2()
@@ -58,6 +60,7 @@ static func build(place: Dictionary, size: Vector3) -> StaticBody3D:
 func _make(place: Dictionary, size: Vector3) -> StaticBody3D:
 	rng.seed = int(place["number"]) * 7919 + 13
 	kind = place.get("kind", "courtyard")
+	row_mode = place.get("row_mode", false)
 	body = StaticBody3D.new()
 	body.name = "Villa%d" % place["number"]
 	body.position = place["position"]
@@ -76,14 +79,45 @@ func _make(place: Dictionary, size: Vector3) -> StaticBody3D:
 	else:
 		_courtyard()
 	if kind == "signature":
-		_mashrabiya(Vector3(-3.0, GameConfig.HOUSE_STOREY + 1.35, main.end.y))
-	VillaExtras.add_all(self)
+		_mashrabiya(Vector3(main.get_center().x if row_mode else -3.0,
+				GameConfig.HOUSE_STOREY + 1.35, main.end.y))
+	if row_mode:
+		_row_extras()
+	else:
+		VillaExtras.add_all(self)
 	body.add_child(kit.finish("House"))
 	body.set_meta("kind", kind)
 	body.set_meta("house", int(place["house"]))
 	body.set_meta("extras", ",".join(extras))
 	body.set_meta("parts", kit.part_count())
+	body.set_meta("row_mode", row_mode)
 	return body
+
+
+## A deliberately simpler version of the same silhouette, used for distant joined rows.
+## It keeps the L-shape, roof, solar canopy and wind tower, without tiny props/windows.
+static func build_far(place: Dictionary, size: Vector3) -> MeshInstance3D:
+	var maker := VillaBuilder.new()
+	maker.rng.seed = int(place["number"]) * 7919 + 13
+	maker.kind = place.get("kind", "courtyard")
+	maker.row_mode = place.get("row_mode", false)
+	maker.side = -1.0 if maker.rng.randf() < GameConfig.HOUSE_FLIP_CHANCE else 1.0
+	maker.wall = WALLS[maker.rng.randi() % WALLS.size()]
+	maker._plan(size)
+	for part in [[maker.main, maker.roof], [maker.annex, maker.annex_roof]]:
+		var area: Rect2 = part[0]
+		var height: float = part[1]
+		maker.box(Vector3(area.size.x, height, area.size.y), maker.wall,
+				Vector3(area.get_center().x, height * 0.5, area.get_center().y))
+		maker.box(Vector3(area.size.x, 0.18, area.size.y), TRIM,
+				Vector3(area.get_center().x, height + 0.09, area.get_center().y))
+	var panel_spot := Vector3(maker.main.get_center().x, maker.roof + 0.9, maker.main.get_center().y)
+	maker.box(Vector3(maker.main.size.x - 0.7, 0.12, maker.main.size.y * 0.4), PANEL,
+			panel_spot, Basis(Vector3.RIGHT, 0.15))
+	maker.box(Vector3(0.9, 1.6, 0.9), maker.wall,
+			Vector3(maker.annex.end.x - 0.7, maker.annex_roof + 0.8, maker.annex.position.y + 0.7))
+	var view := maker.kit.finish("FarHouse")
+	return view
 
 
 ## Works out where the main block, the one-floor annex and the courtyard (or lawn) go.
@@ -91,6 +125,18 @@ func _plan(size: Vector3) -> void:
 	var half := size * 0.5
 	roof = GameConfig.HOUSE_STOREY * 2.0
 	annex_roof = GameConfig.HOUSE_ANNEX_HEIGHT
+	if row_mode:
+		# Frontage exactly matches the row pitch and depth exactly meets the other
+		# back-to-back home. Garden/signature identity changes the courtyard and details,
+		# not the plot boundary, so neighbouring homes never overlap or leave a gap.
+		var main_width := size.x * (0.62 if kind != "signature" else 0.68)
+		main = Rect2(-half.x, -half.z, main_width, size.z)
+		annex = Rect2(main.end.x, -half.z, size.x - main_width, size.z * 0.5)
+		yard = Rect2(main.end.x, 0.0, annex.size.x, half.z)
+		if kind == "signature":
+			roof += 0.4
+			annex_roof += 0.2
+		return
 	match kind:
 		"signature":
 			var deep := GameConfig.SIGNATURE_EXTRA_DEPTH
@@ -152,6 +198,8 @@ func _front_door(front: float, house: int) -> void:
 	var label := SignText.make_label(str(house), GameConfig.HOUSE_NUMBER_FONT, Color.WHITE, Color(0, 0, 0, 0), 0)
 	label.name = "Number"
 	label.position = Vector3(0, 3.1, front + 0.07)
+	if row_mode:
+		label.visibility_range_end = 65.0
 	body.add_child(label)
 
 
@@ -162,7 +210,7 @@ func _windows() -> void:
 	var floors := [1.5, up + 1.4]
 	for y in floors:
 		if kind != "signature" or y < up:  # upstairs, the signature villa has its mashrabiya here
-			window(Vector3(-3.5, y, front), Vector3.BACK, 1.0, 1.2)
+			window(Vector3(main.position.x + 1.0 if row_mode else -3.5, y, front), Vector3.BACK, 1.0, 1.2)
 		window(Vector3(main.position.x, y, main.get_center().y - 1.5), Vector3.LEFT, 0.9, 1.1)
 		window(Vector3(main.position.x, y, main.get_center().y + 2.5), Vector3.LEFT, 0.9, 1.1)
 		window(Vector3(main.get_center().x, y, main.position.y), Vector3.FORWARD, 1.2, 1.2)
@@ -247,11 +295,42 @@ func _lawn() -> void:
 	var hedge_spot := Vector3(yard.end.x - hedge.x * 0.5, 0.4, yard.end.y - 0.3)
 	box(hedge, LAWN.darkened(0.25), hedge_spot)
 	solid(hedge, hedge_spot)
-	var tree := Vector3(yard.end.x - 1.8, 0, yard.position.y + 1.4)
+	var tree := Vector3(yard.get_center().x if row_mode else yard.end.x - 1.8, 0, yard.position.y + 1.4)
 	box(Vector3(0.35, 2.6, 0.35), WOOD, tree + Vector3(0, 1.3, 0))
 	solid(Vector3(0.5, 2.6, 0.5), tree + Vector3(0, 1.3, 0))
-	kit_ball(1.6, LAWN.darkened(0.15), tree + Vector3(0, 3.4, 0), 0.8)
-	kit_ball(1.1, LAWN.darkened(0.05), tree + Vector3(0.6, 4.1, 0.4), 0.8)
+	var crown := minf(1.6, yard.size.x * 0.4) if row_mode else 1.6
+	kit_ball(crown, LAWN.darkened(0.15), tree + Vector3(0, 3.4, 0), 0.8)
+	kit_ball(crown * 0.7, LAWN.darkened(0.05), tree + Vector3(0.3 if row_mode else 0.6, 4.1, 0.4), 0.8)
+
+
+## Roof and courtyard details for terraced homes. Detached-house side props would
+## protrude into a neighbour, so these use safe spots within the home's own footprint.
+func _row_extras() -> void:
+	var ac_count := 1 + rng.randi() % 2
+	extras.append("ac_roof%d" % ac_count)
+	for i in ac_count:
+		box(Vector3(0.7, 0.55, 0.65), Color(0.75, 0.76, 0.78),
+				Vector3(main.position.x + 0.7 + i * 0.85, roof + 0.28, main.position.y + 0.7))
+	var pots := 1 + int(rng.randi() % 2)
+	extras.append("pots%d" % pots)
+	for i in pots:
+		var x := -1.4 if i == 0 else 1.4
+		kit_cylinder(0.2, 0.15, 0.4, Color(0.72, 0.42, 0.28), Vector3(x, 0.2, main.end.y + 0.25))
+		kit_ball(0.3, LAWN.darkened(0.1), Vector3(x, 0.65, main.end.y + 0.25))
+	if kind != "garden":
+		var tree := Vector3(yard.get_center().x, 0, yard.position.y + 0.85)
+		box(Vector3(0.15, 1.6, 0.15), WOOD, tree + Vector3(0, 0.8, 0))
+		kit_ball(minf(0.75, yard.size.x * 0.3), LAWN, tree + Vector3(0, 1.9, 0), 0.8)
+		extras.append("olive")
+	if rng.randf() < GameConfig.HOUSE_TOYS_CHANCE:
+		kit_ball(0.16, Color(0.9, 0.3, 0.3), Vector3(yard.get_center().x, 0.16, yard.end.y - 0.7))
+		extras.append("toyball")
+	if kind == "signature":
+		var spot := Vector3(yard.get_center().x, 0, yard.position.y + 2.1)
+		var width := minf(2.2, yard.size.x - 0.5)
+		box(Vector3(width, 0.12, 1.4), Color(0.96, 0.96, 0.94), spot + Vector3(0, 0.06, 0))
+		box(Vector3(width - 0.2, 0.03, 1.2), Color(0.35, 0.72, 0.88), spot + Vector3(0, 0.13, 0))
+		extras.append("pool")
 
 
 ## The wooden mashrabiya screen: a lattice of thin slats in a frame, on the upstairs front.

@@ -56,11 +56,17 @@ var _grid: RefCounted
 var _timeline := false  # "-- timeline": print each stage change and each back-up
 var _stage_was := ""
 var _rescan_at := -1          # Session 33: scan the map again at this frame (road works)
+var _shift_count := 1
+var _completed_shifts := 0
+var _balance: Array[Dictionary] = []
 
 
 func _initialize() -> void:
 	_careless = "careless" in OS.get_cmdline_user_args()
 	_timeline = "timeline" in OS.get_cmdline_user_args()
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("shifts="):
+			_shift_count = clampi(arg.get_slice("=", 1).to_int(), 1, 5)
 	_gs = root.get_node("GameState")
 	_gs.save_path = "user://playtest_bot_save.json"
 	_gs.new_game()
@@ -88,7 +94,7 @@ func _initialize() -> void:
 	_bike.crashed.connect(func(big):
 		_crashes["big" if big else "small"] += 1
 		print("  crash (%s): %s at %.0f km/h, at %s" % ["big" if big else "small", _bike.last_crash["what"], _bike.last_crash["kmh"], _bike.global_position]))
-	print("Play-test bot: one full shift, %s rider" % ("careless" if _careless else "careful"))
+	print("Play-test bot: %d consecutive full shifts, %s rider" % [_shift_count, "careless" if _careless else "careful"])
 
 
 func _physics_process(delta: float) -> bool:
@@ -161,7 +167,7 @@ func _walk(delta: float) -> void:
 	var walker: Node3D = _on_foot.walker
 	var here := _flat(walker.global_position)
 	var goal := _flat(_dm.target_door() if going_to_door else _bike.global_position)
-	if going_to_door and here.distance_to(goal) > RIDE_INSTEAD_M:
+	if going_to_door and here.distance_to(goal) > RIDE_INSTEAD_M and not _inside_delivery():
 		# The door moved far away ("leave it with the neighbour"): ride there, like a player.
 		if _on_foot.near_bike():
 			_on_foot.toggle()
@@ -199,6 +205,21 @@ func _walk(delta: float) -> void:
 		Input.action_press("steer_left")
 	if absf(turn) < 0.6:
 		Input.action_press("move_forward")
+
+
+## Receptions are deliberately a longer walk from the parked bike. A neighbour's
+## doorstep still uses the bike when it moves away; an indoor counter stays on foot.
+func _inside_delivery() -> bool:
+	if _gs.current_order == null:
+		return false
+	var order: Order = _gs.current_order
+	var places: Node = _dm.place_builder
+	var entries: Array = places.restaurants if _gs.stage_name() == "TO_RESTAURANT" else places.villas
+	for place: Dictionary in entries:
+		if (_gs.stage_name() == "TO_RESTAURANT" and place.get("id", "") == order.restaurant_id) \
+				or (_gs.stage_name() == "TO_VILLA" and place.get("number", 0) == order.villa_number):
+			return place.get("interior", false)
+	return false
 
 
 func _ride(delta: float) -> void:
@@ -255,6 +276,8 @@ func _follow(delta: float) -> void:
 	var v: float = maxf(_bike.speed, 0.0)
 	_advance(here)
 	var look := clampf(LOOK_AHEAD + 0.45 * v, LOOK_AHEAD, 5.5)
+	if _grid.wall_distance(here) < 3:
+		look = minf(look, 2.0)  # tight shop/row exits need a sharper, slower turn
 	var turn := _aim_angle(look, _careless)
 	_let_go()
 	# Pure pursuit: the curve that reaches the aim spot needs this much turning.
@@ -502,7 +525,7 @@ func _on_shift_ended(summary: Dictionary) -> void:
 	print("\n#  food        villa  ride s  target s  time%  fresh%  damage%  stars  pay  tip  special / regular")
 	var i := 0
 	var late := 0
-	for job in _gs.history:
+	for job in _gs.history.slice(_gs.shift_start_index):
 		var ride: Array = _rides[i] if i < _rides.size() else [0.0, 0.0]
 		i += 1
 		late += 1 if ride[0] > ride[1] else 0
@@ -517,9 +540,55 @@ func _on_shift_ended(summary: Dictionary) -> void:
 			summary["pay"], summary["tips"], summary.get("goal_bonus", 0), summary["insurance"], summary["bills"], summary["earned"], summary["xp"], _gs.level()])
 	print("Crashes: %d small, %d big. Times backed up: %d. Times stuck and reset: %d. Time spent walking: %.0f s" % [
 			_crashes["small"], _crashes["big"], _backed_up, _resets, _walk_time])
+	_completed_shifts += 1
+	_balance.append({"shift":_completed_shifts,"day":_gs.day_kind,"deliveries":summary["deliveries"],
+		"earned":summary["earned"],"stars":summary["stars"],"wallet":_gs.money,"xp":_gs.xp,"level":_gs.level(),
+		"small_crashes":_crashes["small"],"major_crashes":_crashes["big"],"resets":_resets,
+		"next_upgrade":GearCatalog.next_goal(_gs)})
+	if _completed_shifts < _shift_count:
+		_start_next_bot_shift.call_deferred()
+		return
+	print("BOT_BALANCE: ", JSON.stringify(_balance))
+	FileAccess.open("user://bot_balance.json", FileAccess.WRITE).store_string(JSON.stringify(_balance, "  "))
+	# Flush the pending end-of-shift save before deleting only this bot's fixture.
+	_gs.save_game()
 	SaveGame.delete("user://playtest_bot_save.json")
-	_gs.save_path = "user://none/never.json"
 	quit()
+
+
+func _start_next_bot_shift() -> void:
+	# Buy the first attainable upgrade through the same atomic cart players use.
+	if _gs.upgrade_level("gps") == 0 and _gs.level() >= 2 and _gs.money >= GameConfig.GEAR_PRICES["gps"]:
+		var cart := ShopCart.new(_gs)
+		cart.add("gps")
+		var purchase := cart.checkout()
+		print("BOT_PURCHASE: ", JSON.stringify(purchase))
+		var shop := _main.get_node_or_null("ShopController")
+		if shop != null:
+			shop.apply_equipment()
+	_main.get_node("ShiftScreen")._next_shift()
+	_frames = 0
+	_pts.clear()
+	_cum.clear()
+	_corners.clear()
+	_route_for = ""
+	_back_left = 0.0
+	_backups = 0
+	_best_left = INF
+	_backed_up = 0
+	_stuck_time = 0.0
+	_resets = 0
+	_rides.clear()
+	_walk_time = 0.0
+	_walked_for = ""
+	_walk_route.clear()
+	_walk_stuck = 0.0
+	_this_walk = 0.0
+	_crashes = {"small":0,"big":0}
+	_grid = null
+	_rescan_at = -1
+	_done = false
+	print("BOT_SHIFT_STARTED: ", _completed_shifts + 1, " · ", _gs.day_kind)
 
 
 ## A walk is taking long (every 20 s of it): say where we are, where to, and what's close by.

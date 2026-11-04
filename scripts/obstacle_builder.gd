@@ -24,6 +24,10 @@ func _ready() -> void:
 		var cat := AnimatableBody3D.new()
 		cat.set_script(CAT_SCRIPT)
 		cat.name = "Cat_%d" % i
+		if cats[i].has("collection_id"):
+			cat.set_meta("collection_id", cats[i]["collection_id"])
+			cat.set_meta("collection_name", cats[i].get("collection_name", cats[i]["collection_id"]))
+			cat.set_meta("impact_name", "the cat %s" % cats[i].get("collection_name", ""))
 		add_child(cat)
 		cat.setup(cats[i]["area"], cats[i]["colour"])
 	for i in kids.size():

@@ -33,7 +33,8 @@ func _point(action: String) -> Vector2:
 func _touch(index: int, action: String, pressed: bool, canceled := false) -> void:
 	var event := InputEventScreenTouch.new()
 	event.index = index
-	event.position = _point(action)
+	# Input.parse_input_event receives window coordinates, including at iPad scale.
+	event.position = root.get_final_transform() * _point(action)
 	event.pressed = pressed
 	event.canceled = canceled
 	Input.parse_input_event(event)
@@ -110,6 +111,8 @@ func _run() -> void:
 	_check(not Input.is_action_pressed("interact"), "touch controls leave menu input alone")
 	scene.queue_free()
 	await _check_ipad_layouts()
+	await _check_dynamic_touch_widgets()
+	await _check_rocket_control()
 	print("RESULT: FAIL" if _failed else "RESULT: PASS")
 	quit(1 if _failed else 0)
 
@@ -207,4 +210,120 @@ func _check_ipad_layouts() -> void:
 		pause.queue_free()
 		await process_frame
 	menu.queue_free()
+	await process_frame
+
+
+func _has_touch_target(control: Control) -> bool:
+	var rect: Rect2 = root.get_final_transform() * control.get_global_rect()
+	return rect.size.x >= 43.99 and rect.size.y >= 43.99
+
+
+func _check_dynamic_touch_widgets() -> void:
+	root.size = Vector2i(1024, 768)
+	var scene := Node.new()
+	var shop: CanvasLayer = load("res://ui/side_panel.gd").new()
+	var profile: CanvasLayer = load("res://scripts/profile_page.gd").new()
+	scene.add_child(shop)
+	scene.add_child(profile)
+	root.add_child(scene)
+	current_scene = scene
+	await process_frame
+	await process_frame
+
+	shop.visible = true
+	var initial_row: Button = shop.add_row("Leave shop", "")
+	await process_frame
+	_check(_has_touch_target(initial_row), "shop rows created after scene load have 44px touch targets")
+	shop.clear_rows()
+	var rebuilt_row: Button = shop.add_row("Checkout", "")
+	await process_frame
+	_check(_has_touch_target(rebuilt_row), "rebuilt shop rows keep 44px touch targets")
+
+	var state: Node = root.get_node("GameState")
+	var original_routes: Dictionary = state.personal_bests["routes"]
+	state.personal_bests["routes"] = {"touch-test": 30}
+	profile.open()
+	state.personal_bests["routes"] = original_routes
+	await process_frame
+	var reveal: Button
+	for widget in profile._content.get_children():
+		if widget is Button and widget.text == "View fastest rides":
+			reveal = widget
+			break
+	_check(reveal != null and _has_touch_target(reveal), "profile's late-created reveal button has a 44px touch target")
+	profile.close()
+	scene.queue_free()
+	await process_frame
+
+
+func _rocket_button() -> Dictionary:
+	for button in _controls._buttons:
+		if button.action == "rocket_boost":
+			return button
+	return {}
+
+
+func _check_rocket_control() -> void:
+	var scene := Node3D.new()
+	var bike: Node3D = load("res://scenes/bike.tscn").instantiate()
+	bike.name = "Bike"
+	scene.add_child(bike)
+	root.add_child(scene)
+	current_scene = scene
+	bike.set_physics_process(false)
+	bike.configure_upgrades({})
+	await process_frame
+	await process_frame
+	_check(not _rocket_button().get("visible", false), "rocket touch button is hidden before the upgrade is owned")
+	bike.configure_upgrades({"rocket": 1})
+	await process_frame
+	var button := _rocket_button()
+	_check(button.get("visible", false) and button.get("enabled", false), "buying a rocket exposes an enabled touch control")
+	_touch(20, "rocket_boost", true)
+	bike._physics_process(1.0 / 60.0)
+	_check(bike.boost_active, "touching Boost fires the actual bike rocket without a keyboard")
+	_touch(20, "rocket_boost", false)
+	await process_frame
+	_check(not _rocket_button().get("enabled", true), "active rocket disables another activation")
+	bike._boost_left = 0.0
+	bike.boost_cooldown_left = 12.0
+	await process_frame
+	_check("12" in str(_rocket_button().get("label", "")), "the touch button shows remaining rocket recharge seconds")
+	_touch(21, "rocket_boost", true)
+	bike._physics_process(1.0 / 60.0)
+	_check(not bike.boost_active and not Input.is_action_pressed("rocket_boost"), "touching a recharging rocket cannot activate or latch input")
+	_touch(21, "rocket_boost", false)
+	for dimensions in [Vector2i(1024, 768), Vector2i(768, 1024), Vector2i(1180, 820), Vector2i(1024, 650)]:
+		root.size = dimensions
+		await process_frame
+		await process_frame
+		var errors := _game_control_failures(Rect2(Vector2.ZERO, dimensions))
+		_check(errors.is_empty(), "%s rocket layout keeps 44px non-overlapping controls: %s" % [dimensions, errors])
+	bike.boost_cooldown_left = 0.0
+	await process_frame
+	_touch(22, "rocket_boost", true)
+	paused = true
+	await process_frame
+	_check(not Input.is_action_pressed("rocket_boost"), "pausing releases a held rocket control")
+	paused = false
+	await process_frame
+	_touch(23, "rocket_boost", true)
+	_controls.notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
+	Input.flush_buffered_events()
+	_check(not Input.is_action_pressed("rocket_boost"), "losing focus releases a held rocket control")
+	_controls.notification(Node.NOTIFICATION_APPLICATION_FOCUS_IN)
+	await process_frame
+	_touch(24, "rocket_boost", true)
+	root.size = Vector2i(768, 1024)
+	await process_frame
+	await process_frame
+	_check(not Input.is_action_pressed("rocket_boost"), "rotating releases a held rocket control")
+	bike.set_parked(true)
+	await process_frame
+	_check(not _rocket_button().get("enabled", true), "the rocket control cannot fire while the rider is on foot")
+	bike.set_parked(false)
+	bike.configure_upgrades({})
+	await process_frame
+	_check(not _rocket_button().get("visible", true), "removing rocket equipment hides its touch control")
+	scene.queue_free()
 	await process_frame

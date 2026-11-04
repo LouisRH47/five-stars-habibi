@@ -9,8 +9,8 @@ clearing website data removes it. Saves do not sync between MacBook and iPad.
 ## Normal updates
 
 1. Make changes on a branch and open a pull request.
-2. **Browser build and release** imports the project, runs the gameplay and touch
-   checks, exports the game, and saves a downloadable `browser-build` artifact.
+2. **Browser build and release** imports the project, runs the gameplay, touch and
+   focused regression suites, exports the game, and saves a downloadable `browser-build` artifact.
    Pull requests cannot deploy and receive no Cloudflare credential.
 3. Merge into `main`. A successful build deploys automatically to the address above.
    The workflow verifies `version.json` against the exact source commit and checks
@@ -72,8 +72,11 @@ python3 -m http.server 8765 --directory build/web
 ```
 
 Open http://localhost:8765. If Godot is elsewhere, change `GODOT_BIN`. Logs are
-in `build/logs`. The build uses a temporary test save, leaving player progress
-alone. In the Godot editor, open the project and press **F5** to verify the
+in `build/logs`. The smoke run uses a temporary test save. The focused suites run
+in a temporary project with all save and settings paths redirected, leaving player
+progress alone. These include tutorial crash recovery, collision-time insurance,
+bus recovery, reception panels, upgrades, replay, navigation and camera checks.
+In the Godot editor, open the project and press **F5** to verify the
 desktop game still opens normally. The web-only renderer settings preserve
 desktop Forward+.
 

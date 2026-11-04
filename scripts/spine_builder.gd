@@ -52,7 +52,7 @@ func _build_dome(spot: Vector3, radius: float) -> StaticBody3D:
 	for i in 3:
 		var rib := LowPoly.box(body, Vector3(0.08, radius * 0.78, radius * 2.0 + 0.1), DOME_RIB, Vector3(0, 0.5, 0))
 		rib.rotation.y = PI * i / 3.0
-	LowPoly.box(body, Vector3(1.2, 2.0, 0.3), Color(0.3, 0.45, 0.35, 1), Vector3(0, 1.0, radius - 0.1))
+	LowPoly.box(body, Vector3(1.2, 2.0, 0.3), Color(0.3, 0.45, 0.35, 1), Vector3(0, 1.0, radius + 0.08))
 	LowPoly.solid_cylinder(body, radius, 3.0, Vector3(0, 1.5, 0))
 	return body
 

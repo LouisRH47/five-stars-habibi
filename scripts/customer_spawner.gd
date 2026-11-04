@@ -29,8 +29,9 @@ static func pick_line(rider_name: String) -> String:
 ## What this order's customer says (Session 32): a regular says one of their own lines,
 ## a teacher, kid, rider or groom one of theirs, anyone else a random line.
 static func line_for(order: Order, rider_name: String) -> String:
-	if LINES_SCRIPT.REGULAR_LINES.has(order.regular_id):
-		return fill_line(LINES_SCRIPT.REGULAR_LINES[order.regular_id].pick_random(), rider_name)
+	if LINES_SCRIPT.REGULAR_STAGES.has(order.regular_id):
+		var lines: Array = LINES_SCRIPT.REGULAR_STAGES[order.regular_id][GameState.regular_stage(order.regular_id)]
+		return fill_line(lines.pick_random(), rider_name)
 	if LINES_SCRIPT.SPOT_LINES.has(order.who):
 		return fill_line(LINES_SCRIPT.SPOT_LINES[order.who].pick_random(), rider_name)
 	return pick_line(rider_name)
@@ -54,10 +55,14 @@ func _on_order_delivered(order: Order) -> void:
 	var customer := Node3D.new()
 	customer.set_script(CUSTOMER_SCRIPT)
 	customer.name = "Customer"
+	if villa.get("interior", false):
+		wall = place_builder.villa_door(order.villa_number) - front * 0.8
 	customer.position = wall - front * 0.2  # just inside the door
 	customer.rotation.y = angle             # facing out of the house (+Z = front)
 	add_child(customer)
-	customer.setup(line_for(order, GameState.rider_name), order.who, order.look)
+	var line := line_for(order, GameState.rider_name)
+	GameState.note_customer_line(line)
+	customer.setup(line, order.who, order.look)
 	last_spawned = customer
 
 

@@ -142,7 +142,7 @@ Every delivery is a race against three meters: time, heat and damage. How well y
 
 **Shifts**
 
-- One shift is 8 real minutes (one in-game day, 08:00 to 18:00, so one in-game hour is 48 seconds). It ends with a golden sunset. The clock reads like a real clock, "9:40 AM", and moves in 10-minute steps (one step every 8 real seconds) with a small sun icon, so it doesn't look like a sped-up timer. Tier 1 is day shift only. Night shifts unlock at Tier 2.
+- The clock rate is fixed: **one real gameplay second = one in-game minute**. The shift runs from 8:00 AM to 6:00 PM, so it lasts **10 active real minutes (600 seconds)**. One in-game hour takes 60 real seconds. The AM/PM clock advances one displayed minute each second, with a small sun icon, and the shift ends with a golden sunset. Pause menus, delivery-result screens and the tutorial freeze gameplay time. Tier 1 is day shift only. Night shifts unlock at Tier 2.
 - If the clock runs out while you're carrying an order, you still finish that delivery. The shift ends right after you drop it off. No new orders pop up once the clock is out.
 - At the end you get a summary screen: deliveries, stars, money earned, XP.
 
@@ -269,7 +269,7 @@ Money and Rider Level finally buy things. Two shops in the Plaza, both walk-in l
 - Owned items say "Owned", locked ones show the level they need, new ones have a "NEW" tag.
 - Restaurant counters, the C Institute reception and the gym reception use the same side panel, smaller: it shows the order while the person hands you the bag or takes it.
 
-**Pedal Point Bikes (بيدال بوينت)**, the bike shop and mechanic. Bikes hang on the wall, tools on a pegboard, and a mechanic stands at the workbench. Your bike turns slowly on a stand while you shop. Prices are starting ideas for 8-minute shifts; tune them in the play-test.
+**Pedal Point Bikes (بيدال بوينت)**, the bike shop and mechanic. Bikes hang on the wall, tools on a pegboard, and a mechanic stands at the workbench. Your bike turns slowly on a stand while you shop. Prices are starting ideas; tune them in the ten-minute-shift play-test.
 
 | Upgrade | Level | Price | What it does |
 | --- | --- | --- | --- |
@@ -299,7 +299,28 @@ Crashing costs you, and insurance is an optional bet. Prices are scaled down fro
 - **Small crash:** a low-speed hit or wipeout. You fall off, the damage meter takes a big hit (bad for your rating), and you get back on after about 2 seconds.
 - **Big crash:** hitting a car, wall or pole above about 20 km/h on the bicycle (higher limits for faster vehicles). The screen fades out and you wake up at the clinic. The order is cancelled (0 stars, no pay), the bills pop up, and your shift ends.
 
-**Big crash bills**
+**Crash reactions and severity billing (Sessions 44A–44B)**
+
+- **Show the fall before the hospital.** A crash plays a short, stylised rider-and-bike sequence before recovery or the clinic fade. Use distinct reactions: a wobble or gentle tip for a soft/slow hit, a sideways skid for a glancing collision, and a forward tumble or over-the-handlebars fall for a hard frontal impact. Faster, harder impacts give a stronger tumble/slide and camera/sound feedback. The rider separates from the bike where appropriate; the camera keeps the fall visible.
+- **Use the actual impact.** Capture the impact before the bike is stopped: relative speed into the obstacle, collision direction/angle, and obstacle category/hardness. A scrape along a wall should be milder than hitting it straight on at the same riding speed. A soft obstacle and a rigid wall/car should produce different reactions. Preserve the existing forgiving policy for people and animals.
+- **Make bills depend on severity.** Replace the prototype's flat major-crash prices with tunable severity bands for treatment and bike repair. Higher-impact-speed and harder-object collisions cost more; low-severity falls recover with little or no cash cost. Insured contributions also vary by severity within a clearly shown cap, so insurance reduces the cost without making every crash cost the same. Show what was hit, impact speed, severity, treatment, repair, insurance and the final amount due.
+- **One accident, one consequence.** The captured impact drives both the fall and its bill. Bounces during the fall must not add extra charges, crash counts or order cancellations. Disable normal riding during the sequence; always finish in a safe recovery or clinic transition, with a timeout if a physics fall does not settle.
+- **Keep the existing protections.** The boss still covers the first major crash, and insurance starts on. Minor falls return control to the rider; major falls finish the animation before the hospital and shift-ending flow. The later rocket's “any crash is major” rule still applies, using the same impact record.
+- Start with a few reliable authored/physics-assisted fall reactions; full ragdoll physics is optional. Exact thresholds, durations, material weights, bill bands and insured caps are playtest values in game_config.gd. Tune them against delivery earnings so a cool fall does not create an excessive repeat-work penalty.
+
+**Bicycle bill bands (detail pass, playtest values)**
+
+The captured relative impact speed, angle and material hardness choose the band.
+Recoverable minor falls have no cash bill. The first major crash is still boss-covered.
+
+| Severity | Treatment | Repair | Insured contribution cap |
+| --- | --- | --- | --- |
+| Minor | 0 Dh | 0 Dh | 0 Dh |
+| Moderate | 60 Dh | 35 Dh | 8 Dh |
+| Severe | 150 Dh | 80 Dh | 20 Dh |
+| Critical | 220 Dh | 140 Dh | 35 Dh |
+
+**Previous flat prototype bills (higher tiers remain future design)**
 
 | Tier | Hospital bill | Repair bill (from the delivery company) | With insurance you only pay |
 | --- | --- | --- | --- |
@@ -307,7 +328,7 @@ Crashing costs you, and insurance is an optional bet. Prices are scaled down fro
 | Motorbike | 400 Dh | 300 Dh | 50 Dh |
 | Taxi tiers | 800 Dh | 1,500 Dh+ | 150 Dh |
 
-One uninsured big crash on the bicycle costs about 20 deliveries of pay. That is too harsh for someone still learning the bike, so:
+A severe uninsured bicycle crash costs about 20 deliveries of pay. New riders have these protections:
 
 - **The boss covers your first big crash.** The first big crash of the game shows the bills, then a message from the boss saying Snackaroo pays this one. You still lose the order and the shift.
 - **Insurance starts switched on.** You can turn it off from the phone whenever you like. The tutorial points it out.
@@ -596,6 +617,8 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 3 Nov 2026 | Fair Grade International School copies the real school from Louis's photos. The C Institute (glass front and stepped seats facing the spine, walk-in lobby with a receptionist) is a drop-off. Gym (rounded at the back, lap pool beside it) and a separate community pool in the spine; gym reception is a drop-off |
 | 3 Nov 2026 | Spine gets grass texture, flowers and gentle hills (0.5 to 1.5 m), and one path linking all the domes. Textures and props everywhere. Camera never goes inside houses. Heat shimmer removed. Top speed 28, sprint 36 km/h with stronger speed lines and wind sound. Fix people with no head and the glitchy dome doors |
 | 3 Nov 2026 | Shops: Pedal Point Bikes (upgrades, stamina +10% buyable up to 10 times, aluminium then carbon frame, a 10,000 Dh rocket booster on X at Level 10, paint and box colours) and Dune Drip (clothes, try on in front of a mirror like GTA). Menu on the left while you stay in the 3D shop, with a cart and checkout. Same side-panel style at every walk-in place |
+| 3 Nov 2026 | Clock correction requested by Michael: one real gameplay second equals one game minute, displayed minute by minute. Keep 8:00 AM–6:00 PM, deriving a 600-second (ten-minute) shift from the fixed rate. This supersedes the eight-minute / ten-minute-display-step choice. Pause, tutorial and delivery-result screens still freeze gameplay time; action timers retain their real-second units |
+| 3 Nov 2026 | Michael requested distinct rider/bike fall animations before the hospital, based on the object, impact direction and force, plus treatment/repair and insured payments that vary with relative impact speed and obstacle hardness. Planned as 44A–44B; preserve first-crash cover and charge once per accident. Exact severity bands and prices need playtesting |
 
 | 3 Nov 2026 | Browser distribution requested by Michael: publish the current game at fivestarshabibi.middleleap.com for Louis to test on MacBook and potentially iPad, with GitHub deployment and releases. Keep desktop Forward+; use Compatibility/Low for web and add landscape touch controls. Browser saves stay on each device. |
 

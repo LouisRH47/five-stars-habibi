@@ -1,0 +1,296 @@
+# Complete plan: implementation and acceptance ledger
+
+Post-closeout review on 4 November found seven integration defects. They are fixed
+on `codex/plan-review-fixes`, with before/after regressions and 1,469 passing Godot
+assertions plus packaging and worker checks. See [the fix record](review-fixes-2026-11-04.md).
+These corrections have not been deployed; the deployment entries below describe
+the earlier candidate.
+
+Base: main ac47818 plus the verified clock and crash plan through808413b.
+
+Completion requires code, automated checks, rendered evidence and the listed human/release gates. A passing narrow check does not close a whole session.
+
+| Requirement | Status | Evidence needed |
+| --- | --- | --- |
+| 35 Real-size map, the new layout and the corrected AM/PM clock — The map is real size and laid out like the sketch, with nothing big left blank | Implemented and checked | Source + targeted check + visible acceptance |
+| 35 Real-size map, the new layout and the corrected AM/PM clock — A shift lasts 10 active real minutes and the AM/PM clock advances one game minute per second | Verified in the shift manager, Wahat smoke and rendered HUD | /private/tmp/habibi-venue-check/wahat.log and the gameplay capture below |
+| 35 Real-size map, the new layout and the corrected AM/PM clock — You start in front of the bus station and a full delivery works | Implemented and checked | Source + targeted check + visible acceptance |
+| 36 Joined rows of homes and the camera fix — Clusters look like the real ones from above: long joined rows with lanes between | Implemented and checked | Source + targeted check + visible acceptance |
+| 36 Joined rows of homes and the camera fix — The camera never goes inside a house | Implemented and checked | Source + targeted check + visible acceptance |
+| 36 Joined rows of homes and the camera fix — Still 60 fps on Medium with all 500 homes | Moving routes meet the 60 FPS target at Medium/1080p | Unlocked Mac run on ed5ba1a below |
+| 37 Car parks with solar roofs, cars, buggies and buses — Every car park has solar roofs and sits between clusters | Implemented and checked | Source + targeted check + visible acceptance |
+| 37 Car parks with solar roofs, cars, buggies and buses — Cars only on the ring road, buggies only inside, and the bus comes and goes | Implemented and checked | Source + targeted check + visible acceptance |
+| 38 Horse track, run and cycle track, jumping arena and stables — Horses go round the edge on their own track, and you ride the blue track beside it | Implemented and checked | Source + targeted check + visible acceptance |
+| 38 Horse track, run and cycle track, jumping arena and stables — The jumping arena has horses jumping | Implemented and checked | Source + targeted check + visible acceptance |
+| 39 The Plaza, restaurant fronts, mosque, bus station and checkpoints — The Plaza feels like a real little town centre with 12 different shop fronts | Implemented; feedback skipped | Source + targeted check + visible acceptance |
+| 39 The Plaza, restaurant fronts, mosque, bus station and checkpoints — Mosque, bus station and checkpoints look right, and the guard waves | Implemented; feedback skipped | Source + targeted check + visible acceptance |
+| 40 Restaurant insides and the side-panel style — Every restaurant has its own inside, and no two look the same | Implemented; feedback skipped | Source + targeted check + visible acceptance |
+| 40 Restaurant insides and the side-panel style — Picking up at the counter works and the side panel shows the order | Implemented and checked | Source + targeted check + visible acceptance |
+| 41 Fair Grade International School and the C Institute — You can spot the school from across the map, and it looks like Louis's photos | Implemented and checked; photo comparison skipped | Source + targeted check + visible acceptance |
+| 41 Fair Grade International School and the C Institute — The C Institute faces the spine, and you can walk in and hand food to the receptionist | Implemented and checked | Source + targeted check + visible acceptance |
+| 42 The green spine: hills, grass, domes path, gym and pools — The spine looks green and alive, with little hills and no big gaps between domes | Implemented and checked | Source + targeted check + visible acceptance |
+| 42 The green spine: hills, grass, domes path, gym and pools — The gym, lap pool and community pool are there, and the dome doors look right | Implemented; feedback skipped | Source + targeted check + visible acceptance |
+| 43 Textures, details and building sites everywhere — No big blank or plain areas anywhere on the map | Implemented and checked | Source + targeted check + visible acceptance |
+| 43 Textures, details and building sites everywhere — Textures and props make it feel like a real place, still 60 fps on Medium | Moving routes meet the 60 FPS target at Medium/1080p | Unlocked Mac run on ed5ba1a below |
+| 44 Speed feel and fixes — Riding and sprinting feel fast, with no warpy smear | Implemented and checked | Source + targeted check + visible acceptance |
+| 44 Speed feel and fixes — Everyone has a head | Implemented and checked | Source + targeted check + visible acceptance |
+| 44A Rider falls and crash presentation (planned) — A soft/slow hit, a glancing scrape and a hard frontal collision have visibly different falls | Implemented and checked | Source + targeted check + visible acceptance |
+| 44A Rider falls and crash presentation (planned) — Direction and intensity reflect the captured impact, with readable camera framing | Implemented and checked | Source + targeted check + visible acceptance |
+| 44A Rider falls and crash presentation (planned) — A major crash shows the fall before the hospital; a minor fall returns control safely | Implemented and checked | Source + targeted check + visible acceptance |
+| 44A Rider falls and crash presentation (planned) — Secondary bounce contacts cannot repeat crash counts, cancellation or consequences | Implemented and checked | Source + targeted check + visible acceptance |
+| 44A Rider falls and crash presentation (planned) — Louis watches the reactions at normal speed and likes how they look and feel | Feedback skipped at user request | Source + targeted check + visible acceptance |
+| 44B Impact-based crash bills and insurance (planned) — Representative low/medium/high impacts produce distinct, explainable bills | Implemented and checked | Source + targeted check + visible acceptance |
+| 44B Impact-based crash bills and insurance (planned) — Head-on versus glancing and soft versus hard obstacle cases follow the intended severity order | Implemented and checked | Source + targeted check + visible acceptance |
+| 44B Impact-based crash bills and insurance (planned) — First-crash cover and insurance work, including different capped insured payments by severity | Implemented and checked | Source + targeted check + visible acceptance |
+| 44B Impact-based crash bills and insurance (planned) — One fall creates one bill, one crash count and at most one cancelled order | Implemented and checked | Source + targeted check + visible acceptance |
+| 44B Impact-based crash bills and insurance (planned) — Tests verify severity boundaries and billing; a playtest checks the costs feel proportionate | Implemented and checked | Source + targeted check + visible acceptance |
+| 45 Pedal Point Bikes (upgrades, cart and checkout, rocket booster) — The bike shop looks like the mockup, and you see your bike while you shop | Implemented; feedback skipped | Source + targeted check + visible acceptance |
+| 45 Pedal Point Bikes (upgrades, cart and checkout, rocket booster) — Cart and checkout work, and every upgrade does what it says | Implemented and checked | Source + targeted check + visible acceptance |
+| 45 Pedal Point Bikes (upgrades, cart and checkout, rocket booster) — The rocket booster is crazy fast and only for late game | Implemented and checked | Source + targeted check + visible acceptance |
+| 46 Dune Drip clothes shop, then play-test the detail pass — Trying on clothes feels like a real game shop, and what you buy shows everywhere | Implemented; feedback skipped | Source + targeted check + visible acceptance |
+| 46 Dune Drip clothes shop, then play-test the detail pass — A careful ten-minute shift feels busy and pays for the first upgrade in about one shift | Implemented; feedback skipped | Source + targeted check + visible acceptance |
+| 46 Dune Drip clothes shop, then play-test the detail pass — Louis has played a full shift and is happy with it | Feedback skipped at user request | Source + targeted check + visible acceptance |
+| 47 Streaks, personal bests and PERFECT! — A streak makes you ride more carefully, and losing it stings a little | Implemented; feedback skipped | Source + targeted check + visible acceptance |
+| 47 Streaks, personal bests and PERFECT! — A perfect delivery and a new best feel good | Implemented; feedback skipped | Source + targeted check + visible acceptance |
+| 48 Choosing orders — Choosing between two orders is a real decision | Implemented and checked | Source + targeted check + visible acceptance |
+| 48 Choosing orders — A high rating feels worth having | Implemented; feedback skipped | Source + targeted check + visible acceptance |
+| 49 Tomorrow's special — Shifts feel different from each other | Implemented and checked | Source + targeted check + visible acceptance |
+| 49 Tomorrow's special — Seeing tomorrow's special makes you want one more shift | Implemented; feedback skipped | Source + targeted check + visible acceptance |
+| 50 Collections, regulars and the profile page — You can see how much of Wahat Al Shams you've collected | Implemented and checked | Source + targeted check + visible acceptance |
+| 50 Collections, regulars and the profile page — The regulars feel like they know you | Implemented and checked | Source + targeted check + visible acceptance |
+| 51 Final play-test, then itch.io — A friend plays for 10 minutes and wants to keep going | Feedback skipped at user request | Source + targeted check + visible acceptance |
+| 51 Final play-test, then itch.io — It's on itch.io | On hold at the user's request | The separate MiddleLeap web deployment is live. See release notes below. |
+
+## Cross-cutting invariants
+
+- Clock: one active real second = one game minute; 08:00–18:00 = 600 active seconds.
+- 500 unique home IDs, 100 per cluster, plus four special venues; legacy IDs stay stable.
+- Counter pickup requires a clear indoor walking target; bike parking has a separate approach.
+- 60 fps at Medium/1920×1080 on the Mac is a rendered gate, never inferred from headless checks.
+- One accident and one bill; show the fall before the clinic; preserve insurance, first-crash and rocket rules.
+- Validation snapshots redirect every user:// script path and the engine log into /private/tmp.
+- No diagnostic banners in ordinary gameplay.
+- Mac and Windows exports have separate verification evidence. The itch.io release is on hold at the user's request.
+
+## Execution log
+
+- Created codex/detail-pass-complete worktree at 808413b, preserving the corrected clock branch. Latest main verified ac47818; no open PRs at that check.
+- Removed all clock-check banner construction from the temporary live-clock harness; the ordinary source never contained it. Opened and visually verified the clean playable demo.
+- Implemented 940×500 m data, 500 joined homes plus four venues, separate approach/entrance/counter APIs, ten distinct walk-in restaurants, both shops, school/institute/gym/pools, terrain/detail/traffic/rails/arena, crash sequences and replay/progression modules. The final verification below records the tested implementation and remaining human acceptance gates.
+- Focused agent checks: housing/camera pass; shops35 pass; crash/traffic/wind pass; replay42 pass; replay UI13 pass; navigation9 pass. These are scoped results, not proof of the entire plan.
+- Full built-world check at /private/tmp/habibi-full-latest/world-final.log:27/27 pass, including all504 approach/door targets clear and reachable, every pickup counter walk-in route, 20 near/far row meshes and clock/speed invariants. Includes construction-road/parking, cross-row alley, static-batch, next-shift rider and existing-clinic outfit guards. Comfy-tyre camera response also passes three observable checks in gear.log.
+- Fixed three construction-site footprint conflicts, inserted central cross-row alleys, moved Plaza–C1 road clear of homes, moved buggy routes off mini-plaza obstacles and flattened the spine's main path through hills. School visual review also fixed playground/pool overlaps and swimmer height.
+- Rendered twelve world viewpoints at /private/tmp/habibi-full-check-next. Review led to transparent glass, warm counter lighting, visible menu/sign boards, outside seats, bowed school wings, rounded gym rear, spine planting, correctly seated visitors and kitchen motion. Fresh images still required after these changes.
+- Initial performance samples were below target despite static batching saving 3,622 submissions. Profiling found mini-map rebuilding cost 5–6 ms per frame. The final foreground samples below use cached rendering and the original resolution.
+- Clean Palm Grove/test-area smoke pass; Wahat smoke caught geometry and stale fixture contracts, being rerun. Careful full-shift bot is running; subsequent careless/five-shift balance and repeated smoke gates remain open.
+- Official Godot4.7.2 export templates are downloaded and SHA256 verified in /private/tmp/habibi-export-sdk; independent Mac/Windows preset probes exported successfully, actual game exports remain held. No publishing. Louis/friend normal-speed acceptance remains a human gate.
+- Fresh whole-branch review found next-shift actor desync, stale clinic outfit and missing tyre hill comfort. All three fixes were scoped-reviewed and their behavior checks pass. GPS sampling was raised above the hills and ignores moving actors; navigation11 focused checks pass. No unresolved P1 finding in that code review.
+
+## Final verification evidence
+
+- GitHub main rechecked at ac47818f648ad98f901ae5caa79ecd2988731b30 after implementation.
+- All 12 focused suites passed on an isolated Git archive of fa770a4, including all 39 crash checks, 38 traffic checks and 27 world checks. The runtime fingerprint before save-path redirection matches the desktop distribution manifest. Verification import and all suites exited cleanly with no script or resource errors. The cold import logged font/theme diagnostics while building its cache. Evidence: /private/tmp/habibi-focused-final-m7xc12yu/focused-results.json.
+- Wahat smoke: five runs of416 checks; Palm Grove309; test area275. Total2664. Clean repeat logs: /private/tmp/habibi-replay-check-9b1qxx9c/. After the final west-side scenery patch, the exact-source world check passed27 and Wahat smoke passed416 again; logs /private/tmp/habibi-final-checks/site-final.log and /private/tmp/habibi-replay-exact-final/wahat-smoke-84m.log.
+- Focused native 1920×1080 Medium / Forward+ Metal (Apple M3): bus87.5 fps (p95 15.11ms), cluster97.5 fps (13.34ms), spine83.5 fps (16.64ms). Each 10 seconds after a 5-second warmup, foreground focus throughout. Stationary views before the final off-camera west-side scenery patch; rare p99 spikes20–25ms. /private/tmp/habibi-performance-validation/focused-results.json
+- Pre-batching native 1920×1080 Medium / Forward+ Metal (Apple M3), 90 seconds after a 5-second warmup, foreground focus throughout: 56.0 fps overall (p95 28.0ms), 55.9 fps mounted, and 56.3 fps on foot. The careful test rider covered 464 m and picked up the order before the sample ended en route. The editor runtime and automated rider limit what this proves about the shipping runtime. The first release probe lost focus and was excluded. Evidence: /var/folders/4y/_yv4hds908d_n8013jncngmm0000gn/T/habibi-final-moving-9qzz22fu/native.log.
+- Batched each moving palm crown from 11 mesh surfaces to three while retaining the sway pivot and the three original materials. Geometry comparison matched every sampled vertex and colour and found a maximum normal difference below 0.0001. In the paired Mac release probe, three valid 16-second foreground passes covered roughly 124 m of the spine at 28 km/h. The original pass averaged 39.2 FPS and 2,422 draw calls per frame. The batched passes averaged 36.3 and 50.5 FPS with 1,790 and 1,656 draw calls. The shift lighting advanced between passes. These samples show fewer draw calls with variable FPS, and a fourth pass and graphics tuning retries lost focus. Evidence: /private/tmp/habibi-final-native-route/crown-pair-results.json and the matching fixed-input CSV files. Geometry check: /private/tmp/habibi-palm-check/crown-geometry.log.
+- Mini-map drawing fell about98%; cached world chunks preserve rotation/addresses/GPS. Repeated phone style/theme invalidations went from72 over8 unchanged frames to0. Static batching preserves colliders and colours.
+- Five careful shifts net110/141/98/140/156 Dh, 645 total, 538 XP, 27 deliveries, Level6; GPS50 after first shift. One boss-covered major crash and one small crash across five shifts; zero stuck resets/backups. Fresh careless shift:5 deliveries,126 Dh,100 XP,2 small crashes, no major crash or reset. See /private/tmp/habibi-careless-final-rsupxld2/verification-report.md. The bot now prints only the current shift's job rows; recorded structured results were already correct.
+- Actual cart replay buys first aluminium frame on shift5. Fixed-income extrapolation reaches rocket on shift94, not an observed 94-shift playtest. Retained specified 10,000 Dh price for human pacing review.
+- Both desktop builds use runtime fingerprint 10de3bad0932f8adee431eba00e7dbee9b32773c4f3866e6d583573b0babba5e. Review and portable ZIPs are in /private/tmp/habibi-desktop-review-final-v3-corrected/artifacts and /private/tmp/habibi-desktop-distribution-final-v3-corrected/artifacts. ZIP CRC/SHA256, Mac universal architecture/ad-hoc signature and Windows x64 PE checks pass. Mac menu and separately packaged Wahat QA entry both launch cleanly. Windows runtime is unverified. Nothing uploaded or published.
+
+The final gameplay capture shows 8:02 AM after two active seconds and no diagnostic banner. The overhead view was refreshed after fencing the last large unused patch west of the Institute; all roads and delivery targets remain clear.
+
+In the packaged Mac review app, Continue loaded the isolated Shift 2 demo save into Wahat. The normal HUD showed 8:05 AM and a Bread & Zaatar delivery offer for Villa 100 in Cluster 3, with no clock diagnostic banner.
+
+After palm batching, the geometry comparison, static batching suite, 27 world checks and all 416 Wahat smoke checks passed, including palm sway. The paired desktop rebuilds at /private/tmp/habibi-palm-check/review and /private/tmp/habibi-palm-check/distribution use runtime fingerprint e16ed943ed029cda8794ff85d12b32af5a43d4f055da1838c207995912d4bf01. ZIP integrity, checksums, Mac signatures, Windows executable headers, and the Mac menu and packaged Wahat headless launch passed. Verification logs are under /private/tmp/habibi-palm-check.
+
+The stamina and delivery bars now emit style notifications only when their fill colours change. The isolated check went from 40 to zero stable-colour notifications across 10 updates of all four bars, with five expected colour transitions and values intact in both runs. The walking rider and clinic patient stop processing while hidden. Seven checks covered initial inactive state, repeated dismounting, remounting, and the patient animating during the paused clinic screen. All 416 Wahat smoke checks passed on this revision. Evidence: /private/tmp/habibi-style-check/style.log, animation-recheck.log and wahat-smoke.log, and /private/tmp/habibi-palm-check/style-baseline.log.
+
+The current portable exports are at /private/tmp/habibi-ui-export-check/distribution. The archive CRCs, checksums, Mac signature and platform architectures passed and the source fingerprint matches adf37d10897156007614853daabbc39da35d4f8b9b3d89b955c8a0e6290ed547. The earlier review app and its launch evidence cover the palm revision.
+
+The follow-up release profiler returned zero for GPU timings. A shorter-shadow sample recorded a median 312 shadow draw calls against 905 in the baseline segment, but focus loss and heavy background load made the frame times incomparable. Medium quality settings were retained. Evidence: /private/tmp/habibi-spine-profile/fixed-input-results.json and CSVs.
+
+Dispatch now evaluates each door distance once per sort. In 162 paired seeded comparisons across Wahat, Palm Grove, the test area and an edited fixture, the orders and next random value matched. A forced fallback with 30 equally distant homes and two equivalent shops also matched. On Wahat, measured medians were 30.7 to 6.0 ms for ordinary generation, 64.6 to 10.1 ms for the short-ride path and 79.3 to 14.6 ms for better-offer generation. These are headless call timings on this Mac. Evidence: /private/tmp/habibi-dispatch-check/compare.log and fallback.log.
+
+The stream now uses 12 short mesh chunks for its 68 original pieces. All 2,448 triangle corners matched within 0.00004 m, with normal error below 0.0001. Every chunk retained the world-space water shader and flow speed. Replay, replay UI and shared navigation/GPS suites passed on this revision. Evidence: /private/tmp/habibi-dispatch-check/stream.log and the focused suite logs.
+
+All 416 Wahat smoke checks passed on the dispatch and stream revision. Current Mac and Windows archives at /private/tmp/habibi-dispatch-check/distribution match runtime fingerprint c87daee91b01019acae71114b544b7b5137e1a78c75a80eb74022fd5a7de4a89 and passed archive, checksum, architecture and Mac signature checks. The private Mac release comparison loaded Wahat with the native Metal renderer and built the district, but the desktop tool could not attach in time to start the foreground samples. Evidence: /private/tmp/habibi-dispatch-check/wahat.log, distribution/manifest.json and /private/tmp/habibi-spine-foreground/native.log.
+
+The perimeter now uses 24 spatial batches each for trunks and crowns. The native release check matched all 714 transforms for each part at millimetre precision, mesh arrays, materials and shadow settings. On matched foreground views, the spine went from about 1.04 million to 0.57 million rendered primitives and the north ring from 1.00 million to 0.57 million. Total draw calls rose about 1–3%. Frame rates varied between repeated baselines, so those samples establish the geometry savings and leave moving FPS open. Evidence: /private/tmp/habibi-tree-native/native.log.
+
+The fixed-camera shadow and upscaling probe lost focus during the run. Shorter shadows reduced shadow submissions at the same view, but the mixed-focus timing was inconclusive and Medium quality settings stayed unchanged. Evidence: /private/tmp/habibi-static-matched/native.log.
+
+The tree-batch revision passed all 416 Wahat smoke checks. The current desktop archives at /private/tmp/habibi-tree-check/distribution match runtime fingerprint 8cbe72e5e6a33ff3827d2bacf815e9b8fc7499b5a7c0f583a05cc7e1915f45d9 and passed checksums, archive integrity, platform architecture and Mac signature checks.
+
+The moving release probe sampled three 14-second routes at Medium, 1920×1080, with the normal HUD and an active order. All samples kept window focus, ran at 28 km/h, and had zero crashes. On the shared M3 Mac, averages were 36.3 FPS on the spine, 29.9 from plaza to C1, and 23.6 on the north ring. The p95 frame times were 52.5, 67.4 and 97.4 ms. The host had heavy background activity and memory pressure, and the run fell short of the 60 FPS target. Evidence: /private/tmp/habibi-tree-moving/fixed-input-results.json.
+
+Wahat now uses a 64-pixel sky radiance texture on Low and Medium and the existing 256 on High. The two fully focused fixed-view pairs at Medium and 1080p with the clock active averaged 24.6 to 34.2 FPS and 29.1 to 31.0 FPS. The p95 improved in one pair and worsened in the other. A third pair lost focus. The three matched lighting captures showed no material visual change in the sampled sky, stream and nearby buildings. A focused settings check verified Low, Medium, High and back to Medium, with the original shadow distances and sky settings on the other maps. Evidence: /private/tmp/habibi-sky-native/native.log and /private/tmp/habibi-sky-check/quality.log.
+
+All 416 Wahat smoke checks passed on the sky revision. The current portable archives at /private/tmp/habibi-sky-export-check/distribution match fingerprint ef5861d81ee1be168a0cf36bcb07bdfd3732b7002dda32c80180d1114396ce1c and passed integrity, architecture and Mac signature checks. The matched 14-second moving spine route averaged 52.5 FPS at Medium and 1080p with the 64-pixel setting active, 28 km/h throughout, no focus loss, and p95 frame time 31.5 ms. The plaza and north-ring samples lost focus during the combined run. A separate north-ring run reached 70.7 FPS with p95 18.5 ms, but never held focus and was excluded. Results: /private/tmp/habibi-sky-moving/three-route-results.json and north-native.log.
+
+The shadow probe compared Medium's four cascades at 150 m with two cascades at 110 m on the same active-order spine segment. Shadow draw calls fell from about 820 to 430 per frame. Average FPS did not improve across either repeat, and focus was lost during the run. The current shadow settings were retained. Evidence: /private/tmp/habibi-shadow-moving/fixed-input-results.json and native.log.
+
+Permanent staff and diners in walk-in venues now pause their animation beyond 85 m from the camera and resume within 70 m. Their models stay visible in their last pose. The focused check covered all 34 rigs, zero active from the spine view, a visible seated pose at distance, both sides of the hysteresis range, and resumed animation on approach. The shop suite and all 416 Wahat smoke checks passed. Evidence: /private/tmp/habibi-venue-check/venue-final.log, shop.log and wahat.log.
+
+Four focused eight-second moving spine passes at Medium and 1080p averaged 60.0–60.1 FPS. The baseline passes kept all 34 venue rigs active and the distance-gated passes ended with zero active. The p95 frame times ranged from 17.8 to 17.9 ms. There was no measurable frame-rate gain in this A/B. The current portable exports passed checksums, archive integrity, platform architecture and Mac signature checks and match runtime fingerprint fd9b3cb0d19cdfbce597a331e462913c197878834de1225415b842271b60fbd4. Evidence: /private/tmp/habibi-venue-native/fixed-input-results.json and /private/tmp/habibi-venue-export-check/distribution/manifest.json.
+
+The follow-up 14-second release runs on the spine, plaza and north ring lost focus, so the broader 60 FPS moving gate remains open. Evidence: /private/tmp/habibi-venue-moving/fixed-input-results.json.
+
+Refreshed the local Mac review app from the current portable build source. All 250 source files matched before isolating save and log paths. The packaged binary passed signature verification, launched the normal menu for 120 headless frames, and showed Continue in the desktop window. The isolated demo save is seeded with a hired rider and completed tutorial. The desktop click could not be confirmed after the observation timed out. An isolated source run invoked the same Continue button signal and loaded Wahat with the demo rider and 8:00 AM HUD. App and evidence: /private/tmp/habibi-current-mac-review/launch, provenance.json and menu.log, and /private/tmp/habibi-menu-path-check/final.log.
+
+The focus-guarded moving benchmark rejected both spine warmups after window focus dropped and expired with zero complete routes. The benchmark's timed results therefore leave the moving 60 FPS gate open. Evidence: /private/tmp/habibi-focus-guard/native.log and fixed-input-results.json.
+
+## Remaining acceptance
+
+- The school-photo comparison is skipped at the user's request. The PRD description is implemented.
+- Louis and friend feedback is skipped at the user's request.
+- Additional device assurance remains available through physical iPad and Windows gameplay. Sessions 35–51 explicitly require desktop exports, which passed. These physical playthroughs were added to the release checklist and are separate from feature implementation.
+- The user put itch.io on hold. The initial [MiddleLeap web deployment](https://fivestarshabibi.middleleap.com) served v0.1.0 from main commit `85c116a6282d986b8b1916c88eab7cb8d050f7a4`. The [live manifest](https://fivestarshabibi.middleleap.com/version.json) and Cloudflare production deployment agree. The live game package matches the v0.1.0 release ZIP by SHA-256.
+- In a fresh desktop browser context, the live build loaded from Play in browser, hired a test rider, entered Wahat, accepted the tutorial pizza order and responded to pedal input. After reload, Continue restored the same test rider in Wahat. The browser reported zero console errors. Scope was first-run gameplay and browser rider persistence. Full delivery, iPad touch, the friend playtest and the native desktop gates remain separate.
+- The v0.1.0 revision used a five-minute 8 AM–6 PM shift, a generic tip for minor crashes and fixed major-crash charges. The corrected ten-minute shift and impact-based crashes were verified on the local integration candidate below.
+- On 4 November, GitHub main and the [production manifest](https://fivestarshabibi.middleleap.com/version.json) both moved to `a2d0dd923a88073ddf22aaa575c323d286401373` (v0.1.1). The update addresses Safari and iPad controls. The clock and crash gameplay source at that public revision matches v0.1.0.
+
+## Local browser and desktop integration candidate
+
+The local branch `codex/detail-web-integration` combines the completed detail pass with GitHub main at `85c116a`. Product commit `cc3bd5997ee60d8b2ea71a49a6ad0f55d0779eb5` retains the browser shell and touch controls, WebGL renderer, Cloudflare asset packaging, and separate Mac and Windows presets. The web build runs the tracked Wahat smoke script with a temporary save directory.
+
+Godot 4.7.2 completed strict import, startup, 416 Wahat smoke assertions, the touch suite, and Web export. All 12 focused gameplay suites passed, including 39 crash checks. The five Cloudflare worker tests and seven packaging tests also passed. The prepared site's manifest identifies the exact product commit. The packaged WebAssembly and game pack total 18.9 MB.
+
+Chrome loaded the actual Web export on localhost, hired a rider, accepted the first pizza order, and reached 10 km/h. The test confirmed that the game persisted the rider to browser storage, then set tutorial completion in that isolated save to measure a normal shift. Continue restored the rider. The rendered clock advanced from 8:06 AM to 8:26 AM over 20.21 monotonic seconds between the midpoints of the two screenshot calls.
+
+A browser ride into a restaurant wall at 28 km/h produced a visible tumble. The frame sequence shows the rider separating from the bike and hitting the ground before the clinic opened. The clinic classified the impact as severe and quoted 150 Dh for care plus 80 Dh for repairs. First-crash boss coverage reduced the player's bill to 0 Dh. The browser test completed with no recorded errors. The timed clock result and crash captures are under `/private/tmp/habibi-detail-browser.9seKnm/run-Xk4mIN`.
+
+The Mac and Windows review and distribution exports match the integration tree. All four archives passed CRC and SHA-256 checks. The Mac builds passed signature and arm64/x86-64 checks, and the Mac review app launched for 120 headless frames. The Windows executables passed PE x64 checks. The native Windows gameplay and moving Mac performance gates remain open. The desktop manifests and logs are under `/private/tmp/habibi-integration-desktop.COQ6oO`.
+
+The public build at the time of these checks was v0.1.0. itch.io is on hold.
+
+## Safari and touch integration follow-up
+
+Product commit `4ff383fb8a0bb5152e5bfdfec5a3afaca7bc422e` merges GitHub main `a2d0dd9` with the local gameplay candidate. A clinic regression now distinguishes an accepted order from a pending offer. Only an accepted order displays the cancellation badge and records a zero-star job. The original failed the new pending-offer check. The fix passed all 43 crash checks and the 416 Wahat smoke assertions.
+
+In the 1024 × 768 CSS layout, shop and profile buttons created after the initial touch layout measured 29.33 pixels high. They now use the same 44-pixel touch sizing as static buttons. The regression covers shop rows on first creation and after rebuild, and the Profile button for fastest rides. The touch, shop and replay UI suites passed. Isolated test logs are under `/private/tmp/habibi-touch-sizing.b6dEiu`.
+
+On the preceding integration commit `cc3bd59`, Chromium tablet emulation verified trusted touch hiring and order acceptance, simultaneous pedalling and steering, touch Pause and release of held inputs. A separate foreground Mac run at Medium and 1920 × 1080 used Forward+ Metal, an active delivery, and 14-second mounted samples. At 28 km/h with zero focus losses or crashes, the spine averaged 59.59 FPS, Plaza to C1 averaged 60.14 FPS, and the north ring averaged 60.01 FPS. The spine remains below the strict 60 FPS gate. Evidence is under `/private/tmp/habibi-detail-touch.6ZVS5B` and `/private/tmp/habibi-integrated-native.A7oaPn`.
+
+On `4ff383f`, WebKit iPad Pro emulation covered hiring, first-order acceptance, Pause/Resume, Profile, simultaneous Go and Left, rotation while Go was held, the DPR cap and simulated safe-area insets. It recorded zero browser errors. Form controls measured 45 CSS pixels at 1024 × 768. The drive inputs in this WebKit run used synthetic DOM touch events. The earlier Chromium run used trusted browser touch events. Physical iPad testing remains open. Evidence is under `/private/tmp/habibi-detail-webkit.qDEnjY`.
+
+Chrome completed the full tutorial on `4ff383f` with ordinary player inputs. The rider walked inside 1000 Pizza, held E at the counter, remounted, rode to Villa 1 in Cluster 1 and handed over the food on foot. The receipt recorded 14 Dh gross, 2 Dh insurance, 12 Dh net and 16 XP. After dismissing the receipt, the HUD showed 8:13 AM, the 12 Dh balance, one completed delivery and a normal new offer. Browser evidence is under `/private/tmp/habibi-browser-delivery.9IHYkP`.
+
+The same ride exposed traffic clipping through the rear of the north restaurant row. The original lane at z=-202.8 intersected those walls. Product commit `b680ad6e0c026e0eda5d295796fd2d765c08ebd8` puts the north traffic route on the authored road center at z=-205 and preserves the other three edges. A swept-body regression failed for all ten cars and the bus before the fix. All 39 district traffic checks passed afterward. The refreshed product also passed the 416 Wahat assertions, touch suite, Web export and seven packaging tests. The prepared site manifest identifies `b680ad6`.
+
+The `b680ad6` Mac and Windows review and distribution packages passed checksum and ZIP integrity checks. Mac bundles passed signature and universal architecture checks, the private Mac app passed a 120-frame headless launch, and the Windows executables are x64 PE32+. The matching runtime fingerprint is `01aba3d6f654c8eec99a94f256c2e091a2c3e9400510160657d4838d984b68dd`. Packages and manifests are under `/private/tmp/habibi-traffic-desktop.pd2T70`.
+
+The exact `b680ad6` foreground rerun started Wahat on M3 Forward+ Metal, Medium, 1920 × 1080, with the active display reporting 60.0 Hz. The Mac was locked and the game never gained focus. The 90-second guard rejected the run with zero valid route samples and the Apple HUD returned zero presentation records. The valid earlier samples remain the available rendered performance evidence. Logs are in the desktop output's `performance` directory.
+
+## Exact release-candidate regression and balance checks
+
+Five consecutive Wahat smoke runs against archived product commit `b680ad6` passed 416 assertions each. Palm Grove passed 309 assertions and the test area passed 275. The seven runs used isolated save directories and had no unexpected errors. Evidence is under `/private/tmp/habibi-session51-exact.UBlW7W`.
+
+The careful bot completed five consecutive shifts on the same product snapshot. It made 27 deliveries, earned 637 Dh net and 538 XP, reached Rider Level 6, and had zero crashes or resets. The first shift earned 95 Dh and unlocked Level 2. The bot bought the 50 Dh GPS in the real shop cart. An economy replay used the observed income and XP with the recommended shopping sequence. The real cart awarded the aluminium frame in shift five, rejected a rocket purchase below Level 10 and rejected a Level 10 checkout at 9,999 Dh. Extending the same income and XP pattern across later shifts put the rocket purchase in projected shift 95. See the bot balance and economy audit in the same evidence directory.
+
+A headless probe constructed all 500 authored Wahat house bodies across 20 double rows using the production housing builder. Across 10,500 camera sweeps, it exercised 3,208 obstructions spanning all 500 houses and found zero near-volume overlaps. It also found zero overlaps over 2,400 smoothed camera frames with scripted lane movement and impact shake across all 40 row faces. This covers the tested house geometry and camera motions. Evidence is under `/private/tmp/habibi-authored-camera.1EVrZa`.
+
+The earlier Chrome receipt capture was taken before the first star animation. An isolated delivery with the same meter values left the receipt open while gameplay was paused. After the animation, the receipt and HUD both reported 3.0 stars. The test used the actual elapsed tween time. Evidence is in `/private/tmp/habibi-authored-camera.1EVrZa/receipt-result.log`.
+
+Chrome loaded the exact `b680ad6` Web package and recorded 68 views of the 1000 Pizza rear wall over 49.25 seconds. No passing vehicle appeared through the wall in the samples. The close-up at pickup was also clear, and the browser recorded zero errors. The swept-body route test independently checks the vehicle footprint along the whole route. Screenshots and browser event records are under `/private/tmp/habibi-ring-render.MvKG9B`.
+
+## Session 46 rendered and careless checks
+
+A separate careless shift on `b680ad6` completed five deliveries with a 4.80-star average, 84 Dh net, 98 XP, three minor wall crashes and zero resets. This run used the shop-special day and a new isolated save. The careful five-shift run and this run used their own order sequences. See `/private/tmp/habibi-session51-exact.UBlW7W/careless.log`.
+
+The Session 46 landmark set is under `/private/tmp/habibi-final-checks`. It includes the checkpoint, bus station, Plaza, a restaurant interior, a cluster row, the spine and gym, the school, the C Institute, the arena and both shop interiors. The school photo comparison needs Louis's references, which the PRD records outside the repository.
+
+Chrome on `b680ad6` walked into Pedal Point and opened the shop at the mechanic's counter using Hold E. The bike appeared on its stand, a pointer click switched to paint, and keyboard selection previewed Sunset paint. The 75 Dh checkout bought GPS and Sunset paint together. Browser storage showed the 425 Dh remaining wallet, GPS level 1, and the owned and equipped paint. The isolated rider was hired in the game, then seeded with a 500 Dh wallet and Level 2 XP for the purchase test. Evidence is under `/private/tmp/habibi-shops-render.fFc7Fc`.
+
+The same browser rider walked into Dune Drip and previewed a Teal cap on the 3D fitting model. Escape restored the original red cap. The rider reopened the fitting panel, pointer-selected a Sand cap and bought it for 20 Dh. After exit, the rider wore it in the world and browser storage retained the equipped cap and 405 Dh wallet. The two-shop run ended with zero browser errors.
+
+That run exposed a tutorial prompt that still told the rider to accept an order while the shop used E for the cart. It also showed missing glyphs in the Up and Down hints. Product commit `0820a528c415bc413628bbc69c84952ab140c52b` hides the tutorial with the gameplay HUD during shopping, restores its prior visibility on exit, and spells out the key names. Both new assertions failed before the fix, and all 39 focused shop checks passed afterward. Evidence is under `/private/tmp/habibi-shop-modal.5oNrWL`.
+
+A fresh rider on the `0820a52` Chrome export entered Pedal Point, saw the readable key hints and shop-only view, clicked to change category, and left with Escape. The tutorial returned with its first order still unaccepted. This run used an ordinary new rider and recorded zero browser errors. Evidence is under `/private/tmp/habibi-shops-refresh.lqxJzx`.
+
+## Full browser shift timing
+
+Chrome ran the exact `b680ad6` Web package through an idle normal shift with zero browser errors. The isolated rider was hired normally, and only tutorial completion was seeded before Continue. The HUD first showed 8:00 AM. After the world finished loading, it advanced from 8:58 AM to 4:58 PM over 480.29 wall seconds between capture midpoints. It switched from 5:59 PM to 6:00 PM between 541.02 and 542.02 wall seconds after the 8:58 AM capture. At the HUD's one-minute display resolution, that places clock-out about 600 active real seconds after the start. The last-orders warning and shift summary both appeared. Timeline and screenshots are under `/private/tmp/habibi-full-browser-clock.vV4EFP`.
+
+The summary capture exposed a stale phone view behind the modal. Clock-out had already cleared the unaccepted offer from game state, but the phone had not refreshed before the game paused.
+
+Product commit `59f65dbaf5772a05803b367eb6415181d1f24e0d` refreshes the phone synchronously at shift end. The phone shows Shift over in the summary, retains accepted delivery directions until handoff, and returns to Waiting on the next shift. The regression drove the real ShiftManager and ShiftScreen. Four assertions failed on the original code, and all 12 focused phone checks passed afterward. The checks cover an offer pending at cutoff, choices that expired just before cutoff, the final accepted delivery, and unchanged-frame style behavior. Evidence is under `/private/tmp/habibi-phone-clockout.od7jIR`.
+
+The `59f65db` candidate passed strict import and startup, all 416 Wahat smoke assertions, 46 touch assertions, five Cloudflare worker tests, seven packaging tests and Web export. The prepared site's manifest identifies the exact product commit. Its distribution ZIPs passed checksum and integrity checks. Mac signing and universal architecture were verified, and the isolated Mac review app completed 120 headless frames. The Windows executable verified as x64 PE32+. Matching runtime fingerprint `1bb764616438cf63dce1309d8d5f34dd0da87ac1a0eb433be215fe77d13b931a`. Desktop artifacts and logs are under `/private/tmp/habibi-summary-desktop.CX9Y5e`. The Mac was locked at handoff.
+
+## Rendered cutoff, upgrade progress and impact costs
+
+Chrome rendered the `59f65db` cutoff fix on the exact exported game pack. A local test shell applied Godot's 12× time setting and the isolated save seeded tutorial completion. The phone showed an offer during last orders, then showed Shift over with no order or accept hint at the 6:00 PM summary. The run exited with zero browser errors. This test exercises cutoff presentation. The wall-clock timing evidence is the normal-speed run above. Screenshots and timeline are under `/private/tmp/habibi-rendered-cutoff.F7iilW`.
+
+The Session 45 audit found the summary's next upgrade text in the scrolling results and no progress bar. Product commit `e903d7d439153f617460ae2b28fb2d09a4abbe26` moves the upgrade into a persistent group above Start next shift and uses the same wallet and level calculation as the phone. Four replay UI assertions failed before the fix. All 19 passed afterward, along with phone refresh, replay progress, gear ride, shops and touch controls. Evidence is under `/private/tmp/habibi-shift-progress.jJ61QU`.
+
+Chrome on `e903d7d` showed the fixed cutoff and the persistent summary group, above the next-shift button and outside the scroll area. The isolated rider was seeded with 20 Dh and Level 2 XP, and the game ran in the same accelerated test shell. The text read GPS route, Level 2, 30 Dh to go. The visible fill measured 180 of 450 pixels, matching 40% of the 50 Dh price. The test exited with zero browser errors. Screenshot and timeline are under `/private/tmp/habibi-summary-upgrade.5300HO`.
+
+With normal keyboard inputs on `59f65db`, Chrome recorded a 22 km/h restaurant-wall impact, a visible tumble before clinic, and a Moderate bill of 60 Dh treatment plus 35 Dh repairs. The isolated test save had first-crash cover already used and insurance off, so the rider paid 95 Dh. The earlier 28 km/h Severe impact showed 230 Dh gross with first-crash cover applied. A low-speed attempt on `e903d7d` passed beside the wall. Gentle fall and recovery have focused engine checks. Browser evidence is under `/private/tmp/habibi-impact-compare.390cqN`.
+
+The `e903d7d` product passed 416 Wahat smoke checks, 46 touch checks, five Cloudflare worker checks, seven packaging checks and Web export. Its exact Mac and Windows distribution ZIPs passed checksum and integrity verification. Mac signing and universal architecture were verified and the isolated review app completed 120 headless frames. The Windows executable verified as x64 PE32+. Matching runtime fingerprint `e4e182e78d67d1fff14f8b7d969cf4a68885dedb5962dd880378221f40cfec93`. Desktop artifacts are under `/private/tmp/habibi-upgrade-desktop.eWKtxV`. The display was locked at handoff. GitHub main was still `a2d0dd9` when checked.
+
+## Rendered order choice and crash comparison
+
+Chrome on the exact `e903d7d` game pack presented two distinct orders on the phone. The rider's isolated save had tutorial completion and five prior ratings of 5, 5, 5, 4 and 5. The phone showed a 4.8-star rating, then normal keyboard input on 2 selected the Shawarma Supreme pickup for Villa 69 and preserved the 17 Dh offer. The run recorded zero browser errors. The paired screenshot and event log are under `/private/tmp/habibi-two-offer.Tf2VM0`.
+
+The separate normal-input 11 km/h browser attempt went through the open 1000 Pizza frontage. An isolated Web export from `e903d7d` used a test entry point to supply repeatable impact velocities and angles to the production bike, camera and clinic code. The 10.8 km/h tip and 28.8 km/h glancing skid ran for about 1.4 and 1.8 real seconds. Both kept the rider in frame at the sampled pose, returned pedalling control and left the wallet at 500 Dh. The 28.8 km/h head-on tumble ran for about 2.2 seconds before the clinic opened. With first-crash coverage already used and insurance off, it charged 150 Dh for treatment and 80 Dh for repair, leaving 270 Dh. All three falls each emitted one start and one completion. The browser recorded zero errors. The replay, individual screenshots and timing log are under `/private/tmp/habibi-three-falls.awaEtB`. This is controlled rendering evidence. The earlier Moderate restaurant-wall collision was driven with normal controls.
+
+## Replay and staffed reception follow-up
+
+Product commit `c24f480` keeps Tomorrow above Start next shift and shows New best! above the scrolling results when a record was set. The prior summary capture at 1440 × 900 put Tomorrow below the visible rows. Four new replay UI assertions failed before the changes. All 23 passed on the integrated candidate. The tests cover preview placement and refresh, the record badge appearing and clearing, and the existing perfect-delivery jingle. Logs are under `/private/tmp/habibi-tomorrow.U5hQg8`.
+
+The same commit fixes missing-character boxes in the profile by using + and - for home stamps and Visited or Unvisited for venues. Chrome reproduced the defect on the exact `e903d7d` pack. A derivative export from that revision with only the profile patch showed the corrected text and markers. Its isolated save had 125 homes, two venues, all three regular familiarity tiers, two named animals, saved dialogue, and a 1:13 fastest ride. Normal keyboard and pointer controls opened the profile, scrolled, expanded the ride, closed and reopened it. The browser recorded zero errors. The paired captures and timeline are under `/private/tmp/habibi-profile-browser.jqMJoc`.
+
+Product commit `ed5ba1a` keeps C Institute and gym deliveries with reception staff. A seeded sample generated 12 doorstep orders in 80 at the institute and 14 in 80 at the gym before the change. Both dropped to 0 in 80 after it. Smoke checks exercised the production delivery controls at the school gate and both receptions. Holding E from the mounted approach did not complete the handoff. Walking into range and holding E showed the receipt, paid the rider and awarded the venue stamp. Both reception panels showed staff. The isolated smoke log is under `/private/tmp/habibi-venue-acceptance.Qt4IJ3`.
+
+The exact `ed5ba1a` candidate passed strict import and startup, 432 Wahat checks, 46 touch checks, 23 replay UI checks, 43 progression checks, 12 phone checks, five worker tests and seven packaging tests. The prepared Web site identifies `ed5ba1ab1c1078f1c02fab39410c88b39b9a6e43`. The refreshed Mac and Windows ZIPs passed checksum, integrity and architecture checks. The private universal Mac app passed an ad-hoc signature check and a 120-frame headless launch. The runtime fingerprint is `bc58e2472d285a5d607a4ad8fde8143d8f7b4cf9a2d0366fb4f1bc28af97ae3a`. Desktop packages and manifests are under `/private/tmp/habibi-replay-desktop.76rEF3`. Itch.io remains on hold.
+
+Chrome ran the exact `ed5ba1a` game pack with a test shell at 12× time and an isolated rider save with the tutorial completed, 20 Dh and Level 2 XP. The 6:00 PM summary showed Tomorrow: A sunny day directly above Start next shift. Ordinary E input opened Shift 3, and the 8:05 AM clock showed A sunny day. No browser errors were recorded. The normal-speed 8 AM–6 PM clock timing proof remains the full browser shift documented above. Screenshots and timeline are under `/private/tmp/habibi-tomorrow.U5hQg8`.
+
+The final smoke repeat covered five Wahat runs at 432 assertions each, 309 on Palm Grove and 275 in the test area. The Web pipeline ran one Wahat pass against the archived product. The remaining six runs used that archive with user data paths redirected to temporary storage. Evidence is in the Web pipeline log and the `repeat` directory under `/private/tmp/habibi-tomorrow.U5hQg8`.
+
+The five consecutive careful shifts on the integrated candidate completed 27 deliveries, earned 702 Dh net and 539 XP, and reached Level 6. The rider had one minor fall in shift five, zero major crashes and zero resets. Shift one earned 144 Dh, reached Level 2 and bought GPS through the real 50 Dh shop cart. A separate cart replay using the five observed incomes and XP totals bought the aluminium frame in shift four and rejected the rocket below Level 10 or below 10,000 Dh. Repeating the same pattern after those five observed shifts projects the rocket at shift 86. The projection does not model future changes in riding, income or spending. The bot and economy logs are under `/private/tmp/habibi-tomorrow.U5hQg8`.
+
+The display was still locked at the final check. The strict rendered Mac performance gate, physical iPad and Windows play, Louis's school reference photos, and the Louis and friend playtests still require external acceptance.
+
+## Checkpoint and restaurant acceptance follow-up
+
+GitHub main was rechecked at `a2d0dd923a88073ddf22aaa575c323d286401373` and is an ancestor of the exact `ed5ba1a` candidate.
+
+An isolated Wahat run on `ed5ba1a` passed 14 checkpoint checks. Both guards switched to the wave action when the bike approached. The closed centre blocked a sweep using the production bike collision body, and the side gap cleared it. A test moved a production traffic car within activation range. The boom rotated upward, released centre collision and returned to its closed position when the car moved away. The fixture positions the car to exercise the barrier without changing the shipped traffic routes. Evidence is in `/private/tmp/habibi-checkpoint-acceptance.WN4NJ1/checks.log`.
+
+The Sessions 39–40 pickup fixture ran against the archived `3e103a7` tree, with runtime files from `ed5ba1a`. All 61 checks passed across ten restaurants. The fixture parked the bike at each authored approach, then used normal inputs to accept, dismount, walk in, view the matching staffed panel, hold E to collect, walk out and remount. Mounted pickup was rejected at every counter. The test log and isolated fixture are under `/private/tmp/habibi-all-counters.UFbOYT`. The previous normal-input browser ride covers the full pizza route and handoff.
+
+## Unlocked Mac moving performance
+
+On 4 November, the user unlocked the Mac and the current candidate completed all three native moving routes at Medium and 1920 × 1080. The benchmark snapshot verified all 302 runtime files against product commit `ed5ba1ab1c1078f1c02fab39410c88b39b9a6e43`, with only isolated save paths and benchmark instrumentation. It used Forward+ Metal at scale 1.0 on the Mac's 60 Hz display, with the normal HUD and an active pizza delivery. A helper kept the game in the foreground during the run.
+
+Each route had a four-second warmup and about 14 seconds of measured riding at 28 km/h. The spine measured 60.00004994 FPS, Plaza to C1 measured 60.06963935 FPS, and the north ring measured 59.99824357 FPS. Together they drew 2,523 frames over 42.034149 seconds, or 60.02262589 FPS, and travelled about 327 metres. Every captured frame was focused, mounted and in the active delivery stage. Drawn-frame counts matched the frame samples, with zero crashes.
+
+These samples meet the representative 60 FPS target at the display's 60 Hz refresh rate. The north ring's difference from exactly 60 corresponds to 0.41 ms across the whole sample interval. Frame pacing had p95 values between 17.64 and 17.81 ms and a worst frame of 28.49 ms. This evidence covers the three measured routes. The initial attempt lost focus and was retained separately in `attempt1`.
+
+The raw result, per-frame CSVs, provenance manifest and logs are under `/private/tmp/habibi-replay-desktop.76rEF3/performance-unlocked`. The hardware and human acceptance work still open is physical iPad and Windows gameplay, comparison with Louis's school photos, and the Louis and friend playtests. Itch.io remains on hold.
+
+## Production playtest deployment
+
+On 4 November, the user authorized publishing the latest tested candidate to the existing MiddleLeap playtest address. Source commit `a9b3953c94b4fa4cd343077c1d568893770617e9` was pushed to `codex/detail-web-integration` and deployed with the existing production workflow using that exact source reference. Its runtime files match the previously tested `ed5ba1a` product. GitHub main was `a2d0dd9` at deployment.
+
+[Production workflow 41774360771](https://github.com/LouisRH47/five-stars-habibi/actions/runs/41774360771) completed successfully, including 432 Wahat assertions, 46 touch assertions, packaging and engine-serving checks, Web export and verification of the public version. Cloudflare's production deployment `ccbdc3f5-331a-4cd1-ad76-832ecb6066e2` and [the public manifest](https://fivestarshabibi.middleleap.com/version.json) both identify `a9b3953c94b4fa4cd343077c1d568893770617e9`.
+
+The public HTML, loader, game pack and audio worklets match the downloaded workflow artifact byte for byte. The compressed WebAssembly response also matches the artifact and decodes to the correct WebAssembly header. The deployed pack SHA-256 is `e6594e49a69aab7e1f7dd295da28860677505a323a77263dfff6d23bdbfe3dc2`. The production shell uses ordinary engine arguments and the main menu. Release records, workflow logs, downloaded artifact and asset comparison are under `/private/tmp/habibi-production.WCt7Ms`.
+
+A fresh Chrome context loaded the production site, hired a rider, used Start riding, accepted the tutorial order with E and pedalled using W. The phone switched to PICK UP and the pizza marker distance decreased from 33 m to 21 m, with a captured speed of 26 km/h. Reload and Continue restored the same isolated rider. Only that test save's tutorial completion flag was changed before the clock observation. The HUD advanced from 8:00 AM to 8:08 AM across a 10.03-second interval that included scene startup. This confirms clock advancement in the production build. The full normal-speed rate proof is recorded above. The final live run recorded zero browser errors. Screenshots and results are under `/private/tmp/habibi-live-corrected.7Q4xh2/final`.
+
+## Feedback scope update
+
+On 4 November, the user directed that feedback be skipped. The Louis and friend satisfaction gates and subjective feel reviews are waived. All planned gameplay features remain implemented and deployed. The Mac and Windows export requirements passed, the Mac moving performance target passed, and production browser loading, order acceptance, movement, clock advancement and reload were verified.
+
+Physical iPad and Windows playthroughs are additional assurance checks from the release checklist. Their absence does not represent an unimplemented feature. The explicit Session 41 school-photo resemblance criterion remains unverified. The school implements the PRD description. The referenced photos are outside the repository, and a targeted search of accessible connected files did not identify Louis's reference set. Itch.io remains on hold at the user's request.
+
+## Completion after scope updates
+
+On 4 November, the user explicitly skipped the school-photo comparison after previously skipping feedback. Those acceptance criteria are waived. All remaining active requirements for Sessions 35–51 are implemented and verified through the recorded source checks, runtime checks, rendered evidence, desktop exports, Mac performance run and production deployment. The latest tested gameplay is live at [fivestarshabibi.middleleap.com](https://fivestarshabibi.middleleap.com).
+
+Physical iPad and Windows playthroughs remain additional assurance checks. Itch.io publishing remains on hold at the user's request.

@@ -27,7 +27,7 @@ func _physics_process(_delta: float) -> void:
 		toggle()
 	elif on_foot and Input.is_action_just_pressed("reset_bike"):
 		get_on(true)
-		bike.reset_to_start()
+		bike.recover_nearby()
 
 
 ## F: off the bike if it's slow enough, back on if you're next to it.
@@ -54,17 +54,35 @@ func distance_to_bike() -> float:
 func get_off() -> bool:
 	if not can_get_off():
 		return false
-	on_foot = true
-	bike.set_parked(true)
-	# Step off to the bike's right-hand side, facing the same way.
 	var side := bike.global_basis.x
 	side.y = 0.0
+	var landing := _clear_dismount(side.normalized())
+	if landing == Vector3.INF:
+		return false
+	on_foot = true
+	bike.set_parked(true)
 	walker.global_transform = Transform3D(bike.global_basis.orthonormalized(),
-			bike.global_position + side.normalized() * 0.9 + Vector3.UP * 0.05)
+			landing)
 	walker.set_active(true)
 	_follow(walker)
 	changed.emit(true)
 	return true
+
+
+func _clear_dismount(side: Vector3) -> Vector3:
+	var shape := CapsuleShape3D.new()
+	shape.radius = 0.3
+	shape.height = 1.65
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape = shape
+	query.exclude = [bike.get_rid(), walker.get_rid()]
+	query.collide_with_areas = false
+	for direction in [side, -side, bike.global_basis.z, -bike.global_basis.z]:
+		var spot: Vector3 = bike.global_position + direction * 0.95 + Vector3.UP * 0.05
+		query.transform = Transform3D(Basis(), spot + Vector3.UP * 0.86)
+		if bike.get_world_3d().direct_space_state.intersect_shape(query, 1).is_empty():
+			return spot
+	return Vector3.INF
 
 
 ## anywhere: get on even if you're not next to the bike (R puts you back on).

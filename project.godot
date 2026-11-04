@@ -104,6 +104,11 @@ ring_bell={
 ]
 }
 
+rocket_boost={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"physical_keycode":88)]
+}
+
 [physics]
 
 common/physics_interpolation=true
@@ -114,4 +119,5 @@ common/physics_interpolation=true
 renderer/rendering_method.web="gl_compatibility"
 ; Import both desktop and mobile texture formats for the universal browser build.
 textures/vram_compression/import_etc2_astc=true
+textures/vram_compression/import_s3tc_bptc=true
 scaling_3d/scale.web=0.75

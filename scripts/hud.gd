@@ -21,5 +21,8 @@ func _process(_delta: float) -> void:
 	if bike == null:
 		return
 	_speed.text = str(roundi(absf(bike.speed) * 3.6))
+	_bar.max_value = bike.stamina_capacity()
 	_bar.value = bike.stamina
-	_fill.bg_color = BAR_TIRED if bike.tired else BAR_NORMAL
+	var colour := BAR_TIRED if bike.tired else BAR_NORMAL
+	if _fill.bg_color != colour:
+		_fill.bg_color = colour

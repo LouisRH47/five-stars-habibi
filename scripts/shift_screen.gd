@@ -1,5 +1,5 @@
 extends CanvasLayer
-## The shift on screen: a clock at the top middle (in-game time, 08:00 to 18:00) and,
+## The shift on screen: an AM/PM clock at the top middle (8:00 AM to 6:00 PM) and,
 ## when the shift is over, the summary screen: deliveries, average stars, money earned,
 ## tips, insurance, bills, XP. "Start next shift" (or E) carries on. The game is paused
 ## while the summary shows. The numbers come from GameState.shift_summary().
@@ -19,11 +19,17 @@ var showing := false
 var last_summary: Dictionary = {}
 
 var _clock: Label
+var _sun_icon: Control
 var _clock_note: Label
+var _day_note: Label
 var _summary: PanelContainer
 var _title: Label
 var _stars: StarRow
+var _new_best: Label
 var _table: GridContainer
+var _gear_goal: Label
+var _gear_progress: ProgressBar
+var _tomorrow: Label
 var _shade: ColorRect
 
 
@@ -35,8 +41,9 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	var hours := GameState.clock_hours()
-	_clock.text = "%02d:%02d" % [int(hours), int(fmod(hours, 1.0) * 60.0)]
+	_clock.text = GameClock.format_time(GameState.clock_hours())
+	_day_note.text = GameState.day_label()
+	_day_note.tooltip_text = ReplayCatalog.day_detail(GameState.day_kind)
 	if GameState.shift_clock_out:
 		_clock_note.text = "Shift over: finish your delivery" if GameState.current_order != null else "Shift over"
 		_clock.modulate = ORANGE
@@ -61,6 +68,12 @@ func show_summary(summary: Dictionary) -> void:
 	get_tree().paused = true
 	_title.text = "Shift %d done!" % GameState.shift_number
 	_stars.stars = roundf(summary["stars"] * 2.0) / 2.0
+	var new_bests: Array = summary.get("new_bests", [])
+	_new_best.visible = not new_bests.is_empty()
+	var next_goal := GearCatalog.next_goal(GameState)
+	_gear_goal.text = "Next upgrade: " + next_goal["description"]
+	_gear_progress.ratio = next_goal["progress"]
+	_tomorrow.text = "Tomorrow: " + ReplayCatalog.day_name(summary.get("tomorrow", "normal"))
 	for child in _table.get_children():
 		child.queue_free()
 	var rows := [
@@ -73,17 +86,23 @@ func show_summary(summary: Dictionary) -> void:
 		["You earned", "%d Dh" % summary["earned"]],
 		["XP", "+%d" % summary["xp"]],
 	]
+	if summary.get("collection_bonus", 0) > 0:
+		rows.insert(4, ["Stamp card bonus", "+%d Dh" % summary["collection_bonus"]])
+	for best in new_bests:
+		rows.append(["Personal best", best])
 	if summary["cancelled"] > 0:
 		rows.insert(1, ["Cancelled", str(summary["cancelled"])])
 	# Session 32: each shift goal, with its 15 Dh bonus if you did it.
 	for goal in summary.get("goals", []):
-		var at := rows.size() - 2  # just above "You earned"
+		var at := 0
+		while at < rows.size() and rows[at][0] != "You earned":
+			at += 1
 		rows.insert(at, ["%s %s" % ["✓" if goal["done"] else "•", goal["text"]],
 				"+%d Dh" % GameConfig.GOAL_BONUS if goal["done"] else "-"])
 	for row in rows:
 		var big: bool = row[0] == "You earned"
-		_table.add_child(_label(row[0], 22 if big else 19, ORANGE if big else SOFT))
-		var value := _label(row[1], 22 if big else 19, ORANGE if big else TEXT)
+		_table.add_child(_label(row[0], 20 if big else 16, ORANGE if big else SOFT))
+		var value := _label(row[1], 20 if big else 16, ORANGE if big else TEXT)
 		value.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		value.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_table.add_child(value)
@@ -104,19 +123,41 @@ func _build_clock() -> void:
 	box.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	box.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	box.offset_top = 24
-	box.custom_minimum_size = Vector2(170, 0)
+	box.custom_minimum_size = Vector2(220, 0)
 	box.add_theme_stylebox_override("panel", _style(18, 2, 10))
 	add_child(box)
 	var rows := VBoxContainer.new()
 	rows.add_theme_constant_override("separation", -2)
 	box.add_child(rows)
-	_clock = _label("08:00", 34, TEXT)
+	var clock_row := HBoxContainer.new()
+	clock_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	clock_row.add_theme_constant_override("separation", 10)
+	rows.add_child(clock_row)
+	_sun_icon = Control.new()
+	_sun_icon.custom_minimum_size = Vector2(22, 22)
+	_sun_icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_sun_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_sun_icon.draw.connect(_draw_sun)
+	clock_row.add_child(_sun_icon)
+	_clock = _label(GameClock.format_time(GameState.clock_hours()), 34, TEXT)
 	_clock.theme_type_variation = &"BigNumber"
 	_clock.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	rows.add_child(_clock)
+	clock_row.add_child(_clock)
 	_clock_note = _label("Shift 1", 13, SOFT)
 	_clock_note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	rows.add_child(_clock_note)
+	_day_note = _label(GameState.day_label(), 13, ORANGE)
+	_day_note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	rows.add_child(_day_note)
+
+
+## Draw the sun directly so it doesn't depend on a font's symbol coverage.
+func _draw_sun() -> void:
+	var centre := _sun_icon.size * 0.5
+	_sun_icon.draw_circle(centre, 4.0, ORANGE)
+	for ray in range(8):
+		var direction := Vector2.from_angle(ray * TAU / 8.0)
+		_sun_icon.draw_line(centre + direction * 7.0, centre + direction * 10.0, ORANGE, 2.0, true)
 
 
 func _build_summary() -> void:
@@ -142,10 +183,32 @@ func _build_summary() -> void:
 	_stars = StarRow.new()
 	_stars.star_size = 36.0
 	rows.add_child(_stars)
+	_new_best = _label("New best!", 20, ORANGE)
+	_new_best.hide()
+	rows.add_child(_new_best)
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(600, 300)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	rows.add_child(scroll)
 	_table = GridContainer.new()
+	_table.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_table.columns = 2
 	_table.add_theme_constant_override("v_separation", 6)
-	rows.add_child(_table)
+	scroll.add_child(_table)
+	var upgrade := VBoxContainer.new()
+	upgrade.name = "NextUpgrade"
+	rows.add_child(upgrade)
+	_gear_goal = _label("", 16, TEXT)
+	_gear_goal.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	upgrade.add_child(_gear_goal)
+	_gear_progress = ProgressBar.new()
+	_gear_progress.custom_minimum_size.y = 5
+	_gear_progress.show_percentage = false
+	_gear_progress.step = 0.0
+	upgrade.add_child(_gear_progress)
+	_tomorrow = _label("", 18, ORANGE)
+	_tomorrow.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	rows.add_child(_tomorrow)
 	var next := Button.new()
 	next.text = "Start next shift  (E)"
 	next.add_theme_font_size_override("font_size", 20)

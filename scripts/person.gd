@@ -18,7 +18,7 @@ const CLIPS := {
 	"jog": "Human Armature|Run",
 }
 ## Everything a person can do: the clips above, plus poses made in code.
-const ACTIONS := ["idle", "walk", "jog", "wave", "pedal", "lie"]
+const ACTIONS := ["idle", "walk", "jog", "wave", "pedal", "lie", "sit"]
 ## The default colours. Anything not given to paint() comes from here.
 const COLOURS := {
 	"skin": Color(0.85, 0.66, 0.5),
@@ -41,6 +41,7 @@ var skeleton_to_me := Transform3D()
 var _mesh: MeshInstance3D
 var _followers: Array = []  # the holders from follow()
 static var _materials := {}  # one material per set of colours, shared
+var _colours: Dictionary = COLOURS.duplicate()
 
 
 func _init(height := GameConfig.PERSON_HEIGHT) -> void:
@@ -52,6 +53,10 @@ func _init(height := GameConfig.PERSON_HEIGHT) -> void:
 	skeleton = body.find_children("*", "Skeleton3D", true, false)[0]
 	player = body.find_children("*", "AnimationPlayer", true, false)[0]
 	_mesh = body.find_children("*", "MeshInstance3D", true, false)[0]
+	# Skinned poses can move the skull/hands beyond the imported rest-pose bounds.
+	# Keep a modest local margin so turning/waving people do not disappear at an edge.
+	for part: MeshInstance3D in body.find_children("*", "MeshInstance3D", true, false):
+		part.extra_cull_margin = part.mesh.get_aabb().size.y * 0.25
 	for clip in CLIPS.values():
 		player.get_animation(clip).loop_mode = Animation.LOOP_LINEAR
 	var node: Node = skeleton
@@ -73,7 +78,7 @@ func play(what: String, speed := 1.0) -> void:
 	if what == action:
 		return
 	action = what
-	pose.mode = what if what in ["wave", "pedal", "lie"] else ""
+	pose.mode = what if what in ["wave", "pedal", "lie", "sit"] else ""
 	player.play(CLIPS.get(what, CLIPS["idle"]), GameConfig.PERSON_BLEND_TIME)
 
 
@@ -84,9 +89,28 @@ func can_do(what: String) -> bool:
 	return what in ACTIONS
 
 
+## Validate the actual skinned skull, not just a hat or an empty attachment node.
+func has_head_geometry() -> bool:
+	var head := skeleton.find_bone("Head")
+	if head < 0 or skeleton.find_bone("HeadTop_End") < 0:
+		return false
+	for part: MeshInstance3D in find_children("*", "MeshInstance3D", true, false):
+		for surface in part.mesh.get_surface_count():
+			var arrays := part.mesh.surface_get_arrays(surface)
+			var bones = arrays[Mesh.ARRAY_BONES]
+			var weights = arrays[Mesh.ARRAY_WEIGHTS]
+			if bones == null or weights == null:
+				continue
+			for i in bones.size():
+				if bones[i] == head and weights[i] > 0.1:
+					return true
+	return false
+
+
 ## Paints the clothes. colours: any of skin, eyes, hair, shirt, pants.
 func paint(colours: Dictionary) -> void:
 	var all := COLOURS.merged(colours, true)
+	_colours = all
 	var key := str(all)
 	if not _materials.has(key):
 		var picture := Image.create(1, 32, false, Image.FORMAT_RGBA8)
@@ -101,6 +125,11 @@ func paint(colours: Dictionary) -> void:
 	_mesh.material_override = _materials[key]
 
 
+## Change one garment while retaining the rest of the rider's preset palette.
+func repaint(colours: Dictionary) -> void:
+	paint(_colours.merged(colours, true))
+
+
 ## A holder that moves with one bone (e.g. "Head", "Spine2", "LeftHand", "LeftFoot").
 ## Put shapes in it at spots on the person standing straight (see spot()), and they
 ## follow that bone when it moves. parent: where the holder goes (this person if null).
@@ -110,6 +139,9 @@ func follow(bone: String, parent: Node3D = null) -> Node3D:
 	holder.set_meta("bone", skeleton.find_bone(bone))
 	(parent if parent != null else self).add_child(holder)
 	_followers.append(holder)
+	# Try-on screens pause animation. A new hat still needs the current bone pose
+	# immediately, rather than waiting for the next skeleton_updated signal.
+	_move_follower(holder)
 	return holder
 
 
@@ -125,9 +157,12 @@ func head_spot() -> Vector3:
 
 ## After the bones move each frame: move every holder with its bone.
 func _move_followers() -> void:
-	var to_skeleton := skeleton_to_me.affine_inverse()
 	_followers = _followers.filter(func(holder: Variant) -> bool: return is_instance_valid(holder))
 	for holder: Node3D in _followers:
-		var bone: int = holder.get_meta("bone")
-		var moved := skeleton.get_bone_global_pose(bone) * skeleton.get_bone_global_rest(bone).affine_inverse()
-		holder.transform = skeleton_to_me * moved * to_skeleton
+		_move_follower(holder)
+
+
+func _move_follower(holder: Node3D) -> void:
+	var bone: int = holder.get_meta("bone")
+	var moved := skeleton.get_bone_global_pose(bone) * skeleton.get_bone_global_rest(bone).affine_inverse()
+	holder.transform = skeleton_to_me * moved * skeleton_to_me.affine_inverse()

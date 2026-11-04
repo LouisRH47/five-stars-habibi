@@ -18,22 +18,32 @@ var tip := ""
 var _panel: PanelContainer
 var _label: Label
 var _ending := false
+var _run_id := 0
 
 
 func _ready() -> void:
 	_build()
 	GameState.order_delivered.connect(_on_delivered)
 	GameState.order_skipped.connect(func(_order): if GameState.tutorial_running: _offer())
+	GameState.shift_started.connect(_on_shift_started)
 	if GameState.hired and not GameState.tutorial_done:
 		start.call_deferred()
 
 
 ## Starts the tutorial: the boss's first order pops up on the phone.
 func start() -> void:
+	_run_id += 1
 	GameState.tutorial_running = true
 	_ending = false
 	_panel.visible = true
 	_offer()
+
+
+func _on_shift_started() -> void:
+	# A major crash cancels the first order, but the same scene remains loaded.
+	# Give the rider another tutorial attempt after the clinic and shift summary.
+	if GameState.hired and not GameState.tutorial_done:
+		start()
 
 
 func _process(_delta: float) -> void:
@@ -72,15 +82,21 @@ func _on_delivered(_order: Order) -> void:
 	if not GameState.tutorial_running or _ending:
 		return
 	_ending = true
+	var run_id := _run_id
 	_show("Great first job! Your crash insurance is ON (2 Dh a job): if you crash hard, it pays the bills. Press I to switch it off or on.")
 	await get_tree().create_timer(GameConfig.TUTORIAL_LAST_TIPS_TIME).timeout
+	if run_id != _run_id:
+		return
 	_show("That's it! More orders will pop up on your phone. Ride safe and have fun!")
 	await get_tree().create_timer(GameConfig.TUTORIAL_LAST_TIPS_TIME).timeout
+	if run_id != _run_id:
+		return
 	finish()
 
 
 ## Ends the tutorial: normal orders and the shift clock start.
 func finish() -> void:
+	_run_id += 1
 	GameState.tutorial_running = false
 	GameState.tutorial_done = true
 	GameState.save_soon()

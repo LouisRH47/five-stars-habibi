@@ -55,3 +55,20 @@ riders and grooms)
 
 The bicycle, the hats, helmets, scarves, bags and shoes were built in code for this game
 (CC0).
+
+
+## Detail-pass terrain textures
+
+Poly Haven, CC0 1.0, downloaded at 1K resolution on 3 November 2026.
+Shared albedo textures tile in world metres. License: https://polyhaven.com/license
+
+- Aerial Grass Rock: https://polyhaven.com/a/aerial_grass_rock
+- Sand 01: https://polyhaven.com/a/sand_01
+- Asphalt 02: https://polyhaven.com/a/asphalt_02
+- Pavement 02: https://polyhaven.com/a/pavement_02
+
+Exact download URLs and SHA-256 checksums: assets/textures/sources.json.
+
+The riding wind loop (assets/audio/wind_loop.wav) is original generated CC0 audio; reproduce it with tools/make_wind.py.
+
+The PERFECT and tip jingles (assets/audio/perfect.wav and tip.wav) are original generated CC0 audio, reproduced by tools/make_sounds.py.

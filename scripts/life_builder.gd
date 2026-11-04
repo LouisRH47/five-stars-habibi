@@ -37,7 +37,8 @@ func _ready() -> void:
 	list = _map.get("HORSE_RIDERS", [])
 	for i in list.size():
 		var look := LifeLooks.horse(list[i]["colour"])
-		_add("Horse_%d" % i, "horse", list[i], GameConfig.HORSE_WALK_SPEED, Vector3(0.9, 2.4, 3.0), look[0], look[1])
+		var horse := _add("Horse_%d" % i, "horse", list[i], GameConfig.HORSE_WALK_SPEED, Vector3(0.9, 2.4, 3.0), look[0], look[1])
+		_set_animal_name(horse, list[i])
 	list = _map.get("PEOPLE_ROUTES", [])
 	for i in list.size():
 		var walker := PeopleLooks.resident(list[i]["look"])
@@ -144,3 +145,11 @@ func _holder(person: Person) -> Node3D:
 	var holder := Node3D.new()
 	holder.add_child(person)
 	return holder
+
+
+func _set_animal_name(animal: Node3D, place: Dictionary) -> void:
+	if not place.has("collection_id"):
+		return
+	animal.set_meta("collection_id", place["collection_id"])
+	animal.set_meta("collection_name", place.get("collection_name", place["collection_id"]))
+	animal.set_meta("impact_name", "the horse %s" % place.get("collection_name", ""))

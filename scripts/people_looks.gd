@@ -92,8 +92,13 @@ static func head_cloth(person: Person, colour: Color, agal: bool) -> Node3D:
 	var holder := person.follow("Head")
 	var head := person.head_spot()
 	var r := head_size(person) * 0.62
-	LowPoly.sphere(holder, r, r * 2.0, colour, head + Vector3(0, r * 0.15, r * 0.25))
+	# Keep the front of the face open. A full sphere around the skull hid nearly all
+	# of the face and made the kandura/abaya outfits appear to have no head.
+	LowPoly.sphere(holder, r, r * 0.75, colour, head + Vector3(0, r * 0.65, 0))
 	LowPoly.box(holder, Vector3(r * 2.0, r * 2.4, r * 0.6), colour, head + Vector3(0, -r * 0.7, r * 0.75))  # down the back
+	for side in [-1.0, 1.0]:
+		LowPoly.box(holder, Vector3(r * 0.25, r * 1.65, r * 1.0), colour,
+				head + Vector3(side * r * 0.92, -r * 0.25, r * 0.25))
 	if agal:
 		var ring := MeshInstance3D.new()
 		var torus := TorusMesh.new()

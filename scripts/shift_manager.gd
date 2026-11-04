@@ -1,6 +1,6 @@
 class_name ShiftManager
 extends Node
-## Runs the shift (PRD "Shifts"): the clock counts down 10 real minutes. When it runs out,
+## Runs the shift (PRD "Shifts"): 8:00 AM–6:00 PM takes 10 active minutes. When it runs out,
 ## no new orders pop up; if you're carrying an order you still finish it, and the shift
 ## ends right after you drop it off. A big crash ends the shift too (after the clinic).
 ## Then the summary screen shows (scripts/shift_screen.gd). The data lives in GameState.
@@ -25,6 +25,8 @@ func _ready() -> void:
 	GameState.big_crashed.connect(func(_bills): _end_after_clinic = true)
 	if bike != null and bike.has_signal("crashed"):
 		bike.crashed.connect(func(_big): GameState.note_crash())  # the "No crashes" goal
+	if bike != null and bike.has_signal("fall_completed"):
+		bike.fall_completed.connect(_on_fall_completed)
 	if clinic != null:
 		clinic.closed.connect(_on_clinic_closed)
 	if shift_screen != null:
@@ -37,7 +39,7 @@ func _physics_process(delta: float) -> void:
 	GameState.shift_time_left = maxf(GameState.shift_time_left - delta * GameConfig.SHIFT_LENGTH / shift_length, 0.0)
 	if GameState.shift_time_left <= 0.0:
 		GameState.clock_out()
-		if GameState.current_order == null:
+		if GameState.current_order == null and not _fall_in_progress():
 			end_shift()
 
 
@@ -50,6 +52,9 @@ func end_shift() -> void:
 
 ## The "Start next shift" button: fresh clock, bike back at the start.
 func start_next_shift() -> void:
+	var walking := get_parent().get_node_or_null("OnFoot")
+	if walking != null:
+		walking.get_on(true)
 	GameState.start_shift()
 	if bike != null:
 		bike.reset_to_start()
@@ -68,4 +73,14 @@ func _on_order_delivered(_order: Order) -> void:
 func _on_clinic_closed() -> void:
 	if _end_after_clinic:
 		_end_after_clinic = false
+		end_shift()
+
+
+## Don't pause the world for a summary while a crash animation still needs to finish.
+func _fall_in_progress() -> bool:
+	return bike != null and (bike.get("fallen_left") > 0.0 or bike.get("wrecked") == true)
+
+
+func _on_fall_completed(big: bool, _impact: Dictionary) -> void:
+	if not big and GameState.shift_clock_out and GameState.current_order == null:
 		end_shift()

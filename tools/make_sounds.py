@@ -302,7 +302,23 @@ def music_loop():
     return echo(track, BEAT * 0.75, 0.3, 0.25)
 
 
+def perfect():
+    track = silence(0.85)
+    for i, note in enumerate([523.25, 659.25, 783.99, 1046.5]):
+        mix_in(track, tone(note, 0.32, 9, 0.45), i * 0.13)
+    return track
+
+
+def tip():
+    track = silence(0.45)
+    for i, note in enumerate([1318.5, 1760.0, 2093.0]):
+        mix_in(track, tone(note, 0.18, 20, 0.35), i * 0.09)
+    return track
+
+
 if __name__ == "__main__":
+    save("perfect.wav", perfect())
+    save("tip.wav", tip())
     save("bell.wav", bell())
     save("cash.wav", cash())
     save("crash.wav", crash())

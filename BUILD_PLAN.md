@@ -699,6 +699,9 @@ Done when:
 
 ## The sessions (Detail pass, Sessions 35 to 46)
 
+See the [implementation and acceptance ledger](docs/implementation-status.md) for the current evidence and open gates for Sessions 35–51.
+Louis and friend feedback and the school-photo comparison are skipped at the user's request on 4 November 2026.
+
 Louis played the graphics pass. The houses, playgrounds, stables and NPCs are good. What he wants
 changed: the map should copy the real community at real size, the homes should be joined rows,
 there are too many blank spaces and plain surfaces, the restaurants need insides, the school is
@@ -711,15 +714,23 @@ PROGRESS.md, commit. The map is now about 5 times bigger and has 500 homes: chec
 on Medium after every session that adds things to the map, and use merged meshes, MultiMesh and
 simpler far-away versions (visibility ranges) to keep it at 60 fps.
 
-### Session 35: Real-size map, the new layout, 8-minute shifts and the AM/PM clock
+### Session 35: Real-size map, the new layout and the corrected AM/PM clock
+
+**35A clock rule:** one real gameplay second equals one game minute. The 8:00 AM–6:00 PM
+shift lasts ten active real minutes, and the AM/PM display advances every minute.
+Keep the sun icon and matching event times, with pause/tutorial/final-delivery/save checks.
+**35B** covers the real-size map, addresses and routes. The original sequence called for
+measuring route times and earnings on the full placeholder map before adding detailed
+buildings. See PROGRESS.md for the 35A results and manual test.
 
 ```text
 Session 35. Read CLAUDE.md, PRD.md ("Wahat Al Shams" in the city map section,
 Shifts) and PROGRESS.md, and look at docs/wahat_al_shams_map.svg.
-1) Shifts are now 8 minutes: SHIFT_LENGTH = 480 in game_config.gd (08:00 to
-18:00, 48 s per in-game hour). The clock reads "9:40 AM" and moves in
-10-minute steps, with a small sun icon. Fix anything that assumed 5 minutes
-(goals, lunch rush, events, the bot).
+1) The fixed clock rate is one real gameplay second per game minute. Derive
+SHIFT_LENGTH from 08:00 to 18:00 at that rate: 600 active seconds (ten real
+minutes, 60 s per game hour). The clock reads "9:40 AM" and advances one
+minute per active second, with a small sun icon. Use that same game clock
+for lunch, events and sunlight. Keep action timers in real seconds.
 2) Rebuild data/wahat_al_shams.gd at real size, about 940 m west to east and
 500 m north to south, following the sketch: highway on the west with two
 entrances (north-west and south-west), tree belt, horse track, blue run and
@@ -741,7 +752,7 @@ with the sketch.
 Done when:
 
 - [ ] The map is real size and laid out like the sketch, with nothing big left blank
-- [ ] A shift lasts 8 minutes and the clock says AM and PM
+- [x] A shift lasts 10 active real minutes and the AM/PM clock advances one game minute per second
 - [ ] You start in front of the bus station and a full delivery works
 
 ### Session 36: Joined rows of homes and the camera fix
@@ -932,6 +943,54 @@ Done when:
 - [ ] Riding and sprinting feel fast, with no warpy smear
 - [ ] Everyone has a head
 
+### Session 44A: Rider falls and crash presentation (planned)
+
+```text
+Read PRD.md “Crashes, bills and insurance”, Planned crash upgrade.
+Capture the collision before stopping the bike: relative impact speed, direction,
+angle and obstacle category/hardness. Build a short fall sequence for both rider
+and bike: gentle tip/recovery, sideways skid and hard frontal tumble. Match the
+direction/intensity to the impact; keep the rider visible and use suitable sound
+and camera feedback. A major crash must finish its fall before the clinic fade.
+Minor crashes recover back into gameplay. Keep the existing soft-character
+collision policy. Use reliable authored/physics-assisted falls first; full ragdoll
+is optional. Lock normal controls during the fall, guarantee recovery/transition,
+and prevent bounce contacts from creating extra accidents.
+```
+
+Done when:
+
+- [ ] A soft/slow hit, a glancing scrape and a hard frontal collision have visibly different falls
+- [ ] Direction and intensity reflect the captured impact, with readable camera framing
+- [ ] A major crash shows the fall before the hospital; a minor fall returns control safely
+- [ ] Secondary bounce contacts cannot repeat crash counts, cancellation or consequences
+- [ ] Louis watches the reactions at normal speed and likes how they look and feel
+
+### Session 44B: Impact-based crash bills and insurance (planned)
+
+```text
+Use Session 44A's single captured impact record to choose a severity band.
+Replace flat treatment/repair bills with tunable bands based on relative impact
+speed, angle and obstacle hardness. An equally fast glancing wall scrape should
+cost less than a head-on hit; a harder obstacle or a stronger impact should
+increase the bill. Minor recoverable falls have little or no charge. Insurance
+reduces the bill with a severity-dependent, capped contribution; keep the first
+major crash covered by the boss. The clinic explains the obstacle, impact speed,
+severity, treatment, repair, insurance and final amount due. Charge once per
+accident, then preserve the major-crash order-cancellation and shift-ending flow.
+Put all thresholds/prices/caps in game_config.gd and tune against shift earnings.
+Exact amounts are playtest values. When Session 45 adds the rocket, test that its
+forced-major-crash rule uses this same animation and billing flow.
+```
+
+Done when:
+
+- [ ] Representative low/medium/high impacts produce distinct, explainable bills
+- [ ] Head-on versus glancing and soft versus hard obstacle cases follow the intended severity order
+- [ ] First-crash cover and insurance work, including different capped insured payments by severity
+- [ ] One fall creates one bill, one crash count and at most one cancelled order
+- [ ] Tests verify severity boundaries and billing; a playtest checks the costs feel proportionate
+
 ### Session 45: Pedal Point Bikes (upgrades, cart and checkout, rocket booster)
 
 ```text
@@ -970,7 +1029,7 @@ helmets, tops, shoes, bags). A/D or a click tries items on straight away, drag
 turns your rider, E adds to the cart, C checks out, Esc leaves and puts your
 old look back if you didn't buy. Clothes show on your rider everywhere. Make
 the clothes from the CC0 character pack's parts or simple shapes. Save them.
-Then play-test: run the bot for a careful and a careless 8-minute shift and the
+Then play-test: run the bot for a careful and a careless ten-minute shift and the
 smoke test 5 times; a careful shift should feel busy and earn enough to buy the
 GPS route after about one shift. Tune game_config.gd. Screenshots: checkpoints,
 bus station, Plaza, a restaurant inside, a cluster row, the spine with the gym,
@@ -981,7 +1040,7 @@ myself; here's what felt off: [write it here].
 Done when:
 
 - [ ] Trying on clothes feels like a real game shop, and what you buy shows everywhere
-- [ ] A careful 8-minute shift feels busy and pays for the first upgrade in about one shift
+- [ ] A careful ten-minute shift feels busy and pays for the first upgrade in about one shift
 - [ ] Louis has played a full shift and is happy with it
 
 ## Reasons to come back (Sessions 47 to 51)

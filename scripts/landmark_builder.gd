@@ -38,7 +38,7 @@ func _ready() -> void:
 	if _map.has("BUILDING_SITE"):
 		_build_site(_map["BUILDING_SITE"])
 	for place in _map["VILLAS"]:
-		if place.get("kind", "") == "spot":
+		if place.get("kind", "") == "spot" and not place.get("interior", false):
 			_build_spot(place)
 
 
@@ -52,14 +52,22 @@ func _build_school(school: Dictionary) -> void:
 	var gate_x: float = school["gate_x"]
 	var gap: float = school["gate_width"] * 0.5
 	var top := area.position.y
-	_fence_box(holder, area, RAIL, 1.6, Vector2(gate_x - gap, gate_x + gap))
+	_fence_box(holder, area, RAIL, 1.6, Vector2(gate_x - gap, gate_x + gap), true)
 	var building: Dictionary = school["building"]
 	var size: Vector3 = building["size"]
-	var body := _solid_block(holder, building["position"], size, CREAM)
+	var body := Node3D.new()
+	body.name = "SchoolWings"
+	body.position = building["position"]
+	holder.add_child(body)
+	# Five joined sections make the wings bow around the entrance courtyard.
+	for section in 5:
+		var bow: float = [3.0, 0.0, -2.0, 0.0, 3.0][section]
+		var wing := _solid_block(body, Vector3(-40 + section * 20, 0, bow), Vector3(20.2, size.y, size.z - 4), CREAM)
+		for floor_y in [2.0, 6.3, 10.6]:
+			LowPoly.box(wing, Vector3(18.5, 1.9, 0.12), GLASS, Vector3(0, floor_y, -(size.z - 4) * 0.5 - 0.08))
+			LowPoly.box(wing, Vector3(20.6, 0.28, 2.0), RAIL, Vector3(0, floor_y + 1.3, -(size.z - 4) * 0.5 - 0.4))
 	var front := -size.z * 0.5  # the front faces north, to the gate
 	LowPoly.box(body, Vector3(size.x + 0.3, 0.4, size.z + 0.3), TEAL, Vector3(0, size.y + 0.2, 0))
-	for row in [1.6, 4.2]:
-		LowPoly.box(body, Vector3(size.x - 2.0, 1.2, 0.1), GLASS, Vector3(0, row, front - 0.05))
 	LowPoly.box(body, Vector3(3.0, 2.6, 0.15), DARK, Vector3(0, 1.3, front - 0.08))
 	LowPoly.box(body, Vector3(6.0, 0.2, 3.0), TEAL, Vector3(0, 3.0, front - 1.5))
 	for i in 5:  # solar panels on the roof
@@ -68,8 +76,11 @@ func _build_school(school: Dictionary) -> void:
 		panel.rotation.x = deg_to_rad(-15.0)
 	var pitch := Rect2(area.position.x + 5, top + 8, area.size.x - 10, 24)
 	LowPoly.box(holder, Vector3(pitch.size.x, 0.03, pitch.size.y), PITCH, Vector3(pitch.get_center().x, 0.03, pitch.get_center().y))
-	for z in [pitch.position.y + 0.5, pitch.end.y - 0.5]:
-		LowPoly.box(holder, Vector3(3.0, 1.2, 0.1), RAIL, Vector3(pitch.get_center().x, 0.6, z))
+	_fence_box(holder, pitch.grow(0.5), RAIL, 1.3, Vector2(gate_x - 2, gate_x + 2))
+	for x in [pitch.position.x + 0.8, pitch.end.x - 0.8]:
+		for z in [pitch.get_center().y - 3.5, pitch.get_center().y + 3.5]:
+			LowPoly.box(holder, Vector3(0.12, 2.4, 0.12), RAIL, Vector3(x, 1.2, z))
+		LowPoly.box(holder, Vector3(0.12, 0.12, 7.1), RAIL, Vector3(x, 2.4, pitch.get_center().y))
 	var flag := StaticBody3D.new()
 	flag.position = Vector3(gate_x + 6.0, 0, top + 4.0)
 	holder.add_child(flag)
@@ -112,7 +123,7 @@ func _build_stables(stables: Dictionary) -> void:
 			Vector3(paddock.get_center().x, 0.02, paddock.get_center().y))
 	_fence_box(holder, paddock, RAIL, 1.3)
 	for i in stables["horses"]:
-		var spot := Vector3(paddock.position.x + 5.0 + (i % 2) * 12.0, 0, paddock.position.y + 6.0 + i * 8.0)
+		var spot := Vector3(paddock.position.x + (i + 0.5) * paddock.size.x / stables["horses"], 0, paddock.get_center().y)
 		Props.animal(holder, spot, i * 75.0 + 20.0, HORSES[i % HORSES.size()], true)
 
 
@@ -147,6 +158,11 @@ func _build_site(site: Dictionary) -> void:
 				Vector3(middle.x + 10.0, 1.25 + (2.5 if i == 2 else 0.0), middle.y - 8.0 + (i % 2) * 2.5))
 	for i in 2:
 		LowPoly.cylinder(holder, 0.0, 3.0, 2.0, SAND, Vector3(middle.x - 8.0 + i * 5.0, 1.0, middle.y + 10.0))
+	for i in 2:
+		var worker := PeopleLooks.resident(4, i)
+		worker.name = "SiteWorker%d" % i
+		worker.position = Vector3(middle.x - 4 + i * 3, 0, middle.y - 4)
+		holder.add_child(worker)
 	var sign_data: Dictionary = site["sign"]
 	_free_sign(holder, sign_data["arabic"], sign_data["name"], sign_data["position"], sign_data["facing"],
 			Vector2(6.0, 2.0), Color(0.9, 0.45, 0.1, 1))

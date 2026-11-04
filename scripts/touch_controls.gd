@@ -44,6 +44,7 @@ func _refresh_state() -> void:
 	if touch_enabled and _widgets_dirty and is_instance_valid(_scene):
 		_resize_touch_widgets(_scene)
 		_widgets_dirty = false
+	_refresh_rocket_button()
 	var playing := is_instance_valid(_scene) and _scene.has_node("Bike")
 	var active := touch_enabled and playing and not get_tree().paused and _focused
 	if not active:
@@ -119,7 +120,7 @@ func _send_action(action: String, pressed: bool) -> void:
 
 func _action_at(point: Vector2) -> String:
 	for button in _buttons:
-		if (button.rect as Rect2).has_point(point):
+		if button.get("visible", true) and button.get("enabled", true) and (button.rect as Rect2).has_point(point):
 			return button.action
 	return ""
 
@@ -140,11 +141,42 @@ func _layout() -> void:
 	_add("handbrake", "Stop", Rect2(w - 318, h - 150, 140, 126))
 	_add("toggle_bike", "Bike/walk", Rect2(w / 2 - 200, h - 290, 190, 126))
 	_add("interact", "Use / hold", Rect2(w / 2 + 10, h - 290, 190, 126))
+	# Keep this above steering, clear of the raised mini-map and the speed panel.
+	_add("rocket_boost", "Boost", Rect2(24, h - 290, 294, 126))
+	_buttons[-1]["visible"] = false
+	_buttons[-1]["enabled"] = false
 	var extras := [["skip_order", "Skip"], ["ring_bell", "Bell"],
 		["reset_bike", "Reset"], ["toggle_insurance", "Insure"], ["pause", "Pause"]]
 	for i in extras.size():
 		_add(extras[i][0], extras[i][1], Rect2(w / 2 - 325 + i * 132, h - 136, 122, 112))
 	_surface.queue_redraw()
+
+
+func _refresh_rocket_button() -> void:
+	var bike := _scene.get_node_or_null("Bike") if is_instance_valid(_scene) else null
+	var owned: bool = bike != null and bike.has_method("boost_ready") and int(bike.upgrade_levels.get("rocket", 0)) > 0
+	var enabled: bool = owned and bike.boost_ready()
+	var label := "Boost"
+	if owned:
+		if bike.boost_active:
+			label = "Boosting"
+		elif bike.boost_cooldown_left > 0.0:
+			label = "Boost %ds" % ceili(bike.boost_cooldown_left)
+		elif bike.parked:
+			label = "Mount first"
+	for button in _buttons:
+		if button.action != "rocket_boost":
+			continue
+		if button.visible != owned or button.enabled != enabled or button.label != label:
+			button.visible = owned
+			button.enabled = enabled
+			button.label = label
+			_surface.queue_redraw()
+		if not owned:
+			for index in _fingers.keys():
+				if _fingers[index] == "rocket_boost":
+					_release_finger(index)
+		return
 
 
 func _update_css_scale() -> void:
@@ -160,6 +192,11 @@ func _update_css_scale() -> void:
 				_css_scale = Vector2(float(rect.width) / logical.x, float(rect.height) / logical.y)
 	_css_scale.x = maxf(_css_scale.x, 0.01)
 	_css_scale.y = maxf(_css_scale.y, 0.01)
+
+
+func fit_touch_widget(control: Control) -> void:
+	if touch_enabled:
+		_resize_touch_widgets(control)
 
 
 func _resize_touch_widgets(node: Node) -> void:
@@ -210,9 +247,13 @@ func _button_font_size(button: Dictionary) -> int:
 func _draw_buttons() -> void:
 	var font := ThemeDB.fallback_font
 	for button in _buttons:
+		if not button.get("visible", true):
+			continue
 		var held := _fingers.values().has(button.action)
 		var style := StyleBoxFlat.new()
 		style.bg_color = Color(0.95, 0.55, 0.16, 0.95) if held else Color(0.04, 0.16, 0.19, 0.85)
+		if not button.get("enabled", true):
+			style.bg_color = Color(0.12, 0.17, 0.18, 0.75)
 		style.border_color = Color(1, 0.95, 0.87, 0.65)
 		style.set_border_width_all(2)
 		style.set_corner_radius_all(20)
