@@ -19,6 +19,65 @@ next to the clusters, a red walking track and buggy road on the spine, buggies e
 except the ring road, and half-built buildings on the building sites. Render:
 docs/plaza_carpark_spine.svg. Step-by-step detail for every session: docs/looks_pass_detailed_plan.md.
 
+## Session 53 — Loading screen, small fixes and the layout check (4 November 2026)
+
+Built by Claude in a cloud session (Godot 4.7.2 on Linux, screenshots rendered with software
+OpenGL), on the `looks-build` branch (Session 52 from `looks-pass` plus the plan).
+
+What works:
+- **Loading screen.** After "Start riding" (and on Continue) every button switches off and a
+  loading screen appears at once: Snackaroo, "Getting your first shift ready…", an orange bar
+  with the percentage, the current step and a new tip every 3 seconds. Why it froze before: the
+  500 homes take about 2.6 s to build, all in one frame. Now scripts/loader.gd (an autoload
+  called Loader) loads the map in the background, then builds the homes one row per frame
+  (HousingRows.begin / build_next), so the bar really moves (about 25 steps), then opens the
+  game and fades out. PlaceBuilder takes the ready-made homes instead of building them again.
+  The last ~1 second (the rest of the map) can't be split yet, so the bar waits at 88% there.
+- **Sunglasses and everything on the head.** The real cause: in this character model the
+  head's rest pose is turned about 45 degrees (and tipped about 15) compared with every
+  animation, so anything that follows the head (glasses, cap peaks, hats, scarves) was turned
+  45 degrees off the face. Head holders now measure movement from the first idle frame
+  (Person._head_reference). New proper sunglasses (two lenses, bridge, arms to the ears) in
+  PeopleLooks.sunglasses, used by the Chill look and the Dune Drip glasses.
+- **Benches.** The benches outside every restaurant faced the glass; they now look out at the
+  Plaza. The cluster mini-plaza benches face their playground.
+- **Cluster signs.** Two per cluster: one at the spine entrance and one at the ring-road
+  entrance, each beside the middle lane on the house side, stepped clear of every road. No
+  more sign in the middle of a link road, no posts inside each other.
+- **Roads.** The black roads (ring road, gate roads, highway, bus road) always win. Cluster
+  lanes stop at the ring road's kerb instead of running onto it; the outer cross lane of each
+  cluster now sits just inside the kerb (it used to lie exactly on top of the ring road); the
+  east lanes of Cluster 3 moved 2 m in off the east ring road; paths that ran onto the ring road
+  (spine path, Plaza to C1, South Spine Link, Western and Stables links, School Road, bus road)
+  stop at its kerb; lanes aren't stretched over a black road where they meet it. The dead-end
+  stubs of the spine path, Plaza to C1, School Road and South Spine Link now join a path.
+- **Farm stall** moved off the farm bed to (4, 17), beside the beds.
+- **Hills** are at most 0.5 m and keep 4 m clear of the pools, beds, the gym, the stall and paths
+  (6 hills; the one that cut a round bite out of the lap pool is gone).
+- **Bridges.** A small wooden bridge (plank deck and railings) wherever a path crosses the
+  stream (the C4 and C5 links), so the water isn't drawn over the path any more. Two ducks
+  moved so they don't swim through a bridge.
+- **Layout check.** New tests/layout_test.gd (10 checks) finds signs in roads, posts on top of
+  each other, the stall on a bed, hills too tall or on a pool, paths drawn over black roads,
+  dead-end paths, missing bridges and benches facing the wrong way. The smoke test runs it too.
+- tools/build_wahat_data.py was out of date with Session 52's hand edits (the C Institute);
+  it's back in step and all the map changes above are made there.
+
+Checks: smoke test PASS (438 checks); all 15 focused suites pass, plus the new loading (12)
+and layout (10) tests, coplanar (0 flicker pairs) and touch (61). detail_world now checks
+"every hill in the data is built" instead of exactly four. Play-test bot, careful, one full
+shift: 5 deliveries, 5.00 stars, 0 crashes, 0 resets, 110 Dh (the same bot on the code before
+this session: 6 deliveries, 119 Dh; orders are random).
+
+**Louis's check:** open the project, press F5. Make a new rider and click "Start riding" a few
+times quickly: one loading screen, the bar fills, the game opens once. Pick the Chill look and
+look at the sunglasses in the profile page (P). Ride to Cluster 5 (south-east): no sign in the
+road, lanes stop at the ring road. Look at the farm stall (beside the farm beds now), the lap
+pool (no bite), the little bridges on the C4 and C5 links, and the benches outside the shops.
+
+Not done yet in 53: the loading screen can't show progress during the last second (the rest of
+the map builds in one go); kerbstones along the ring road are planned with the car parks (62).
+
 ## Session 52 — Sharper graphics, no flicker, C Institute, crash fixes (4 November 2026)
 
 What works:

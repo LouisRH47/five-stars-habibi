@@ -25,6 +25,7 @@ const LEAVES := Color(0.3, 0.52, 0.26, 1)
 const WALL := Color(0.95, 0.88, 0.74, 1)
 const GATE := Color(0.85, 0.2, 0.2, 1)
 const BOLLARD := Color(0.35, 0.37, 0.4, 1)
+const BRIDGE_WOOD := Color(0.62, 0.45, 0.28, 1)
 const MARGIN := 20.0   # sand outside the edge
 
 # The constants from the data script, e.g. _map["ROADS"].
@@ -59,6 +60,7 @@ func _ready() -> void:
 	_build_walls_and_gate()
 	_build_welcome()
 	ClusterSigns.build(self, _map)  # Session 26: "Cluster 1" signs at the lane ends
+	_build_bridges(_map["STREAM"])  # Session 53: a little bridge wherever a path crosses the stream
 
 
 ## The solid sand ground (top at 0), in 4 slabs round a square hole where the Plaza's sunken
@@ -93,11 +95,34 @@ func _build_road(road: Dictionary) -> void:
 	var width: float = road.get("width", _map["ROAD_WIDTH"])
 	var from: Vector2 = road["from"]
 	var to: Vector2 = road["to"]
-	var length := from.distance_to(to) + width
-	var strip := LowPoly.box(self, Vector3(width, 0.04, length), ROAD if width >= 6.0 else LANE,
-			Vector3((from.x + to.x) * 0.5, 0.02 if width >= 6.0 else 0.025, (from.y + to.y) * 0.5))
 	var way := to - from
+	if way.length() < 0.01:
+		return
+	var dir := way.normalized()
+	# Each end normally sticks out half a width to fill the corner where paths meet. Session 53:
+	# not where it ends at a black road (ring road, gate roads, bus road): the black road wins,
+	# so a lane stops at its kerb instead of being drawn over it.
+	var black := not is_black_road(road)
+	var start := from - dir * (0.0 if black and ends_on_black_road(_map, from) else width * 0.5)
+	var finish := to + dir * (0.0 if black and ends_on_black_road(_map, to) else width * 0.5)
+	var length := start.distance_to(finish)
+	var middle := (start + finish) * 0.5
+	var strip := LowPoly.box(self, Vector3(width, 0.04, length), ROAD if width >= 6.0 else LANE,
+			Vector3(middle.x, 0.02 if width >= 6.0 else 0.025, middle.y))
 	strip.rotation.y = atan2(way.x, way.y)
+
+
+## Session 53: the "black" roads cars use. Every other path gives way to them.
+static func is_black_road(road: Dictionary) -> bool:
+	return String(road["name"]) in GameConfig.BLACK_ROADS
+
+
+## True if this point is on (or at the kerb of) a black road.
+static func ends_on_black_road(map: Dictionary, point: Vector2) -> bool:
+	for road: Dictionary in map["ROADS"]:
+		if is_black_road(road) and ClusterSigns.road_rect(road, map["ROAD_WIDTH"]).grow(0.5).has_point(point):
+			return true
+	return false
 
 
 ## The horse track and the bike track: rings of sand and red paving inside the tree belt.
@@ -145,6 +170,56 @@ func _build_stream(stream: Dictionary) -> void:
 		view.mesh = chunk.commit()
 		view.position = origin
 		holder.add_child(view)
+
+
+## Session 53: where a path or road crosses the stream, the water used to be drawn on top of
+## the road. Now there's a small wooden bridge: a plank deck a little wider than the path,
+## with railings on both sides (solid, but outside the path so they don't block it).
+func _build_bridges(stream: Dictionary) -> void:
+	var holder := Node3D.new()
+	holder.name = "Bridges"
+	add_child(holder)
+	for spot: Vector3 in bridge_spots(_map):
+		var bridge := Node3D.new()
+		bridge.name = "Bridge_%d" % int(spot.x)
+		bridge.position = Vector3(spot.x, 0, spot.z)
+		holder.add_child(bridge)
+		var width: float = spot.y   # the path's width (kept in y)
+		var length := float(stream["width"]) + GameConfig.BRIDGE_EXTRA_LENGTH
+		LowPoly.box(bridge, Vector3(width + 1.0, 0.03, length), BRIDGE_WOOD.darkened(0.2), Vector3(0, 0.05, 0))  # just above the water and the path, so riding over it is smooth
+		var plank := 0.0
+		while plank < length:   # planks across the deck
+			LowPoly.box(bridge, Vector3(width + 0.9, 0.012, 0.42), BRIDGE_WOOD, Vector3(0, 0.07, -length * 0.5 + plank + 0.25))
+			plank += 0.5
+		for side in [-1.0, 1.0]:
+			var rail := StaticBody3D.new()
+			rail.position = Vector3(side * (width * 0.5 + 0.45), 0, 0)
+			bridge.add_child(rail)
+			LowPoly.box(rail, Vector3(0.12, 0.08, length), BRIDGE_WOOD, Vector3(0, 0.95, 0))
+			LowPoly.box(rail, Vector3(0.08, 0.06, length), BRIDGE_WOOD, Vector3(0, 0.55, 0))
+			var post_z := -length * 0.5
+			while post_z <= length * 0.5 + 0.01:
+				LowPoly.box(rail, Vector3(0.14, 1.0, 0.14), BRIDGE_WOOD.darkened(0.15), Vector3(0, 0.5, post_z))
+				post_z += length / 3.0
+			LowPoly.solid_box(rail, Vector3(0.2, 1.0, length), Vector3(0, 0.5, 0))
+
+
+## Where paths cross the stream: x and z of the crossing, with the path's width in y.
+static func bridge_spots(map: Dictionary) -> Array[Vector3]:
+	var stream: Dictionary = map["STREAM"]
+	var spots: Array[Vector3] = []
+	for road: Dictionary in map["ROADS"]:
+		var a: Vector2 = road["from"]
+		var b: Vector2 = road["to"]
+		if not is_equal_approx(a.x, b.x):
+			continue   # only paths running north-south cross the stream (it runs west-east)
+		var x := a.x
+		if x < float(stream["from_x"]) or x > float(stream["to_x"]):
+			continue
+		var z := float(stream["z"]) + sin(x * 0.06) * 3.0   # the stream's wiggle, as drawn
+		if z > minf(a.y, b.y) and z < maxf(a.y, b.y):
+			spots.append(Vector3(x, float(road.get("width", 6.0)), z))
+	return spots
 
 
 ## Two rows of trees around the edge. Spatial batches let the renderer skip distant sections.

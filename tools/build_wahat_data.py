@@ -41,18 +41,22 @@ def road(name,a,b,width=6.0): roads.append({'name':name,'from':v2(*a),'to':v2(*b
 for a,b in [((-425,-205),(425,-205)),((425,-205),(425,205)),((425,205),(-425,205)),((-425,205),(-425,-205))]: road('Ring Road',a,b,10.)
 for z in [-190,190]: road('Gate Road',(-490,z),(-425,z),10.)
 road('Highway',(-482,-245),(-482,245),10.)
-road('Bus Access',(-425,-170),(-310,-170),8.)
+road('Bus Access',(-420,-170),(-310,-170),8.)
 road('Plaza Link',(-310,-170),(-280,-145),8.)
-road('Spine Path',(-310,0),(425,0),6.)
+road('Spine Path',(-350,0),(420,0),6.)
 road('Domes Path',(-118,-11),(348,-11),3.)
-road('Western Link',(-290,-205),(-290,0),6.)
-road('Plaza to C1',(-280,-40),(425,-40),6.)
-road('South Spine Link',(-145,35),(425,35),6.)
-road('School Road',(-425,20),(-145,20),8.)
+road('Western Link',(-290,-200),(-290,0),6.)
+road('Plaza to C1',(-290,-40),(420,-40),6.)
+road('South Spine Link',(-160,35),(420,35),6.)
+road('School Road',(-420,20),(-160,20),8.)
 road('School Link',(-350,0),(-350,20),6.)
-road('Institute Access',(-210,0),(-210,-6),5.)
+# Session 52: the C Institute faces the spine (east), so its path comes up from School Road
+# along the front and turns in at the door.
+road('Institute Access',(-186,20),(-186,-33),5.)
+road('Institute Door',(-186,-33),(-197,-33),5.)
 road('Stables Road',(-320,195),(-160,195),6.)
-road('Stables Link',(-160,20),(-160,205),6.)
+road('Stables Link',(-160,20),(-160,200),6.)
+RING_KERB=200.0; RING_EAST_KERB=420.0; RING_INNER_GAP=71.0  # the ring road's inner kerb; outer cross lane centre from the cluster centre
 homes=[]; plazas=[]; paving=[]; bollards=[]; cats=[]; kids=[]; gardeners=[]; plays=[]; works=[]
 for n,cx,cz in clusters:
     cluster=f'C{n}'; number=1
@@ -69,23 +73,26 @@ for n,cx,cz in clusters:
                     'approach':v3(rx+side*12,0,z)})
                 number+=1
     assert number==101
+    # Session 53: the black ring road always wins. Lanes stop at its kerb (|z| = 200) instead
+    # of running onto it, and the outer cross lane sits just inside the kerb, not on the road.
+    inner=cz+(79 if cz<0 else -79); outer=cz+(-RING_INNER_GAP if cz<0 else RING_INNER_GAP)
+    kerb=-RING_KERB if cz<0 else RING_KERB
     for offset in [-60,-30,0,30,60]:
-        x=cx+offset
-        road(cluster+' Lane',(x,cz-79),(x,cz+79),6.)
+        x=min(cx+offset,RING_EAST_KERB-4)
+        road(cluster+' Lane',(x,min(inner,kerb)),(x,max(inner,kerb)),6.)
         for end in [-1,1]:
             for dx in [-2,2]: bollards.append(v2(x+dx,cz+end*74))
-    for z in [cz-79,cz+79]: road(cluster+' Lane',(cx-60,z),(cx+60,z),6.)
-    road(cluster+' Link',(cx,cz+(-79 if cz<0 else 79)),(cx,-205 if cz<0 else 205),6.)
-    road(cluster+' Link',(cx,cz+(79 if cz<0 else -79)),(cx,0),6.)
+    for z in [inner,outer]: road(cluster+' Lane',(cx-60,z),(min(cx+60,RING_EAST_KERB-4),z),6.)
+    road(cluster+' Link',(cx,inner),(cx,0),6.)
     # A cross alley between the halves of each row, not through a home.
     z=cz+(68 if cz<0 else -68)
     road(cluster+' Alley',(cx-60,z),(cx+60,z),4.)
     road(cluster+' Cross Row Alley',(cx-60,cz),(cx+60,cz),3.)
     paving.append(rect(cx-65,cz+(65 if cz<0 else -75),130,10))
     pz=cz+(70 if cz<0 else -70)
-    plazas.append({'cluster':cluster,'tower':v3(cx-48,0,pz),'playground':v3(cx+45,0,pz),'benches':[{'position':v3(cx+20,0,pz),'facing':0.0}]})
+    plazas.append({'cluster':cluster,'tower':v3(cx-48,0,pz),'playground':v3(cx+45,0,pz),'benches':[{'position':v3(cx+20,0,pz),'facing':90.0}]})
     cats.append({'area':rect(cx+27,pz-2,5,4),'colour':colour(.8,.55,.3),'collection_id':f'cat_{n}','collection_name':['Mango','Mishmish','Shadow','Pearl','Biscuit'][n-1]})
-    kids.append({'from':v3(cx-15,0,cz+79),'to':v3(cx+15,0,cz+79),'shirt':colour(.2,.45+.05*n,.8)})
+    kids.append({'from':v3(cx-15,0,cz+(-71 if cz<0 else 71)),'to':v3(cx+15,0,cz+(-71 if cz<0 else 71)),'shirt':colour(.2,.45+.05*n,.8)})
     gardeners.append({'position':v3(cx+52,0,pz-3),'facing':-90.0,'level':1})
     plays.append({'points':[v3(cx+40,0,pz-2),v3(cx+50,0,pz-2)],'level':0})
     works.append({'name':cluster+' Lane','centre':v2(cx+30,cz+30),'along':'z','width':6.,'length':10.})
@@ -100,7 +107,8 @@ put('PLOTS',[{'name':'Fair Grade International School','area':rect(-425,35,120,1
  {'name':'Building site','area':rect(-135,55,110,135),'colour':colour(.8,.78,.74)}])
 put('WELCOME_SIGN',{'name':'Welcome to Wahat Al Shams','arabic':'أهلاً بكم في واحة الشمس','position':v3(-421,0,-180),'facing':-90.0})
 put('SPINE_DOMES',[v3(x,0,-20) for x in [-110,-20,70,160,250,340]])
-put('HILLS',[{'position':v3(x,0,z),'height':h} for x,z,h in [(20,8,.8),(65,8,1.1),(160,9,.6),(315,8,1.2)]])
+# Session 53: hills are at most 0.5 m and keep 4 m clear of pools, beds, the gym, the farm stall and paths.
+put('HILLS',[{'position':v3(x,0,13),'height':h} for x,h in [(-130,.4),(-60,.5),(32,.35),(55,.5),(330,.45),(392,.5)]])
 put('LAP_POOL',rect(140,13,42,9))
 put('DOME_RADIUS',7.0);put('FARM_BEDS',[rect(-115,13,35,8),rect(-40,13,35,8),rect(200,13,35,8)])
 put('BEEHIVES',rect(360,13,16,8));put('DONKEY_PEN',{'area':rect(245,12,44,10),'donkeys':2})
@@ -108,7 +116,7 @@ put('BASKETBALL_COURT',rect(-145,-33,24,12));put('PLAYGROUND',rect(-70,-33,24,12
 put('SCHOOL',{'name':'Fair Grade International School','arabic':'مدرسة فير غريد الدولية','area':rect(-425,35,120,160),'gate_x':-365.,'gate_width':8.,'building':{'position':v3(-365,0,155),'size':v3(100,14,50)}})
 put('MOSQUE',{'name':'Wahat Al Shams Mosque','arabic':'مسجد واحة الشمس','position':v3(-387,0,-150),'facing':90.,'size':v3(54,15,60)})
 put('BUS_STATION',{'position':v3(-310,0,-174),'area':rect(-336,-202,52,52),'name':'Wahat Bus Station','arabic':'محطة حافلات الواحة'})
-put('INSTITUTE',{'position':v3(-215,0,-33),'size':v3(100,16,42),'facing':0.,'name':'C Institute','arabic':'معهد سي'})
+put('INSTITUTE',{'position':v3(-215,0,-33),'size':v3(46,14,36),'facing':90.,'name':'C Institute','arabic':'معهد سي'})
 put('GYM',{'position':v3(115,0,22),'size':v3(36,8,22),'facing':180.,'name':'Wahat Gym','arabic':'نادي الواحة الرياضي'})
 put('COMMUNITY_POOL',rect(190,-30,50,24));put('JUMPING_ARENA',rect(-282,65,115,88))
 put('STABLES',{'name':'Wahat Stables','arabic':'إسطبلات الواحة','block':{'position':v3(-224,0,174),'size':v3(100,5,14)},'paddock':rect(-280,157,110,9),'horses':4})
@@ -125,14 +133,14 @@ for i,(id,name,arabic,food) in enumerate(shops):
     if id=='boba':item['foods']=['bubble tea','coffee']
     if id=='bakery':item['foods']=['cake','manakish']
     restaurants.append(item)
-restaurants.append({'id':'farm','name':'Wahat Farm Stall','arabic':'كشك مزرعة الواحة','food':'farm juice','foods':['farm juice','salad box'],'colour':colour(.35,.65,.25),'position':v3(-20,0,18),'facing':180.,'style':'stall','size':v3(9,4,6)})
+restaurants.append({'id':'farm','name':'Wahat Farm Stall','arabic':'كشك مزرعة الواحة','food':'farm juice','foods':['farm juice','salad box'],'colour':colour(.35,.65,.25),'position':v3(4,0,17),'facing':180.,'style':'stall','size':v3(9,4,6)})
 put('RESTAURANTS',restaurants)
 put('SHOPS',[{'id':'bikes','name':'Pedal Point Bikes','arabic':'بيدال بوينت','position':v3(-275,0,-145),'facing':90.,'size':v3(20,8,18)}, {'id':'clothes','name':'Dune Drip','arabic':'ديون دريب','position':v3(-125,0,-145),'facing':-90.,'size':v3(20,8,18)}])
 put('VILLA_SIZE',v3(9,8.5,8))
 homes += [
  {'number':901,'house':0,'cluster':'','address':'Fair Grade School · Gate','map_address':'School Gate','kind':'spot','look':'booth','position':v3(-365,0,32),'facing':180.,'size':v3(4,3,4),'who':'teacher'},
  {'number':902,'house':0,'cluster':'','address':'Wahat Stables · Office','map_address':'Stables Office','kind':'spot','position':v3(-224,0,190),'facing':0.,'size':v3(7,4,6),'who':'groom'},
- {'number':903,'house':0,'cluster':'','address':'C Institute · Reception','map_address':'C Institute','kind':'spot','position':v3(-215,0,-33),'facing':0.,'size':v3(100,16,42),'interior':True,'who':'staff'},
+ {'number':903,'house':0,'cluster':'','address':'C Institute · Reception','map_address':'C Institute','kind':'spot','position':v3(-215,0,-33),'facing':90.,'size':v3(46,14,36),'interior':True,'who':'staff'},
  {'number':904,'house':0,'cluster':'','address':'Wahat Gym · Reception','map_address':'Gym','kind':'spot','position':v3(115,0,22),'facing':180.,'size':v3(36,8,22),'interior':True,'who':'gym_goer'},
 ]
 put('VILLAS',homes)
@@ -147,7 +155,7 @@ put('BUGGIES',[{'points':[v3(cx-60,0,cz),v3(cx+(30 if n==3 else 60),0,cz),v3(cx+
 put('HORSE_RIDERS',[{'points':[v3(-450,0,-230),v3(450,0,-230),v3(450,0,230),v3(-450,0,230)],'loop':True,'colour':colour(.45,.28,.15),'level':0,'collection_id':'horse_sultan','collection_name':'Sultan'},{'points':[v3(450,0,230),v3(-450,0,230),v3(-450,0,-230),v3(450,0,-230)],'loop':True,'colour':colour(.85,.82,.78),'level':1,'collection_id':'horse_noor','collection_name':'Noor'}])
 put('PEOPLE_ROUTES',[{'points':[v3(-438,0,-218),v3(438,0,-218),v3(438,0,218),v3(-438,0,218)],'loop':True,'jog':True,'look':2,'level':0}]+[{'points':[v3(-130,0,z),v3(405,0,z)],'jog':False,'look':i,'level':i%3} for i,z in enumerate([-1.5,1.5,-2.5])])
 put('GARDENERS',gardeners);put('PLAY_KIDS',plays)
-put('DUCKS',[{'from_x':x,'to_x':x+65,'side':.4 if i%2 else -.4,'level':i%3} for i,x in enumerate([-100,30,160,290])])
+put('DUCKS',[{'from_x':x,'to_x':x+65,'side':.4 if i%2 else -.4,'level':i%3} for i,x in enumerate([-100,0,160,310])])  # Session 53: clear of the stream bridges at x 73 and 303
 put('BIRD_FLOCKS',[{'centre':v3(x,30,z),'radius':r,'birds':4,'level':i} for i,(x,z,r) in enumerate([(-180,-100,70),(180,80,90),(0,0,160)])])
 works += [{'name':'Ring Road '+name,'centre':v2(x,z),'along':along,'width':10.,'length':12.} for name,x,z,along in [('north',260,-205,'x'),('east',425,-90,'z'),('south',-200,205,'x'),('west',-425,-60,'z')]]
 put('ROAD_WORKS',works)

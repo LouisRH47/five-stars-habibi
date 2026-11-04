@@ -14,6 +14,7 @@ const PLAY_FRAME := Color(0.16470589, 0.5568628, 0.6117647, 1)  # the game's tea
 ## A wooden bench on stone legs. facing: the way you look when you sit (degrees, 0 = south).
 static func bench(parent: Node3D, spot: Vector3, facing: float) -> StaticBody3D:
 	var body := _body(parent, spot, facing)
+	body.name = "Bench"   # Session 53: the layout check finds benches by name
 	LowPoly.box(body, Vector3(1.8, 0.08, 0.5), WOOD, Vector3(0, 0.45, 0))
 	LowPoly.box(body, Vector3(1.8, 0.4, 0.06), WOOD, Vector3(0, 0.72, -0.24))
 	for x in [-0.75, 0.75]:

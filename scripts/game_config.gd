@@ -269,8 +269,8 @@ const HOUSE_FRONT_STRIP := 0.8        # pot plants may stand this far in front o
 const SIGNATURE_EXTRA_DEPTH := 3.0    # signature villas are this much deeper (at the back)...
 const SIGNATURE_EXTRA_WIDTH := 2.0    # ...and this much wider on the courtyard side
 const HOUSE_NUMBER_FONT := 130        # size of the house number by the door
-const CLUSTER_SIGN_INSET := 5.0       # cluster signs stand this far in from the lane's end...
-const CLUSTER_SIGN_SIDE := 3.4        # ...and this far to the side of the lane's middle line
+const CLUSTER_SIGN_INSET := 3.0       # cluster signs start this far from the cluster edge (then step clear of roads)...
+const CLUSTER_SIGN_SIDE := 4.6        # ...and this far to the house side of the middle lane (posts stay off the lane)
 # How likely each extra is (0 = never, 1 = always). Picked from the home's number, so the
 # same home always looks the same.
 const HOUSE_BUGGY_CHANCE := 0.45      # a golf buggy beside the house
@@ -473,6 +473,11 @@ const COMFY_TYRES_CAMERA_VERTICAL_SHARE := 0.5
 const COMFY_TYRES_SHAKE_SHARE := 0.65
 
 # --- Session 53: loading screen and small fixes ---
+const BLACK_ROADS := ["Ring Road", "Gate Road", "Highway", "Bus Access"]  # car roads: other paths stop at their kerb
+const HILL_MAX_HEIGHT := 0.5          # spine hills are gentle: never higher than this (Louis, 4 Nov)
+const HILL_RADIUS := 10.0             # every hill is 20 m across (district_detail.gd)
+const HILL_CLEARANCE := 4.0           # hills keep this far from pools, beds, the gym and the stall
+const BRIDGE_EXTRA_LENGTH := 4.0      # stream bridges are this much longer than the stream is wide
 const LOADING_MIN_SHOW_MS := 800      # the loading screen stays at least this long, so it never flashes
 const LOADING_FADE_TIME := 0.4        # seconds to fade the loading screen out
 const LOADING_TIP_TIME := 3.0         # a new tip every 3 seconds

@@ -90,7 +90,8 @@ func _run() -> void:
 	_expect(inaccessible.is_empty(), "every pickup counter has a clear walk-in route", str(inaccessible))
 	_expect(duplicate_decor.size() == 10, "all ten restaurants have distinct interior recipes")
 	_expect(world.get_node("PlaceBuilder/Institute").get_meta("walk_in") and world.get_node("PlaceBuilder/Gym").get_meta("walk_in"), "institute and gym have real walk-in reception rooms")
-	_expect(world.get_node("DistrictDetail").find_children("RollingHill*", "StaticBody3D", true, false).size() == 4, "four smooth rideable spine hills are built")
+	_expect(world.get_node("DistrictDetail").find_children("RollingHill*", "StaticBody3D", true, false).size() == WahatAlShams.HILLS.size() and WahatAlShams.HILLS.size() >= 4,
+			"every smooth rideable spine hill in the data is built")
 	_expect(world.get_node("SunCycle").find_child("HeatShimmer", true, false) == null, "heat shimmer is completely removed")
 	_expect(world.get_node_or_null("ShopController") != null and places.get_node_or_null("Shop_bikes") != null and places.get_node_or_null("Shop_clothes") != null, "both walk-in shops are wired into ordinary gameplay")
 	_expect(GameConfig.BIKE_MAX_SPEED_KMH == 28 and GameConfig.BIKE_SPRINT_MAX_SPEED_KMH == 36, "normal and sprint speed use 28 and 36 km/h")

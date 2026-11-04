@@ -93,7 +93,8 @@ static func build(place: Dictionary, size: Vector3) -> StaticBody3D:
 		_table(body, Vector3(side * minf(size.x * 0.3, 6.0), 0, size.z * 0.2), tint, not reception)
 		_planter(body, Vector3(side * (size.x * 0.5 - 0.8), 0, size.z * 0.5 - 1.0))
 		if not reception:
-			Props.bench(body, Vector3(side * 5.0, 0, size.z * 0.5 + 2), 180)
+			# Session 53: sit with your back to the shop, looking out at the Plaza (they faced the glass).
+			Props.bench(body, Vector3(side * 5.0, 0, size.z * 0.5 + 2), 0)
 	_decor(body, place.get("venue_type", ""), size, tint)
 	return body
 

@@ -1552,6 +1552,10 @@ func _check_session26() -> void:
 				signed[id] = signed.get(id, 0) + 1
 	_check("bilingual cluster signs at the lane ends of every cluster",
 			signed.size() == data["CLUSTER_NAMES"].size() and signed.values().all(func(n): return n >= 2), "%s" % [signed])
+	# Session 53: the layout check (nothing in a road, on a bed or a pool, lanes stop at the
+	# ring road, bridges over the stream, benches facing the right way).
+	for line in preload("res://tests/layout_test.gd").check_map(data, _main):
+		_check("layout: " + line[1], line[0], "")
 
 
 ## How many house parts (bodies called Villa...) a shape at this spot touches.

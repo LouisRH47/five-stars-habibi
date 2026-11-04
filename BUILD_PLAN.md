@@ -1173,7 +1173,7 @@ Done when:
 - [x] The C Institute's glass and seats face the spine, with windows on both sides
 - [x] The careless bot earns clearly less than the careful one and never gets stuck in a crash loop
 
-### Session 53: Loading screen and the small fixes
+### Session 53: Loading screen and the small fixes (built, needs testing)
 
 ```text
 Session 53. Read PRD.md "Looks pass": Loading screen, Small fixes.
@@ -1207,10 +1207,10 @@ or building, two posts overlap, or a prop floats or sinks.
 
 Done when:
 
-- [ ] After "Accepted" a loading screen appears at once and its bar fills up; clicking twice does nothing
-- [ ] Sunglasses look even, benches face the right way, every cluster has clean signs
-- [ ] No road lies on top of another and nothing stands in a road
-- [ ] The farm stall, the lap pool and the stream look right, and the layout check passes
+- [x] After "Accepted" a loading screen appears at once and its bar fills up; clicking twice does nothing
+- [x] Sunglasses look even, benches face the right way, every cluster has clean signs
+- [x] No road lies on top of another and nothing stands in a road
+- [x] The farm stall, the lap pool and the stream look right, and the layout check passes
 
 ### Session 54: Ragdoll falls
 
