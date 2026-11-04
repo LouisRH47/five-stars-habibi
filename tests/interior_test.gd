@@ -53,6 +53,7 @@ func _run() -> void:
 		if room.get_meta("interior_looks", false):
 			_check_room(id, room)
 	_check_food_changes()
+	_check_kitchens()
 	await _check_queue()
 	await _check_old_save()
 	print("RESULT: %s" % ("PASS" if _failed == 0 else "FAIL (%d)" % _failed))
@@ -325,6 +326,35 @@ func _check_food_changes() -> void:
 			and GameConfig.FRESHNESS_DRAIN["iced latte"] == GameConfig.FRESHNESS_DRAIN["bubble tea"], "the iced latte spills like bubble tea did")
 	var lines := str(CustomerLines.REGULAR_LINES) + str(CustomerLines.REGULAR_STAGES)
 	_expect(not "pearl" in lines.to_lower() and not "boba" in lines.to_lower(), "no customer line mentions pearls or boba")
+
+
+## Session 59: each of the 4 new restaurants has its own kind of kitchen (Appendix B), and
+## Sushi You's belt really moves its plates round the loop at 0.3 m/s.
+func _check_kitchens() -> void:
+	var want := {"thai": ["wok range", "tuk-tuk"], "sushi": ["sushi bar"], "tacos": ["flat grill"], "burger": ["flat grill", "fryer"]}
+	for id in want:
+		var names: Array = (_rooms[id].get_meta("machines", []) as Array).map(func(m): return m[0])
+		_expect((want[id] as Array).all(func(n): return n in names), "%s: its kitchen has %s %s" % [id, want[id], names])
+	var flames: int = (_rooms["thai"].get_node("VenueMotion") as VenueMotion).flames.size()
+	_expect(flames >= 3, "thai: woks over flames (%d)" % flames)
+	var neon := _rooms["burger"].get_node_or_null("NeonSign") as Label3D
+	_expect(neon != null and neon.text == "Burgerology", "burger: the pink neon Burgerology sign")
+	var motion: VenueMotion = _rooms["sushi"].get_node("VenueMotion")
+	var plates := motion.belt
+	_expect(plates.size() >= 20 and motion.belt_path != null, "sushi: %d coloured plates on the belt" % plates.size())
+	if plates.is_empty():
+		return
+	var plate: Node3D = plates[0]["node"]
+	var before := plate.position
+	var along: float = plates[0]["along"]
+	motion.active = true
+	motion._check_left = 10.0   # stay busy for this check (the test camera is far away)
+	motion._process(1.0)
+	var moved := float(plates[0]["along"]) - along
+	var on_top: bool = absf(plate.position.y - 1.02) < 0.005
+	_expect(absf(moved - GameConfig.SUSHI_BELT_SPEED) < 0.001 and is_equal_approx(GameConfig.SUSHI_BELT_SPEED, 0.3)
+			and plate.position.distance_to(before) > 0.2 and on_top,
+			"sushi: the belt moves the plates %.2f m in a second, on top of the bar (y %.2f)" % [moved, plate.position.y])
 
 
 ## The short queue: sometimes 1 or 2 people at the till, and you wait 2 to 4 seconds.

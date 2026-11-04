@@ -42,18 +42,31 @@ static func _plain(p: InteriorParts) -> void:
 			[Vector3(-3.6, 0, 1.2), Vector3(2.6, 0, 1.2), Vector3(-3.6, 0, -0.6), Vector3(2.6, 0, 3.0)], p.brand)
 
 
-## Strings of little flags (bunting / papel picado) across the room at height y.
+## Strings of little flags (bunting / papel picado) across the room at height y. The string
+## sags in the middle and every flag hangs from it.
 static func _bunting(p: InteriorParts, zs: Array, y: float, colours: Array, square := false) -> void:
 	for z: float in zs:
-		p.box(Vector3(11.7, 0.01, 0.01), Color(0.9, 0.9, 0.85), Vector3(0, y + 0.02, z))
+		var points: Array = [Vector3(-5.87, y, z)]
 		for k in 30:
 			var x := -5.6 + k * 0.385
 			var sag := 0.25 * (1.0 - pow((x / 5.85), 2.0))
 			var colour: Color = colours[k % colours.size()]
+			points.append(Vector3(x, y - sag, z))
 			if square:
 				p.box(Vector3(0.3, 0.24, 0.005), colour, Vector3(x, y - sag - 0.12, z))
 			else:
-				p.box(Vector3(0.18, 0.18, 0.005), colour, Vector3(x, y - sag - 0.08, z), Basis(Vector3.BACK, PI * 0.25))
+				p.box(Vector3(0.18, 0.18, 0.005), colour, Vector3(x, y - sag - 0.1, z), Basis(Vector3.BACK, PI * 0.25))
+		points.append(Vector3(5.87, y, z))
+		_string(p, points, Color(0.9, 0.9, 0.85))
+
+
+## A thin string or wire through the points, one straight piece between each two.
+static func _string(p: InteriorParts, points: Array, colour: Color, thick := 0.008) -> void:
+	for i in points.size() - 1:
+		var a: Vector3 = points[i]
+		var b: Vector3 = points[i + 1]
+		var along := b - a
+		p.box(Vector3(thick, thick, along.length() + thick), colour, (a + b) * 0.5, Basis.looking_at(along.normalized(), Vector3.UP))
 
 
 # ---------------------------------------------------------------- Tok Tok Thai
@@ -94,11 +107,16 @@ static func _thai(p: InteriorParts) -> void:
 		p.cyl(0.12, 0.12, 0.05, gold, at - Vector3(0, 0.29, 0), Basis(), 8)
 	_bunting(p, [3.6, 0.6], 4.3, [red, gold, Color(0.2, 0.4, 0.8), Color(0.95, 0.95, 0.9)])
 	for z in [2.1, -0.9]:
+		var wire: Array = [Vector3(-5.87, 4.15, z)]
 		for k in 24:
 			var x := -5.6 + k * 0.487
-			p.glow(Vector3(0.05, 0.05, 0.05), Color(1.0, 0.85, 0.45), Vector3(x, 4.15 - 0.2 * (1.0 - pow(x / 5.85, 2.0)), z), 3.0)
+			var bulb := Vector3(x, 4.15 - 0.2 * (1.0 - pow(x / 5.85, 2.0)), z)
+			wire.append(bulb + Vector3(0, 0.03, 0))
+			p.glow(Vector3(0.05, 0.05, 0.05), Color(1.0, 0.85, 0.45), bulb, 3.0)
+		wire.append(Vector3(5.87, 4.15, z))
+		_string(p, wire, Color(0.15, 0.15, 0.12), 0.006)
 	for side in [-1.0, 1.0]:
-		p.box(Vector3(0.02, 0.3, 9.7), gold, Vector3(side * 5.86, 2.6, 0))
+		p.box(Vector3(0.02, 0.3, 9.7), gold, Vector3(side * 5.865, 2.6, 0))
 	p.drinks_fridge(Vector3(5.35, 0, -1.6))
 	p.bin(Vector3(1.75, 0, 4.35))
 	p.plant(Vector3(-5.45, 0, -1.6))
@@ -140,9 +158,12 @@ static func _sushi(p: InteriorParts) -> void:
 		p.box(Vector3(0.24, 0.08, 0.18), Color(0.95, 0.95, 0.92), Vector3(2.9 + k * 0.3, 1.09, -2.45))
 		p.box(Vector3(0.25, 0.02, 0.19), Color(0.15, 0.15, 0.15), Vector3(2.9 + k * 0.3, 1.14, -2.45))
 	var back := -p.size.z * 0.5 + 0.125
-	p.box(Vector3(1.6, 2.3, 0.03), Color(0.08, 0.08, 0.09), Vector3(-1.0, 1.15, back + 0.02))   # the kitchen door
+	p.box(Vector3(1.6, 2.3, 0.03), Color(0.08, 0.08, 0.09), Vector3(-1.0, 1.15, back + 0.015))   # the kitchen door
+	p.box(Vector3(1.75, 0.03, 0.03), Color(0.3, 0.22, 0.15), Vector3(-1.0, 2.32, back + 0.06))      # the curtain rod
+	p.box(Vector3(0.03, 0.03, 0.04), Color(0.3, 0.22, 0.15), Vector3(-1.86, 2.32, back + 0.025))
+	p.box(Vector3(0.03, 0.03, 0.04), Color(0.3, 0.22, 0.15), Vector3(-0.14, 2.32, back + 0.025))
 	for k in 4:
-		p.box(Vector3(0.38, 1.1, 0.02), navy, Vector3(-1.57 + k * 0.38, 1.75, back + 0.06))
+		p.box(Vector3(0.38, 1.1, 0.02), navy, Vector3(-1.57 + k * 0.38, 1.755, back + 0.06))
 	p.sign("مطبخ", "Kitchen", Vector3(-1.0, 2.0, back + 0.08), 0.0, Color.WHITE, Color(0, 0, 0, 0), 24)
 	InteriorVenues.back_counters(p, 0.6, 5.6)
 	InteriorVenues.back_counters(p, -5.6, -2.2, 0)
@@ -213,7 +234,7 @@ static func _tacos(p: InteriorParts) -> void:
 	_bunting(p, [3.4, 1.2, -0.9], 4.35, colours, true)
 	for side in [-1.0, 1.0]:
 		for k in 48:
-			p.box(Vector3(0.02, 0.2, 0.2), colours[k % colours.size()], Vector3(side * 5.86, 1.25, -4.7 + k * 0.2))
+			p.box(Vector3(0.02, 0.2, 0.2), colours[k % colours.size()], Vector3(side * 5.865, 1.25, -4.7 + k * 0.2))
 	var chair := "kenney_furniture/chair"
 	InteriorDining.standard(p, -1.0, Color(0.85, 0.5, 0.25), teal, chair, "kenney_food/taco", "kenney_food/soda-bottle")
 	for spot in [Vector3(-5.45, 0, -1.6), Vector3(-2.35, 0, 3.75)]:

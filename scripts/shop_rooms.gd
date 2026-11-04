@@ -29,6 +29,9 @@ static func _room(p: InteriorParts, a: Color, b: Color, planks: bool, lamp: Colo
 		for k in roundi(p.size.z / tile):
 			var colour := a.lerp(b, float((i * 7 + (k / 4) * 3) % 5) / 4.0) if planks else (a if (i + k) % 2 == 0 else b)
 			p.box(Vector3(tile * (1.0 if planks else 0.98), 0.02, tile * 0.98), colour, Vector3(-half.x + (i + 0.5) * tile, 0.0, -half.z + (k + 0.5) * tile))
+	# A ceiling panel just under the room's ceiling (the flats' floor above sits at the same
+	# height, and the two flickered against each other).
+	p.box(Vector3(p.size.x - 0.3, 0.01, p.size.z - 0.1), Color(0.93, 0.91, 0.86), Vector3(0, p.size.y - 0.006, 0))
 	var c := ShopInterior.COUNTER
 	p.counter_tops.append([Rect2(c.x - 2.0, c.z - 0.7, 4.0, 1.2), 1.05])
 	for i in 4:
@@ -104,7 +107,7 @@ static func _shelves(p: InteriorParts, side: String, from: float, to: float, dep
 static func bikes(p: InteriorParts) -> void:
 	var half := p.size * 0.5
 	var teal := p.brand
-	_room(p, Color(0.6, 0.58, 0.55), Color(0.54, 0.52, 0.49), false, teal, true)
+	_room(p, Color(0.62, 0.59, 0.55), Color(0.55, 0.52, 0.48), false, teal, false)
 	var back := -half.z + 0.125
 	# The workbench along the back wall, the tool pegboard above it, the mechanic.
 	p.solid(Vector3(4.6, 0.92, 0.7), WOOD.darkened(0.2), Vector3(-3.0, 0.46, back + 0.35))
@@ -118,15 +121,15 @@ static func bikes(p: InteriorParts) -> void:
 		var y := 1.75 + (k / 9) * 0.75
 		match k % 3:
 			0:
-				p.box(Vector3(0.04, 0.42, 0.02), DARK, Vector3(x, y + 0.1, back + 0.07))   # spanner
-				p.box(Vector3(0.1, 0.06, 0.02), DARK, Vector3(x, y + 0.33, back + 0.07))
+				p.box(Vector3(0.04, 0.42, 0.02), DARK, Vector3(x, y + 0.1, back + 0.065))   # spanner
+				p.box(Vector3(0.1, 0.06, 0.02), DARK, Vector3(x, y + 0.33, back + 0.065))
 			1:
 				p.box(Vector3(0.05, 0.32, 0.03), Color(0.75, 0.2, 0.15), Vector3(x, y + 0.05, back + 0.07))   # screwdriver
-				p.box(Vector3(0.015, 0.2, 0.015), STEEL, Vector3(x, y + 0.3, back + 0.07))
+				p.box(Vector3(0.015, 0.2, 0.015), STEEL, Vector3(x, y + 0.3, back + 0.065))
 			2:
 				p.box(Vector3(0.24, 0.05, 0.03), Color(0.95, 0.75, 0.15), Vector3(x, y + 0.2, back + 0.07))   # tyre levers
 				p.box(Vector3(0.22, 0.05, 0.03), Color(0.2, 0.45, 0.8), Vector3(x, y + 0.08, back + 0.07))
-	p.sign("ورشة", "Workshop", Vector3(-3.0, 3.25, back + 0.06), 0.0, Color.WHITE, teal.darkened(0.2), 26)
+	p.sign("ورشة", "Workshop", Vector3(-3.0, 3.25, back + 0.045), 0.0, Color.WHITE, teal.darkened(0.2), 26)
 	p.worker("Mechanic2", Vector3(-3.6, 0, -3.95), 180.0, 1)
 	# The repair stand with a bike up on it.
 	var stand := Vector3(-4.2, 0, -2.75)
@@ -143,12 +146,17 @@ static func bikes(p: InteriorParts) -> void:
 		var z := 3.45 - i * 1.95
 		var item: Dictionary = paints[i % paints.size()]
 		_bike(p, Vector3(-half.x + 0.5, 0, z), 0.0, item["colour"])
-		_tag(p, "%s · %d Dh" % [item["name"], GearCatalog.price(item)], Vector3(-half.x + 0.82, 1.22, z - 0.42), 90.0)
+		# Its price card on a little stand in front of it.
+		var card := Vector3(-half.x + 1.05, 0, z + 0.55)
+		p.box(Vector3(0.2, 0.02, 0.2), DARK, card + Vector3(0, 0.01, 0))
+		p.box(Vector3(0.025, 0.9, 0.025), DARK, card + Vector3(0, 0.47, 0))
+		_tag(p, "%s · %d Dh" % [item["name"], GearCatalog.price(item)], card + Vector3(0.0, 0.95, 0.018), 0.0)
 	LowPoly.solid_box(p.body, Vector3(0.65, 1.1, 5.7), Vector3(-half.x + 0.5, 0.55, 1.5))
 	for i in 3:
 		var z := 2.5 - i * 1.95
-		for dz in [-0.4, 0.4]:
-			p.box(Vector3(0.35, 0.04, 0.04), DARK, Vector3(-half.x + 0.3, 3.45, z + dz))
+		for dz in [-0.55, 0.55]:   # a hook over each wheel
+			p.box(Vector3(0.4, 0.04, 0.04), DARK, Vector3(-half.x + 0.32, 3.5, z + dz))
+			p.box(Vector3(0.03, 0.46, 0.03), DARK, Vector3(-half.x + 0.5, 3.29, z + dz))
 		_bike(p, Vector3(-half.x + 0.5, 2.4, z), 0.0, [Color(0.15, 0.15, 0.16), Color(0.85, 0.85, 0.85), Color(0.2, 0.35, 0.7)][i])
 	# The tyre rack on the right wall.
 	var rack_x := half.x - 0.35
@@ -160,8 +168,9 @@ static func bikes(p: InteriorParts) -> void:
 			var at := Vector3(rack_x - 0.05, y - 0.3, 1.1 + k * 0.55)
 			p.cyl(0.33, 0.33, 0.05, Color(0.1, 0.1, 0.1), at, Basis(Vector3.FORWARD, PI * 0.5), 14)
 			p.cyl(0.22, 0.22, 0.06, Color(0.55, 0.57, 0.6), at, Basis(Vector3.FORWARD, PI * 0.5), 12)
+	p.box(Vector3(0.06, 0.06, 2.88), DARK, Vector3(rack_x, 1.97, 2.2))
 	LowPoly.solid_box(p.body, Vector3(0.5, 2.0, 2.9), Vector3(rack_x, 1.0, 2.2))
-	_tag(p, "Comfy tyres · %d Dh" % int(GameConfig.GEAR_PRICES["tyres"]), Vector3(rack_x - 0.3, 2.2, 2.2), -90.0)
+	_tag(p, "Comfy tyres · %d Dh" % int(GameConfig.GEAR_PRICES["tyres"]), Vector3(rack_x - 0.035, 2.05, 2.2), -90.0)
 	# Helmets, lights and bottles on shelves on the right wall.
 	_shelves(p, "right", -1.7, 0.4, 0.4, [1.1, 1.6, 2.1], WOOD)
 	for k in 4:
@@ -171,7 +180,7 @@ static func bikes(p: InteriorParts) -> void:
 		var colour: Color = [teal, Color(0.95, 0.75, 0.2), Color(0.9, 0.3, 0.3), WHITE][k % 4]
 		p.cyl(0.035, 0.035, 0.22, colour, Vector3(half.x - 0.33, 1.1 + 0.11, -1.55 + k * 0.25), Basis(), 8)   # bottles
 		p.box(Vector3(0.08, 0.06, 0.12), [DARK, Color(0.9, 0.2, 0.2)][k % 2], Vector3(half.x - 0.33, 2.1 + 0.03, -1.55 + k * 0.25))   # lights
-	_tag(p, "Helmets · %d Dh" % int(GameConfig.COSMETIC_PRICES["helmets"]), Vector3(half.x - 0.55, 1.45, -0.65), -90.0)
+	_tag(p, "Helmets · %d Dh" % int(GameConfig.COSMETIC_PRICES["helmets"]), Vector3(half.x - 0.53, 1.53, -0.65), -90.0)
 	# Boxes of parts on shelves behind the till.
 	_shelves(p, "back", 0.7, 5.6, 0.45, [0.45, 1.15, 1.85], WOOD.darkened(0.1))
 	for y in [0.45, 1.15, 1.85]:
@@ -181,8 +190,8 @@ static func bikes(p: InteriorParts) -> void:
 				continue
 			p.prop("kenney_furniture/cardboardBoxClosed", Vector3(x, y, back + 0.24), (k * 17) % 30 - 15.0, "floor", Vector3(0.45, 0.3, 0.35))
 	for k in 5:   # inner tubes hanging on hooks above the shelves
-		p.cyl(0.2, 0.2, 0.04, DARK, Vector3(1.4 + k * 0.95, 2.6, back + 0.08), Basis(Vector3.RIGHT, PI * 0.5), 12)
-	p.sign(str(p.place.get("arabic", "")), str(p.place.get("name", "Pedal Point Bikes")), Vector3(3.1, 3.45, back + 0.06), 0.0, Color.WHITE, teal.darkened(0.2), 30)
+		p.cyl(0.2, 0.2, 0.04, DARK, Vector3(1.4 + k * 0.95, 2.6, back + 0.02), Basis(Vector3.RIGHT, PI * 0.5), 12)
+	p.sign(str(p.place.get("arabic", "")), str(p.place.get("name", "Pedal Point Bikes")), Vector3(3.1, 3.45, back + 0.045), 0.0, Color.WHITE, teal.darkened(0.2), 30)
 	# A bike on show in the window, on a low stand, for people walking past.
 	p.box(Vector3(2.0, 0.15, 0.7), DARK, Vector3(3.6, 0.075, 4.15))
 	p.counter_tops.append([Rect2(2.6, 3.8, 2.0, 0.7), 0.15])
@@ -254,25 +263,26 @@ static func clothes(p: InteriorParts) -> void:
 			p.box(Vector3(0.02, 0.02, 0.12), STEEL, at + Vector3(0, -0.02, -0.08))
 			p.kit.ball(0.14, colour, at, 0.7)
 			p.box(Vector3(0.22, 0.02, 0.14), colour.darkened(0.2), at + Vector3(0, -0.05, 0.14))
-	p.sign("قبعات", "Caps", Vector3(3.0, 3.45, back + 0.06), 0.0, Color.WHITE, orange.darkened(0.2), 26)
-	_tag(p, "Caps · %d Dh" % cap_price, Vector3(1.4, 3.3, back + 0.07), 0.0)
+	p.sign("قبعات", "Caps", Vector3(3.0, 3.45, back + 0.045), 0.0, Color.WHITE, orange.darkened(0.2), 26)
+	_tag(p, "Caps · %d Dh" % cap_price, Vector3(1.4, 3.12, back + 0.06), 0.0)
 	# On the counter: the till and the sunglasses stand.
 	var c := ShopInterior.COUNTER
 	p.till(Vector3(c.x + 1.2, 1.05, c.z - 0.3))
-	for step in 3:
-		p.box(Vector3(1.0, 0.06, 0.15), WHITE, Vector3(c.x - 1.1, 1.08 + step * 0.1, c.z + 0.35 - step * 0.15))
+	for step in 3:   # three steps, each standing on the counter top
+		var tall := 0.06 + step * 0.1
+		p.box(Vector3(1.0, tall, 0.15), WHITE, Vector3(c.x - 1.1, 1.05 + tall * 0.5, c.z + 0.35 - step * 0.15))
 		for k in 4:
 			p.box(Vector3(0.17, 0.05, 0.02), [DARK, Color(0.3, 0.2, 0.1), Color(0.6, 0.15, 0.15), Color(0.15, 0.3, 0.6)][(k + step) % 4],
-					Vector3(c.x - 1.45 + k * 0.23, 1.14 + step * 0.1, c.z + 0.38 - step * 0.15))
+					Vector3(c.x - 1.45 + k * 0.23, 1.05 + tall + 0.025, c.z + 0.38 - step * 0.15))
 	# The sunglasses wall on the right, by the counter.
 	p.box(Vector3(0.05, 1.6, 2.0), Color(0.95, 0.93, 0.9), Vector3(half.x - 0.15, 1.8, -0.75))
 	for row in 5:
 		for k in 6:
 			var colour: Color = [DARK, Color(0.3, 0.2, 0.1), Color(0.6, 0.15, 0.15), Color(0.15, 0.3, 0.6), Color(0.85, 0.65, 0.2)][(k + row) % 5]
-			var at := Vector3(half.x - 0.19, 1.2 + row * 0.28, -1.45 + k * 0.28)
+			var at := Vector3(half.x - 0.185, 1.2 + row * 0.28, -1.45 + k * 0.28)
 			p.box(Vector3(0.02, 0.06, 0.2), colour, at)
 			p.box(Vector3(0.03, 0.01, 0.2), DARK, at + Vector3(0, 0.035, 0))
-	_tag(p, "Glasses · %d Dh" % int(GameConfig.COSMETIC_PRICES["glasses"]), Vector3(half.x - 0.2, 2.75, -0.75), -90.0)
+	_tag(p, "Glasses · %d Dh" % int(GameConfig.COSMETIC_PRICES["glasses"]), Vector3(half.x - 0.18, 2.54, -0.75), -90.0)
 	# The trainers wall on the right: shoes on little shelves, one of each colour.
 	var shoe_levels := [0.35, 0.8, 1.25, 1.7]
 	_shelves(p, "right", 0.6, 3.8, 0.35, shoe_levels, WHITE)
@@ -282,7 +292,7 @@ static func clothes(p: InteriorParts) -> void:
 			var at := Vector3(half.x - 0.3, y, 0.95 + k * 0.62)
 			p.box(Vector3(0.28, 0.04, 0.11), WHITE, at + Vector3(0, 0.02, 0), Basis(Vector3.UP, PI * 0.5))   # the sole
 			p.box(Vector3(0.24, 0.08, 0.1), colour, at + Vector3(0.02, 0.08, 0), Basis(Vector3.UP, PI * 0.5))
-	_tag(p, "Trainers · %d Dh" % int(GameConfig.COSMETIC_PRICES["shoes"]), Vector3(half.x - 0.5, 2.1, 2.2), -90.0)
+	_tag(p, "Trainers · %d Dh" % int(GameConfig.COSMETIC_PRICES["shoes"]), Vector3(half.x - 0.48, 1.66, 2.2), -90.0)
 	# Two clothes rails with tops on hangers.
 	for z in [0.9, 2.9]:
 		for x in [1.9, 4.5]:
@@ -292,8 +302,9 @@ static func clothes(p: InteriorParts) -> void:
 		for k in 8:
 			var colour: Color = GearCatalog.COLOURS[k % 3]["colour"]
 			p.box(Vector3(0.05, 0.75, 0.55), colour if k % 2 == 0 else colour.lightened(0.3), Vector3(2.15 + k * 0.3, 1.25, z))
+			p.box(Vector3(0.012, 0.08, 0.012), STEEL, Vector3(2.15 + k * 0.3, 1.66, z))   # its hanger hook
 		LowPoly.solid_box(p.body, Vector3(2.8, 1.7, 0.6), Vector3(3.2, 0.85, z))
-	_tag(p, "Tops · %d Dh" % int(GameConfig.COSMETIC_PRICES["tops"]), Vector3(3.2, 1.85, 2.92), 0.0)
+	_tag(p, "Tops · %d Dh" % int(GameConfig.COSMETIC_PRICES["tops"]), Vector3(4.66, 1.45, 2.932), 0.0)
 	# Folded hoodies on a table.
 	var table := Vector3(-3.4, 0, 2.9)
 	p.prop("kenney_furniture/table", table, 0.0, "floor", Vector3(1.6, 0.75, 0.8))
@@ -301,16 +312,18 @@ static func clothes(p: InteriorParts) -> void:
 	p.counter_tops.append([Rect2(table.x - 0.8, table.z - 0.4, 1.6, 0.8), 0.75])
 	for k in 4:
 		for n in 3 + k % 2:
-			p.box(Vector3(0.32, 0.07, 0.28), GearCatalog.COLOURS[(k + n) % 3]["colour"].darkened(0.1 * (n % 2)), table + Vector3(-0.55 + k * 0.37, 0.79 + n * 0.072, 0))
-	_tag(p, "Hoodies · %d Dh" % int(GameConfig.COSMETIC_PRICES["tops"]), table + Vector3(0, 0.8, 0.41), 0.0)
+			p.box(Vector3(0.32, 0.07, 0.28), GearCatalog.COLOURS[(k + n) % 3]["colour"].darkened(0.1 * (n % 2)), table + Vector3(-0.55 + k * 0.37, 0.785 + n * 0.07, 0))
+	_tag(p, "Hoodies · %d Dh" % int(GameConfig.COSMETIC_PRICES["tops"]), table + Vector3(0, 0.69, 0.406), 0.0)
 	# The changing room in the back-left corner.
-	var room := Vector3(-4.9, 0, -4.0)
+	var room := Vector3(-half.x + 0.125 + 0.9, 0, back + 0.8)   # 1.8 x 1.6 m, against both walls
 	p.box(Vector3(1.8, 0.05, 1.6), STEEL, room + Vector3(0, 2.3, 0))
 	p.box(Vector3(0.04, 2.3, 1.6), Color(0.95, 0.93, 0.9), room + Vector3(0.9, 1.15, 0))
+	p.box(Vector3(1.84, 0.3, 0.03), Color(0.95, 0.93, 0.9), room + Vector3(0.02, 2.45, 0.8))      # the board over the front
+	p.box(Vector3(1.76, 0.03, 0.03), STEEL, room + Vector3(0, 2.22, 0.8))                           # the curtain rail
 	for k in 6:
-		p.box(Vector3(0.3, 2.0, 0.03), orange.darkened(0.15 * (k % 2)), room + Vector3(-0.75 + k * 0.3, 1.2, 0.8))
+		p.box(Vector3(0.3, 1.96, 0.03), orange.darkened(0.15 * (k % 2)), room + Vector3(-0.75 + k * 0.3, 1.225, 0.8))
 	LowPoly.solid_box(p.body, Vector3(1.8, 2.3, 1.6), room + Vector3(0, 1.15, 0))
-	p.sign("غرفة القياس", "Fitting room", room + Vector3(0, 2.5, 0.82), 0.0, Color.WHITE, orange.darkened(0.25), 20)
+	p.sign("غرفة القياس", "Fitting room", room + Vector3(0.02, 2.45, 0.84), 0.0, orange.darkened(0.35), Color(0, 0, 0, 0), 20)
 	# Shelves of folded tops and backpacks along the back wall, beside the changing room.
 	var levels := [0.5, 1.1, 1.7, 2.3]
 	_shelves(p, "back", -3.8, -0.2, 0.45, levels, WOOD)
@@ -324,7 +337,7 @@ static func clothes(p: InteriorParts) -> void:
 			else:
 				for n in 3:
 					p.box(Vector3(0.34, 0.07, 0.3), colour.darkened(0.08 * n), Vector3(x, y + 0.035 + n * 0.072, back + 0.24))
-	_tag(p, "Backpacks · %d Dh" % int(GameConfig.COSMETIC_PRICES["bags"]), Vector3(-2.0, 2.95, back + 0.08), 0.0)
+	_tag(p, "Backpacks · %d Dh" % int(GameConfig.COSMETIC_PRICES["bags"]), Vector3(-2.0, 2.95, back + 0.006), 0.0)
 	# Two mannequins in the window, dressed in the shop's clothes.
 	for i in 2:
 		var at := Vector3([-4.6, 4.6][i], 0, 4.25)

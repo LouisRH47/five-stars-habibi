@@ -86,8 +86,8 @@ static func tuk_tuk(p: InteriorParts, origin: Vector3, facing: float) -> Vector3
 	p.box(Vector3(0.9, 0.75, 0.35), body, f.call(Vector3(0, 0.85, 0.95)), t)
 	p.box(Vector3(0.8, 0.06, 0.3), gold, f.call(Vector3(0, 1.25, 0.95)), t)
 	p.box(Vector3(0.75, 0.35, 0.03), Color(0.7, 0.85, 0.9), f.call(Vector3(0, 1.45, 0.92)), t)
-	p.box(Vector3(0.7, 0.05, 0.05), Color(0.3, 0.3, 0.3), f.call(Vector3(0, 1.15, 0.7)), t)   # handlebar
-	p.box(Vector3(0.5, 0.15, 0.4), DARK, f.call(Vector3(0, 0.75, 0.45)), t)                  # driver's seat
+	p.box(Vector3(0.7, 0.05, 0.05), Color(0.3, 0.3, 0.3), f.call(Vector3(0, 1.15, 0.76)), t)   # handlebar
+	p.box(Vector3(0.5, 0.3, 0.4), DARK, f.call(Vector3(0, 0.67, 0.45)), t)                    # driver's seat
 	p.box(Vector3(1.15, 0.15, 0.55), Color(0.85, 0.15, 0.2), f.call(Vector3(0, 0.6, -0.65)), t)   # the bench
 	p.box(Vector3(1.15, 0.55, 0.12), Color(0.85, 0.15, 0.2), f.call(Vector3(0, 0.9, -0.95)), t)
 	for x in [-0.6, 0.6]:
@@ -97,8 +97,8 @@ static func tuk_tuk(p: InteriorParts, origin: Vector3, facing: float) -> Vector3
 	for k in 8:   # colourful stripes and a garland of little balls round the roof
 		p.box(Vector3(0.02, 0.18, 0.26), [gold, Color(0.2, 0.5, 0.85), Color(0.9, 0.3, 0.5), Color(0.95, 0.95, 0.9)][k % 4], f.call(Vector3(0.63, 0.42, -1.05 + k * 0.27)), t)
 		p.box(Vector3(0.02, 0.18, 0.26), [gold, Color(0.2, 0.5, 0.85), Color(0.9, 0.3, 0.5), Color(0.95, 0.95, 0.9)][k % 4], f.call(Vector3(-0.63, 0.42, -1.05 + k * 0.27)), t)
-		p.kit.ball(0.05, [Color(1, 0.4, 0.1), gold, Color(0.9, 0.2, 0.6)][k % 3], f.call(Vector3(0.66, 1.78, -1.05 + k * 0.26)), 1.0)
-		p.kit.ball(0.05, [Color(1, 0.4, 0.1), gold, Color(0.9, 0.2, 0.6)][k % 3], f.call(Vector3(-0.66, 1.78, -1.05 + k * 0.26)), 1.0)
+		p.kit.ball(0.05, [Color(1, 0.4, 0.1), gold, Color(0.9, 0.2, 0.6)][k % 3], f.call(Vector3(0.66, 1.8, -1.05 + k * 0.26)), 1.0)
+		p.kit.ball(0.05, [Color(1, 0.4, 0.1), gold, Color(0.9, 0.2, 0.6)][k % 3], f.call(Vector3(-0.66, 1.8, -1.05 + k * 0.26)), 1.0)
 	var across := absf(sin(deg_to_rad(facing))) > 0.7   # turned side-on: its length runs along x
 	LowPoly.solid_box(p.body, Vector3(2.6, 1.9, 1.3) if across else Vector3(1.3, 1.9, 2.6), origin + Vector3(0, 0.95, 0))
 	# The sign on the roof reads from the door (+z), whichever way the tuk-tuk points.
@@ -129,9 +129,9 @@ static func sushi_bar(p: InteriorParts, centre: Vector3, size_xz: Vector2, plate
 	var inset := 0.32
 	var loop := Curve3D.new()
 	var a := Vector2(half.x - inset, half.y - inset)
-	var y := height + 0.03
+	var y := height + 0.01   # the belt lies on the bar top; the plates ride on the belt
 	for corner in [Vector2(-a.x, a.y), Vector2(a.x, a.y), Vector2(a.x, -a.y), Vector2(-a.x, -a.y), Vector2(-a.x, a.y)]:
-		loop.add_point(Vector3(centre.x + corner.x, y + 0.012, centre.z + corner.y))
+		loop.add_point(Vector3(centre.x + corner.x, height + 0.02, centre.z + corner.y))
 	loop.bake_interval = 0.05
 	for side in [[Vector3(size_xz.x - inset * 2 + 0.24, 0.02, 0.24), Vector3(0, y, a.y)], [Vector3(size_xz.x - inset * 2 + 0.24, 0.02, 0.24), Vector3(0, y, -a.y)],
 			[Vector3(0.24, 0.02, size_xz.y - inset * 2), Vector3(-a.x, y, 0)], [Vector3(0.24, 0.02, size_xz.y - inset * 2), Vector3(a.x, y, 0)]]:
@@ -219,5 +219,5 @@ static func fryer(p: InteriorParts, origin: Vector3) -> void:
 	p.counter_tops.append([Rect2(origin.x - 0.3, origin.z - 0.35, 0.6, 0.7), 0.88])
 	for dx in [-0.14, 0.14]:
 		p.box(Vector3(0.24, 0.02, 0.4), Color(0.75, 0.6, 0.2), origin + Vector3(dx, 0.875, 0))
-		p.box(Vector3(0.2, 0.1, 0.28), Color(0.55, 0.55, 0.57), origin + Vector3(dx, 0.95, -0.05))
-		p.box(Vector3(0.02, 0.02, 0.25), DARK, origin + Vector3(dx, 1.0, 0.25))
+		p.box(Vector3(0.2, 0.1, 0.28), Color(0.55, 0.55, 0.57), origin + Vector3(dx, 0.92, -0.05))   # the basket, in the oil
+		p.box(Vector3(0.02, 0.02, 0.25), DARK, origin + Vector3(dx, 0.96, 0.2))
