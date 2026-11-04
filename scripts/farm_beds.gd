@@ -128,9 +128,10 @@ static func _bed_frame(kit: MeshKit, x0: float, x1: float, z: float) -> void:
 		kit.box(Vector3(0.06, h, BED_DEPTH - 0.12), WOOD, Vector3((x0 + x1) * 0.5 + side * ((x1 - x0) * 0.5 - 0.03), h * 0.5, z))
 		for end in [x0 + 0.04, x1 - 0.04]:
 			kit.box(Vector3(0.09, h + 0.06, 0.09), WOOD_DARK, Vector3(end, (h + 0.06) * 0.5, z + side * (half - 0.04)))
-	# A plank line along each long side, so they look like boards.
+	# A plank line along each long side, so they look like boards. It sticks out 1 cm each
+	# side of the board (and 5 mm past the corner posts), so its faces don't flicker.
 	for side in [-1.0, 1.0]:
-		kit.box(Vector3(x1 - x0, 0.015, 0.065), WOOD_DARK, Vector3((x0 + x1) * 0.5, h * 0.5, z + side * (half - 0.03)))
+		kit.box(Vector3(x1 - x0, 0.015, 0.08), WOOD_DARK, Vector3((x0 + x1) * 0.5, h * 0.5, z + side * (half - 0.03)))
 
 
 ## Stand-in crops from simple shapes (the browser version has no model packs).

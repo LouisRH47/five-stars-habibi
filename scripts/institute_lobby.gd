@@ -164,7 +164,10 @@ static func _balcony(body: StaticBody3D, size: Vector3) -> void:
 	for i in steps:
 		var rise := BALCONY_Y * (i + 1) / steps
 		var z := bottom_z - (i + 0.5) * (bottom_z - edge) / steps
-		LowPoly.box(body, Vector3(1.8, rise, (bottom_z - edge) / steps + 0.01), WHITE if i % 2 == 0 else Color(0.94, 0.94, 0.93),
+		# Every other step is 2 cm narrower, so its sides sit 1 cm behind its neighbours'
+		# and the two shades don't flicker where the steps overlap.
+		var wide := 1.8 if i % 2 == 0 else 1.78
+		LowPoly.box(body, Vector3(wide, rise, (bottom_z - edge) / steps + 0.01), WHITE if i % 2 == 0 else Color(0.94, 0.94, 0.93),
 				Vector3(half.x - 1.1, rise * 0.5, z))
 		LowPoly.box(body, Vector3(1.8, 0.04, (bottom_z - edge) / steps), WOOD, Vector3(half.x - 1.1, rise + 0.02, z))
 	LowPoly.solid_box(body, Vector3(1.8, BALCONY_Y, bottom_z - edge), Vector3(half.x - 1.1, BALCONY_Y * 0.5, (bottom_z + edge) * 0.5))

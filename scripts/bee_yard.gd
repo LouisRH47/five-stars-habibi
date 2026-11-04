@@ -103,7 +103,8 @@ static func _flower_beds(parent: Node3D, area: Rect2) -> void:
 					spots.append(Vector3(p.x, 0.05, p.y))
 			t += step
 	# A gap in the north bed in front of the gate, paved.
-	kit.box(Vector3(GATE + 0.6, 0.04, BED_WIDTH + 0.2), Color(0.8, 0.76, 0.68), Vector3(area.get_center().x, 0.03, outer.position.y + BED_WIDTH * 0.5 + 0.1))
+	# (1 cm higher than the bed and starting 1 cm in from its edge, so no faces line up and flicker.)
+	kit.box(Vector3(GATE + 0.6, 0.05, BED_WIDTH + 0.19), Color(0.8, 0.76, 0.68), Vector3(area.get_center().x, 0.035, outer.position.y + BED_WIDTH * 0.5 + 0.105))
 	parent.add_child(kit.finish("FlowerBeds"))
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 363
