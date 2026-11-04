@@ -59,7 +59,7 @@ func _ready() -> void:
 		if place.get("row_mode", false):
 			joined.append(place)
 	if not joined.is_empty():
-		add_child(HousingRows.build(joined, villa_size))
+		add_child(_take_or_build_homes(joined))
 	for place in villas:
 		if place.get("row_mode", false):
 			continue
@@ -96,6 +96,18 @@ func _ready() -> void:
 	set_process(not _venue_people.is_empty())
 	if lists.has("SHOPS"):
 		_setup_shops.call_deferred()
+
+
+## Session 53: use the homes the loading screen already built, if they're the same homes.
+func _take_or_build_homes(joined: Array) -> HousingRows:
+	var ready_made := HousingRows.prebuilt
+	HousingRows.prebuilt = null
+	if ready_made != null and ready_made.rows_left() == 0 \
+			and ready_made.home_count == HousingRows.homes_in(joined):
+		return ready_made
+	if ready_made != null:
+		ready_made.free()
+	return HousingRows.build(joined, villa_size)
 
 
 func _process(delta: float) -> void:

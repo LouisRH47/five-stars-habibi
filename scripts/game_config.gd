@@ -471,3 +471,18 @@ const WIND_SMOOTHING := 6.0
 const GPS_GROUND_SAMPLE_METRES := 2.0
 const COMFY_TYRES_CAMERA_VERTICAL_SHARE := 0.5
 const COMFY_TYRES_SHAKE_SHARE := 0.65
+
+# --- Session 53: loading screen and small fixes ---
+const LOADING_MIN_SHOW_MS := 800      # the loading screen stays at least this long, so it never flashes
+const LOADING_FADE_TIME := 0.4        # seconds to fade the loading screen out
+const LOADING_TIP_TIME := 3.0         # a new tip every 3 seconds
+const LOADING_TIPS := [
+	"Ring the bell with B.",
+	"Brake before lane corners: the lanes are narrow.",
+	"Ice cream melts fast, so go straight there.",
+	"Insurance is cheap. Hospitals aren't.",
+	"Regulars tip more often.",
+	"Hold E at the counter to pick up the order.",
+	"The red track is for walkers: mind them.",
+	"Sprinting uses stamina. Coast to get it back.",
+]

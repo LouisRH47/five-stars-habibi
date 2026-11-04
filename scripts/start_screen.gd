@@ -77,7 +77,7 @@ func play_scene() -> String:
 ## Play / Continue: straight into the game if you're hired, otherwise the application.
 func play() -> void:
 	if GameState.hired:
-		get_tree().change_scene_to_file(GAME_SCENE)
+		_open_game(false)
 	else:
 		_show_page("form")
 
@@ -121,7 +121,17 @@ func finish_review() -> void:
 
 ## "Start riding": off to Wahat Al Shams (the tutorial starts there).
 func start_riding() -> void:
-	get_tree().change_scene_to_file(GAME_SCENE)
+	_open_game(true)
+
+
+## Session 53: behind the loading screen. Every button is switched off on the first click, so
+## clicking again (or pressing Enter) can't start a second load.
+func _open_game(first_shift: bool) -> void:
+	if Loader.busy:
+		return
+	for button in find_children("*", "Button", true, false):
+		(button as Button).disabled = true
+	Loader.go_to_game(first_shift)
 
 
 func _pick_look(number: int) -> void:

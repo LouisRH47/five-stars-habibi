@@ -10,9 +10,27 @@ var near_meshes: Array[MeshInstance3D] = []
 var far_meshes: Array[MeshInstance3D] = []
 
 
+## Session 53: homes built ahead of time by the loading screen (scripts/loader.gd), one row
+## per frame, so the game doesn't freeze. PlaceBuilder takes it if it matches its homes.
+static var prebuilt: HousingRows = null
+
+var _pending: Array = []        # [row id, homes] still to build
+var _villa_size := Vector3.ONE
+
+
 static func build(homes: Array, villa_size: Vector3) -> HousingRows:
+	var result := begin(homes, villa_size)
+	while not result.build_next():
+		pass
+	return result
+
+
+## Groups the homes into rows without building anything yet. Call build_next() until it
+## returns true.
+static func begin(homes: Array, villa_size: Vector3) -> HousingRows:
 	var result := HousingRows.new()
 	result.name = "HousingRows"
+	result._villa_size = villa_size
 	var groups := {}
 	for home: Dictionary in homes:
 		if home.get("kind", "") == "spot":
@@ -22,10 +40,37 @@ static func build(homes: Array, villa_size: Vector3) -> HousingRows:
 			groups[row] = []
 		groups[row].append(home)
 	for row: String in groups:
-		result._build_row(row, groups[row], villa_size)
-	result.set_meta("home_count", result.home_count)
-	result.set_meta("row_count", result.row_count)
+		result._pending.append([row, groups[row]])
+	result._finish_meta()
 	return result
+
+
+## Builds the next row. Returns true when every row is built.
+func build_next() -> bool:
+	if not _pending.is_empty():
+		var next: Array = _pending.pop_front()
+		_build_row(next[0], next[1], _villa_size)
+		_finish_meta()
+	return _pending.is_empty()
+
+
+## How many rows are still waiting to be built.
+func rows_left() -> int:
+	return _pending.size()
+
+
+## How many homes the finished build will have (counted before building).
+static func homes_in(homes: Array) -> int:
+	var count := 0
+	for home: Dictionary in homes:
+		if home.get("kind", "") != "spot":
+			count += 1
+	return count
+
+
+func _finish_meta() -> void:
+	set_meta("home_count", home_count)
+	set_meta("row_count", row_count)
 
 
 func _build_row(row_id: String, homes: Array, villa_size: Vector3) -> void:
