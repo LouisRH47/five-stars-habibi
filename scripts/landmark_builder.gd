@@ -24,6 +24,7 @@ const HORSES := [Color(0.45, 0.28, 0.15, 1), Color(0.85, 0.82, 0.78, 1), Color(0
 const TEXT := Color(1, 1, 1, 1)
 
 var _map: Dictionary = {}
+const CHECKPOINT := preload("res://scripts/checkpoint.gd")
 
 
 func _ready() -> void:
@@ -172,6 +173,13 @@ func _build_site(site: Dictionary) -> void:
 func _build_spot(place: Dictionary) -> void:
 	var size: Vector3 = place["size"]
 	var booth: bool = place.get("look", "") == "booth"
+	# Session 61: a glass booth with the guard inside, and a stable office you can look into.
+	if booth and GameConfig.GLASS_BOOTHS_ON:
+		_build_glass_booth(place)
+		return
+	if not booth and GameConfig.STABLE_OFFICE_ROOM_ON:
+		StableOffice.build(self, place)
+		return
 	var body := _solid_block(self, place["position"], size, RAIL if booth else WOOD.lightened(0.3))
 	body.name = "SchoolBooth" if booth else "StableOffice"
 	body.rotation_degrees.y = place["facing"]
@@ -187,6 +195,41 @@ func _build_spot(place: Dictionary) -> void:
 	var face := SignText.make_face(arabic, english, font, TEXT)
 	face.position = Vector3(0, size.y - 0.65, front + 0.19)
 	body.add_child(face)
+
+
+## Session 61: the school's glass security booth beside the gate, with the guard at his desk,
+## the "Security" sign and a raised barrier arm across the gateway.
+func _build_glass_booth(place: Dictionary) -> void:
+	var size: Vector3 = place["size"]
+	var body := CHECKPOINT.glass_booth(self, size, true)
+	body.name = "SchoolBooth"
+	body.position = place["position"]
+	body.rotation_degrees.y = place["facing"]
+	var board := Vector3(size.x - 0.2, 0.62, 0.08)
+	LowPoly.box(body, board, TEAL, Vector3(0, size.y + 0.32, size.z * 0.5 + 0.2))
+	var font := SignText.fit_size("الأمن", "Security", 30, board.x - 0.3)
+	var face := SignText.make_face("الأمن", "Security", font, TEXT)
+	face.position = Vector3(0, size.y + 0.32, size.z * 0.5 + 0.25)
+	body.add_child(face)
+	if not _map.has("SCHOOL"):
+		return
+	# The barrier: a post on the booth's side of the gateway and a red and white arm, raised.
+	var school: Dictionary = _map["SCHOOL"]
+	var gate_x: float = school["gate_x"]
+	var gap: float = school["gate_width"] * 0.5
+	var top: float = school["area"].position.y
+	var barrier := StaticBody3D.new()
+	barrier.name = "SchoolBarrier"
+	barrier.position = Vector3(gate_x + gap - 0.2, 0, top - 0.8)
+	add_child(barrier)
+	LowPoly.box(barrier, Vector3(0.35, 1.1, 0.35), Color(0.9, 0.9, 0.88, 1), Vector3(0, 0.55, 0))
+	LowPoly.solid_box(barrier, Vector3(0.35, 1.1, 0.35), Vector3(0, 0.55, 0))
+	var arm := Node3D.new()
+	arm.position = Vector3(0, 1.0, 0)
+	arm.rotation.z = deg_to_rad(-75.0)   # raised up, so you ride straight through
+	barrier.add_child(arm)
+	for i in 12:
+		LowPoly.box(arm, Vector3(0.55, 0.12, 0.12), Color(0.85, 0.15, 0.15, 1) if i % 2 == 0 else RAIL, Vector3(-0.3 - i * 0.55, 0, 0))
 
 
 ## A fence all round an area. gate: a gap in the north side, from x to y (Vector2.ZERO = no gap).

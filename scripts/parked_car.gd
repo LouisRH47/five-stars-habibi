@@ -19,11 +19,16 @@ const MODEL_TURN := 0.0
 
 
 ## Builds the car. size: width, height, length in metres (from the data list).
-## colour_index: picks the car model.
-func setup(size: Vector3, colour_index: int) -> void:
+## colour_index: picks the car model. place: the car's line in the data list (Session 62:
+## cars in the car parks say which "model" they are, and CarParkCars draws them all together,
+## so this body is only the solid part; see GameConfig.CARPARK_CAR_BATCH).
+func setup(size: Vector3, colour_index: int, place := {}) -> void:
 	# One solid box for the whole car.
 	LowPoly.solid_box(self, size, Vector3(0, size.y * 0.5, 0))
-	var car: Node3D = MODELS[colour_index % MODELS.size()].instantiate()
+	if GameConfig.CARPARK_CAR_BATCH and place.has("park"):
+		set_meta("drawn_by", "CarParkCars")
+		return
+	var car: Node3D = MODELS[int(place.get("model", colour_index)) % MODELS.size()].instantiate()
 	car.name = "Model"
 	car.rotation.y = MODEL_TURN
 	add_child(car)

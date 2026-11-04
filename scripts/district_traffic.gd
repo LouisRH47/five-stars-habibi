@@ -1,6 +1,7 @@
 class_name DistrictTraffic
 extends Node3D
 ## Sessions 37–38: fixed car/bus routes, solar bays and separated riding tracks.
+## Session 62: the car parks (CarParkBuilder) and their visiting cars.
 ## All layout comes from the map data. No vehicle can select an unlisted road.
 
 @export var data: Script
@@ -93,6 +94,9 @@ func _build_cars() -> void:
 	for i in range(4):
 		var car := _make_car(ring, i)
 		car.start_at(i)
+	if GameConfig.CARPARK_ROWS and _map.has("CAR_PARKS"):
+		_build_visitors(ring)
+		return
 	for i in _map.get("PARKING_AREAS", []).size():
 		var area: Rect2 = _map["PARKING_AREAS"][i]
 		var north := area.get_center().y < 0.0
@@ -131,13 +135,59 @@ func _make_car(route: Array, number: int) -> TrafficVehicle:
 	return vehicle
 
 
-func _build_access(entry: Vector3, inside: Vector3) -> void:
+## Session 62: one visiting car per car park. It waits in its free bay beside the first aisle,
+## drives out through the aisle onto the ring road, goes once round and parks again.
+## Cars never use the buggy lanes: only the ring road, the aisle and the bay.
+func _build_visitors(ring: Array[Vector3]) -> void:
+	var parks: Array = _map["CAR_PARKS"]
+	for i in parks.size():
+		var park: Dictionary = parks[i]
+		var visit: Dictionary = park["visitor"]
+		var north: bool = park["north"]
+		var x: float = visit["aisle_x"]
+		var entry := Vector3(x, 0, _ring.position.y if north else _ring.end.y)
+		var bay: Vector3 = visit["bay"]
+		var aisle := Vector3(x, 0, bay.z)
+		var route: Array[Vector3] = [bay, aisle, entry]
+		var start := 1 if north else 3
+		for offset in range(4):
+			route.append(ring[(start + offset) % 4])
+		route.append(entry)
+		route.append(aisle)
+		route.append(bay)
+		var car := _make_car(route, i + 4)
+		car.stop_index = route.size() - 1
+		car.dwell_time = GameConfig.TRAFFIC_PARK_WAIT
+		car._wait_left = GameConfig.TRAFFIC_PARK_WAIT + i
+		for opening: Rect2 in park["aisles"]:
+			var middle := opening.get_center().x
+			_build_access(Vector3(middle, 0, park["ring_z"]), Vector3(middle, 0, park["first_bay_z"]), opening.size.x, true)
+
+
+## The short asphalt road from the ring road into a car park. Session 62 (textured = true):
+## the aisle's opening through the verge, level with the car park's asphalt.
+func _build_access(entry: Vector3, inside: Vector3, width := 6.0, textured := false) -> void:
 	var centre := (entry + inside) * 0.5
-	var road := LowPoly.box(self, Vector3(6.0, 0.025, entry.distance_to(inside) + 4.0), ASPHALT, centre + Vector3.UP * 0.06)
+	if textured:
+		var mouth := LowPoly.box(self, Vector3(width, CarParkBuilder.PAD_TOP, entry.distance_to(inside)), ASPHALT,
+				centre + Vector3.UP * CarParkBuilder.PAD_TOP * 0.5)
+		mouth.name = "ParkingAccess"
+		mouth.material_override = TerrainMaterials.make("road")
+		return
+	var road := LowPoly.box(self, Vector3(width, 0.025, entry.distance_to(inside) + 4.0), ASPHALT, centre + Vector3.UP * 0.06)
 	road.name = "ParkingAccess"
 
 
 func _build_solar_bays() -> void:
+	if GameConfig.CARPARK_ROWS and _map.has("CAR_PARKS"):
+		# Session 62: Louis's rows (1, 2 back to back, 1), a solar roof over every row.
+		solar_bays += CarParkBuilder.build(self, _map)
+		if GameConfig.CARPARK_CAR_BATCH:
+			var looks := CarParkCars.new()
+			looks.name = "ParkedCarLooks"
+			add_child(looks)
+			looks.build(_map.get("PARKED_CARS", []), _map["PARKED_CAR_SIZE"])
+		return
 	for place: Dictionary in _map.get("PARKED_CARS", []):
 		if place.get("bay", false):
 			_solar_canopy(place["position"], place["facing"], Vector3(8.5, 0.16, 6.2))
