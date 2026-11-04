@@ -151,10 +151,12 @@ put('RESTAURANTS',restaurants)
 put('SHOPS',[{'id':'bikes','name':'Pedal Point Bikes','arabic':'بيدال بوينت','position':v3(-275,0,-145),'facing':90.,'size':v3(20,8,18)}, {'id':'clothes','name':'Dune Drip','arabic':'ديون دريب','position':v3(-125,0,-145),'facing':-90.,'size':v3(20,8,18)}])
 put('VILLA_SIZE',v3(9,8.5,8))
 homes += [
- {'number':901,'house':0,'cluster':'','address':'Fair Grade School · Gate','map_address':'School Gate','kind':'spot','look':'booth','position':v3(-365,0,32),'facing':180.,'size':v3(4,3,4),'who':'teacher'},
- {'number':902,'house':0,'cluster':'','address':'Wahat Stables · Office','map_address':'Stables Office','kind':'spot','position':v3(-224,0,190),'facing':0.,'size':v3(7,4,6),'who':'groom'},
- # "counter": where you stand at the reception desk, in the building's own directions (Session 60).
- {'number':903,'house':0,'cluster':'','address':'C Institute · Reception','map_address':'C Institute','kind':'spot','position':v3(-215,0,-33),'facing':90.,'size':v3(46,14,36),'interior':True,'who':'staff'},
+ # Session 61: the glass security booth stands beside the school gate (it stood in the gateway).
+ {'number':901,'house':0,'cluster':'','address':'Fair Grade School · Gate','map_address':'School Gate','kind':'spot','look':'booth','position':v3(-357.4,0,30.6),'facing':180.,'size':v3(3.2,2.9,3.2),'who':'teacher'},
+ # Session 61: the stable office moved 1.5 m north so it no longer pokes into Stables Road.
+ {'number':902,'house':0,'cluster':'','address':'Wahat Stables · Office','map_address':'Stables Office','kind':'spot','position':v3(-224,0,188.5),'facing':0.,'size':v3(7,4,6),'who':'groom'},
+ # "counter": where you stand at the reception desk, in the building's own directions (Sessions 60-61).
+ {'number':903,'house':0,'cluster':'','address':'C Institute · Reception','map_address':'C Institute','kind':'spot','position':v3(-215,0,-33),'facing':90.,'size':v3(46,14,36),'interior':True,'who':'staff','counter':v3(0,0,9.6)},
  {'number':904,'house':0,'cluster':'','address':'Wahat Gym · Reception','map_address':'Gym','kind':'spot','position':GYM_AT,'facing':180.,'size':GYM_SIZE,'interior':True,'who':'gym_goer','counter':v3(0,0,4.0)},
 ]
 put('VILLAS',homes)

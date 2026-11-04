@@ -16,6 +16,8 @@ static func counter_local(size: Vector3) -> Vector3:
 ## "counter" spot (the gym and the C Institute have their reception by the door).
 static func counter_of(place: Dictionary, size: Vector3) -> Vector3:
 	var own := place.has("counter")
+	if place.get("number", 0) == 903 and not GameConfig.INSTITUTE_LOBBY_ON:
+		own = false   # the old lobby keeps its old counter
 	if place.get("number", 0) == 904 and not GameConfig.GYM_ROOM_ON:
 		own = false
 	return place["counter"] if own else counter_local(size)
@@ -26,9 +28,11 @@ static func world_point(place: Dictionary, local: Vector3) -> Vector3:
 
 
 static func build(place: Dictionary, size: Vector3) -> StaticBody3D:
-	# Session 60: the real gym is built by its own script.
+	# Sessions 60-61: the real gym and the C Institute lobby are built by their own scripts.
 	if place.get("venue_type", "") == "gym" and GameConfig.GYM_ROOM_ON:
 		return GymRoom.build(place, size)
+	if place.get("venue_type", "") == "institute" and GameConfig.INSTITUTE_LOBBY_ON:
+		return InstituteLobby.build(place, size)
 	var body := StaticBody3D.new()
 	body.set_meta("walk_in", true)
 	body.set_meta("venue_type", place.get("venue_type", "reception"))

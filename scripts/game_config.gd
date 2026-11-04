@@ -553,3 +553,11 @@ const POOL_WALK_SPEED := 0.9          # people strolling round the community poo
 const POOL_PEOPLE_RANGE := 90.0       # swimmers further than this from the camera stop moving (saves time)
 const SPLASH_DROPS := 10              # little splash drops round each kid in the kids' pool
 
+# --- Session 61: C Institute, stable office, farm stall and school booth ---
+const INSTITUTE_LOBBY_ON := true      # the two-storey lobby (scripts/institute_lobby.gd); false = the old room
+const INSTITUTE_SCREEN_SECONDS := 15.0   # the talk screen shows the next slide after this long
+const INSTITUTE_SLIDES := [["Talk today · 4 PM", "محاضرة اليوم · ٤ مساءً"], ["Solar cities of tomorrow", "مدن الطاقة الشمسية"], ["Welcome", "أهلاً"]]
+const STABLE_OFFICE_ROOM_ON := true   # the stable office you can see into; false = the old solid box
+const FARMER_ON := true               # the farmer behind the farm stall counter hands you the order
+const FARMER_LOOK_RANGE := 9.0        # the farmer turns to look at you inside this distance
+const GLASS_BOOTHS_ON := true         # glass security booths at the school gate and the checkpoints
