@@ -1261,24 +1261,25 @@ Done when:
 ### Session 56: The free asset kits
 
 ```text
-Session 56. Read PRD.md "Looks pass", Interiors. Download the CC0 kits:
-KayKit Restaurant Bits and KayKit Furniture Bits (GitHub: KayKit-Game-Assets),
-Kenney Furniture Kit and Food Kit (kenney.nl), a CC0 supermarket pack, CC0 gym
-models from Poly Pizza, and the CC0 low-poly house construction site by
-Majadroid (OpenGameArt) for the building sites. Check each licence says CC0
-and skip anything else. Put them in assets/kits/<pack>/ with their licence
-files, credit them in CREDITS.md, use the glTF versions, keep only the models
-we use. Make a small prop library (scripts/kit_props.gd) that places a model
-by name with a position, rotation and scale, and snaps it to the floor or
-counter it stands on. Make a test scene with a row of props from each kit.
-List which machines aren't in any kit (espresso machine, mosaic pizza oven,
-shawarma grill, manakish oven, gelato case) for Session 58 to build.
+Session 56. Read PRD.md "Looks pass", Interiors and the "Free asset packs"
+table. Download every pack in that table (check each page still says CC0;
+skip anything that doesn't). Put them in assets/kits/<pack>/ with their
+licence files, credit them in CREDITS.md, use the glTF versions, and keep
+only the models we use so the download stays small. Make a small prop
+library (scripts/kit_props.gd) that places a model by name with a position,
+rotation and scale, and snaps it to the floor or counter it stands on. Set up
+retargeting so the Quaternius Universal Animation Library clips (swim, sit,
+eat, farm, jog) play on our people. Make a test scene with a row of props
+from each pack and a person doing each new animation. List the machines no
+pack has (espresso machine, mosaic pizza oven, shawarma grill, manakish oven,
+gelato case, pool lounger, treadmill) for later sessions to build from shapes.
 ```
 
 Done when:
 
 - [ ] The kits are in assets/kits with licences, and CREDITS.md lists them
 - [ ] A test scene shows a row of props from each kit, all standing on the floor
+- [ ] Our people can swim, sit and eat, farm and jog with the new animations
 
 ### Session 57: The Plaza outside
 

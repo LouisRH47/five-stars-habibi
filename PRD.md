@@ -361,6 +361,32 @@ That evening Louis played again and sent a second, longer list (everything marke
 | Wahat Farm Stall | Open stall beside (not on) the farm beds with a striped awning, fruit and veg crates, a juice press and cooler, chalkboard menu, **the farmer who hands you the order** |
 | Fair Grade school gate | Glass security booth with the guard, barrier, the school wall and sign behind, a teacher waiting |
 
+**Free asset packs (all CC0, checked 4 Nov 2026).** The repo is public on GitHub, so only **CC0** packs go in (free for anything, no credit needed, fine to share). Check the licence on each pack's own page when downloading, and credit everything in CREDITS.md anyway. Quaternius has started using a new licence (QAL) for new packs; only use Quaternius packs whose page still says CC0.
+
+| Pack | Maker | What we use it for | Session |
+| --- | --- | --- | --- |
+| Restaurant Bits | KayKit | Kitchen gear, counters, food, tables for every restaurant | 56, 58, 59 |
+| Furniture Bits | KayKit | Chairs, sofas, shelves, lamps, plants for insides and the C Institute | 56, 58 to 61 |
+| City Builder Bits | KayKit | Streetlights, bins, hydrants, traffic lights for the Plaza and streets | 57, 62 |
+| Furniture Kit | Kenney | Extra furniture, kitchen and bathroom bits (the pool changing hut and shower) | 58 to 61 |
+| Food Kit | Kenney | 200 food models: pizzas, ice cream, croissants, cakes, bread, burgers, sushi for counters, menus and tables | 58, 59 |
+| City Kit (Roads) | Kenney | Kerbs, road pieces, lamp posts, construction fences, road signs | 53, 62, 64 |
+| City Kit (Commercial) | Kenney | Shop-front ideas and rooftop bits (AC units, signs) for the Plaza | 57 |
+| Nature Kit | Kenney | 330 plants, rocks, fences and a palm for the spine and the Plaza beds | 55, 57, 63 |
+| Stylized Nature MegaKit | Quaternius | Trees, bushes, flowers, rocks and grass clumps in a soft cartoony style that fits the Schedule I look | 55, 63 |
+| Ultimate Nature Pack (150 models) | Quaternius | Palm trees and cactus for the tree belt, spine and Plaza | 55, 63 |
+| Crops Pack (100+ models, 5 growth stages) | Quaternius | Watermelons, pumpkins, tomatoes and more for the farm beds | 63 |
+| Animated Farm Animals | Quaternius | Animated horse and other farm animals (better horses, the donkeys) | 63 |
+| Universal Animation Library 1 and 2 | Quaternius | 250+ animations: swimming for the pools, sitting and eating for diners, farming for the farmer and beekeeper, jogging for the red track. Retarget them onto our people's skeleton (Godot's humanoid bone map) | 59 to 63 |
+| Ultimate Modular Men and Women | Quaternius | More different-looking people for the Plaza, pools and gym | 57, 60 |
+| 3D House Construction Site | Majadroid (OpenGameArt) | Half-built house, cranes, site fence for the building sites | 64 |
+| Construction Site Pack | Hexagon (itch.io) | Extra site props: scaffolding parts, containers, barriers | 64 |
+| Low Poly Supermarket | Pensamiento Azul (itch.io) | Shelves, fridges, checkouts, trolleys for Grand Groceries | 58 |
+| Textures and skies | Poly Haven, ambientCG, OpenGameArt (CC0 only) | Clean ground textures (grass, paving, sand, red track rubber) and a sunny sky | 55 |
+| Grass shader | godotshaders.com (CC0 code) | Swaying grass blades | 55 |
+
+*Not used because they aren't CC0:* the VNB Low Poly Café Set (CC BY-SA, which would make us share our game under the same licence), Cute Low Poly Café Assets (no licence written), the Cartoon Beach Prop Pack (CC BY-SA), and paid packs from CGTrader or Fab. There is no CC0 pack with a good espresso machine, mosaic pizza oven, shawarma grill, manakish oven, gelato case, pool lounger or treadmill, so those are built from simple shapes in code (like the bike), following the table above and photos.
+
 **Logos:** every place gets its own made-up logo (a simple picture plus the name, in its colour): a pizza slice in a flame for 1000 Pizza, a dripping cone for Brain Freeze, a coffee cup with a spill for Spill the Brew, a spinning grill for Shawarma Supreme, a flatbread with a zaatar leaf for Bread & Zaatar, a basket for Grand Groceries, a tuk-tuk for Tok Tok Thai, a sushi roll for Sushi You, a smiling taco for Mario Bonito, a burger in a lab flask for Burgerology, a bike wheel for Pedal Point, a sun in sunglasses for Dune Drip. Drawn as SVGs in assets/logos/ (by a script, our own art), used on the sign bands, the menu boards, cups and bags. Never real logos.
 
 **C Institute fix:** turn the building so one long glass side faces the spine (east) with the stepped seats in front of it, and add the same big windows on the opposite side, so you can see right through the lobby.
@@ -787,6 +813,20 @@ Looks pass, second list (what the real places are like; every name in the game s
 - [Stylized MultiMesh grass shader with wind (CC0), Godot Shaders](https://godotshaders.com/shader/stylized-multimesh-grass-shader/)
 - [CC0 stylized grass textures, OpenGameArt](https://opengameart.org/content/stylized-grass-and-bush-textures-0)
 - [CC0 low-poly house construction site with cranes, OpenGameArt](https://opengameart.org/content/3d-house-construction-site-lowpoly-cc0)
+- [KayKit City Builder Bits (CC0)](https://kaylousberg.itch.io/city-builder-bits)
+- [Kenney City Kit (Roads) (CC0)](https://kenney-assets.itch.io/city-kit-roads)
+- [Kenney City Kit (Commercial) (CC0)](https://kenney.nl/assets/city-kit-commercial)
+- [Kenney Nature Kit (CC0)](https://opengameart.org/content/nature-kit)
+- [Quaternius Stylized Nature MegaKit (CC0)](https://quaternius.itch.io/stylized-nature-megakit)
+- [Quaternius Ultimate Nature Pack, 150+ models with palms (CC0)](https://quaternius.itch.io/150-lowpoly-nature-models)
+- [Quaternius Crops Pack (CC0)](https://www.patreon.com/posts/33407069)
+- [Quaternius Animated Farm Animals with a horse (CC0)](https://quaternius.itch.io/lowpoly-animated-animals)
+- [Quaternius Universal Animation Library, includes swimming and sitting (CC0)](https://quaternius.itch.io/universal-animation-library)
+- [Quaternius Universal Animation Library 2, includes farming (CC0)](https://quaternius.com/packs/universalanimationlibrary2.html)
+- [Quaternius Ultimate Modular Women (CC0)](https://bazaar.blendernation.com/?p=12168)
+- [Hexagon Construction Site Pack (CC0)](https://hexagon6.itch.io/construction-site-pack)
+- [Poly Haven: every asset is CC0](https://docs.polyhaven.com/ar/faq)
+- [Quaternius's newer QAL licence (why to check each pack page)](https://app.cinevva.com/fr/guides/free-rigged-3d-character-models)
 
 Licence tests:
 
