@@ -1,5 +1,24 @@
 # Progress
 
+## Next: the Looks pass (Sessions 52 to 65), planned 4 November 2026
+
+Louis played the detail pass. Next is the Looks pass in BUILD_PLAN.md: sharper full-screen
+graphics, no flicker, smaller and fuller interiors from free CC0 kits for every walk-in place,
+a real gym, the C Institute facing the spine with glass on both sides, more detail in the
+Plaza, streets and spine, and fixes for a crash loop and crashes costing too little.
+Session 52 is built on the `looks-pass` branch.
+
+The same evening Louis played again and sent a second list, so Sessions 53 to 65 replace the
+old 53 to 59: a loading screen after the application, small fixes (sunglasses, benches,
+cluster signs, crossing roads, the farm stall, a hill over the lap pool, stream bridges) with
+a new layout check test, ragdoll falls, the Schedule I look with real grass, the asset kits,
+a lower Plaza with flats on top, logos and a supermarket front, insides that copy the real
+kinds of shops (Spill the Tea becomes the coffee shop Spill the Brew; Bread & Zaatar sells
+bread only), the gym with its pool in front, a real community pool, full car parks right
+next to the clusters, a red walking track and buggy road on the spine, buggies everywhere
+except the ring road, and half-built buildings on the building sites. Render:
+docs/plaza_carpark_spine.svg. Step-by-step detail for every session: docs/looks_pass_detailed_plan.md.
+
 ## Plan review fixes — 4 November 2026
 
 A check of the plan against the code found two bugs that were still there, now fixed:

@@ -108,8 +108,8 @@ Every delivery is a race against three meters: time, heat and damage. How well y
 
 - Each meter is a bar from 100% (green) down to 0% (red). Above 60% is green, 30% to 60% is orange, below 30% is red.
 - **Time:** the target time is the straight-line distance from restaurant to villa at a normal riding pace (20 km/h), times 1.5 for corners, plus 20 seconds. The bar is full at pickup, at 60% (the edge of green) when you reach the target time, and empty at twice the target time. So on time = green, a bit late = orange, very late = red. Once empty it stays empty, the order isn't cancelled.
-- **Freshness:** drains at a fixed rate per food type (pizza slow, bubble tea medium, ice cream fast). Numbers live in game_config.gd.
-- **Damage:** starts full. Every bump, speed bump, kerb, hard brake or crash takes off a chunk. Bubble tea loses the most per bump.
+- **Freshness:** drains at a fixed rate per food type (pizza slow, iced coffee medium, ice cream fast). Numbers live in game_config.gd.
+- **Damage:** starts full. Every bump, speed bump, kerb, hard brake or crash takes off a chunk. Iced coffee loses the most per bump.
 - A meter at 0% never cancels the order. You can always deliver, you just get fewer stars.
 
 **Stars (1 to 5)**
@@ -136,7 +136,7 @@ Every delivery is a race against three meters: time, heat and damage. How well y
 
 - Pizza: easy, good for the tutorial
 - Ice cream: melts fast
-- Bubble tea: spills on bumps
+- Iced coffee: spills on bumps
 - From the graphics pass: shawarma, cake, groceries and farm juice/salad
 - From the detail pass: coffee, manakish, pad thai, sushi, tacos and burgers (see the restaurant table in "Wahat Al Shams")
 
@@ -168,7 +168,7 @@ These stop deliveries from feeling the same after a few. All numbers are startin
 | Order | What's different | Reward |
 | --- | --- | --- |
 | Rush | Target time is 70% of normal | +50% pay |
-| Fragile cake | From Bread & Zaatar. Bumps do double damage | Tip chance 60% instead of 40% on 5 stars |
+| Fragile cake | From Spill the Brew (cakes moved there from Bread & Zaatar on 4 Nov). Bumps do double damage | Tip chance 60% instead of 40% on 5 stars |
 | Neighbour | When you get to the door: "Not home! Leave it with the neighbour at Villa X" (a home in the same cluster). The clock keeps running | Normal pay, +5 Dh |
 | Big family order | Two bags on the bike: top speed 15% lower and steering a bit wobblier | Double pay |
 
@@ -182,9 +182,9 @@ These stop deliveries from feeling the same after a few. All numbers are startin
 
 | Regular | Where | Usually orders |
 | --- | --- | --- |
-| Auntie Mariam | Villa 7, Cluster 2 | Bubble tea |
+| Auntie Mariam | Villa 7, Cluster 2 | Iced latte from Spill the Brew (was bubble tea) |
 | Mr Rashid | Villa 3, Cluster 5 | Shawarma |
-| Ms Dana (teacher) | Fair Grade school gate | Cake from Bread & Zaatar |
+| Ms Dana (teacher) | Fair Grade school gate | Cake from Spill the Brew |
 | Hamdan (groom) | Stable office | Farm juice |
 
 **Shift goals:** at the start of each shift the phone shows 2 goals picked from a list. Each done goal pays a 15 Dh bonus, shown on the shift summary. List: make 6 deliveries; 3 five-star deliveries in a row; no crashes; a school lunch order; a fragile cake with 5 stars; deliver to 3 different clusters.
@@ -258,6 +258,159 @@ Research on games like Crazy Taxi, PowerWash Simulator, Stardew Valley, Euro Tru
 **Tomorrow's special.** Each shift is a kind of day: a normal day, Hot Noon (food spoils faster in the sun), Rush Hour (orders come quicker, 10% more pay) or a shop special ("2-for-1 at Brain Freeze": double tip chance on that shop's food). The clock shows today's, and the shift summary says what tomorrow will be.
 
 **Collections.** A Wahat Al Shams stamp card: a stamp for every home you've delivered to (500 homes in 5 clusters, plus the school gate, the stable office, the C Institute and the gym). Every 25 homes in a cluster pays a small 20 Dh bonus; a full cluster unlocks a gold delivery box colour. Also the cats and horses you've met (each gets a name) and the customer lines you've heard. All on a Profile page on the phone.
+
+## Looks pass (Sessions 52 to 65)
+
+Louis played the detail pass on 4 November. The map and gameplay are good. What's wrong: full screen looks low-res and jaggy, roads and overlapping surfaces flicker, interiors are too big and too plain, the gym is just a restaurant room, the C Institute's glass faces the wrong way, and the Plaza, streets and spine need more detail. The designs below were drawn in chat with Louis and approved one by one. Session 52 (sharper graphics, flicker, C Institute, crash loop) is built on the `looks-pass` branch.
+
+That evening Louis played again and sent a second, longer list (everything marked **(second list)** below). Graphics, cars and the shawarma place are fine now. The rest: no loading screen after the application, the Plaza buildings are too tall and too empty, the shops don't look like their real-life versions, Grand Groceries looks like a restaurant, the falls are stiff, the grass is bad, the car park is half empty and too far from the houses, the spine needs a proper walking track, and lots of small things overlap or float (signs, the farm stall, the pool and a hill, benches, sunglasses). Every business was researched online; the findings are in each row below and in Sources.
+
+**Sharper graphics**
+- Anti-aliasing (smooths jagged edges) on every level: Low uses FXAA, Medium uses MSAA 4x, High uses MSAA 4x plus TAA. The game draws at full screen resolution on desktop (the browser keeps its 0.75 scale).
+- Sharper shadows near the rider: 4 shadow cascades and a bigger shadow map on Medium and High.
+- Crisp signs and 3D text (bigger font size or MSDF fonts) so they don't blur in full screen.
+- The first time the game starts it tests the computer and picks Low, Medium or High (a Mac like Louis's should get High, an iPad Low). Settings can still change it.
+
+**No more flicker:** roads, lanes, paths, lawns, paving, courts and plazas are laid only 1 to 4 cm apart today, so from a distance they fight (z-fighting) and flicker. Merge the ground into one mesh with painted areas, or give each layer a real height step and a render priority, and check the camera's near and far planes. Fix the dome doors the same way. Louis saw flicker on roads and ground, and where surfaces overlap.
+
+**The Schedule I look (second list):** Louis loves the graphics of Schedule I and wants this game to feel like it. Schedule I uses simple low-poly shapes with bright colours and a cartoony feel. We copy the lighting, colours and textures, **not** the characters (ours stay as they are):
+- Bright, sunny, slightly saturated colours; soft shadows that aren't pitch black; a warm sky and gentle fog in the distance.
+- Clean, simple textures instead of noisy photo textures: the current photo textures (aerial grass, asphalt, pavement, sand from Poly Haven) are swapped for simpler stylized CC0 ones, or flat colours with a little painted variation.
+- Chunky, readable shapes. Every prop sits on the ground (nothing floating) and faces the right way.
+
+**Grass (second list):** today's grass is little triangles and boxes and looks bad. Real grass instead: a CC0 stylized grass texture on the ground plus thousands of grass blades drawn with a MultiMesh (one draw call for many copies) and a CC0 wind shader from godotshaders.com, so the grass sways. Dense near the camera, fading out further away. Medium and High get full grass; Low gets a sparser version so iPads stay smooth.
+
+**Loading screen (second list):** after you make your rider and get "Accepted", the game freezes for a while because it builds the whole map, so people press the button again and again. Now:
+- The button greys out on the first click.
+- A loading screen comes up straight away in the game's style (sand, teal, orange): the Snackaroo logo, "Getting your first shift ready…", a progress bar with a percentage, and a rotating tip ("Ring the bell with B", "Brake before lane corners").
+- The bar really moves: the map is built in steps (roads, homes cluster by cluster, the Plaza, the spine, people) with a frame in between, and each step moves the bar. The same screen shows when you press Continue on the start screen.
+
+**Rider falls like a ragdoll (second list):** the fall from Session 44A is too stiff ("like a stick man"). Use Godot's ragdoll: a PhysicalBoneSimulator3D with physical bones (hips, spine, head, upper and lower arms and legs) on the rider's skeleton. On a crash the rider's bones go floppy and get pushed in the direction of the impact, the bike tumbles on its own, and after the rider settles they get up (blend back to the normal animation) or, for a big crash, the screen fades to the clinic. Keep everything else from 44A: impact strength and direction, one bill per accident, bounce contacts never count twice. Low settings (iPad/browser) can use fewer bones.
+
+**Small fixes (second list)**
+- Sunglasses on the rider stick out far on one side and not on the other: centre them on the head bone.
+- All benches face the wrong way: check the bench facing rule and turn every bench to face what you'd look at (the fountain, the path, the playground).
+- Cluster signs: the posts glitch into each other. One sign at each lane entrance, on the house side; remove the one that stands in the middle of the road. Do this for every cluster.
+- Roads that cross wrongly (Louis saw it in Cluster 5: a sign in the middle of the road, one road lying over another and a road that doesn't finish): the black ring road always wins. Other lanes stop neatly at its kerb, nothing is drawn on top of it, and every lane ends somewhere sensible.
+- The Farm Stall stands on top of a farm bed: move it to the side of the bed, on paving.
+- A hill on the spine runs over the lap pool: hills keep clear of pools, buildings, paths and courts.
+- Where the stream meets a path or road, add a small wooden bridge so the water runs underneath.
+- A layout check (automatic test) that finds things that overlap or float: signs or benches in roads, stalls on beds, hills on pools, posts inside posts, props under the ground or in the air. It runs with the smoke test so these bugs can't come back.
+
+**The Plaza (second list)** (render: docs/plaza_carpark_spine.svg, panel A)
+- Lower shops: the ground floor is about 4.5 m tall (it was 8 m). On top, **3 floors of flats** (like the real Plaza, which is ground plus three floors), joined all the way along so they look like one building.
+- No gap after every shop: shops come in **pairs**, with a covered walk-through passage after every second shop (the flats run over it).
+- Pedal Point Bikes moves out of its own building into one of the shop rows, so its outside matches the rest. Dune Drip does the same.
+- Every front looks flashier and different: its own made-up **logo** on a sign band on top (lit up at night), an awning in its colour, big glass, and outside tables with umbrellas. Lots of people eating outside.
+- **Grand Groceries is a supermarket, not a restaurant:** a double-width shop with a wide glass front, sliding doors, trolleys lined up outside, offer posters in the windows and a big green sign.
+- No bare concrete slab around the Plaza: walkways with paving, grass beds with date palms, planters and low plants between the paths.
+
+**The car parks (second list)** (render: panel B)
+- Every car park is **full of bays**: one row, a driving aisle, **two rows back to back** in the middle, another aisle, and one row at the end. Every row has a solar roof. Not every bay has a car (about half do).
+- Smaller and tight: no wasted space between bays, and almost no gap between the car park and the cluster, just a kerb (a raised stone edge) and a narrow lane for buggies.
+- Kerbstones between the homes and the car park all the way along.
+
+**The green spine (second list)** (render: panel C)
+- Two paths run along the spine. The one nearest the domes becomes a **red walking track** (runners and walkers; your bike can still use it). The other becomes a **two-way buggy road** with a dashed white line down the middle, one buggy each way.
+- Between them a thinner strip with a slightly raised kerb.
+- Small hills only: **0.5 m high at most** (was up to 1.5 m), gentle ups and downs.
+- Lots of palm trees, shrubs and flowers grouped around the domes, like the real ones.
+- Farm beds look like a real farm: rows of watermelons and pumpkins on vines, tomato plants on sticks, drip pipes, a wheelbarrow and a farmer. The stream gets stones and reeds on its banks.
+- The beehives get a low fence, flowers around them and a **beekeeper** in a white suit with a smoker who walks between the hives.
+- The Farm Stall gets a **farmer** behind the counter who hands you the order.
+- Horses get better textures (coat, mane, saddle).
+
+**Gym and pools (second list)**
+- The gym is smaller, and the **lap pool sits right in front of it**, with a low glass fence and a small gate.
+- Inside it is a real gym (see the table), not a restaurant room.
+- The **community pool** looks like a real community pool: a fence all the way round with a small gate, a paved deck, sun loungers and umbrellas, a shallow kids' pool, a lifeguard chair, a shower and a small changing hut.
+- Swimmers actually swim (arms moving, swimming lengths, a few kids splashing) and people on loungers lie on the loungers. Nobody floats still in the water.
+
+**Building sites (second list):** the "Coming soon" signs stay. Each site also gets a half-built building: a concrete frame with some floors done, scaffolding round it, a crane, a site fence, piles of blocks and a few workers, so it looks real. Use a CC0 construction site pack.
+
+**Buggies (second list):** buggies drive all over the cluster lanes and the spine buggy road, on random routes, so you see them everywhere. They never use the ring road (the main road round the edge that connects to the highway).
+
+**Interiors (all walk-in places)**
+- Smaller inside: about 12 × 10 m with a 4.5 m ceiling (they were 18 × 16 × 8 m). Fill them up: **lots of seating with people eating** (second list), so nothing feels empty.
+- Built from free CC0 kits found online, not our own boxes: KayKit Restaurant Bits (220+ restaurant and kitchen models), KayKit Furniture Bits, Kenney Furniture Kit, Kenney Food Kit (200 food models), a CC0 supermarket pack, and CC0 gym models from Poly Pizza (check each model's licence says CC0). All credited in CREDITS.md. If a key machine (espresso machine, pizza oven, shawarma grill, bread oven) isn't in a CC0 kit, build it from simple shapes following the descriptions below and check it against photos.
+- Same layout everywhere: a **menu board behind the counter** with the real items and prices (not just the shop's name), the kitchen with a cook at the back, the counter with staff in the middle, tables with people eating at the front, plus a drinks fridge, a bin, plants, hanging lamps and a tiled floor in the shop's own colours.
+- Machines stand on counters or the floor, never in the air.
+- People move: diners eat, cooks cook, chefs slice, gym people run, row and lift, institute people type on laptops.
+- A short queue: sometimes 1 or 2 people are in front of you at the counter and you wait 2 to 4 seconds. Never more.
+- Big glass fronts so you can see inside from the Plaza, sliding glass doors that open as you walk up (the stable office has a wooden door), warm light from the lamps with soft shadows.
+- The camera moves closer and a little higher indoors, so walls don't block the view, and moves back out when you leave.
+- Each place has its own background sound (made by tools/make_sounds.py): oven crackle, grill sizzle, the espresso machine, the sushi belt, gym music, quiet chatter, the till beep.
+
+| Place | What's inside (approved designs, updated with the second list and online research) |
+| --- | --- |
+| 1000 Pizza | Copies a wood-fired Neapolitan pizzeria. The centrepiece is a **round dome oven covered in small mosaic tiles**, with an arched opening, a glowing fire and flames inside, a chimney up to the ceiling and logs stacked underneath. In front of it a marble prep counter with dough balls and topping tubs, the pizza maker with a long peel, stacked pizza boxes, a menu board (Margherita, Pepperoni, Diavola, Four cheese), black-and-white floor, red accents, 6 to 8 tables |
+| Brain Freeze Gelato | A real ice cream shop: the **curved glass gelato display is at the front**, right by the door, so the cashier scoops and hands the cone straight to the customer. 12 colourful tubs, each with a little flavour tag (Pistachio, Mango, Chocolate, Strawberry...). A cone stack and toppings on top, the menu board with flavours and prices behind, the till at the end, pink-and-white stripes, pastel floor, small tables and stools |
+| Spill the Brew (was Spill the Tea) | Now a **coffee shop** (second list), copying a small specialty café. A two-group **espresso machine** on the counter facing the customers, with grinders beside it, a glass **pastry case** (croissants, cookies, cakes), cups stacked on the machine, bags of beans on a shelf, a menu board (Flat white, Iced latte, Cappuccino, Croissant, Cake), the barista, a window bench with stools, small tables, a sofa corner and plants. Sells coffee, pastries and the fragile cake orders |
+| Shawarma Supreme | Louis likes it; make it smaller and fuller. Two vertical **spinning shawarma grills** in the front window, a lit **picture menu board** across the back wall (Chicken shawarma, Meat shawarma, Plates, Fries, Fresh juice) instead of just the word "Shawarma", bread stacks, sauce bottles, a fries station, a drinks fridge, Arabic patterned tiles, a few tables. Lower ceiling: not up to the roof |
+| Bread & Zaatar | A **bread and manakish bakery** (Levantine), not a cake shop: the sign and menu say bread, manakish and fatayer. A big **arched stone oven** (manakish oven) with flatbreads going in on a peel, a dough table with rolled-out dough and bowls of zaatar and cheese, racks and baskets of fresh bread, a menu board (Zaatar manakish, Cheese manakish, Fatayer, Khubz bread), the baker. No cake display (cakes moved to Spill the Brew) |
+| Grand Groceries | A real supermarket: wall of drinks fridges at the back, 3 shelf units with hanging bilingual aisle signs (1 Snacks, 2 Rice and pasta, 3 Home) and yellow price strips, a fruit and veg stand, a bread shelf, a sweets rack, 2 checkouts with belts, a cashier, baskets and shoppers with trolleys. Pick up at checkout 1. Outside looks like a shop, not a restaurant (see The Plaza) |
+| Tok Tok Thai | Thai street-food feel: a **decorated tuk-tuk** inside as a photo spot, woks over flames in an open kitchen, red lanterns, bunting and fairy lights, dark wood floor, menu board (Pad thai, Green curry, Satay, Mango sticky rice), outside tables |
+| Sushi You | Sushi bar with a conveyor belt of coloured plates and diners on stools, glass fish case, two chefs, paper lanterns, navy curtain over the kitchen, a booth table, bamboo, a pick-up counter |
+| Mario Bonito | Colourful tile band, paper bunting, cactus pots, taco counter, menu board (Tacos, Quesadilla, Guacamole) |
+| Burgerology | Flat grill with patties, fryer, pink neon "Burgerology" sign, white metro tiles, menu board |
+| Wahat Gym | Smaller, with the lap pool right in front. A real gym: glass wall onto the pool and spine, 4 treadmills facing the glass, exercise bikes, a squat rack with a loaded barbell on a wooden platform, a dumbbell rack, 2 rowing machines, yoga mats and kettlebells, a mirror wall with "Train hard · تمرّن بقوة", rubber floor tiles, a water fountain and towel stand, reception with a smoothie cooler (drop-off) |
+| C Institute | Two storeys tall: glass on both long sides (one faces the spine, so you see the domes and palms; the other faces the opposite way), a balcony walkway with a glass railing, a staircase, wide wooden stepped seats with cushions and people on laptops facing a talk screen (it changes during the shift: "Talk today · 4 PM", "Solar cities of tomorrow", "Welcome · أهلاً"), hanging plants, a wood-slat ceiling, a curved white reception desk with a big "C" logo wall (drop-off) |
+| Pedal Point Bikes | Now in a Plaza shop row. Bikes hanging on the wall, tool pegboard, tyre rack, a repair stand with a bike, the mechanic at the workbench |
+| Dune Drip | Now in a Plaza shop row. Caps and sunglasses wall, clothes rails, folded hoodies on a table, a rug and a big mirror, the cashier |
+| Stable office | Wood walls, saddles on stands, rosettes and horse photos, riding helmets on hooks, a hay bale, a window onto the paddock with a horse, the groom at the desk |
+| Wahat Farm Stall | Open stall beside (not on) the farm beds with a striped awning, fruit and veg crates, a juice press and cooler, chalkboard menu, **the farmer who hands you the order** |
+| Fair Grade school gate | Glass security booth with the guard, barrier, the school wall and sign behind, a teacher waiting |
+
+**Layouts (researched online, 4 Nov 2026).** Every place is laid out the way real ones are:
+- *Restaurants and cafés:* order-at-the-counter places use most of the room for seating (about 75 to 80% dining, 20 to 25% kitchen and counter), not the 60/40 of a sit-down restaurant. Wall benches and window bar stools fit more seats into a small room. The pickup spot is separate from the till.
+- *Coffee shop:* the espresso machine, grinder and milk fridge sit together as one station; the barista faces the customers; the pastry case is on the counter by the till.
+- *Gelato shop:* the curved display case faces the door so people choose before they reach the till; the till is at the end of the case.
+- *Supermarket:* fruit and veg straight inside the door; fridges and bread round the outside walls; shelf aisles in a grid in the middle, wide enough for two trolleys; checkouts at the front by the door with sweets and drinks beside them.
+- *Gym:* cardio machines (treadmills, bikes, rowers) by the windows and near the entrance, facing out; free weights and racks in their own zone away from the walkway, on rubber floor; mirrors on the wall opposite the weights, not facing the treadmills; about 1 to 2 m of space round each machine.
+- *Community pool:* the deck is split into zones (swim, lounge, kids' play); loungers in a row along the long side; shade from umbrellas or shade sails; the kids' pool next to seats so parents can watch; the lifeguard chair where it can see the whole pool; a fence with a gate all round.
+- *Car parks:* the real ones sit beside each cluster, at most 85 m from any home, and residents walk 10 to 85 m to their door. Double rows share one solar roof down the middle.
+- *Clusters:* narrow shaded lanes (sikkas), four small plazas per cluster with one central plaza with a cooling tower, shaded gardens and playgrounds, and a recycling point.
+- *The spine:* a long park with a water channel (a falaj) lined with pebbles and papyrus, fruit trees (date palms, figs, pomegranates), 11 domes, running and cycling tracks, outdoor gym stations, basketball courts, beehives and a donkey sanctuary.
+- *The Plaza:* a sunken square with a fountain, date palms and cooling towers with seats underneath.
+
+**Free asset packs (all CC0, checked 4 Nov 2026).** The repo is public on GitHub, so only **CC0** packs go in (free for anything, no credit needed, fine to share). Check the licence on each pack's own page when downloading, and credit everything in CREDITS.md anyway. Quaternius has started using a new licence (QAL) for new packs; only use Quaternius packs whose page still says CC0.
+
+| Pack | Maker | What we use it for | Session |
+| --- | --- | --- | --- |
+| Restaurant Bits | KayKit | Kitchen gear, counters, food, tables for every restaurant | 56, 58, 59 |
+| Furniture Bits | KayKit | Chairs, sofas, shelves, lamps, plants for insides and the C Institute | 56, 58 to 61 |
+| City Builder Bits | KayKit | Streetlights, bins, hydrants, traffic lights for the Plaza and streets | 57, 62 |
+| Furniture Kit | Kenney | Extra furniture, kitchen and bathroom bits (the pool changing hut and shower) | 58 to 61 |
+| Food Kit | Kenney | 200 food models: pizzas, ice cream, croissants, cakes, bread, burgers, sushi for counters, menus and tables | 58, 59 |
+| City Kit (Roads) | Kenney | Kerbs, road pieces, lamp posts, construction fences, road signs | 53, 62, 64 |
+| City Kit (Commercial) | Kenney | Shop-front ideas and rooftop bits (AC units, signs) for the Plaza | 57 |
+| Nature Kit | Kenney | 330 plants, rocks, fences and a palm for the spine and the Plaza beds | 55, 57, 63 |
+| Stylized Nature MegaKit | Quaternius | Trees, bushes, flowers, rocks and grass clumps in a soft cartoony style that fits the Schedule I look | 55, 63 |
+| Ultimate Nature Pack (150 models) | Quaternius | Palm trees and cactus for the tree belt, spine and Plaza | 55, 63 |
+| Crops Pack (100+ models, 5 growth stages) | Quaternius | Watermelons, pumpkins, tomatoes and more for the farm beds | 63 |
+| Animated Farm Animals | Quaternius | Animated horse and other farm animals (better horses, the donkeys) | 63 |
+| Universal Animation Library 1 and 2 | Quaternius | 250+ animations: swimming for the pools, sitting and eating for diners, farming for the farmer and beekeeper, jogging for the red track. Retarget them onto our people's skeleton (Godot's humanoid bone map) | 59 to 63 |
+| Ultimate Modular Men and Women | Quaternius | More different-looking people for the Plaza, pools and gym | 57, 60 |
+| 3D House Construction Site | Majadroid (OpenGameArt) | Half-built house, cranes, site fence for the building sites | 64 |
+| Construction Site Pack | Hexagon (itch.io) | Extra site props: scaffolding parts, containers, barriers | 64 |
+| Low Poly Supermarket | Pensamiento Azul (itch.io) | Shelves, fridges, checkouts, trolleys for Grand Groceries | 58 |
+| Textures and skies | Poly Haven, ambientCG, OpenGameArt (CC0 only) | Clean ground textures (grass, paving, sand, red track rubber) and a sunny sky | 55 |
+| Grass shader | godotshaders.com (CC0 code) | Swaying grass blades | 55 |
+
+*Not used because they aren't CC0:* the VNB Low Poly Café Set (CC BY-SA, which would make us share our game under the same licence), Cute Low Poly Café Assets (no licence written), the Cartoon Beach Prop Pack (CC BY-SA), and paid packs from CGTrader or Fab. There is no CC0 pack with a good espresso machine, mosaic pizza oven, shawarma grill, manakish oven, gelato case, pool lounger or treadmill, so those are built from simple shapes in code (like the bike), following the table above and photos.
+
+**Logos:** every place gets its own made-up logo (a simple picture plus the name, in its colour): a pizza slice in a flame for 1000 Pizza, a dripping cone for Brain Freeze, a coffee cup with a spill for Spill the Brew, a spinning grill for Shawarma Supreme, a flatbread with a zaatar leaf for Bread & Zaatar, a basket for Grand Groceries, a tuk-tuk for Tok Tok Thai, a sushi roll for Sushi You, a smiling taco for Mario Bonito, a burger in a lab flask for Burgerology, a bike wheel for Pedal Point, a sun in sunglasses for Dune Drip. Drawn as SVGs in assets/logos/ (by a script, our own art), used on the sign bands, the menu boards, cups and bags. Never real logos.
+
+**C Institute fix:** turn the building so one long glass side faces the spine (east) with the stepped seats in front of it, and add the same big windows on the opposite side, so you can see right through the lobby.
+
+**More detail outside**
+- Plaza: café tables outside the restaurants, a juice kiosk, string lights that come on at sunset, more people walking.
+- Streets and lanes: street lamps that light up at sunset, white road markings and kerbs, bins, bilingual street signs, bike racks.
+- Spine: real grass blades (see Grass) plus flowers, rocks and more trees.
+
+**Bugs found in testing**
+- Crash loop: a gardener standing still near the Cluster 4 playground (data/wahat_al_shams.gd GARDENERS, x 125, z 53) got hit, and the rider crashed into him again and again (162 times) after each fall; with an order still on, the shift never ended. Fix: after a small crash the bike is pushed back and gets a short grace period, and standing people step aside when you ring or come close.
+- Crashing costs too little: a careless bot earned 89 Dh against 95 Dh for a careful one. Small crashes should cost more (rating, food damage or a small fee) so a careful shift clearly pays better.
 
 ## Shops and upgrades (detail pass)
 
@@ -439,7 +592,7 @@ Every brand is made up so the game never uses a real company's name or logo. Eac
 | Al Sarab Riding School | Where you take your tests | Driving schools |
 | Al Sarab | The city ("sarab" means mirage in Arabic) | Dubai |
 
-Restaurants get funny made-up names too, like Shawarma Supreme and Brain Freeze Gelato. In Wahat Al Shams most are spoofs of the real eco community's restaurants: 1000 Pizza, Tok Tok Thai, Sushi You, Mario Bonito, Burgerology, Bread & Zaatar, Spill the Tea and Grand Groceries. Places get spoof names too: Fair Grade International School, the C Institute, Pedal Point Bikes and Dune Drip.
+Restaurants get funny made-up names too, like Shawarma Supreme and Brain Freeze Gelato. In Wahat Al Shams most are spoofs of the real eco community's restaurants: 1000 Pizza, Tok Tok Thai, Sushi You, Mario Bonito, Burgerology, Bread & Zaatar, Spill the Brew and Grand Groceries. Places get spoof names too: Fair Grade International School, the C Institute, Pedal Point Bikes and Dune Drip.
 
 ## City map and districts
 
@@ -471,7 +624,7 @@ Wahat Al Shams (واحة الشمس, "Sun Oasis") is a made-up eco community. It
 | Ring road | Inside the tracks, all the way round | The only road for cars. Cars drive slowly round it on set routes and pull in and out of the car parks. **No buggies on the ring road** |
 | Mosque | North-west, just inside the north checkpoint, in front of the Plaza | A mosque with a minaret. Scenery only: no orders ever go there |
 | Bus station | North-west, between the mosque and the Plaza | A bus bay with a shelter and a parked bus, joined to the ring road by its own short road so it looks real. A bus drives round the ring road and into the bay every in-game hour. A sign says "Coming soon: travel to other districts". **Each shift starts in front of the bus station.** Later (Tier 2) it becomes the way to travel to Downtown and other districts |
-| The Plaza | North-west, from the bus station to Cluster 1 (a bigger area than before) | The hub: five low-rise blocks (flats and offices above, shops below) round a sunken square with a fountain, date palms, shade sails and benches. 10 restaurants, the bike shop and the clothes shop (see "Shops and upgrades"). A solar car park in the gap between the Plaza and Cluster 1 |
+| The Plaza | North-west, from the bus station to Cluster 1 (a bigger area than before) | The hub: five low-rise blocks (a 4.5 m shop floor with 3 floors of flats above, shops in pairs with a walk-through passage after every second shop) round a sunken square with a fountain, date palms, shade sails and benches. 10 restaurants, the bike shop and the clothes shop (see "Shops and upgrades"). A solar car park in the gap between the Plaza and Cluster 1 |
 | Fair Grade International School | South-west | Copies the real school next door (photos Louis sent, described below). Orders only go to the security booth at the school gate |
 | Horse jumping arena | Next to the school, south-west | A sand arena with white horse rails and jumps. Horses with riders jump now and then. Scenery |
 | C Institute | Beside the school, between the school and the spine | A modern institute building (see below). Its big glass front and stepped seats face the spine. A small car park behind it. Drop-off: the receptionist inside |
@@ -491,7 +644,7 @@ Wahat Al Shams (واحة الشمس, "Sun Oasis") is a made-up eco community. It
 
 *C Institute:* a modern low building with a huge glass front and wide stepped seats in front of it, like big stairs you can sit on, with a few people sitting there. Inside: one tall open lobby up to the roof, very modern (light wood, plants, glass), with a reception desk and a receptionist. You walk in and hold E at reception to hand over the food. A small car park behind it.
 
-*The green spine:* grass with a real grass texture, tufts and flowers, gentle hills between 0.5 and 1.5 m high that you roll over, more trees, the stream, the farm beds, beehives, donkeys, the basketball court and the playground. One path links all the domes, evenly spaced along the spine, with no big gaps. In the middle: the **gym**, a small box that's rounded at the back with a glass front (treadmills you can see inside), with a **lap pool** along its side; a little way off, the **community pool**, a chill place with sunbeds, umbrellas, a kids' area and people swimming. The gym reception is a drop-off spot.
+*The green spine:* grass with a real grass texture, tufts and flowers, gentle hills no more than 0.5 m high that you roll over (changed from 0.5 to 1.5 m on 4 Nov), more trees, the stream, the farm beds, beehives, donkeys, the basketball court and the playground. One path links all the domes, evenly spaced along the spine, with no big gaps. In the middle: the **gym**, a small box that's rounded at the back with a glass front (treadmills you can see inside), with a **lap pool** along its side; a little way off, the **community pool**, a chill place with sunbeds, umbrellas, a kids' area and people swimming. The gym reception is a drop-off spot.
 
 *Pickup spots:* the 10 restaurants in the Plaza (inside, at the counter) and the Wahat Farm Stall in the spine.
 
@@ -499,9 +652,9 @@ Wahat Al Shams (واحة الشمس, "Sun Oasis") is a made-up eco community. It
 | --- | --- | --- | --- |
 | 1000 Pizza | ١٠٠٠ بيتزا | Pizza | Easy |
 | Brain Freeze Gelato | برين فريز جيلاتو | Ice cream | Melts fast |
-| Spill the Tea | سبيل ذا تي | Bubble tea and coffee | Spills on bumps |
+| Spill the Brew | سبيل ذا برو | Coffee, pastries and cakes | Iced coffee spills on bumps; cakes break on bumps (the fragile cake orders) |
 | Shawarma Supreme | شاورما سوبريم | Shawarma | Goes cold, medium |
-| Bread & Zaatar | خبز وزعتر | Manakish and cakes | Cakes break on bumps (the fragile cake orders) |
+| Bread & Zaatar | خبز وزعتر | Bread, manakish and fatayer | Goes cold, easy |
 | Grand Groceries | جراند جروسريز | Groceries bag | Slow to spoil, a bit heavy |
 | Tok Tok Thai | توك توك تاي | Pad thai | Goes cold, spills a little |
 | Sushi You | سوشي يو | Sushi | Must stay cool, a bit fragile |
@@ -511,7 +664,7 @@ Wahat Al Shams (واحة الشمس, "Sun Oasis") is a made-up eco community. It
 
 The names are made-up spoofs of the real Plaza's restaurants (Louis's picks), so no real brand name is used.
 
-*Restaurant fronts and interiors:* every restaurant looks different outside (awning colour, sign shape, outside seats) and inside. You get off the bike, walk in, and hold E at the counter; a staff member hands you the bag. Each has 2 to 4 tables with a few customers and a menu board. Insides: 1000 Pizza a brick oven, Brain Freeze a glass freezer with colourful tubs, Spill the Tea tea taps and cups, Shawarma Supreme a spinning grill, Bread & Zaatar a cake display and a bread oven, Grand Groceries shelves and fridges, Tok Tok Thai woks and lanterns, Sushi You a sushi bar with a conveyor, Mario Bonito colourful tiles and a taco counter, Burgerology a grill and neon menu. No two insides are the same.
+*Restaurant fronts and interiors:* every restaurant looks different outside (its own logo on a sign band, awning colour, outside tables) and inside. You get off the bike, walk in, and hold E at the counter; a staff member hands you the bag. The full list of what's inside each place is the table in "Looks pass" (it replaces the older list that was here: 1000 Pizza a mosaic dome oven, Brain Freeze a gelato case at the front, Spill the Brew an espresso machine and pastry case, Shawarma Supreme two spinning grills and a picture menu, Bread & Zaatar a stone manakish oven and bread racks, and so on). No two insides are the same.
 
 *Drop-off spots:* the 500 home doors, the school gate booth, the stable office, the C Institute reception and the gym reception. Never the mosque, the bus station or the shops.
 
@@ -623,6 +776,8 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 4 Nov 2026 | The old Palm Grove map is removed (scene, data, and the road, street-sign and park builders only it used). Wahat Al Shams is the only map; the flat test area stays for tests |
 | 4 Nov 2026 | The game is released both on itch.io (Mac and Windows downloads) and in the browser at fivestarshabibi.middleleap.com. A crash "week" is 7 shifts, as the clinic screen already counts (CRASH_WEEK_SHIFTS) |
 | 4 Nov 2026 | Opening the game no longer counts as a new shift: a shift you quit halfway through is played again (same number, same kind of day); only a finished shift counts. Your last accept / skip choices are saved, so the acceptance rate survives a restart |
+| 4 Nov 2026 | Looks pass planned (Sessions 52 to 59) after Louis's play-test of the detail pass: anti-aliasing on every level, sharper shadows, auto-picked graphics level, no ground flicker, smaller and fuller interiors from free CC0 kits (KayKit, Kenney, Poly Pizza), a short queue of 1 or 2 people, glass shop fronts, sliding doors, indoor camera, sounds per place, a real gym, the C Institute turned to face the spine with glass on both sides and a changing talk screen, every walk-in place rebuilt from the approved designs, more detail in the Plaza, streets and spine (grass blades, sparser on Low), and fixes for the crash loop and crashes costing too little |
+| 4 Nov 2026 | Louis's second list after playing again: plan grows to Sessions 53 to 65. Loading screen after the application; ragdoll falls; the Schedule I look (lighting, colours, simple textures; our characters stay) and real grass blades; Plaza shops lower (4.5 m) with 3 floors of joined flats above, shops in pairs with a passage after every second one, bike shop and clothes shop moved into the rows, logos and flashier fronts, Grand Groceries looks like a supermarket; Spill the Tea becomes Spill the Brew, a coffee shop (coffee, pastries, cakes), Bread & Zaatar sells bread and manakish only (fragile cakes and Ms Dana's cake move to the coffee shop, Auntie Mariam now orders an iced latte); car parks full of bays (1 row, 2 back to back, 1 row) right next to the clusters with kerbs; spine gets a red walking track and a two-way buggy road, hills at most 0.5 m, plants round the domes; gym smaller with the lap pool in front; real community pool with fence and gate; swimmers swim; beekeeper and farmer NPCs; half-built buildings with scaffolding; buggies everywhere except the ring road; and fixes for sunglasses, benches, cluster signs, crossing roads, the farm stall, the hill over the pool and a bridge over the stream |
 
 ## Sources
 
@@ -641,6 +796,59 @@ Detail pass (the real community, the school and the restaurants; every name in t
 - [Sanad Village, Gulf News](https://gulfnews.com/uae/sanad-village-in-dubai-sets-new-global-standard-for-people-of-determination-1.78778336)
 - [Inside Dubai's Sustainable City: facilities list, Gulf News](https://gulfnews.com/uae/inside-dubais-sustainable-city-community-what-makes-it-different-1.91842975)
 - Louis's own Google Earth measurements and photos of the community, the school and the gym (not stored in the repo)
+
+Looks pass (free CC0 kits and interior ideas):
+
+- [KayKit Restaurant Bits (CC0)](https://kaylousberg.itch.io/restaurant-bits)
+- [KayKit Furniture Bits (CC0)](https://kaylousberg.itch.io/furniture-bits)
+- [Kenney Furniture Kit (CC0)](https://kenney.nl/assets/furniture-kit)
+- [Kenney Food Kit (CC0)](https://kenney.nl/assets/food-kit)
+- [Low poly Supermarket pack (CC0)](https://pensamientoazul.itch.io/supermarket-3d-assets)
+- [Small café layout ideas, Bellwether Coffee](https://bellwethercoffee.com/blog/small-cafe-layout-design-guide)
+
+Looks pass, second list (what the real places are like; every name in the game stays made up):
+
+- [The real Plaza is five low-rise blocks of ground plus three floors, Middle East Construction News](https://meconstructionnews.com/?p=21952)
+- [The real Plaza: sunken square, fountain, date palms, cooling towers with seats, Urbanitarian](https://urbanitarian.com/streetscapes_post?id=18)
+- [The real community's restaurants (wood-fired pizza, Thai, manakish, tacos, burgers), The Dubai Fork](https://wheretoeatdubai.pages.dev/blog/sustainable-city-restaurants-dubai-2026)
+- [The real pizza place uses a wood-burning oven made in Italy, Mediamatic](https://www.mediamatic.net/en/id/306866)
+- [The real Thai place has outdoor seating; another branch has a tuk-tuk inside, Wanderlog](https://extensionembed.wanderlog.com/place/details/3521692)
+- [The real coffee shop is a small family-run specialty café, Curly Tales](https://curlytales.com/this-family-owned-dubai-cafe-ranks-as-one-of-the-best-coffee-shops-in-the-world/amp/)
+- [The real supermarket chain has a branch in the community, Grandiose](https://www.grandiose.ae/about-us)
+- [Neapolitan pizza ovens: dome-shaped, brick, open mouth, Escoffier](https://graduation.escoffier.edu/?p=2626)
+- [Manakish bakeries are built round a stone or deck oven, IPEC](https://ipec.me/sectors/_payload.json)
+- [Shawarma counters: the spinning grill is the focal point, menu and sauces, OLX listing](https://www.olx.com.pk/item/shuwarma-counter-iid-1085349774)
+- [Café counters: espresso machine, grinder and pastry case together, Restaurant Times](https://www.restauranttimes.com/?p=3919)
+- [Double-row (back-to-back) solar carports, SurgePV](https://www.surgepv.com/blog/solar-design-for-parking-lot)
+- [Schedule I's graphics: simple, cartoony, bright colours, GameBrain](https://gamebrain.co/game/schedule-i)
+- [Godot ragdoll system (PhysicalBoneSimulator3D), Godot docs](https://docs.godotengine.org/en/stable/tutorials/physics/ragdoll_system.html)
+- [Stylized MultiMesh grass shader with wind (CC0), Godot Shaders](https://godotshaders.com/shader/stylized-multimesh-grass-shader/)
+- [CC0 stylized grass textures, OpenGameArt](https://opengameart.org/content/stylized-grass-and-bush-textures-0)
+- [CC0 low-poly house construction site with cranes, OpenGameArt](https://opengameart.org/content/3d-house-construction-site-lowpoly-cc0)
+- [KayKit City Builder Bits (CC0)](https://kaylousberg.itch.io/city-builder-bits)
+- [Kenney City Kit (Roads) (CC0)](https://kenney-assets.itch.io/city-kit-roads)
+- [Kenney City Kit (Commercial) (CC0)](https://kenney.nl/assets/city-kit-commercial)
+- [Kenney Nature Kit (CC0)](https://opengameart.org/content/nature-kit)
+- [Quaternius Stylized Nature MegaKit (CC0)](https://quaternius.itch.io/stylized-nature-megakit)
+- [Quaternius Ultimate Nature Pack, 150+ models with palms (CC0)](https://quaternius.itch.io/150-lowpoly-nature-models)
+- [Quaternius Crops Pack (CC0)](https://www.patreon.com/posts/33407069)
+- [Quaternius Animated Farm Animals with a horse (CC0)](https://quaternius.itch.io/lowpoly-animated-animals)
+- [Quaternius Universal Animation Library, includes swimming and sitting (CC0)](https://quaternius.itch.io/universal-animation-library)
+- [Quaternius Universal Animation Library 2, includes farming (CC0)](https://quaternius.com/packs/universalanimationlibrary2.html)
+- [Quaternius Ultimate Modular Women (CC0)](https://bazaar.blendernation.com/?p=12168)
+- [Hexagon Construction Site Pack (CC0)](https://hexagon6.itch.io/construction-site-pack)
+- [Poly Haven: every asset is CC0](https://docs.polyhaven.com/ar/faq)
+- [Real solar car parks flank each cluster, at most 85 m from any home, Urbanitarian](https://urbanitarian.com/masterplans_post?id=378)
+- [Residents walk 10 to 85 m from shaded parking, betterhomes](https://www.bhomes.com/en/area-guides/the-sustainable-city)
+- [Clusters: sikkas, four amenity plazas, central cooling tower, Middle East Construction News](https://meconstructionnews.com/21952/project-profile-the-sustainable-city-dubai/amp)
+- [The spine: water channels with pebbles and papyrus, fruit trees, 11 biodomes, Urbanitarian](https://urbanitarian.com/urbanscapes_post?id=35)
+- [The spine: beehives, donkeys, tracks, gyms, basketball, falaj, New Atlas](https://refractor.io/environment/beyond-oil-inside-dubais-sustainable-city/)
+- [Fast-casual restaurants: about 20% kitchen, 80% dining, LoopNet](https://loopnet.com/learn/six-considerations-for-your-new-restaurant-floor-plan/1772708744)
+- [Gym layout zones and clearances, VERVE Fitness](https://www.vervefitness.com.au/blogs/all/how-to-plan-a-gym-floor-layout-design-principles)
+- [Gym cardio by the windows, mirrors opposite weights](https://gba66.github.io/commercial-gym-equipment/commercial-gym-layout.html)
+- [Pool deck zones, shade and lifeguard sightlines, Recreation Management](https://recmanagement.com/articles/154858/diversify-your-pool)
+- [Supermarket layout: produce at the entrance, checkouts at the front, ChatDiagram](https://www.chatdiagram.com/ar/examples/floorplan/grocery-store-floor-plan)
+- [Quaternius's newer QAL licence (why to check each pack page)](https://app.cinevva.com/fr/guides/free-rigged-3d-character-models)
 
 Licence tests:
 
