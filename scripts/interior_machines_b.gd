@@ -99,8 +99,10 @@ static func tuk_tuk(p: InteriorParts, origin: Vector3, facing: float) -> Vector3
 		p.box(Vector3(0.02, 0.18, 0.26), [gold, Color(0.2, 0.5, 0.85), Color(0.9, 0.3, 0.5), Color(0.95, 0.95, 0.9)][k % 4], f.call(Vector3(-0.63, 0.42, -1.05 + k * 0.27)), t)
 		p.kit.ball(0.05, [Color(1, 0.4, 0.1), gold, Color(0.9, 0.2, 0.6)][k % 3], f.call(Vector3(0.66, 1.78, -1.05 + k * 0.26)), 1.0)
 		p.kit.ball(0.05, [Color(1, 0.4, 0.1), gold, Color(0.9, 0.2, 0.6)][k % 3], f.call(Vector3(-0.66, 1.78, -1.05 + k * 0.26)), 1.0)
-	LowPoly.solid_box(p.body, Vector3(1.3, 1.9, 2.6), origin + Vector3(0, 0.95, 0))
-	p.sign("التقط صورة", "Photo spot!", f.call(Vector3(0, 2.15, 0.9)), facing, Color.WHITE, Color(0.85, 0.15, 0.2), 22)
+	var across := absf(sin(deg_to_rad(facing))) > 0.7   # turned side-on: its length runs along x
+	LowPoly.solid_box(p.body, Vector3(2.6, 1.9, 1.3) if across else Vector3(1.3, 1.9, 2.6), origin + Vector3(0, 0.95, 0))
+	# The sign on the roof reads from the door (+z), whichever way the tuk-tuk points.
+	p.sign("التقط صورة", "Photo spot!", origin + Vector3(0, 2.15, 0), 0.0, Color.WHITE, Color(0.85, 0.15, 0.2), 22)
 	return f.call(Vector3(0, 0, -0.65))
 
 

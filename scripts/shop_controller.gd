@@ -148,6 +148,7 @@ func close_shop() -> void:
 	if _preview != null:
 		_preview.free()
 		_preview = null
+	_show_stand_bikes(true)
 	if _preview_camera != null:
 		_preview_camera.free()
 		_preview_camera = null
@@ -253,6 +254,7 @@ func _build_preview() -> void:
 	get_parent().add_child(_preview)
 	_preview.global_position = transform * (ShopInterior.PREVIEW + Vector3(0, 0.6 if active_shop == "bikes" else 0, 0))
 	_preview.global_basis = transform.basis * Basis(Vector3.UP, PI * 0.5 if active_shop == "bikes" else PI)
+	_show_stand_bikes(false)   # Session 59: your bike takes the place of the one on the stand
 	if active_shop == "bikes":
 		BikeModel.build(_preview)
 		_preview.get_node("Rider").free()
@@ -306,3 +308,10 @@ func _place(id: String) -> Dictionary:
 
 func _shop_transform(place: Dictionary) -> Transform3D:
 	return Transform3D(Basis(Vector3.UP, deg_to_rad(float(place["facing"]))), place["position"])
+
+
+## Session 59: Pedal Point's round stand has a bike on it (ShopRooms); it's hidden while
+## your own bike stands there in the shop screen, and comes back when you leave.
+func _show_stand_bikes(show: bool) -> void:
+	for stand_bike: Node3D in get_tree().get_nodes_in_group("shop_stand_bike"):
+		stand_bike.visible = show

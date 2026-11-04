@@ -73,10 +73,10 @@ static func _thai(p: InteriorParts) -> void:
 	p.food_on("kenney_food/chinese", Vector3(-3.0, 0, -2.45), GameConfig.INTERIOR_COUNTER_HEIGHT)
 	p.food_on("kenney_food/chinese", Vector3(-2.75, 0, -2.45), GameConfig.INTERIOR_COUNTER_HEIGHT)
 	p.menu_board(Vector3(2.8, 3.2, -4.84), 3.6, InteriorMenus.MENUS["thai"], 1.2, Color(0.12, 0.05, 0.05))
-	# The tuk-tuk photo spot by the window, its nose to the glass.
-	var bench := InteriorMachinesB.tuk_tuk(p, Vector3(-4.0, 0, 1.75), 0.0)
-	for dx in [-0.3, 0.3]:
-		p.seat(bench + Vector3(dx, 0, 0), 0.0, 0.67)
+	# The tuk-tuk photo spot on the left, side-on so you see it from the door and the Plaza.
+	var bench := InteriorMachinesB.tuk_tuk(p, Vector3(-4.0, 0, 1.75), 90.0)
+	for dz in [-0.3, 0.3]:
+		p.seat(bench + Vector3(0, 0, dz), 90.0, 0.67)
 	# Seats: window stools, a wall bench, 4-seat tables.
 	var chair := "kaykit_restaurant/chair_B"
 	InteriorDining.window_bar(p, -5.75, -2.7, WOOD.lightened(0.2), "kenney_furniture/stoolBar", "kenney_food/soda-glass")
@@ -143,11 +143,11 @@ static func _sushi(p: InteriorParts) -> void:
 	p.box(Vector3(1.6, 2.3, 0.03), Color(0.08, 0.08, 0.09), Vector3(-1.0, 1.15, back + 0.02))   # the kitchen door
 	for k in 4:
 		p.box(Vector3(0.38, 1.1, 0.02), navy, Vector3(-1.57 + k * 0.38, 1.75, back + 0.06))
-	p.sign("", "寿司", Vector3(-1.0, 2.05, back + 0.08), 0.0, Color.WHITE, Color(0, 0, 0, 0), 40)
+	p.sign("مطبخ", "Kitchen", Vector3(-1.0, 2.0, back + 0.08), 0.0, Color.WHITE, Color(0, 0, 0, 0), 24)
 	InteriorVenues.back_counters(p, 0.6, 5.6)
 	InteriorVenues.back_counters(p, -5.6, -2.2, 0)
 	p.menu_board(Vector3(-3.9, 3.2, -4.84), 3.4, InteriorMenus.MENUS["sushi"], 1.2, navy.darkened(0.4))
-	p.menu_board(Vector3(3.1, 3.2, -4.84), 3.4, InteriorMenus.MENUS["sushi"], 1.2, navy.darkened(0.4))
+	p.menu_board(Vector3(1.6, 3.2, -4.84), 2.8, InteriorMenus.MENUS["sushi"], 1.2, navy.darkened(0.4))   # clear of the Pick up sign
 	# A booth by the right wall, paper lanterns, bamboo.
 	_booth(p, Vector3(4.65, 0, 1.1), navy)
 	InteriorDining.window_bar(p, -5.75, -2.7, wood, "kenney_furniture/stoolBar", "kenney_food/cup-tea")
@@ -231,7 +231,8 @@ static func _tacos(p: InteriorParts) -> void:
 static func _burger(p: InteriorParts) -> void:
 	var pink := Color(0.91, 0.33, 0.6)
 	var back := -p.size.z * 0.5 + 0.125
-	# White metro tiles on the back wall.
+	# White metro tiles on the back wall, on grey grout so the tiles show.
+	p.box(Vector3(11.7, 2.45, 0.01), Color(0.62, 0.63, 0.65), Vector3(0, 1.225, back + 0.004))
 	for row in 16:
 		for k in 39:
 			var x := -5.8 + k * 0.3 + (0.15 if row % 2 == 1 else 0.0)
@@ -258,10 +259,10 @@ static func _burger(p: InteriorParts) -> void:
 	# The pink neon sign and the menu board.
 	var neon := SignText.make_label("Burgerology", 90, Color(1.0, 0.45, 0.75), Color(1.0, 0.2, 0.6, 0.6), 6)
 	neon.name = "NeonSign"
-	neon.position = Vector3(-3.4, 3.1, back + 0.05)
+	neon.position = Vector3(-3.4, 3.8, back + 0.05)   # above the Pick up sign, seen from the door
 	p.body.add_child(neon)
 	var glow := OmniLight3D.new()
-	glow.position = Vector3(-3.4, 3.1, back + 0.6)
+	glow.position = Vector3(-3.4, 3.8, back + 0.6)
 	glow.light_color = Color(1.0, 0.4, 0.75)
 	glow.light_energy = 0.8
 	glow.omni_range = 3.5

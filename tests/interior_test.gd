@@ -90,7 +90,7 @@ func _check_room(id: String, room: Node3D) -> void:
 					floating.append("%s hangs at %.2f" % [prop.get_meta("kit_id"), box.end.y])
 			elif snap != "wall" and snap != "origin" and not _on_surface(box, tops):
 				floating.append("%s bottom %.3f at (%.1f, %.1f)" % [prop.get_meta("kit_id"), box.position.y, box.get_center().x, box.get_center().z])
-	_expect(count >= 10, "%s: furnished with free kit models (%d)" % [id, count])
+	_expect(count >= (5 if id in ["bikes", "clothes"] else 10), "%s: furnished with free kit models (%d)" % [id, count])
 	_expect(poking.is_empty(), "%s: no model pokes through a wall, the floor or the ceiling %s" % [id, poking.slice(0, 4)])
 	_expect(floating.is_empty(), "%s: every model sits on the floor or a counter top, none floats %s" % [id, floating.slice(0, 4)])
 	var machines: Array = room.get_meta("machines", [])
@@ -101,6 +101,9 @@ func _check_room(id: String, room: Node3D) -> void:
 		if not _on_surface(box, tops) or absf(base.x) > half.x or absf(base.z) > half.z:
 			bad.append(str(machine[0]))
 	_expect(bad.is_empty(), "%s: machines (%d) stand on the floor or a counter, never in the air %s" % [id, machines.size(), bad])
+	if id in ["bikes", "clothes"]:
+		_check_shop(id, room, half)
+		return
 	# Seats and people eating.
 	var seats := room.find_children("Seat*", "Marker3D", true, false).size()
 	var diners := room.find_children("Diner*", "Node3D", true, false).size()
@@ -123,6 +126,56 @@ func _check_room(id: String, room: Node3D) -> void:
 	var sound := room.get_node_or_null("RoomSound") as AudioStreamPlayer3D
 	_expect(sound != null and sound.stream != null, "%s: its own room sound" % id)
 	_check_walk(id, room, half)
+
+
+## Session 59: the two shops (Pedal Point Bikes, Dune Drip) in their new 12 x 10 m rooms.
+func _check_shop(id: String, room: Node3D, half: Vector3) -> void:
+	var staff := "Mechanic" if id == "bikes" else "Cashier"
+	_expect(room.get_node_or_null(staff) is Person, "%s: the %s stands behind the counter" % [id, staff.to_lower()])
+	var tags := room.find_children("*", "Label3D", true, false).filter(func(l): return l.is_in_group("price_tag") and "Dh" in l.text)
+	_expect(tags.size() >= 3, "%s: price tags with Dh prices (%d)" % [id, tags.size()])
+	var sound := room.get_node_or_null("RoomSound") as AudioStreamPlayer3D
+	_expect(sound != null and sound.stream != null, "%s: its own room sound" % id)
+	# The shop screen: its camera must see the spot where your bike (or you) stands.
+	var space := room.get_world_3d().direct_space_state
+	var eye := room.to_global(Vector3(1.0, 1.9, 3.2))
+	var target := room.to_global(ShopInterior.PREVIEW + Vector3(0, 1.0, 0))
+	var hit := space.intersect_ray(PhysicsRayQueryParameters3D.create(eye, target))
+	_expect(hit.is_empty(), "%s: nothing stands between the shop camera and the preview spot %s" % [id, hit.get("position", "")])
+	var views := 0
+	for node: Node3D in room.find_children("*", "MeshInstance3D", true, false):
+		var box: AABB = room.global_transform.affine_inverse() * node.global_transform * (node as MeshInstance3D).get_aabb()
+		box = box.abs()
+		if minf(box.size.x, minf(box.size.y, box.size.z)) > 0.06:
+			box = box.grow(-0.02)   # just touching the line doesn't count
+		if node.name != "InteriorParts" and not _under(node, "StandBike") and box.size.length() < 6.0 and _segment_hits_box(Vector3(1.0, 1.9, 3.2), ShopInterior.PREVIEW + Vector3(0, 1.0, 0), box):
+			views += 1
+	_expect(views == 0, "%s: no model hides the preview spot from the shop camera (%d)" % [id, views])
+	if id == "bikes":
+		var bikes := room.find_children("*", "Node3D", true, false).filter(func(n): return n.is_in_group("shop_bike")).size()
+		var stand := room.find_children("StandBike", "Node3D", true, false)
+		var spot := ShopInterior.PREVIEW
+		var plinth := false
+		for top: Array in room.get_meta("counter_tops", []):
+			if (top[0] as Rect2).has_point(Vector2(spot.x, spot.z)) and absf(float(top[1]) - 0.6) < 0.02:
+				plinth = true
+		_expect(bikes >= 8 and stand.size() == 1 and stand[0].is_in_group("shop_stand_bike") and plinth,
+				"bikes: %d bikes in the shop and the round stand your bike turns on (0.6 m high, with a bike on it)" % bikes)
+	else:
+		var dummies := room.find_children("Mannequin*", "Node3D", true, false).size()
+		_expect(dummies == 2, "clothes: two dressed mannequins in the window (%d)" % dummies)
+		var query := PhysicsShapeQueryParameters3D.new()
+		var ball := SphereShape3D.new()
+		ball.radius = 0.35
+		query.shape = ball
+		query.transform = Transform3D(Basis(), room.to_global(ShopInterior.PREVIEW + Vector3(0, 0.9, 0)))
+		_expect(space.intersect_shape(query, 1).is_empty(), "clothes: the spot where you try things on is clear")
+	_check_walk(id, room, half)
+
+
+## True if the straight line from a to b goes through the box.
+func _segment_hits_box(a: Vector3, b: Vector3, box: AABB) -> bool:
+	return box.intersects_segment(a, b) != null
 
 
 ## The pickup spot can be reached on foot from the door, with a 1.2 m clear way most of it,
