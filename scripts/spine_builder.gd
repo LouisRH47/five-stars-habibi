@@ -28,9 +28,12 @@ func _ready() -> void:
 	_map = data.get_script_constant_map()
 	for i in _map["SPINE_DOMES"].size():
 		_build_dome(_map["SPINE_DOMES"][i], _map["DOME_RADIUS"]).name = "Dome_%d" % i
-	for i in _map["FARM_BEDS"].size():
-		_build_beds(_map["FARM_BEDS"][i], i)
-	_build_hives(_map["BEEHIVES"])
+	if GameConfig.SPINE_LOOKS_V2:
+		_build_v2()
+	else:
+		for i in _map["FARM_BEDS"].size():
+			_build_beds(_map["FARM_BEDS"][i], i)
+		_build_hives(_map["BEEHIVES"])
 	_build_pen(_map["DONKEY_PEN"])
 	_build_court(_map["BASKETBALL_COURT"])
 	var play: Rect2 = _map["PLAYGROUND"]
@@ -40,6 +43,30 @@ func _ready() -> void:
 		Props.playground(self, mini["playground"], Vector2(6, 4.5))
 		for bench in mini["benches"]:
 			Props.bench(self, bench["position"], bench["facing"])
+
+
+## Session 63 (the spine, the farm and the stream): the kerbs, strip and lines of the red
+## track and buggy road, planting round the domes, detailed farm beds, the bee yard and the
+## stream's banks. The old beds and hives above are kept for SPINE_LOOKS_V2 = false.
+func _build_v2() -> void:
+	var strips := SpinePaths.build(self, _map)
+	set_meta("strips", strips)
+	SpinePlanting.build(self, _map, strips)
+	FarmBeds.build(self, _map)
+	BeeYard.build(self, _map)
+	StreamBanks.build(self, _map)
+	_light_asphalt.call_deferred()
+
+
+## The buggy road is lighter asphalt than the car roads (Appendix D). Done after the ground
+## textures go on (DistrictDetail), so it isn't painted over.
+func _light_asphalt() -> void:
+	var road := get_parent().get_node_or_null("WahatBuilder/BuggyRoad") as MeshInstance3D
+	if road == null or not road.material_override is StandardMaterial3D:
+		return
+	var light := (road.material_override as StandardMaterial3D).duplicate() as StandardMaterial3D
+	light.albedo_color = GameConfig.SPINE_BUGGY_ROAD_TINT
+	road.material_override = light
 
 
 ## A white greenhouse dome: a squashed ball with ribs, a door, on a low ring wall. Solid.

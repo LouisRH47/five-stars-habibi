@@ -48,6 +48,8 @@ func _ready() -> void:
 	_build_gardeners()
 	_build_kids()
 	_build_ducks()
+	if GameConfig.SPINE_LOOKS_V2:
+		_build_spine_workers.call_deferred()   # Session 63: after SpineBuilder made the hives
 	ambient = AmbientMotion.new()
 	ambient.name = "AmbientMotion"
 	add_child(ambient)
@@ -138,6 +140,45 @@ func _build_ducks() -> void:
 		var line: Dictionary = list[i].duplicate()
 		line["points"] = route
 		var mover := _add("Duck_%d" % i, "duck", line, GameConfig.DUCK_SPEED, Vector3(0.3, 0.4, 0.45), LifeLooks.duck(i % 2 == 0), null)
+
+
+## Session 63: the beekeeper walking between the hives, and a farmer watering the beds
+## next to the farm stall (scripts/beekeeper.gd).
+func _build_spine_workers() -> void:
+	var hives: Rect2 = _map["BEEHIVES"]
+	var lane := BeeYard.aisle(hives)
+	var lids := get_tree().get_nodes_in_group("hive_lid")
+	var stops: Array = []
+	for spot: Vector3 in BeeYard.hive_spots(hives):
+		var lid: Node3D = null
+		for node: Node3D in lids:
+			if Vector2(node.global_position.x - spot.x, node.global_position.z - spot.z).length() < 0.3:
+				lid = node
+		var at := Vector3(spot.x, 0, lane + (-0.75 if spot.z < lane else 0.75))
+		stops.append({"at": at, "lane": lane, "face": spot, "lid": lid})
+	var keeper := Beekeeper.new()
+	keeper.name = "Beekeeper"
+	add_child(keeper)
+	keeper.setup("beekeeper", stops)
+	register(keeper, 0)
+	# The farmer works the beds nearest the farm stall.
+	var beds: Array = _map["FARM_BEDS"]
+	if beds.is_empty():
+		return
+	var area: Rect2 = beds[mini(1, beds.size() - 1)]
+	var rows := FarmBeds.bed_lines(area)
+	stops = []
+	for i in FarmBeds.walk_lines(area).size():
+		var z: float = FarmBeds.walk_lines(area)[i]
+		var x := area.position.x + 3.0
+		while x < area.end.x - 2.0:
+			stops.append({"at": Vector3(x, 0, z), "lane": z, "face": Vector3(x, 0, rows[i + absi(int(x)) % 2])})
+			x += 6.0
+	var farmer := Beekeeper.new()
+	farmer.name = "FieldFarmer"
+	add_child(farmer)
+	farmer.setup("farmer", stops, [area.position.x - 0.6, area.end.x + 0.6])
+	register(farmer, 0)
 
 
 ## A plain holder for a person, so the mover can hide the holder.

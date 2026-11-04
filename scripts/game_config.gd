@@ -594,3 +594,26 @@ const STABLE_OFFICE_ROOM_ON := true   # the stable office you can see into; fals
 const FARMER_ON := true               # the farmer behind the farm stall counter hands you the order
 const FARMER_LOOK_RANGE := 9.0        # the farmer turns to look at you inside this distance
 const GLASS_BOOTHS_ON := true         # glass security booths at the school gate and the checkpoints
+
+# --- Session 63: the spine, the farm and the stream ---
+const SPINE_LOOKS_V2 := true          # false = the old spine (plain beds, hives, no kerb strip, plain horses)
+const SPINE_TRACK_TOP := 0.03         # the red walking track's top (Appendix D)
+const SPINE_STRIP_TOP := 0.115        # the planted strip's top, just under its kerbs (0.12), so they don't flicker
+const SPINE_DOME_RING := Vector2(9.0, 11.5)   # planting round a dome: from / to this far from its middle (dome radius 7)
+const SPINE_DOME_PALMS := 3           # per dome: date palms...
+const SPINE_DOME_FRUIT_TREES := 2     # ...fig or pomegranate trees...
+const SPINE_DOME_SHRUBS := 12         # ...and shrubs and flower clumps (8 to 12)
+const SPINE_PLANT_CLEARANCE := 1.2    # plants keep this far from paths, pools, courts and gates
+const SPINE_PLANT_VIEW := 160.0       # metres: small plants further away than this aren't drawn
+const FARM_BED_HEIGHT := 0.3          # the raised beds' wooden sides
+const FARM_PLANT_SPACING := 0.85      # metres between crop plants in a row
+const STREAM_REED_SPACING := 2.2      # metres between reed clumps along each bank
+const BEEKEEPER_SPEED := 0.9          # m/s, a slow careful walk between the hives
+const BEEKEEPER_LID_TIME := 4.0       # seconds a hive lid stays open when the beekeeper checks it
+const FIELD_FARMER_SPEED := 1.0       # m/s, the farmer walking the rows
+const FIELD_FARMER_WATER_TIME := 3.5  # seconds the farmer waters at each stop
+const HORSE_LOOK_V2 := true           # false = the old box horses
+const SPINE_FREE_CORNER := Rect2(376, -37, 39, 34)   # kept free for a future car park (no plants, beds or hills)
+const SPINE_BUGGY_ROAD_TINT := Color(1.35, 1.35, 1.32)   # the buggy road's asphalt, lighter than the car roads
+const FARM_CROP_SCALE := 1.3         # crop models a little bigger than the pack, so you can see the melons from the path
+const SPINE_DOME_BED := 1.6           # the flower bed hugging each dome is this wide (metres)
