@@ -1087,7 +1087,7 @@ const PALM_TREES := [
 	Vector3(-85, 0, -10.5),
 	Vector3(-40, 0, -10.5),
 	Vector3(5, 0, -10.5),
-	Vector3(50, 0, -10.5),
+	Vector3(56, 0, -10.5),
 	Vector3(95, 0, -10.5),
 	Vector3(140, 0, -10.5),
 	Vector3(185, 0, -10.5),

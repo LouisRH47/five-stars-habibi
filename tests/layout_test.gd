@@ -147,6 +147,15 @@ static func check_map(map: Dictionary, world: Node3D) -> Array:
 					facing_shop += 1
 	results.append([shop_benches >= 10 and facing_shop == 0,
 			"the benches outside the shops look out at the Plaza, not at the glass (%d benches)" % shop_benches])
+	# Session 65: no palm stands in a road or path (buggies had to drive round one on C1 Link).
+	var palm_hits := []
+	for palm: Vector3 in map.get("PALM_TREES", []):
+		var spot := Vector2(palm.x, palm.z)
+		for road: Dictionary in map["ROADS"]:
+			var near := Geometry2D.get_closest_point_to_segment(spot, road["from"], road["to"])
+			if spot.distance_to(near) < float(road.get("width", 6.0)) * 0.5:
+				palm_hits.append("%s in %s" % [spot, road["name"]])
+	results.append([palm_hits.is_empty(), "no palm stands in a road or path %s" % [palm_hits]])
 	return results
 
 

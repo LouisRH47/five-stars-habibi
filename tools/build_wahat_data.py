@@ -331,7 +331,7 @@ homes += [
 put('VILLAS',homes)
 put('REGULARS',[{'id':'mariam','name':'Auntie Mariam','villa':207,'shop':'boba','food':'bubble tea','who':'resident','look':1},{'id':'rashid','name':'Mr Rashid','villa':503,'shop':'shawarma','food':'shawarma','who':'resident','look':0},{'id':'dana','name':'Ms Dana','villa':901,'shop':'bakery','food':'cake','who':'teacher','look':-1},{'id':'hamdan','name':'Hamdan','villa':902,'shop':'farm','food':'farm juice','who':'groom','look':-1}])
 # Session 63: the spine's north palm row moved off the red track (was z -7).
-palms=[v3(x,0,z) for z in [-10.5,7] for x in range(-130,411,45) if not (z<0 and (x==230 or x>=376))] +[v3(-210,-.45,-155),v3(-190,-.45,-155),v3(-210,-.45,-135),v3(-190,-.45,-135)]
+palms=[v3(x+6 if (z<0 and x==50) else x,0,z) for z in [-10.5,7] for x in range(-130,411,45) if not (z<0 and (x==230 or x>=376))] +[v3(-210,-.45,-155),v3(-190,-.45,-155),v3(-210,-.45,-135),v3(-190,-.45,-135)]  # Session 65: the x=50 palm moved 6 m east, off C1 Link
 palms+=plaza_palms  # Session 57: date palms in the Plaza's grass beds
 palms+=[v3(x,0,z) for x,z in carpark_palms]   # Session 62: palms in the car parks' grass beds
 put('PALM_TREES',palms);put('PARKED_CAR_SIZE',v3(1.9,1.5,4.3))
