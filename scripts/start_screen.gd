@@ -119,7 +119,7 @@ func _build_scrim() -> Control:
 	var scrim := TextureRect.new()
 	scrim.texture = texture
 	scrim.set_anchors_preset(Control.PRESET_LEFT_WIDE)
-	scrim.offset_right = 1150
+	scrim.offset_right = 980
 	scrim.stretch_mode = TextureRect.STRETCH_SCALE
 	scrim.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	scrim.mouse_filter = Control.MOUSE_FILTER_IGNORE

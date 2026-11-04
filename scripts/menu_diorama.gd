@@ -19,7 +19,7 @@ const TARGET := Vector3(1.1, 1.05, -4.6)
 const CAMERA_FROM := Vector3(6.4, 1.9, 4.6)
 ## How far right of the bike the camera aims (metres), so the bike shows between the title
 ## and the phone.
-const AIM_RIGHT := 1.1
+const AIM_RIGHT := -0.5
 
 var view: SubViewport
 var camera: Camera3D
@@ -131,7 +131,7 @@ func _houses(world: Node3D) -> void:
 
 
 func _palms(world: Node3D) -> void:
-	var spots := [[Vector3(-6.5, 0.12, -5.6), 1], [Vector3(6.2, 0.12, -5.8), 2], [Vector3(-12.5, 0.12, -5.4), 4]]
+	var spots := [[Vector3(-6.5, 0.12, -5.6), 1], [Vector3(9.8, 0.12, -6.0), 2], [Vector3(-12.5, 0.12, -5.4), 4]]
 	for spot in spots:
 		var palm: Node3D = PALM_SCENE.instantiate()
 		world.add_child(palm)
