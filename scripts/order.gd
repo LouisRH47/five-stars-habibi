@@ -7,7 +7,7 @@ var restaurant_id := ""    # matches an "id" in data/test_area_places.gd
 var restaurant_name := ""  # shown on the phone, e.g. "Boba Oasis"
 var food := ""             # "pizza", "ice cream" or "bubble tea"
 var villa_number := 0      # the villa's id in the data list (Wahat Al Shams: cluster x 100 + house)
-var address := ""          # what the phone shows, e.g. "C3 · Villa 7" (or "Villa 7" in Palm Grove)
+var address := ""          # what the phone shows, e.g. "C3 · Villa 7" (or "Villa 7" on the test area)
 var map_address := ""      # compact destination label, separate from the full phone address
 var pay := 0               # Dh you get for delivering it
 var note := ""             # a short note from the customer, usually empty
@@ -20,7 +20,7 @@ var regular := ""          # the regular customer's name (e.g. "Auntie Mariam"),
 var regular_id := ""       # the regular's id in REGULARS (e.g. "mariam")
 var who := "resident"      # who comes to the door: resident, teacher, kid, rider or groom
 var look := -1             # a regular's own outfit (PeopleLooks.resident), -1 = random
-var cluster := ""          # the home's cluster ("C2"), "" for the school, stables and Palm Grove
+var cluster := ""          # the home's cluster ("C2"), "" for the school, stables and the test area
 var lunch := false         # a school order from the lunch rush (11:30 to 12:30)
 var neighbour_done := false  # a neighbour order already sent on to the house next door
 

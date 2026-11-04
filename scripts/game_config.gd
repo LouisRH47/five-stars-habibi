@@ -34,7 +34,7 @@ const CAMERA_SHAKE_FADE := 5.0        # higher = shake dies down faster
 # down, but only if you're going fast: slow down for bumps and you keep your speed.
 const SPEED_BUMP_SAFE_KMH := 10.0     # at or under this speed a bump doesn't slow you at all
 const SPEED_BUMP_SPEED_KEEP := 0.55   # share of speed kept when you hit a bump at 25 km/h or more
-const SPEED_BUMP_HEIGHT := 0.12      # metres; the wheels roll up this high (same as SPEED_BUMP_SIZE.y in data/palm_grove.gd)
+const SPEED_BUMP_HEIGHT := 0.12      # metres; the wheels roll up this high (same as SPEED_BUMP_SIZE.y in data/wahat_al_shams.gd)
 const SPEED_BUMP_HOP_MAX := 0.25      # metres the bike hops at full speed (crawling: just rolls over)
 const SPEED_BUMP_HOP_TIME := 0.45     # seconds the extra springy bounce lasts (a big hop, then a small one)
 const SPEED_BUMP_TILT_DEG := 7.0      # how far the nose tips up (then down) at full speed

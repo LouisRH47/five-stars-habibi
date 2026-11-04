@@ -11,12 +11,12 @@ class_name TestAreaPlaces
 ## obstacles, so every building here keeps well clear of them.
 
 ## Building sizes: width (across the front), height, depth (front to back).
-## Same restaurant size as in data/palm_grove.gd.
+## Restaurant size for the test area.
 const RESTAURANT_SIZE := Vector3(10.0, 5.0, 8.0)
 const VILLA_SIZE := Vector3(8.0, 5.5, 8.0)
 
 ## Restaurants. arabic: the Arabic name on the signs. colour: the brand colour.
-## Same names and colours as in data/palm_grove.gd.
+## Names and colours of the test-area shops.
 const RESTAURANTS := [
 	{"id": "pizza", "name": "Pizza", "arabic": "بيتزا", "food": "pizza",
 			"colour": Color(0.8, 0.2, 0.15, 1), "position": Vector3(-35, 0, 5), "facing": 90.0},

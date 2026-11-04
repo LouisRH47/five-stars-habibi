@@ -1,6 +1,6 @@
 extends CanvasLayer
 ## The first-order tutorial (PRD "Start of the game"). Right after you're hired, the boss
-## sends an easy pizza order two streets away (TUTORIAL_ORDER in data/palm_grove.gd).
+## sends an easy pizza order two streets away (TUTORIAL_ORDER in data/wahat_al_shams.gd).
 ## A message box at the bottom tells you what to do at each step, and at the end it
 ## points out that crash insurance is on. It runs once (GameState.tutorial_done).
 ## While it runs, no other orders pop up and the shift clock waits.

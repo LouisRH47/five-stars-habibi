@@ -1,6 +1,6 @@
 class_name Critter
 extends AnimatableBody3D
-## The shared part of everything that moves around Palm Grove by itself (cats, kids on
+## The shared part of everything that moves around the map by itself (cats, kids on
 ## scooters). It's solid, so the bike bumps into it. A slightly bigger invisible area
 ## notices when the bike touches it: then it tells the meters (food damage) and gets
 ## scared for a moment (scripts/cat.gd runs off, scripts/scooter_kid.gd stops).

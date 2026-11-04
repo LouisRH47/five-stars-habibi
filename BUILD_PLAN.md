@@ -1113,7 +1113,7 @@ Done when:
 - [ ] You can see how much of Wahat Al Shams you've collected
 - [ ] The regulars feel like they know you
 
-### Session 51: Final play-test, then itch.io
+### Session 51: Final play-test, then itch.io and the browser
 
 ```text
 Session 51. Run the play-test bot for 5 shifts in a row (careful) and check
@@ -1121,13 +1121,15 @@ money, XP and upgrades come at a good pace: the GPS route after about one
 shift, the first frame after about a week of play, the rocket booster only
 after a long time. Tune
 game_config.gd if not. Run the smoke test 5 times. Then export Mac and Windows
-versions for itch.io. Here's what felt off when I played: [write it here].
+versions for itch.io, and check the browser version at
+fivestarshabibi.middleleap.com (Mac and iPad) is up to date and plays well. Here's what felt off when I played: [write it here].
 ```
 
 Done when:
 
 - [ ] A friend plays for 10 minutes and wants to keep going
 - [ ] It's on itch.io
+- [ ] The browser version plays the same game on a Mac and an iPad
 
 ## When something breaks
 
@@ -1164,7 +1166,7 @@ and what's left in it.
 
 ## After Tier 1
 
-Once Sessions 47 to 51 feel fun and the game is on itch.io (Session 51), friends can play it and give feedback. After that, the next block of sessions is the motorbike test (yard course, instructor, theory quiz), then the motorbike, Old Town, night shifts and running costs. Ask Claude Code to "write the Tier 2 sessions for BUILD_PLAN.md in the same style as Tier 1" so the plan keeps growing as you go.
+Once Sessions 47 to 51 feel fun and the game is on itch.io and in the browser (Session 51), friends can play it and give feedback. After that, the next block of sessions is the motorbike test (yard course, instructor, theory quiz), then the motorbike, Old Town, night shifts and running costs. Ask Claude Code to "write the Tier 2 sessions for BUILD_PLAN.md in the same style as Tier 1" so the plan keeps growing as you go.
 
 ## Confirmed choices
 

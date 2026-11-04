@@ -28,8 +28,10 @@ Look and feel: the mockup linked at the top of PRD.md.
   Then run the smoke test, which rides the bike and checks it works:
   /Applications/Godot.app/Contents/MacOS/Godot --path . --headless -s tests/smoke_test.gd
   It must print RESULT: PASS. When a session adds a new system, add a check for it.
-  The smoke test runs on Wahat Al Shams (the game itself opens on the start screen). To also check
-  the old Palm Grove map, add "-- res://scenes/palm_grove.tscn". To check the old test area:
+  GitHub runs the smoke test before it updates the browser version, and won't update it
+  if the test fails (or takes longer than 15 minutes), so keep it passing and quick.
+  The smoke test runs on Wahat Al Shams (the game itself opens on the start screen). The old
+  Palm Grove map was removed on 4 Nov 2026. To check the old test area:
   /Applications/Godot.app/Contents/MacOS/Godot --path . --headless -s tests/smoke_test.gd -- res://scenes/test_area.tscn
   To see how a whole shift plays (for tuning), run the play-test bot. It rides a full
   shift and prints every delivery and the summary (add "-- careless" to ride flat out):

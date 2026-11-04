@@ -2,7 +2,7 @@ extends Critter
 ## A cat that strolls slowly around its own patch (a gap between two villas), sits for a
 ## bit, then strolls somewhere else. Bump into it and it dashes away for a moment, then
 ## calms down and wanders back. ObstacleBuilder makes one per line in CATS
-## (data/palm_grove.gd) and calls setup(). Speeds are in game_config.gd.
+## (data/wahat_al_shams.gd) and calls setup(). Speeds are in game_config.gd.
 
 const BODY_SIZE := Vector3(0.3, 0.35, 0.6)
 

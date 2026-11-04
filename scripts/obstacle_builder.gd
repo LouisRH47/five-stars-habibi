@@ -1,9 +1,9 @@
 extends Node3D
 ## Builds the Session 9 moving obstacles when the game starts, from the CATS and
-## SCOOTER_KIDS lists in data/palm_grove.gd. Node names: Cat_<n>, ScooterKid_<n>
+## SCOOTER_KIDS lists in data/wahat_al_shams.gd. Node names: Cat_<n>, ScooterKid_<n>
 ## (n counts from 0 in list order). The smoke test checks they were all built.
 
-## The map data to build from (set in the scene): data/palm_grove.gd.
+## The map data to build from (set in the scene): data/wahat_al_shams.gd.
 @export var data: Script
 
 const CAT_SCRIPT := preload("res://scripts/cat.gd")
