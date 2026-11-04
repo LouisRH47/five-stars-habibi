@@ -1368,14 +1368,14 @@ func _check_shop_buys() -> void:
 	for want in [["bikes", "paint_sunset"], ["clothes", "caps_teal"]]:
 		gs.reset()
 		gs.money = 200
-		var price := GearCatalog.price(GearCatalog.find(want[1]))
+		var price: int = GearCatalog.price(GearCatalog.find(want[1]))
 		var opened: bool = shops.open_shop(want[0])
 		var stands := get_nodes_in_group("shop_stand_bike")
-		var made_way := want[0] != "bikes" or (not stands.is_empty() and stands.all(func(n): return not n.visible))
+		var made_way: bool = want[0] != "bikes" or (not stands.is_empty() and stands.all(func(n): return not n.visible))
 		var added: bool = opened and shops.cart.add(want[1])["ok"]
 		var bought: bool = added and shops.checkout()["ok"]
 		shops.close_shop()
-		var back := stands.all(func(n): return n.visible)
+		var back: bool = stands.all(func(n): return n.visible)
 		_check("buy one thing at %s" % want[0], opened and made_way and bought and back and not paused
 				and gs.money == 200 - price and want[1] in gs.equipped_cosmetics.values(),
 				"opened %s, stand bike made way %s, bought %s, money %d, equipped %s" % [opened, made_way, bought, gs.money, gs.equipped_cosmetics])
