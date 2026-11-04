@@ -537,3 +537,21 @@ const LOADING_TIPS := [
 	"The red track is for walkers: mind them.",
 	"Sprinting uses stamina. Coast to get it back.",
 ]
+
+# --- Session 57: The Plaza outside ---
+const PLAZA_LOOKS_PASS := true        # false: the old tall shops, upper blocks and round paving come back
+const PLAZA_GROUND_FLOOR := 4.5       # metres: the shop floor (was 8)
+const PLAZA_FLAT_FLOORS := 3          # floors of flats on top, like the real Plaza
+const PLAZA_FLOOR_HEIGHT := 3.2       # metres per floor of flats
+const PLAZA_PARAPET := 0.6            # the low wall round the roof
+const PLAZA_WINDOW := Vector2(1.4, 1.6)   # flats windows, width x height
+const PLAZA_WINDOW_SPACING := 3.4     # a window every 3.4 m along the front
+const PLAZA_SIGN_BAND := 1.1          # height of the lit sign band over each shop
+const PLAZA_GLASS_TOP := 3.2          # the shop glass goes from the ground to here
+const PLAZA_AWNING_DEPTH := 1.4       # how far the striped awning sticks out
+const PLAZA_DOOR_WIDTH := 2.4         # the sliding glass door (two 1.2 m panels)
+const PLAZA_DOOR_OPEN_DISTANCE := 3.2 # the door slides open when you (or your bike) are this close
+const PLAZA_DOOR_SPEED := 3.0         # how fast it slides (share of fully open per second)
+const PLAZA_SIGN_GLOW_HOURS := Vector2(16.6, 17.4)  # signs start glowing, then are fully lit (sunset)
+const PLAZA_SIGN_GLOW_ENERGY := 0.8   # how bright the lit sign bands are at night
+const PLAZA_TROLLEYS := 8             # trolleys lined up outside Grand Groceries

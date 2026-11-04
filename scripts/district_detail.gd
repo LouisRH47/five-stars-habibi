@@ -145,6 +145,14 @@ func _checkpoints_and_station() -> void:
 
 
 func _plaza_floors() -> void:
+	if GameConfig.PLAZA_LOOKS_PASS and _map.has("PLAZA_ROWS"):
+		# Session 57: lower shops with three floors of flats on top, joined along each row
+		# (PlazaRows), and grass beds, planters and benches round the square (PlazaLandscape).
+		# The beds are lawns, so _grass_blades() grows grass on them too.
+		PlazaRows.build(self, _map)
+		PlazaLandscape.build(self, _map)
+		return
+	# Before Session 57: tall upper blocks on top of the 8 m shops.
 	var blocks := Node3D.new()
 	blocks.name = "PlazaUpperFloors"
 	add_child(blocks)

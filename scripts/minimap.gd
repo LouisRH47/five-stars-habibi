@@ -43,6 +43,9 @@ var _land: Node2D
 var _background: Control
 var _map_xform := Transform2D.IDENTITY
 var _home_labels: Array = []
+## Session 57: little name tags for the bike shop, the clothes shop and the pharmacy.
+var _shop_icons: Array = []
+const SHOP_LABELS := {"bikes": "Bikes", "clothes": "Clothes", "pharmacy": "+"}
 var _number_candidates: Array = []
 var _target_buildings := {}
 var _last_candidate_position := Vector2(INF, INF)
@@ -160,6 +163,7 @@ func _draw_map() -> void:
 	_draw_gps_route()
 	_view.draw_set_transform_matrix(Transform2D.IDENTITY)
 	_draw_villa_numbers(xform)
+	_draw_shop_icons(xform)
 	_draw_road_works(xform)
 	_draw_north(xform)
 	_draw_target(xform)
@@ -184,7 +188,14 @@ func _draw_ground(canvas: CanvasItem = null) -> void:
 		canvas.draw_rect(plot["area"], plot["colour"])
 	if _map.has("SPINE"):
 		canvas.draw_rect(_map["SPINE"], GRASS)
-	if _map.has("PLAZA"):
+	var landscape: Dictionary = _map.get("PLAZA_LANDSCAPE", {})
+	if GameConfig.PLAZA_LOOKS_PASS and not landscape.is_empty():
+		# Session 57: the paved square round the sunken square, and the grass beds.
+		var core: float = landscape["core_half"]
+		canvas.draw_rect(Rect2(_map["PLAZA"]["centre"] - Vector2.ONE * core, Vector2.ONE * core * 2.0), PAVING)
+		for bed: Rect2 in landscape.get("beds", []):
+			canvas.draw_rect(bed, GRASS)
+	elif _map.has("PLAZA"):
 		canvas.draw_circle(_map["PLAZA"]["centre"], _map["PLAZA"]["radius"], PAVING)
 	for area in _map.get("PAVED_AREAS", []):
 		canvas.draw_rect(area, PAVING)
@@ -232,8 +243,20 @@ func _build_static_map() -> void:
 		_target_buildings[int(place["number"])] = [place["position"], place["facing"], size]
 		if not PlaceBuilder.is_spot(place):
 			_home_labels.append([Vector2(place["position"].x, place["position"].z), str(place.get("house", place["number"]))])
+	# Session 57: the shop rows (storerooms and flats) under the shops, then the two shops.
+	for row: Dictionary in _map.get("PLAZA_ROWS", []):
+		var front: float = row["front_z"]
+		var back: float = front - (1.0 if is_zero_approx(float(row["facing"])) else -1.0) * float(row["depth"])
+		for unit: Dictionary in row["units"]:
+			if unit["kind"] != "passage":
+				var middle := Vector3((unit["from_x"] + unit["to_x"]) * 0.5, 0, (front + back) * 0.5)
+				_cache_block(chunks, middle, 0.0, Vector3(unit["to_x"] - unit["from_x"], 1, absf(front - back)), LANDMARK)
+			if unit["kind"] == "shop" or unit["kind"] == "scenery":
+				_shop_icons.append([Vector2((unit["from_x"] + unit["to_x"]) * 0.5, front), SHOP_LABELS.get(unit["id"], ""), unit["colour"]])
 	for place in place_builder.restaurants:
 		_cache_block(chunks, place["position"], place["facing"], place_builder.restaurant_size_of(place), place["colour"])
+	for shop: Dictionary in _map.get("SHOPS", []):
+		_cache_block(chunks, shop["position"], shop["facing"], shop.get("size", Vector3(12, 4.5, 10)), shop.get("colour", LANDMARK))
 	_background.queue_redraw()
 	_land.queue_redraw()
 
@@ -296,6 +319,19 @@ func _draw_villa_numbers(xform: Transform2D) -> void:
 		var spot: Vector2 = xform * entry[0]
 		if bounds.has_point(spot):
 			_text(entry[1], spot, NUMBER_SIZE, VILLA_NUMBER)
+
+
+## Session 57: a coloured tag on each shop's front (upright, like the house numbers).
+func _draw_shop_icons(xform: Transform2D) -> void:
+	var bounds := Rect2(Vector2.ZERO, _view.size).grow(-14.0)
+	for entry: Array in _shop_icons:
+		var spot: Vector2 = xform * entry[0]
+		if not bounds.has_point(spot) or entry[1] == "":
+			continue
+		var width := _font.get_string_size(entry[1], HORIZONTAL_ALIGNMENT_LEFT, -1, NUMBER_SIZE).x + 8.0
+		_view.draw_rect(Rect2(spot - Vector2(width * 0.5, 8.0), Vector2(width, 16.0)), OUTLINE)
+		_view.draw_rect(Rect2(spot - Vector2(width * 0.5 - 1.5, 6.5), Vector2(width - 3.0, 13.0)), entry[2])
+		_text(entry[1], spot, NUMBER_SIZE - 1, PLAYER)
 
 
 func _draw_north(xform: Transform2D) -> void:
