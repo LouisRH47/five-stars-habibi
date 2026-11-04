@@ -14,7 +14,7 @@ const FRUIT_TREES := ["quaternius_crops/Apple_4", "quaternius_crops/Orange_4"]  
 const SHRUBS := ["quaternius_nature/Bush_1", "quaternius_nature/Bush_2", "quaternius_nature/Plant_3",
 		"quaternius_nature/Plant_1", "quaternius_nature/Flowers", "quaternius_crops/Flower_4",
 		"quaternius_crops/BushBerries_4"]
-const SHRUB_SCALE := {"quaternius_nature/Bush_1": 0.75, "quaternius_nature/Bush_2": 0.75,
+const SHRUB_SCALE := {"quaternius_nature/Bush_1": 0.95, "quaternius_nature/Bush_2": 0.95,
 		"quaternius_nature/Plant_3": 0.9, "quaternius_nature/Plant_1": 0.9, "quaternius_nature/Flowers": 1.6,
 		"quaternius_crops/Flower_4": 1.6}
 const STRIP_PLANTS := ["quaternius_nature/Flowers", "quaternius_crops/Flower_4", "quaternius_nature/Grass_Short",
@@ -63,6 +63,7 @@ static func build(parent: Node3D, map: Dictionary, strips: Array) -> Dictionary:
 			if _free(spot, 0.7, taken):
 				shrubs.append(spot)
 				taken = taken + _circles([spot], 1.3)
+		_bed_ring(ring, map, dome, rng)
 		_trees(ring, palms, PALMS, d, true)
 		_trees(ring, trees, FRUIT_TREES, d, false)
 		_scatter(ring, shrubs, SHRUBS, SHRUB_SCALE, rng)
@@ -75,7 +76,7 @@ static func build(parent: Node3D, map: Dictionary, strips: Array) -> Dictionary:
 		var x := strip.position.x + 0.6
 		while x < strip.end.x - 0.4:
 			on_strip.append(Vector3(x, GameConfig.SPINE_STRIP_TOP, strip.get_center().y + rng.randf_range(-0.3, 0.3)))
-			x += rng.randf_range(0.8, 1.4)
+			x += rng.randf_range(0.55, 0.95)
 	var chunk_size := 60.0
 	var chunks := {}
 	for spot: Vector3 in on_strip:
@@ -94,7 +95,7 @@ static func build(parent: Node3D, map: Dictionary, strips: Array) -> Dictionary:
 
 
 ## Everything plants keep clear of: [Rect2...] and [[centre Vector2, radius]...].
-static func keep_out(map: Dictionary) -> Array:
+static func keep_out(map: Dictionary, with_domes := true) -> Array:
 	var out: Array = []
 	var gap := GameConfig.SPINE_PLANT_CLEARANCE
 	for road: Dictionary in map["ROADS"]:
@@ -115,11 +116,49 @@ static func keep_out(map: Dictionary) -> Array:
 		if pool.has("gate"):
 			out.append([pool["gate"], 2.5])
 	for dome: Vector3 in map["SPINE_DOMES"]:
-		out.append([Vector2(dome.x, dome.z), float(map["DOME_RADIUS"]) + 0.9])
+		if with_domes:
+			out.append([Vector2(dome.x, dome.z), float(map["DOME_RADIUS"]) + 0.9])
 		# the door apron, from the door down to the track
 		out.append(Rect2(dome.x - 1.8, dome.z + float(map["DOME_RADIUS"]), 3.6, 9.0))
 	out.append(GameConfig.SPINE_FREE_CORNER)   # kept free for a car park (the lead, Session 62)
 	return out
+
+
+## A ring-shaped flower bed hugging the dome (dark soil, flowers and low plants), with a gap
+## at the door.
+static func _bed_ring(parent: Node3D, map: Dictionary, dome: Vector3, rng: RandomNumberGenerator) -> void:
+	var inner: float = float(map["DOME_RADIUS"]) + 0.1
+	var outer := inner + GameConfig.SPINE_DOME_BED
+	var blocked := keep_out(map, false)
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var spots: Array = []
+	const PIECES := 48
+	for i in PIECES:
+		var a0 := TAU * i / PIECES
+		var a1 := TAU * (i + 1) / PIECES
+		var middle := Vector3(dome.x + sin((a0 + a1) * 0.5) * (inner + outer) * 0.5, 0, dome.z + cos((a0 + a1) * 0.5) * (inner + outer) * 0.5)
+		if not _free(middle, 0.2, blocked):
+			continue   # the door and anything else in the way
+		var corners: Array[Vector3] = []
+		for c in [[a0, inner], [a1, inner], [a1, outer], [a0, outer]]:
+			corners.append(Vector3(sin(c[0]) * c[1], 0.022, cos(c[0]) * c[1]))
+		for k in [0, 1, 2, 0, 2, 3]:   # the order Godot draws from above
+			tool.set_normal(Vector3.UP)
+			tool.set_color(Color(0.33, 0.24, 0.17))
+			tool.add_vertex(corners[k])
+		for n in 3:
+			var a := lerpf(a0, a1, rng.randf())
+			var r := rng.randf_range(inner + 0.25, outer - 0.25)
+			spots.append(Vector3(dome.x + sin(a) * r, 0.022, dome.z + cos(a) * r))
+	var bed := MeshInstance3D.new()
+	bed.name = "DomeBed"
+	bed.mesh = tool.commit()
+	bed.material_override = MeshKit.material()
+	bed.position = Vector3(dome.x, 0, dome.z)
+	parent.add_child(bed)
+	_scatter(parent, spots, STRIP_PLANTS + ["quaternius_crops/Flower_2", "quaternius_nature/Plant_3"],
+			STRIP_SCALE.merged({"quaternius_nature/Plant_3": 0.45}), rng)
 
 
 ## Up to `count` spots on a ring round the dome at the given angles (0 = the door side).
@@ -162,7 +201,7 @@ static func _trees(parent: Node3D, spots: Array, ids: Array, variant: int, palms
 		var spot: Vector3 = spots[i]
 		if has_kit(id):
 			var tree := KitProps.place(parent, id, spot, float((variant * 97 + i * 53) % 360),
-					1.0 if palms else 1.15)
+					1.0 if palms else 1.4)
 			tree.name = ("Palm_%d" if palms else "FruitTree_%d") % i
 			var trunk := StaticBody3D.new()
 			trunk.position = spot

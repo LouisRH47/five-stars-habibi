@@ -616,3 +616,4 @@ const HORSE_LOOK_V2 := true           # false = the old box horses
 const SPINE_FREE_CORNER := Rect2(376, -37, 39, 34)   # kept free for a future car park (no plants, beds or hills)
 const SPINE_BUGGY_ROAD_TINT := Color(1.35, 1.35, 1.32)   # the buggy road's asphalt, lighter than the car roads
 const FARM_CROP_SCALE := 1.3         # crop models a little bigger than the pack, so you can see the melons from the path
+const SPINE_DOME_BED := 1.6           # the flower bed hugging each dome is this wide (metres)
