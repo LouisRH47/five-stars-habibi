@@ -66,7 +66,9 @@ static func _shell(p: InteriorParts, style: Dictionary) -> void:
 					colour = a.lerp(b, float((i * 3 + k * 5) % 4) / 6.0)
 			var w := tile * (0.98 if pattern != "planks" else 1.0)
 			p.box(Vector3(w, 0.04, tile * 0.98), colour, Vector3(-half.x + (i + 0.5) * tile, FLOOR_TOP - 0.02, -half.z + (k + 0.5) * tile))
-	p.box(Vector3(p.size.x, 0.02, p.size.z), b.darkened(0.4), Vector3(0, FLOOR_TOP - 0.035, 0))
+	# The grout under the tiles. Session 59: raised to just under the tile tops, so the Plaza
+	# paving under the room no longer shows through the gaps as light lines.
+	p.box(Vector3(p.size.x, 0.01, p.size.z), b.darkened(0.4), Vector3(0, FLOOR_TOP - 0.01, 0))
 	var wall: Color = style["wall"]
 	var band: Color = style.get("band", wall.darkened(0.15))
 	for side in [-1.0, 1.0]:

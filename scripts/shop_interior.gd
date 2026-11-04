@@ -38,6 +38,7 @@ static func build(place: Dictionary) -> StaticBody3D:
 	_solid(room, Vector3(size.x, 0.2, size.z), Vector3(0, size.y + 0.1, 0), CREAM)
 	if plaza_front:
 		ShopFront.build(room, place, size)
+	if plaza_front and not GameConfig.INTERIORS_LOOKS_PASS:
 		var lamp := OmniLight3D.new()
 		lamp.name = "InteriorLight"
 		lamp.position = Vector3(0, size.y - 0.6, 0)
@@ -50,13 +51,27 @@ static func build(place: Dictionary) -> StaticBody3D:
 		sign.position = Vector3(0, 4.4, half.z + 0.18)
 		room.add_child(sign)
 	_solid(room, Vector3(4, 1.05, 1.2), COUNTER + Vector3(0, 0.525, -0.1), WOOD)
-	LowPoly.box(room, Vector3(0.5, 0.4, 0.35), Color(0.12, 0.14, 0.15), COUNTER + Vector3(-1, 1.25, 0))
+	var looks := plaza_front and GameConfig.INTERIORS_LOOKS_PASS
+	if not looks:   # Session 59: the new rooms have a real till (ShopRooms) instead of this box
+		LowPoly.box(room, Vector3(0.5, 0.4, 0.35), Color(0.12, 0.14, 0.15), COUNTER + Vector3(-1, 1.25, 0))
 	var staff := PeopleLooks.groom() if place["id"] == "bikes" else PeopleLooks.resident(2)
 	staff.name = "Mechanic" if place["id"] == "bikes" else "Cashier"
 	staff.position = COUNTER + Vector3(0, 0, -1.25)
 	staff.rotation.y = PI
 	room.add_child(staff)
-	if place["id"] == "bikes":
+	if looks:
+		# Session 59: the insides rebuilt for the 12 x 10 m room (ShopRooms); the old
+		# _bikes() and _clothes() below are kept for the old layout and the test area.
+		room.set_meta("interior_looks", true)
+		room.set_meta("room_size", size)
+		room.set_meta("pickup", COUNTER + Vector3(0, 0, 1.0))
+		var parts := InteriorParts.new(room, place.merged({"colour": place.get("colour", TEAL)}), size)
+		if place["id"] == "bikes":
+			ShopRooms.bikes(parts)
+		else:
+			ShopRooms.clothes(parts)
+		parts.finish()
+	elif place["id"] == "bikes":
 		_bikes(room, half)
 	else:
 		_clothes(room, half)

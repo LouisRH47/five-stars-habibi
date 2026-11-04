@@ -1348,12 +1348,38 @@ func _finish() -> void:
 	await _check_life_meets_events()
 	_check_session32()
 	await _check_venue_handoffs()
+	_check_shop_buys()
 	_check_saving()
 	for action in ACTIONS:
 		Input.action_release(action)
 	_phase = "done"
 	print("RESULT: ", "FAIL" if _failed else "PASS")
 	quit(1 if _failed else 0)
+
+
+## Session 59: buy one thing in each shop from their new insides (Pedal Point Bikes and Dune
+## Drip): the shop screen opens (the bike on Pedal Point's round stand makes way for yours),
+## the item goes in the cart, checkout pays for it and puts it on, and leaving brings it back.
+func _check_shop_buys() -> void:
+	var shops: Node = _main.get_node_or_null("ShopController")
+	if shops == null:
+		return
+	var gs: Node = _game_state
+	for want in [["bikes", "paint_sunset"], ["clothes", "caps_teal"]]:
+		gs.reset()
+		gs.money = 200
+		var price: int = GearCatalog.price(GearCatalog.find(want[1]))
+		var opened: bool = shops.open_shop(want[0])
+		var stands := get_nodes_in_group("shop_stand_bike")
+		var made_way: bool = want[0] != "bikes" or (not stands.is_empty() and stands.all(func(n): return not n.visible))
+		var added: bool = opened and shops.cart.add(want[1])["ok"]
+		var bought: bool = added and shops.checkout()["ok"]
+		shops.close_shop()
+		var back: bool = stands.all(func(n): return n.visible)
+		_check("buy one thing at %s" % want[0], opened and made_way and bought and back and not paused
+				and gs.money == 200 - price and want[1] in gs.equipped_cosmetics.values(),
+				"opened %s, stand bike made way %s, bought %s, money %d, equipped %s" % [opened, made_way, bought, gs.money, gs.equipped_cosmetics])
+	gs.reset()
 
 
 ## Sessions 41–42: drive the real on-foot handoff at the school gate and both receptions.
