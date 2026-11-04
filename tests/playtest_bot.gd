@@ -49,6 +49,7 @@ var _walked_for := ""  # the stage the last walk to a door was for (done once it
 var _walk_route: Array[Vector2] = []
 var _walk_last := Vector2.ZERO
 var _walk_stuck := 0.0
+var _doorway_trip := ""   # Review (outdoor): the order whose shop doorway we have reached
 var _this_walk := 0.0   # seconds this walk has taken (to say when one takes too long)
 var _crashes := {"small": 0, "big": 0}
 var _frames := 0
@@ -173,6 +174,11 @@ func _walk(delta: float) -> void:
 			_on_foot.toggle()
 			return
 		goal = _flat(_bike.global_position)
+	# Review (outdoor): a Plaza shop's pickup spot (Session 58) is inside, off to one side of
+	# the sliding door. The map scan saw the door shut, so a straight walk hit the glass beside
+	# the door, out of the door's 3.2 m reach, and the bot pushed there for the rest of the shift
+	# (in and out). Like a player, it now goes through the doorway first.
+	goal = _via_doorway(here, goal)
 	_this_walk += delta
 	if int(_this_walk / 20.0) != int((_this_walk - delta) / 20.0):
 		_say_walk_trouble(here, goal, going_to_door)
@@ -209,6 +215,40 @@ func _walk(delta: float) -> void:
 
 ## Receptions are deliberately a longer walk from the parked bike. A neighbour's
 ## doorstep still uses the bike when it moves away; an indoor counter stays on foot.
+## Review (outdoor): if the walker and where it's going are on different sides of the glass
+## of the order's shop (a walk-in Plaza shop), first go to the doorway on this side: just
+## outside the door, or 1 m inside it. Once there, carry on to the real goal.
+func _via_doorway(here: Vector2, goal: Vector2) -> Vector2:
+	var order: Order = _gs.current_order
+	if order == null:
+		return goal
+	var places: Node = _dm.place_builder
+	var place := {}
+	for entry: Dictionary in places.restaurants:
+		if entry.get("id", "") == order.restaurant_id:
+			place = entry
+	if place.is_empty() or not place.get("interior", false):
+		return goal
+	var centre := _flat(place["position"])
+	var entrance := _flat(places.restaurant_entrance(order.restaurant_id))
+	var out := (entrance - centre).normalized()
+	var glass := entrance.distance_to(centre) - 0.7
+	var half_width: float = places.restaurant_size_of(place).x * 0.5
+	var inside := func(p: Vector2) -> bool:
+		return (p - centre).dot(out) <= glass and absf((p - centre).dot(out.orthogonal())) < half_width
+	var here_in: bool = inside.call(here)
+	if here_in == inside.call(goal):
+		return goal
+	var trip := "%d %s" % [order.get_instance_id(), here_in]
+	if _doorway_trip == trip:
+		return goal
+	var stop := centre + out * (glass - 1.0) if here_in else entrance
+	if here.distance_to(stop) < 0.8:
+		_doorway_trip = trip   # at the doorway: on through it now
+		return goal
+	return stop
+
+
 func _inside_delivery() -> bool:
 	if _gs.current_order == null:
 		return false
@@ -600,4 +640,9 @@ func _say_walk_trouble(here: Vector2, goal: Vector2, to_door: bool) -> void:
 			near.append("%s %.1f m" % [n.name, _flat(n.global_position).distance_to(here)])
 	print("  walk taking long: %.0f s at %s, going to %s (%s, %.1f m away), near: %s" % [_this_walk, here,
 			"the door" if to_door else "the bike", goal, here.distance_to(goal), ", ".join(near)])
+	if int(_this_walk) % 100 < 20:   # Review (outdoor): now and then, say why it might not move
+		var walker: Node3D = _on_foot.walker
+		print("    paused %s, walker active %s, stage %s, order %s, facing %.0f deg, route %s" % [paused,
+				walker.get("active"), _gs.stage_name(), _gs.current_order != null,
+				rad_to_deg(walker.rotation.y), _walk_route.slice(0, 3)])
 

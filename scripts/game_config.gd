@@ -682,3 +682,24 @@ const PHONE_V2 := true           # Session 70
 const MINIMAP_V2 := true         # Session 70
 const CARD_V2 := true            # Session 71
 const START_DIORAMA := true      # Session 71
+
+# --- Review (outdoor), 4 Nov 2026: fixes found by the overnight check of Sessions 53-64 ---
+## A path that ends on a road that "wins" (the spine buggy road, or any wider road) now stops at
+## that road's edge instead of being drawn on top of it to its middle line. Before, the C1-C5
+## links flickered on the buggy road (two road slabs at the same height) and the light car park
+## buggy lanes and alleys lay over the dark roads. false = the old way.
+const ROAD_ENDS_GIVE_WAY := true
+const ROAD_END_OVERLAP := 0.02        # metres a path still reaches into the road it meets (no seam)
+## The spine's old floating flower balls (Session 26) sat 30 cm up in the air and also on roads
+## and paths. Now they sit on the ground and keep off every road, path, paving and building.
+const SPINE_FLOWERS_GROUNDED := true
+## The kerbs and planted strip between the red track and the buggy road only stop where a path
+## really crosses them (the C4 and C5 links end at the buggy road, they don't cross it).
+const SPINE_GAPS_ONLY_REAL := true
+## The "Coming soon" words at the building sites get a dark board on two posts (they floated).
+const SITE_SIGN_BOARD := true
+## Both pool decks use the paving texture (PRD: "a paved deck"); they were a plain light slab.
+const POOL_DECK_PAVED := true
+## Metres the big "Wahat Stables" sign sits east of the block's middle, so the stable office's
+## roof doesn't hide it from Stables Road (0.0 = the old spot, right behind the office).
+const STABLES_SIGN_SHIFT := 13.0
