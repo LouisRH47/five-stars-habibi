@@ -134,7 +134,7 @@ func _make_special(order: Order, special: String) -> void:
 			order.pay = order.base_pay * GameConfig.FAMILY_PAY_TIMES
 
 
-## A random special kind this map can do (fragile cakes need Sunrise Bakery).
+## A random special kind this map can do (fragile cakes need the cake shop, GameConfig.FRAGILE_SHOP).
 func _pick_special() -> String:
 	var kinds: Array = GameConfig.SPECIAL_KINDS.duplicate()
 	if _find(places.restaurants, "id", GameConfig.FRAGILE_SHOP).is_empty():

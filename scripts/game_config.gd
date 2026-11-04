@@ -122,15 +122,19 @@ const TIME_EMPTY_AT := 2.0
 # Session 27 foods: shawarma goes cold (medium), cake keeps but breaks on bumps, groceries are
 # slow to spoil and a bit heavy, farm juice and salad spoil in the sun.
 const FRESHNESS_DRAIN := {"pizza": 0.25, "bubble tea": 0.4, "ice cream": 0.55,  # Session 17: was 0.35/0.6/1.0
-		"shawarma": 0.35, "cake": 0.2, "groceries": 0.1, "farm juice": 0.5, "salad box": 0.45, "pad thai": 0.35, "sushi": 0.5, "tacos": 0.3, "burgers": 0.3, "coffee": 0.4, "manakish": 0.25}  # Session 27
+		"shawarma": 0.35, "cake": 0.2, "groceries": 0.1, "farm juice": 0.5, "salad box": 0.45, "pad thai": 0.35, "sushi": 0.5, "tacos": 0.3, "burgers": 0.3, "coffee": 0.4, "manakish": 0.25,  # Session 27
+		"iced latte": 0.4, "flat white": 0.45, "croissant": 0.15, "khubz bread": 0.18, "fatayer": 0.2}  # Session 58 (Appendix F)
 # Damage lost per knock, per food. Bubble tea hates speed bumps.
 const DAMAGE_SPEED_BUMP := {"pizza": 3.0, "bubble tea": 14.0, "ice cream": 5.0,  # at full speed
-		"shawarma": 4.0, "cake": 16.0, "groceries": 6.0, "farm juice": 10.0, "salad box": 6.0, "pad thai": 7, "sushi": 9, "tacos": 14, "burgers": 5, "coffee": 14, "manakish": 4}  # cake breaks on bumps
+		"shawarma": 4.0, "cake": 16.0, "groceries": 6.0, "farm juice": 10.0, "salad box": 6.0, "pad thai": 7, "sushi": 9, "tacos": 14, "burgers": 5, "coffee": 14, "manakish": 4,  # cake breaks on bumps
+		"iced latte": 14.0, "flat white": 6.0, "croissant": 3.0, "khubz bread": 2.0, "fatayer": 3.0}  # Session 58: iced latte spills like bubble tea
 const DAMAGE_SPEED_BUMP_SLOW_SHARE := 0.25  # at or under SPEED_BUMP_SAFE_KMH a bump costs a quarter of that
 const DAMAGE_HARD_BRAKE := {"pizza": 3.0, "bubble tea": 8.0, "ice cream": 4.0,
-		"shawarma": 3.0, "cake": 9.0, "groceries": 5.0, "farm juice": 7.0, "salad box": 4.0, "pad thai": 5, "sushi": 5, "tacos": 8, "burgers": 3, "coffee": 8, "manakish": 3}
+		"shawarma": 3.0, "cake": 9.0, "groceries": 5.0, "farm juice": 7.0, "salad box": 4.0, "pad thai": 5, "sushi": 5, "tacos": 8, "burgers": 3, "coffee": 8, "manakish": 3,
+		"iced latte": 8.0, "flat white": 4.0, "croissant": 2.0, "khubz bread": 2.0, "fatayer": 2.0}  # Session 58
 const DAMAGE_COLLISION := {"pizza": 15.0, "bubble tea": 25.0, "ice cream": 18.0,  # a full-speed head-on hit
-		"shawarma": 15.0, "cake": 30.0, "groceries": 20.0, "farm juice": 25.0, "salad box": 18.0, "pad thai": 18, "sushi": 22, "tacos": 25, "burgers": 15, "coffee": 25, "manakish": 15}
+		"shawarma": 15.0, "cake": 30.0, "groceries": 20.0, "farm juice": 25.0, "salad box": 18.0, "pad thai": 18, "sushi": 22, "tacos": 25, "burgers": 15, "coffee": 25, "manakish": 15,
+		"iced latte": 25.0, "flat white": 18.0, "croissant": 10.0, "khubz bread": 10.0, "fatayer": 12.0}  # Session 58
 # Hard braking: braking (S or Space) while going faster than this counts once per press.
 const HARD_BRAKE_MIN_KMH := 22.0       # Session 17: was 18, then normal braking counted too
 
@@ -145,7 +149,8 @@ const SCOOTER_GIVE_WAY_TIME := 2.0    # seconds a kid waits for you before turni
 const CRITTER_SCARED_TIME := 1.5      # seconds a bumped cat runs / a bumped kid stops
 # Extra food damage when you bump a cat or a kid (on top of the crash itself).
 const DAMAGE_CRITTER := {"pizza": 10.0, "bubble tea": 15.0, "ice cream": 12.0,
-		"shawarma": 10.0, "cake": 16.0, "groceries": 12.0, "farm juice": 15.0, "salad box": 12.0, "pad thai": 12, "sushi": 14, "tacos": 15, "burgers": 10, "coffee": 15, "manakish": 10}
+		"shawarma": 10.0, "cake": 16.0, "groceries": 12.0, "farm juice": 15.0, "salad box": 12.0, "pad thai": 12, "sushi": 14, "tacos": 15, "burgers": 10, "coffee": 15, "manakish": 10,
+		"iced latte": 15.0, "flat white": 10.0, "croissant": 8.0, "khubz bread": 8.0, "fatayer": 8.0}  # Session 58
 
 # --- Stars, tips, XP and rating (Session 10) ---
 # Stars: start at 5, each orange meter takes off 0.5, each red one 1.5. Never below 1 (PRD).
@@ -410,7 +415,7 @@ const SPECIAL_COLOURS := {            # the chip colour on the phone
 }
 const RUSH_TIME_SHARE := 0.7          # rush: the target time is 70% of normal...
 const RUSH_PAY_SHARE := 1.5           # ...and it pays 50% more
-const FRAGILE_SHOP := "bakery"        # fragile cakes always come from Sunrise Bakery
+const FRAGILE_SHOP := "boba" if FOOD_CHANGES_ON else "bakery"   # Session 58: fragile cakes come from Spill the Brew (was the bakery)
 const FRAGILE_FOOD := "cake"
 const FRAGILE_DAMAGE_TIMES := 2.0     # every knock does double damage to a fragile cake
 const FRAGILE_TIP_CHANCE := 0.6       # tip chance on a 5-star fragile cake (normal: TIP_CHANCE)
@@ -594,3 +599,22 @@ const STABLE_OFFICE_ROOM_ON := true   # the stable office you can see into; fals
 const FARMER_ON := true               # the farmer behind the farm stall counter hands you the order
 const FARMER_LOOK_RANGE := 9.0        # the farmer turns to look at you inside this distance
 const GLASS_BOOTHS_ON := true         # glass security booths at the school gate and the checkpoints
+
+# --- Session 58: the first 6 insides and the food changes ---
+const FOOD_CHANGES_ON := true         # false: Spill the Brew sells bubble tea again and cakes come from the bakery
+## Old saves: a food that was renamed is read as its new name (regular visit counts are kept).
+const FOOD_RENAMES := {"bubble tea": "iced latte"}
+const INTERIORS_LOOKS_PASS := true    # false: the old plain rooms (one counter, a sign, two tables) come back
+const INTERIOR_COUNTER_HEIGHT := 1.05 # counters, the window bar and the pickup counter (Appendix H)
+const INTERIOR_COUNTER_DEPTH := 0.6
+const INTERIOR_DINER_SHARE := 0.55    # about this share of the seats have someone eating
+const INTERIOR_ACTIVE_DISTANCE := 34.0  # people, lamps and moving parts only run in rooms this close to the camera
+const INTERIOR_LAMP_ENERGY := 1.1     # each warm hanging lamp
+const INTERIOR_LAMP_RANGE := 5.5
+const INTERIOR_SOUND_DB := -14.0      # the room's own sound (oven crackle, espresso...), quiet
+const INTERIOR_SOUND_RANGE := 9.0     # metres: you hear it from the door, louder inside
+const QUEUE_CHANCE := 0.35            # sometimes 1 or 2 people are in front of you at the counter...
+const QUEUE_WAIT := Vector2(2.0, 4.0) # ...and you wait 2 to 4 seconds (never more)
+const PIZZA_PEEL_EVERY := 10.0        # the pizza maker slides a pizza in this often (seconds)
+const SPIT_TURN_SPEED := 0.6          # radians a second, the shawarma spits
+const SUSHI_BELT_SPEED := 0.3        # Session 59: the sushi plates go round at 0.3 m/s

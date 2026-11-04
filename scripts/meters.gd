@@ -3,7 +3,7 @@ extends Node
 ## Runs the three meters (PRD "The three meters") while you carry food to the villa.
 ## Time: full at pickup, empty at the target time. Freshness: drains every second, faster
 ## for ice cream. Damage: drops on speed bumps, hard braking and crashes into things,
-## and bubble tea spills the most. Session 32: rush orders get less time, fragile cakes
+## and bubble tea (Session 58: the iced latte) spills the most. Session 32: rush orders get less time, fragile cakes
 ## take double damage. The values live in GameState; numbers in game_config.gd.
 ## A meter at 0 never cancels the order: you can always deliver, just for fewer stars.
 

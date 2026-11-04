@@ -511,9 +511,9 @@ const RESTAURANT_SIZE := Vector3(12, 4.5, 10)
 const RESTAURANTS := [
 	{"id": "pizza", "name": "1000 Pizza", "arabic": "١٠٠٠ بيتزا", "position": Vector3(-234, 0, -191), "facing": 0.0, "food": "pizza", "colour": Color(0.843, 0.149, 0.239, 1), "interior": true, "venue_type": "pizza", "row": "north"},
 	{"id": "gelato", "name": "Brain Freeze Gelato", "arabic": "برين فريز جيلاتو", "position": Vector3(-222, 0, -191), "facing": 0.0, "food": "ice cream", "colour": Color(0.941, 0.435, 0.643, 1), "interior": true, "venue_type": "gelato", "row": "north"},
-	{"id": "boba", "name": "Spill the Brew", "arabic": "سبيل ذا برو", "position": Vector3(-206, 0, -191), "facing": 0.0, "food": "bubble tea", "colour": Color(0.435, 0.306, 0.216, 1), "interior": true, "venue_type": "boba", "row": "north", "foods": ["bubble tea", "coffee"]},
+	{"id": "boba", "name": "Spill the Brew", "arabic": "سبيل ذا برو", "position": Vector3(-206, 0, -191), "facing": 0.0, "food": "iced latte", "colour": Color(0.435, 0.306, 0.216, 1), "interior": true, "venue_type": "boba", "row": "north", "foods": ["iced latte", "flat white", "croissant", "cake"]},
 	{"id": "shawarma", "name": "Shawarma Supreme", "arabic": "شاورما سوبريم", "position": Vector3(-194, 0, -191), "facing": 0.0, "food": "shawarma", "colour": Color(0.91, 0.608, 0.18, 1), "interior": true, "venue_type": "shawarma", "row": "north"},
-	{"id": "bakery", "name": "Bread & Zaatar", "arabic": "خبز وزعتر", "position": Vector3(-178, 0, -191), "facing": 0.0, "food": "cake", "colour": Color(0.659, 0.455, 0.184, 1), "interior": true, "venue_type": "bakery", "row": "north", "foods": ["cake", "manakish"]},
+	{"id": "bakery", "name": "Bread & Zaatar", "arabic": "خبز وزعتر", "position": Vector3(-178, 0, -191), "facing": 0.0, "food": "manakish", "colour": Color(0.659, 0.455, 0.184, 1), "interior": true, "venue_type": "bakery", "row": "north", "foods": ["manakish", "khubz bread", "fatayer"]},
 	{"id": "market", "name": "Grand Groceries", "arabic": "جراند جروسريز", "position": Vector3(-242, 0, -99), "facing": 180.0, "food": "groceries", "colour": Color(0.18, 0.62, 0.31, 1), "interior": true, "venue_type": "market", "row": "south", "size": Vector3(24, 4.5, 10)},
 	{"id": "thai", "name": "Tok Tok Thai", "arabic": "توك توك تاي", "position": Vector3(-220, 0, -99), "facing": 180.0, "food": "pad thai", "colour": Color(0.482, 0.247, 0.627, 1), "interior": true, "venue_type": "thai", "row": "south"},
 	{"id": "sushi", "name": "Sushi You", "arabic": "سوشي يو", "position": Vector3(-208, 0, -99), "facing": 180.0, "food": "sushi", "colour": Color(0.122, 0.227, 0.408, 1), "interior": true, "venue_type": "sushi", "row": "south"},
@@ -1044,9 +1044,9 @@ const VILLAS := [
 ]
 
 const REGULARS := [
-	{"id": "mariam", "name": "Auntie Mariam", "villa": 207, "shop": "boba", "food": "bubble tea", "who": "resident", "look": 1},
+	{"id": "mariam", "name": "Auntie Mariam", "villa": 207, "shop": "boba", "food": "iced latte", "who": "resident", "look": 1},
 	{"id": "rashid", "name": "Mr Rashid", "villa": 503, "shop": "shawarma", "food": "shawarma", "who": "resident", "look": 0},
-	{"id": "dana", "name": "Ms Dana", "villa": 901, "shop": "bakery", "food": "cake", "who": "teacher", "look": -1},
+	{"id": "dana", "name": "Ms Dana", "villa": 901, "shop": "boba", "food": "cake", "who": "teacher", "look": -1},
 	{"id": "hamdan", "name": "Hamdan", "villa": 902, "shop": "farm", "food": "farm juice", "who": "groom", "look": -1},
 ]
 

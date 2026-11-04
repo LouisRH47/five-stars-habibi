@@ -37,6 +37,9 @@ func _process(_delta: float) -> void:
 		return
 	_panel.show_counter(title, "%s\n%s" % [order.food.capitalize(), "Hold E to collect your delivery" if GameState.stage == GameState.Stage.TO_RESTAURANT else "Hold E to hand over the food"], _delivery.hold_progress())
 	_panel.footer.text = "Hold E to complete the handoff"
+	if CounterQueue.wait_left > 0.0 and GameState.stage == GameState.Stage.TO_RESTAURANT:
+		# Session 58: a short queue. Wait your turn (2 to 4 seconds).
+		_panel.footer.text = "Wait a moment: %d in front of you" % maxi(CounterQueue.ahead, 1)
 	if _staff == null:
 		_staff = room.get_node_or_null("CounterStaff")
 		if _staff != null:

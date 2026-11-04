@@ -202,7 +202,7 @@ func restaurant_counter(id: String) -> Vector3:
 	for place in restaurants:
 		if place["id"] == id:
 			if place.get("interior", false):
-				return VenueBuilder.world_point(place, VenueBuilder.counter_local(restaurant_size_of(place)))
+				return VenueBuilder.world_point(place, VenueBuilder.counter_of(place, restaurant_size_of(place)))
 			return restaurant_approach(id)
 	return Vector3.ZERO
 
