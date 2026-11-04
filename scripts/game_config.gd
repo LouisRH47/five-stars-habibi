@@ -661,3 +661,7 @@ const QUEUE_WAIT := Vector2(2.0, 4.0) # ...and you wait 2 to 4 seconds (never mo
 const PIZZA_PEEL_EVERY := 10.0        # the pizza maker slides a pizza in this often (seconds)
 const SPIT_TURN_SPEED := 0.6          # radians a second, the shawarma spits
 const SUSHI_BELT_SPEED := 0.3        # Session 59: the sushi plates go round at 0.3 m/s
+
+# --- Session 64 fix: buggies meeting in a dead-end lane ---
+const BUGGY_DEAD_END_GIVE_WAY := true # false: a buggy coming out of a dead end turns round too (and drives back in)
+const BUGGY_DEAD_END_WAIT := 15.0     # most seconds a buggy coming out of a dead end waits for one coming in to turn round

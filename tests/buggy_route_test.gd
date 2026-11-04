@@ -4,8 +4,10 @@ extends SceneTree
 ##     bus road), covers much more road than the old fixed routes, every lane is clear
 ##     (the same map scan the smoke test uses), no walking track
 ##   - buggies keep to the right, stop for the bike, a person and road works
+##   - two buggies meeting head on in a narrow dead-end lane: the one going in turns round,
+##     the one coming out waits for it, then drives out
 ##   - 600 simulated seconds: no buggy ever on or along a black road, no two buggies
-##     overlap, every cluster gets visited, no buggy gets stuck
+##     overlap, every cluster gets visited, no buggy gets stuck (stays within 3 m for a minute)
 ##   - building sites: each has a half-built frame, scaffolding and a fence, nothing sticks
 ##     into a road, and the old crane is still there
 ## Run it on its own:  Godot --path . --headless -s tests/buggy_route_test.gd
@@ -220,12 +222,57 @@ func _check_stops(buggies: Array[Node3D], life: Node, world: Node3D) -> void:
 		buggy._physics_process(1.0 / 30.0)
 	_expect(buggy.position.distance_to(bike.global_position) > spot.distance_to(bike.global_position) + 2.0,
 			"a buggy that waits too long turns round and drives off another way")
+	bike.global_position = Vector3(3000, 0, 3000)
+	await _check_dead_end(buggies, roads)
 	bike.global_position = bike_home
 	for mover in life.movers:
 		mover.position = keep[mover]
 	for one in buggies:
 		one.replan()
 	await physics_frame
+
+
+## Two buggies meet head on in a lane with a dead end behind one of them: the one coming out
+## waits, the one going in turns round, and the first one then drives out (it doesn't go back
+## to the dead end and straight out again).
+func _check_dead_end(buggies: Array[Node3D], roads: Object) -> void:
+	var lane: Array[int] = []
+	for n in roads.node_count():
+		if roads.links[n].size() == 1:
+			var m: int = roads.links[n][0]
+			var narrow: bool = roads.keep_of.get(roads.key(n, m), 1.0) < 0.5   # too narrow to pass each other
+			if narrow and roads.nodes[n].distance_to(roads.nodes[m]) >= 30.0 and roads.dead_end_behind(n, m):
+				lane = [n, m] as Array[int]
+				break
+	if lane.is_empty():
+		print("      (no long narrow dead-end lane on this map: dead-end check skipped)")
+		return
+	var out: Node3D = buggies[0]   # coming out of the dead end
+	var into: Node3D = buggies[1]  # going in
+	out.drive_route(lane)
+	into.drive_route([lane[1], lane[0]] as Array[int])
+	var dead_end := Vector3(roads.nodes[lane[0]].x, 0, roads.nodes[lane[0]].y)
+	var trips_out: int = out.trips
+	var farthest := 0.0
+	var went_back := false
+	var into_closest := INF
+	var met := false
+	for tick in 900:   # up to 90 s
+		out._physics_process(0.1)
+		into._physics_process(0.1)
+		await physics_frame
+		met = met or out._blocked > 0.0
+		into_closest = minf(into_closest, into.position.distance_to(dead_end))
+		if out.trips == trips_out:   # until it gets to the other end of the lane
+			var gone: float = out.position.distance_to(dead_end)
+			farthest = maxf(farthest, gone)
+			went_back = went_back or gone < farthest - 2.0
+		elif tick > 100:
+			break
+	_expect(met, "two buggies meet head on in a dead-end lane (%s)" % roads.road_of[roads.key(lane[0], lane[1])])
+	_expect(not went_back and out.trips > trips_out, "the buggy coming out of the dead end waits, then drives out",
+			"went back %s, got out %s" % [went_back, out.trips > trips_out])
+	_expect(into_closest > 5.0, "the buggy going into the dead end turns round for it", "got within %.1f m of the end" % into_closest)
 
 
 # --- 600 seconds of driving --------------------------------------------------------------
@@ -240,9 +287,11 @@ func _simulate(buggies: Array[Node3D], life: Node, roads: Object) -> void:
 	var visited := {}
 	var last_spot := {}
 	var stuck: Array[String] = []
+	var farthest := {}   # how far each one got from last_spot this minute
 	var trips_before := {}
 	for buggy in buggies:
 		last_spot[buggy] = buggy.position
+		farthest[buggy] = 0.0
 		trips_before[buggy] = buggy.trips
 	var clusters: Array = _map["CLUSTERS"]
 	for tick in int(seconds / step):
@@ -252,6 +301,7 @@ func _simulate(buggies: Array[Node3D], life: Node, roads: Object) -> void:
 		for i in buggies.size():
 			var one := buggies[i]
 			var here := Vector2(one.position.x, one.position.z)
+			farthest[one] = maxf(farthest[one], one.position.distance_to(last_spot[one]))
 			if _black_distance(here) < GameConfig.BUGGY_BLACK_ROAD_GAP - 2.0 and on_black.size() < 5:
 				on_black.append("%s at (%.0f, %.0f)" % [one.name, here.x, here.y])
 			for j in range(i + 1, buggies.size()):
@@ -273,12 +323,15 @@ func _simulate(buggies: Array[Node3D], life: Node, roads: Object) -> void:
 							right_side += 1
 						elif (here - a).dot(roads.right_of(way)) < -0.3:
 							left_side += 1
-		if tick % int(60.0 / step) == int(60.0 / step) - 1:   # every minute: did each one move?
+		# Every minute: did each one get at least 3 m from where it was a minute ago? (Not just
+		# "is it 3 m away now": one that drove up a lane and back can be at the same spot again.)
+		if tick % int(60.0 / step) == int(60.0 / step) - 1:
 			for buggy in buggies:
-				if buggy.position.distance_to(last_spot[buggy]) < 3.0 and not buggy.name in stuck:
+				if farthest[buggy] < 3.0 and not buggy.name in stuck:
 					stuck.append(buggy.name)
 					print("      DEBUG stuck %s at %s pause %.1f blocked %.1f points %d next %d goal %d scared %.1f route %s" % [buggy.name, buggy.position, buggy._pause_left, buggy._blocked, buggy.points.size(), buggy._next, buggy.goal, buggy.scared_left, buggy.points.slice(0, 4)])
 				last_spot[buggy] = buggy.position
+				farthest[buggy] = 0.0
 	var trips := 0
 	for buggy in buggies:
 		trips += buggy.trips - trips_before[buggy]
