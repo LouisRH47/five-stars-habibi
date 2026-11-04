@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" font-family="Nunito, sans-serif">
+  <!-- Polish pass mock (Session 66 plan): the gameplay HUD after Sessions 69 and 70.
+       Layout only; the 3D world behind is a plain stand-in. Sizes are for a 1280x720 window
+       (the game's base is 1920x1080, so multiply by 1.5 for the real pixel numbers). -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5DB7D8"/><stop offset="1" stop-color="#F6DDB8"/>
+    </linearGradient>
+    <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E9D6AE"/><stop offset="1" stop-color="#D9BF8E"/>
+    </linearGradient>
+    <radialGradient id="vignette" cx="0.5" cy="0.5" r="0.75">
+      <stop offset="0.6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#1B1D22" stop-opacity="0.28"/>
+    </radialGradient>
+    <linearGradient id="beam" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2A8E9C" stop-opacity="0"/><stop offset="1" stop-color="#2A8E9C" stop-opacity="0.65"/>
+    </linearGradient>
+  </defs>
+
+  <!-- world stand-in: stylised sky with soft clouds, road, a villa row, the teal drop-off beam -->
+  <rect width="1280" height="300" fill="url(#sky)"/>
+  <g fill="#FFFFFF" opacity="0.8">
+    <ellipse cx="300" cy="90" rx="90" ry="22"/><ellipse cx="350" cy="78" rx="60" ry="24"/>
+    <ellipse cx="900" cy="130" rx="120" ry="20"/><ellipse cx="960" cy="118" rx="70" ry="22"/>
+  </g>
+  <circle cx="1060" cy="70" r="30" fill="#FFF3C8"/>
+  <rect y="290" width="1280" height="430" fill="url(#ground)"/>
+  <polygon points="600,290 680,290 1100,720 180,720" fill="#5A5C66"/>
+  <polygon points="636,290 644,290 650,720 630,720" fill="#F4F1EA" opacity="0.6"/>
+  <rect x="180" y="190" width="300" height="110" fill="#F3E4C8"/><rect x="800" y="185" width="320" height="115" fill="#F6E8CF"/>
+  <rect x="855" y="120" width="26" height="180" fill="url(#beam)"/>
+  <ellipse cx="868" cy="300" rx="38" ry="9" fill="none" stroke="#2A8E9C" stroke-width="4"/>
+  <!-- rider -->
+  <rect x="618" y="430" width="44" height="60" rx="6" fill="#F28C28"/><circle cx="640" cy="414" r="16" fill="#2A8E9C"/>
+  <rect x="637" y="490" width="6" height="70" fill="#1E1F23"/>
+  <rect width="1280" height="720" fill="url(#vignette)"/>
+
+  <!-- H1: top-left chips (wallet / rating / level), like the mockup -->
+  <g>
+    <rect x="16" y="16" width="118" height="62" rx="14" fill="#0F2026" fill-opacity="0.86"/>
+    <text x="30" y="38" font-size="12" font-weight="800" fill="#C9E4EA" letter-spacing="0.6">WALLET</text>
+    <text x="30" y="66" font-size="26" font-weight="800" fill="#FFFFFF" font-family="Baloo 2, sans-serif">126 Dh</text>
+    <text x="140" y="70" font-size="16" font-weight="800" fill="#8FE3B5">+15</text>
+    <rect x="178" y="16" width="104" height="62" rx="14" fill="#0F2026" fill-opacity="0.86"/>
+    <text x="192" y="38" font-size="12" font-weight="800" fill="#C9E4EA" letter-spacing="0.6">RATING</text>
+    <text x="192" y="66" font-size="26" font-weight="800" fill="#FFFFFF" font-family="Baloo 2, sans-serif">4.8 ★</text>
+    <rect x="290" y="16" width="170" height="62" rx="14" fill="#0F2026" fill-opacity="0.86"/>
+    <text x="304" y="38" font-size="12" font-weight="800" fill="#C9E4EA">LEVEL 3</text>
+    <text x="446" y="38" font-size="12" font-weight="800" fill="#C9E4EA" text-anchor="end">340 / 500 XP</text>
+    <rect x="304" y="48" width="142" height="9" rx="4.5" fill="#2E4A52"/><rect x="304" y="48" width="97" height="9" rx="4.5" fill="#7FD3E0"/>
+    <text x="304" y="72" font-size="11" font-weight="700" fill="#FFFFFF">3 in a row · Snackaroo rider</text>
+  </g>
+
+  <!-- H2: clock with shift progress, temperature and today's special -->
+  <g>
+    <rect x="530" y="16" width="220" height="72" rx="16" fill="#0F2026" fill-opacity="0.86"/>
+    <text x="640" y="46" font-size="26" font-weight="800" fill="#FFFFFF" text-anchor="middle" font-family="Baloo 2, sans-serif">☀ 11:42 AM</text>
+    <text x="640" y="64" font-size="12" font-weight="700" fill="#C9E4EA" text-anchor="middle">Shift 3 · 41°C · Brain Freeze special</text>
+    <rect x="546" y="73" width="188" height="6" rx="3" fill="#2E4A52"/><rect x="546" y="73" width="70" height="6" rx="3" fill="#F2B230"/>
+  </g>
+
+  <!-- P1/P2: phone, active job view (big next step, step dots, chips) -->
+  <g>
+    <rect x="964" y="16" width="300" height="300" rx="26" fill="#1B1D22"/>
+    <rect x="972" y="24" width="284" height="284" rx="20" fill="#FFFFFF"/>
+    <text x="990" y="54" font-size="20" font-weight="800" fill="#C95F10" font-family="Baloo 2, sans-serif">Snackaroo</text>
+    <rect x="1140" y="36" width="100" height="24" rx="12" fill="#DDF3EC"/>
+    <text x="1190" y="53" font-size="12" font-weight="800" fill="#0F6B57" text-anchor="middle">TO CUSTOMER</text>
+    <circle cx="996" cy="84" r="7" fill="#0F4C5C"/><text x="1010" y="89" font-size="13" font-weight="700" fill="#5B5F68">Spill the Brew · picked up ✓</text>
+    <line x1="996" y1="92" x2="996" y2="114" stroke="#C9CDD3" stroke-width="3" stroke-dasharray="3 4"/>
+    <circle cx="996" cy="122" r="8" fill="#F28C28"/>
+    <text x="1010" y="118" font-size="13" font-weight="700" fill="#5B5F68">Drop off</text>
+    <text x="1010" y="140" font-size="20" font-weight="800" fill="#1B1D22">Villa 7, Cluster 2</text>
+    <text x="1010" y="160" font-size="15" font-weight="800" fill="#2A8E9C">180 m · turn left at the lane</text>
+    <rect x="990" y="174" width="86" height="26" rx="13" fill="#FFE8D2"/><text x="1033" y="192" font-size="13" font-weight="800" fill="#8A3D05" text-anchor="middle">Iced latte</text>
+    <rect x="1082" y="174" width="58" height="26" rx="13" fill="#EEF0F3"/><text x="1111" y="192" font-size="13" font-weight="800" fill="#2F333B" text-anchor="middle">15 Dh</text>
+    <rect x="1146" y="174" width="96" height="26" rx="13" fill="#FCE3EC"/><text x="1194" y="192" font-size="13" font-weight="800" fill="#B0245A" text-anchor="middle">♥ Mariam</text>
+    <rect x="990" y="210" width="252" height="40" rx="12" fill="#F6F1E7"/>
+    <text x="1004" y="235" font-size="14" font-weight="700" fill="#2F333B">"Leave it at the door please"</text>
+    <text x="990" y="276" font-size="14" font-weight="800" fill="#F28C28">Park · F to get off · hold E</text>
+    <text x="1242" y="298" font-size="12" font-weight="700" fill="#5B5F68" text-anchor="end">Goals 1/2 ▾</text>
+  </g>
+
+  <!-- P2 (inset): the offer card state, with the countdown ring round the Accept button -->
+  <g transform="translate(964,330)">
+    <rect width="300" height="150" rx="20" fill="#FFFFFF" stroke="#F28C28" stroke-width="3"/>
+    <text x="16" y="28" font-size="12" font-weight="800" fill="#F28C28">NEW ORDER · offer card state</text>
+    <text x="16" y="58" font-size="30" font-weight="800" fill="#1B1D22" font-family="Baloo 2, sans-serif">15 Dh</text>
+    <text x="100" y="56" font-size="13" font-weight="700" fill="#5B5F68">1.2 km · about 3 min</text>
+    <text x="16" y="84" font-size="14" font-weight="700" fill="#1B1D22">● Spill the Brew  →  ● Villa 7, C2</text>
+    <circle cx="246" cy="112" r="28" fill="none" stroke="#2E4A52" stroke-opacity="0.15" stroke-width="6"/>
+    <circle cx="246" cy="112" r="28" fill="none" stroke="#F28C28" stroke-width="6" stroke-dasharray="120 176" transform="rotate(-90 246 112)"/>
+    <text x="246" y="117" font-size="14" font-weight="800" fill="#1B1D22" text-anchor="middle">E ✓</text>
+    <rect x="16" y="100" width="70" height="28" rx="8" fill="#EEF0F3"/><text x="51" y="119" font-size="13" font-weight="800" fill="#2F333B" text-anchor="middle">Q skip</text>
+    <text x="96" y="119" font-size="12" font-weight="700" fill="#5B5F68">18 s left</text>
+  </g>
+
+  <!-- P4: mini-map with compass ring, logo pins and the edge arrow -->
+  <g>
+    <circle cx="120" cy="600" r="104" fill="#0F2026" fill-opacity="0.86"/>
+    <circle cx="120" cy="600" r="94" fill="#F4E6C8"/>
+    <rect x="108" y="506" width="22" height="188" fill="#8E8F96"/><rect x="26" y="590" width="188" height="20" fill="#8E8F96"/>
+    <rect x="40" y="520" width="56" height="56" rx="6" fill="#9BCB8E"/><rect x="146" y="626" width="52" height="40" rx="6" fill="#E2CFA6"/>
+    <path d="M119 600 L 119 560 L 170 560" stroke="#F28C28" stroke-width="5" stroke-dasharray="3 7" stroke-linecap="round" fill="none"/>
+    <path d="M120 618 L 110 636 L 120 630 L 130 636 Z" fill="#0F4C5C"/>
+    <circle cx="200" cy="545" r="13" fill="#F28C28"/><text x="200" y="550" font-size="12" font-weight="800" fill="#FFF" text-anchor="middle">7</text>
+    <text x="120" y="512" font-size="13" font-weight="800" fill="#FFFFFF" text-anchor="middle">N</text>
+    <text x="222" y="604" font-size="11" font-weight="800" fill="#C9E4EA">E</text>
+    <rect x="60" y="680" width="120" height="22" rx="11" fill="#0F4C5C"/><text x="120" y="696" font-size="12" font-weight="800" fill="#FFF" text-anchor="middle">Villa 7 · 180 m</text>
+  </g>
+
+  <!-- H3: meters with icons, words and band ticks (one turning orange pulses) -->
+  <g>
+    <rect x="380" y="628" width="520" height="76" rx="18" fill="#0F2026" fill-opacity="0.86"/>
+    <text x="398" y="656" font-size="15" font-weight="800" fill="#FFF">⏱ Time</text><text x="540" y="656" font-size="14" font-weight="800" fill="#8FE3B5" text-anchor="end">On time</text>
+    <rect x="398" y="668" width="142" height="12" rx="6" fill="#2E4A52"/><rect x="398" y="668" width="110" height="12" rx="6" fill="#4CC98A"/>
+    <line x1="441" y1="666" x2="441" y2="682" stroke="#0F2026" stroke-width="2"/><line x1="483" y1="666" x2="483" y2="682" stroke="#0F2026" stroke-width="2"/>
+    <text x="568" y="656" font-size="15" font-weight="800" fill="#FFF">❄ Fresh</text><text x="710" y="656" font-size="14" font-weight="800" fill="#FFC27A" text-anchor="end">Okay</text>
+    <rect x="568" y="668" width="142" height="12" rx="6" fill="#2E4A52"/><rect x="568" y="668" width="78" height="12" rx="6" fill="#F59A2E"/>
+    <rect x="564" y="664" width="150" height="20" rx="10" fill="none" stroke="#F59A2E" stroke-width="2" opacity="0.7"/>
+    <text x="738" y="656" font-size="15" font-weight="800" fill="#FFF">📦 Damage</text><text x="882" y="656" font-size="14" font-weight="800" fill="#8FE3B5" text-anchor="end">Perfect</text>
+    <rect x="738" y="668" width="144" height="12" rx="6" fill="#2E4A52"/><rect x="738" y="668" width="130" height="12" rx="6" fill="#4CC98A"/>
+  </g>
+
+  <!-- H4: speed and stamina, number and unit on one baseline, segmented stamina -->
+  <g>
+    <rect x="1080" y="624" width="184" height="80" rx="18" fill="#0F2026" fill-opacity="0.86"/>
+    <text x="1096" y="668" font-size="40" font-weight="800" fill="#FFF" font-family="Baloo 2, sans-serif">21</text>
+    <text x="1148" y="668" font-size="14" font-weight="800" fill="#C9E4EA">km/h</text>
+    <text x="1250" y="652" font-size="11" font-weight="800" fill="#C9E4EA" text-anchor="end">SHIFT sprint</text>
+    <g fill="#7FD3E0"><rect x="1096" y="682" width="30" height="9" rx="3"/><rect x="1130" y="682" width="30" height="9" rx="3"/><rect x="1164" y="682" width="30" height="9" rx="3"/></g>
+    <g fill="#2E4A52"><rect x="1198" y="682" width="30" height="9" rx="3"/><rect x="1232" y="682" width="18" height="9" rx="3"/></g>
+  </g>
+
+  <!-- notes -->
+  <g font-size="11" font-weight="700" fill="#1B1D22" opacity="0.75">
+    <text x="16" y="96">H1 chips (Session 69)</text>
+    <text x="560" y="104">H2 clock (69)</text>
+    <text x="964" y="500">P1/P2 phone (70)</text>
+    <text x="16" y="484">P4 mini-map (70)</text>
+    <text x="380" y="620">H3 meters (69)</text>
+    <text x="1080" y="616">H4 speed (69)</text>
+    <text x="760" y="114">W1 beam + ring (68)</text>
+  </g>
+</svg>
