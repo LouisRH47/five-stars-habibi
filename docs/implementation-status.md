@@ -11,7 +11,7 @@ Completion requires code, automated checks, rendered evidence and the listed hum
 | 35 Real-size map, the new layout and the corrected AM/PM clock — You start in front of the bus station and a full delivery works | Implemented and checked | Source + targeted check + visible acceptance |
 | 36 Joined rows of homes and the camera fix — Clusters look like the real ones from above: long joined rows with lanes between | Implemented and checked | Source + targeted check + visible acceptance |
 | 36 Joined rows of homes and the camera fix — The camera never goes inside a house | Implemented and checked | Source + targeted check + visible acceptance |
-| 36 Joined rows of homes and the camera fix — Still 60 fps on Medium with all 500 homes | Passed stationary samples; moving target open | Source + targeted check + visible acceptance |
+| 36 Joined rows of homes and the camera fix — Still 60 fps on Medium with all 500 homes | Moving routes meet the 60 FPS target at Medium/1080p | Unlocked Mac run on ed5ba1a below |
 | 37 Car parks with solar roofs, cars, buggies and buses — Every car park has solar roofs and sits between clusters | Implemented and checked | Source + targeted check + visible acceptance |
 | 37 Car parks with solar roofs, cars, buggies and buses — Cars only on the ring road, buggies only inside, and the bus comes and goes | Implemented and checked | Source + targeted check + visible acceptance |
 | 38 Horse track, run and cycle track, jumping arena and stables — Horses go round the edge on their own track, and you ride the blue track beside it | Implemented and checked | Source + targeted check + visible acceptance |
@@ -25,7 +25,7 @@ Completion requires code, automated checks, rendered evidence and the listed hum
 | 42 The green spine: hills, grass, domes path, gym and pools — The spine looks green and alive, with little hills and no big gaps between domes | Implemented and checked | Source + targeted check + visible acceptance |
 | 42 The green spine: hills, grass, domes path, gym and pools — The gym, lap pool and community pool are there, and the dome doors look right | Implemented; playtest open | Source + targeted check + visible acceptance |
 | 43 Textures, details and building sites everywhere — No big blank or plain areas anywhere on the map | Implemented and checked | Source + targeted check + visible acceptance |
-| 43 Textures, details and building sites everywhere — Textures and props make it feel like a real place, still 60 fps on Medium | Passed stationary samples; moving target open | Source + targeted check + visible acceptance |
+| 43 Textures, details and building sites everywhere — Textures and props make it feel like a real place, still 60 fps on Medium | Moving routes meet the 60 FPS target at Medium/1080p | Unlocked Mac run on ed5ba1a below |
 | 44 Speed feel and fixes — Riding and sprinting feel fast, with no warpy smear | Implemented and checked | Source + targeted check + visible acceptance |
 | 44 Speed feel and fixes — Everyone has a head | Implemented and checked | Source + targeted check + visible acceptance |
 | 44A Rider falls and crash presentation (planned) — A soft/slow hit, a glancing scrape and a hard frontal collision have visibly different falls | Implemented and checked | Source + targeted check + visible acceptance |
@@ -137,7 +137,6 @@ The focus-guarded moving benchmark rejected both spine warmups after window focu
 
 ## Remaining acceptance
 
-- Establish at least 60 FPS during representative moving gameplay at Medium. Repeat the Mac release probe with sustained foreground focus and the full HUD.
 - Louis can use Continue in the Mac review app for a ten-minute active shift. Record whether the shift feels busy enough and whether he would play another. Review the soft hit, glancing scrape and hard frontal fall at normal speed, including the transition to the clinic and whether the resulting bills feel proportionate. Compare the school against Louis's photos.
 - Give the friend the portable build to try from New Game. After ten minutes, record whether they want to keep playing and where they hesitated or stopped.
 - On a native Windows x64 machine, extract the portable ZIP, launch the executable, start a shift and verify movement and a pickup and delivery. The archive and executable structure have already been checked on Mac.
@@ -257,3 +256,13 @@ GitHub main was rechecked at `a2d0dd923a88073ddf22aaa575c323d286401373` and is a
 An isolated Wahat run on `ed5ba1a` passed 14 checkpoint checks. Both guards switched to the wave action when the bike approached. The closed centre blocked a sweep using the production bike collision body, and the side gap cleared it. A test moved a production traffic car within activation range. The boom rotated upward, released centre collision and returned to its closed position when the car moved away. The fixture positions the car to exercise the barrier without changing the shipped traffic routes. Evidence is in `/private/tmp/habibi-checkpoint-acceptance.WN4NJ1/checks.log`.
 
 The Sessions 39–40 pickup fixture ran against the archived `3e103a7` tree, with runtime files from `ed5ba1a`. All 61 checks passed across ten restaurants. The fixture parked the bike at each authored approach, then used normal inputs to accept, dismount, walk in, view the matching staffed panel, hold E to collect, walk out and remount. Mounted pickup was rejected at every counter. The test log and isolated fixture are under `/private/tmp/habibi-all-counters.UFbOYT`. The previous normal-input browser ride covers the full pizza route and handoff.
+
+## Unlocked Mac moving performance
+
+On 4 November, the user unlocked the Mac and the current candidate completed all three native moving routes at Medium and 1920 × 1080. The benchmark snapshot verified all 302 runtime files against product commit `ed5ba1ab1c1078f1c02fab39410c88b39b9a6e43`, with only isolated save paths and benchmark instrumentation. It used Forward+ Metal at scale 1.0 on the Mac's 60 Hz display, with the normal HUD and an active pizza delivery. A helper kept the game in the foreground during the run.
+
+Each route had a four-second warmup and about 14 seconds of measured riding at 28 km/h. The spine measured 60.00004994 FPS, Plaza to C1 measured 60.06963935 FPS, and the north ring measured 59.99824357 FPS. Together they drew 2,523 frames over 42.034149 seconds, or 60.02262589 FPS, and travelled about 327 metres. Every captured frame was focused, mounted and in the active delivery stage. Drawn-frame counts matched the frame samples, with zero crashes.
+
+These samples meet the representative 60 FPS target at the display's 60 Hz refresh rate. The north ring's difference from exactly 60 corresponds to 0.41 ms across the whole sample interval. Frame pacing had p95 values between 17.64 and 17.81 ms and a worst frame of 28.49 ms. This evidence covers the three measured routes. The initial attempt lost focus and was retained separately in `attempt1`.
+
+The raw result, per-frame CSVs, provenance manifest and logs are under `/private/tmp/habibi-replay-desktop.76rEF3/performance-unlocked`. The hardware and human acceptance work still open is physical iPad and Windows gameplay, comparison with Louis's school photos, and the Louis and friend playtests. Itch.io remains on hold.
