@@ -1261,7 +1261,7 @@ Done when:
 - [x] The grass looks like real swaying grass, not shapes
 - [ ] 60 fps on Medium; Low still smooth
 
-### Session 56: The free asset kits
+### Session 56: The free asset kits (built)
 
 ```text
 Session 56. Read PRD.md "Looks pass", Interiors and the "Free asset packs"
@@ -1280,11 +1280,11 @@ gelato case, pool lounger, treadmill) for later sessions to build from shapes.
 
 Done when:
 
-- [ ] The kits are in assets/kits with licences, and CREDITS.md lists them
-- [ ] A test scene shows a row of props from each kit, all standing on the floor
-- [ ] Our people can swim, sit and eat, farm and jog with the new animations
+- [x] The kits are in assets/kits with licences, and CREDITS.md lists them
+- [x] A test scene shows a row of props from each kit, all standing on the floor
+- [x] Our people can swim, sit and eat, farm and jog with the new animations
 
-### Session 57: The Plaza outside
+### Session 57: The Plaza outside (built)
 
 ```text
 Session 57. Read PRD.md "Looks pass", The Plaza and Logos, and look at
@@ -1305,9 +1305,9 @@ still work: smoke test an order from every shop.
 
 Done when:
 
-- [ ] The Plaza looks like a real low-rise shopping street: lower shops, flats on top, a passage every 2 shops
-- [ ] Every shop has its own logo and front, Grand Groceries looks like a supermarket
-- [ ] The bike shop and clothes shop are in the rows and still work
+- [x] The Plaza looks like a real low-rise shopping street: lower shops, flats on top, a passage every 2 shops
+- [x] Every shop has its own logo and front, Grand Groceries looks like a supermarket
+- [x] The bike shop and clothes shop are in the rows and still work
 
 ### Session 58: The first 6 insides (pizza, gelato, coffee, shawarma, bakery, groceries)
 
@@ -1357,7 +1357,7 @@ Done when:
 - [ ] No two insides look alike, and Sushi You's belt moves
 - [ ] Both shops still sell, in their new places
 
-### Session 60: Gym and pools
+### Session 60: Gym and pools (built)
 
 ```text
 Session 60. Read PRD.md "Looks pass", Gym and pools, the Wahat Gym row and
@@ -1376,10 +1376,10 @@ from Session 53 must still pass. Smoke test: gym orders work.
 
 Done when:
 
-- [ ] The gym looks like a gym, with the pool right in front behind a little fence and gate
-- [ ] The community pool looks real, and the swimmers swim
+- [x] The gym looks like a gym, with the pool right in front behind a little fence and gate
+- [x] The community pool looks real, and the swimmers swim
 
-### Session 61: C Institute, stable office, farm stall and school booth
+### Session 61: C Institute, stable office, farm stall and school booth (built)
 
 ```text
 Session 61. Read PRD.md "Looks pass", the C Institute, Stable office, Wahat
@@ -1393,10 +1393,10 @@ match. Smoke test: the institute, stables, farm stall and school orders work.
 
 Done when:
 
-- [ ] Every place you go into is as detailed as the restaurants
-- [ ] The farmer hands you farm stall orders
+- [x] Every place you go into is as detailed as the restaurants
+- [x] The farmer hands you farm stall orders
 
-### Session 62: Car parks and kerbs
+### Session 62: Car parks and kerbs (built)
 
 ```text
 Session 62. Read PRD.md "Looks pass", The car parks and Layouts, and look at
@@ -1412,10 +1412,10 @@ palms and building sites, never blank. Run the layout check.
 
 Done when:
 
-- [ ] Car parks are full of bays (1, 2 back to back, 1) with solar roofs, and about half the bays have cars
-- [ ] There is almost no gap between a car park and its cluster, just a kerb and a buggy lane
+- [x] Car parks are full of bays (1, 2 back to back, 1) with solar roofs, and about half the bays have cars
+- [x] There is almost no gap between a car park and its cluster, just a kerb and a buggy lane
 
-### Session 63: The spine, the farm and the stream
+### Session 63: The spine, the farm and the stream (built)
 
 ```text
 Session 63. Read PRD.md "Looks pass", The green spine and Layouts (the
@@ -1434,11 +1434,11 @@ check and the frame rate check.
 
 Done when:
 
-- [ ] The red walking track and the buggy road with its middle line are there
-- [ ] The spine is full of plants round the domes, with small hills only
-- [ ] The farm, the stream, the beehives and the horses look detailed
+- [x] The red walking track and the buggy road with its middle line are there
+- [x] The spine is full of plants round the domes, with small hills only
+- [x] The farm, the stream, the beehives and the horses look detailed
 
-### Session 64: Buggies everywhere and building sites
+### Session 64: Buggies everywhere and building sites (built)
 
 ```text
 Session 64. Read PRD.md "Looks pass", Buggies and Building sites. Buggies
@@ -1453,8 +1453,8 @@ test: no buggy ever on the ring road. Check the frame rate.
 
 Done when:
 
-- [ ] Buggies drive all over the clusters and the spine, never on the ring road
-- [ ] Building sites look like real half-built buildings
+- [x] Buggies drive all over the clusters and the spine, never on the ring road
+- [x] Building sites look like real half-built buildings
 
 ### Session 65: Play-test the looks pass
 
