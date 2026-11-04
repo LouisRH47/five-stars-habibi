@@ -259,6 +259,59 @@ Research on games like Crazy Taxi, PowerWash Simulator, Stardew Valley, Euro Tru
 
 **Collections.** A Wahat Al Shams stamp card: a stamp for every home you've delivered to (500 homes in 5 clusters, plus the school gate, the stable office, the C Institute and the gym). Every 25 homes in a cluster pays a small 20 Dh bonus; a full cluster unlocks a gold delivery box colour. Also the cats and horses you've met (each gets a name) and the customer lines you've heard. All on a Profile page on the phone.
 
+## Looks pass (Sessions 52 to 59)
+
+Louis played the detail pass on 4 November. The map and gameplay are good. What's wrong: full screen looks low-res and jaggy, roads and overlapping surfaces flicker, interiors are too big and too plain, the gym is just a restaurant room, the C Institute's glass faces the wrong way, and the Plaza, streets and spine need more detail. The designs below were drawn in chat with Louis and approved one by one.
+
+**Sharper graphics**
+- Anti-aliasing (smooths jagged edges) on every level: Low uses FXAA, Medium uses MSAA 4x, High uses MSAA 4x plus TAA. The game draws at full screen resolution on desktop (the browser keeps its 0.75 scale).
+- Sharper shadows near the rider: 4 shadow cascades and a bigger shadow map on Medium and High.
+- Crisp signs and 3D text (bigger font size or MSDF fonts) so they don't blur in full screen.
+- The first time the game starts it tests the computer and picks Low, Medium or High (a Mac like Louis's should get High, an iPad Low). Settings can still change it.
+
+**No more flicker:** roads, lanes, paths, lawns, paving, courts and plazas are laid only 1 to 4 cm apart today, so from a distance they fight (z-fighting) and flicker. Merge the ground into one mesh with painted areas, or give each layer a real height step and a render priority, and check the camera's near and far planes. Fix the dome doors the same way. Louis saw flicker on roads and ground, and where surfaces overlap.
+
+**Interiors (all walk-in places)**
+- Smaller inside: about 12 × 10 m with a 4.5 m ceiling (they were 18 × 16 × 8 m). The outside of the Plaza stays the same; the leftover space is a storeroom you can't enter.
+- Built from free CC0 kits found online, not our own boxes: KayKit Restaurant Bits (220+ restaurant and kitchen models), KayKit Furniture Bits, Kenney Furniture Kit, Kenney Food Kit (200 food models), a CC0 supermarket pack, and CC0 gym models from Poly Pizza (check each model's licence says CC0). All credited in CREDITS.md.
+- Same layout everywhere: a menu board and the kitchen with a cook at the back, the counter with staff in the middle, tables with people eating at the front, plus a drinks fridge, a bin, plants, hanging lamps and a tiled floor in the shop's own colours.
+- People move: diners eat, cooks cook, chefs slice, gym people run, row and lift, institute people type on laptops.
+- A short queue: sometimes 1 or 2 people are in front of you at the counter and you wait 2 to 4 seconds. Never more.
+- Big glass fronts so you can see inside from the Plaza, sliding glass doors that open as you walk up (the stable office has a wooden door), warm light from the lamps with soft shadows.
+- The camera moves closer and a little higher indoors, so walls don't block the view, and moves back out when you leave.
+- Each place has its own background sound (made by tools/make_sounds.py): oven crackle, grill sizzle, the sushi belt, gym music, quiet chatter, the till beep.
+
+| Place | What's inside (from the approved designs) |
+| --- | --- |
+| 1000 Pizza | Brick dome oven with flames, pizza on a peel, stacked pizza boxes, black-and-white checker floor, red accents |
+| Brain Freeze Gelato | Glass freezer of 8 colourful tubs, cone jar, pink-and-white stripes, pastel floor |
+| Spill the Tea | 4 tea taps, cup sealing machine, cups with pearls, plant wall |
+| Shawarma Supreme | Two spinning shawarma grills, stack of bread, Arabic patterned tiles |
+| Bread & Zaatar | Bread oven, glass cake display (the fragile cake orders), bread baskets |
+| Grand Groceries | A real supermarket: wall of drinks fridges at the back, 3 shelf units with hanging bilingual aisle signs (1 Snacks, 2 Rice and pasta, 3 Home) and yellow price strips, a fruit and veg stand, a bread shelf, a sweets rack, 2 checkouts with belts, a cashier, baskets and shoppers with trolleys. Pick up at checkout 1 |
+| Tok Tok Thai | Woks over flames, red lanterns, dark wood floor |
+| Sushi You | Sushi bar with a conveyor belt of coloured plates and diners on stools, glass fish case, two chefs, paper lanterns, navy curtain over the kitchen, a booth table, bamboo, a pick-up counter |
+| Mario Bonito | Colourful tile band, paper bunting, cactus pots, taco counter |
+| Burgerology | Flat grill with patties, fryer, pink neon "Burgerology" sign, white metro tiles |
+| Wahat Gym | A real gym: glass wall onto the spine with the lap pool outside, 4 treadmills facing the glass, exercise bikes, a squat rack with a loaded barbell on a wooden platform, a dumbbell rack, 2 rowing machines, yoga mats and kettlebells, a mirror wall with "Train hard · تمرّن بقوة", rubber floor tiles, a water fountain and towel stand, reception with a smoothie cooler (drop-off) |
+| C Institute | Two storeys tall: glass on both long sides (one faces the spine, so you see the domes and palms; the other faces the opposite way), a balcony walkway with a glass railing, a staircase, wide wooden stepped seats with cushions and people on laptops facing a talk screen (it changes during the shift: "Talk today · 4 PM", "Solar cities of tomorrow", "Welcome · أهلاً"), hanging plants, a wood-slat ceiling, a curved white reception desk with a big "C" logo wall (drop-off) |
+| Pedal Point Bikes | Bikes hanging on the wall, tool pegboard, tyre rack, a repair stand with a bike, the mechanic at the workbench |
+| Dune Drip | Caps and sunglasses wall, clothes rails, folded hoodies on a table, a rug and a big mirror, the cashier |
+| Stable office | Wood walls, saddles on stands, rosettes and horse photos, riding helmets on hooks, a hay bale, a window onto the paddock with a horse, the groom at the desk |
+| Wahat Farm Stall | Open stall by the domes with a striped awning, fruit and veg crates, a juice press and cooler, chalkboard menu, the farmer |
+| Fair Grade school gate | Glass security booth with the guard, barrier, the school wall and sign behind, a teacher waiting |
+
+**C Institute fix:** turn the building so one long glass side faces the spine (east) with the stepped seats in front of it, and add the same big windows on the opposite side, so you can see right through the lobby.
+
+**More detail outside**
+- Plaza: café tables outside the restaurants, a juice kiosk, string lights that come on at sunset, more people walking.
+- Streets and lanes: street lamps that light up at sunset, white road markings and kerbs, bins, bilingual street signs, bike racks.
+- Spine: real grass blades instead of the little green cubes on Medium and High; Low keeps a lighter, sparser version. Plus flowers, rocks and more trees.
+
+**Bugs found in testing**
+- Crash loop: a gardener standing still near the Cluster 4 playground (data/wahat_al_shams.gd GARDENERS, x 125, z 53) got hit, and the rider crashed into him again and again (162 times) after each fall; with an order still on, the shift never ended. Fix: after a small crash the bike is pushed back and gets a short grace period, and standing people step aside when you ring or come close.
+- Crashing costs too little: a careless bot earned 89 Dh against 95 Dh for a careful one. Small crashes should cost more (rating, food damage or a small fee) so a careful shift clearly pays better.
+
 ## Shops and upgrades (detail pass)
 
 Money and Rider Level finally buy things. Two shops in the Plaza, both walk-in like the restaurants.
@@ -623,6 +676,7 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 4 Nov 2026 | The old Palm Grove map is removed (scene, data, and the road, street-sign and park builders only it used). Wahat Al Shams is the only map; the flat test area stays for tests |
 | 4 Nov 2026 | The game is released both on itch.io (Mac and Windows downloads) and in the browser at fivestarshabibi.middleleap.com. A crash "week" is 7 shifts, as the clinic screen already counts (CRASH_WEEK_SHIFTS) |
 | 4 Nov 2026 | Opening the game no longer counts as a new shift: a shift you quit halfway through is played again (same number, same kind of day); only a finished shift counts. Your last accept / skip choices are saved, so the acceptance rate survives a restart |
+| 4 Nov 2026 | Looks pass planned (Sessions 52 to 59) after Louis's play-test of the detail pass: anti-aliasing on every level, sharper shadows, auto-picked graphics level, no ground flicker, smaller and fuller interiors from free CC0 kits (KayKit, Kenney, Poly Pizza), a short queue of 1 or 2 people, glass shop fronts, sliding doors, indoor camera, sounds per place, a real gym, the C Institute turned to face the spine with glass on both sides and a changing talk screen, every walk-in place rebuilt from the approved designs, more detail in the Plaza, streets and spine (grass blades, sparser on Low), and fixes for the crash loop and crashes costing too little |
 
 ## Sources
 
@@ -641,6 +695,15 @@ Detail pass (the real community, the school and the restaurants; every name in t
 - [Sanad Village, Gulf News](https://gulfnews.com/uae/sanad-village-in-dubai-sets-new-global-standard-for-people-of-determination-1.78778336)
 - [Inside Dubai's Sustainable City: facilities list, Gulf News](https://gulfnews.com/uae/inside-dubais-sustainable-city-community-what-makes-it-different-1.91842975)
 - Louis's own Google Earth measurements and photos of the community, the school and the gym (not stored in the repo)
+
+Looks pass (free CC0 kits and interior ideas):
+
+- [KayKit Restaurant Bits (CC0)](https://kaylousberg.itch.io/restaurant-bits)
+- [KayKit Furniture Bits (CC0)](https://kaylousberg.itch.io/furniture-bits)
+- [Kenney Furniture Kit (CC0)](https://kenney.nl/assets/furniture-kit)
+- [Kenney Food Kit (CC0)](https://kenney.nl/assets/food-kit)
+- [Low poly Supermarket pack (CC0)](https://pensamientoazul.itch.io/supermarket-3d-assets)
+- [Small café layout ideas, Bellwether Coffee](https://bellwethercoffee.com/blog/small-cafe-layout-design-guide)
 
 Licence tests:
 

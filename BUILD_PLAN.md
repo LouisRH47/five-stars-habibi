@@ -1131,6 +1131,160 @@ Done when:
 - [ ] It's on itch.io
 - [ ] The browser version plays the same game on a Mac and an iPad
 
+## Looks pass (Sessions 52 to 59)
+
+From Louis's play-test of the detail pass on 4 November. Everything is in PRD.md, "Looks pass".
+Same rules as always: one session at a time, headless checks, smoke test and the focused tests,
+a check for every new thing, PROGRESS.md, commit. Check the frame rate on Low, Medium and High
+after every session that adds things, and take screenshots of what changed.
+
+### Session 52: Sharper graphics, no flicker, C Institute and the bug fixes
+
+```text
+Session 52. Read PRD.md "Looks pass" (Sharper graphics, No more flicker, C Institute
+fix, Bugs found in testing).
+1) Anti-aliasing per level: Low FXAA, Medium MSAA 4x, High MSAA 4x + TAA, full
+resolution on desktop (keep scaling_3d/scale.web = 0.75). 4 shadow cascades and a
+bigger shadow map on Medium and High. Crisp 3D text and signs. On first start, test
+the computer and pick Low/Medium/High (save it; Settings can change it).
+2) Fix the flicker: merge the flat ground layers (roads, lanes, paths, lawns, paving,
+courts, plazas) into one ground mesh with painted areas, or give each layer a clear
+height step plus render priority. Check the camera near/far planes. Fix the dome doors.
+3) Turn the C Institute so a long glass side faces the spine (east) with the stepped
+seats in front, and add big windows on the opposite side too.
+4) Fix the crash loop (push the bike back after a small crash with a short grace
+period; standing people step aside) and make crashes cost more so a careful shift
+clearly earns more than a careless one.
+Smoke test, all focused tests, and the play-test bot careful and careless (twice).
+Screenshots at full screen before and after.
+```
+
+Done when:
+
+- [ ] Full screen looks sharp on Louis's Mac, with no jagged edges
+- [ ] Roads, paths and the dome doors don't flicker
+- [ ] The C Institute's glass and seats face the spine, with windows on both sides
+- [ ] The careless bot earns clearly less than the careful one and never gets stuck in a crash loop
+
+### Session 53: The free asset kits
+
+```text
+Session 53. Read PRD.md "Looks pass", Interiors. Download the CC0 kits: KayKit
+Restaurant Bits and KayKit Furniture Bits (GitHub: KayKit-Game-Assets), Kenney
+Furniture Kit and Food Kit (kenney.nl), a CC0 supermarket pack, and CC0 gym models
+from Poly Pizza (check each model's licence is CC0, skip anything else). Put them
+in assets/kits/<pack>/ with their licence files, credit them in CREDITS.md, use the
+glTF versions, and make a small prop library (scripts/props.gd) that places a model
+by name with a position, rotation and scale. Keep the downloads small: only the
+models we use.
+```
+
+Done when:
+
+- [ ] The kits are in assets/kits with licences, and CREDITS.md lists them
+- [ ] A test scene shows a row of props from each kit
+
+### Session 54: The new restaurant room, and the first 5 restaurants
+
+```text
+Session 54. Read PRD.md "Looks pass", Interiors and the table. Make one restaurant
+room template: about 12 x 10 m inside, 4.5 m ceiling (the outside stays the same,
+the rest is a storeroom you can't enter), big glass front, sliding glass door, menu
+board, kitchen with a cook behind the counter, staff at the counter, tables with
+people eating, drinks fridge, bin, plants, hanging lamps with warm light and soft
+shadows, tiled floor in the shop's colours. Short queue: sometimes 1 or 2 people,
+2 to 4 seconds. The camera moves closer indoors. Each place gets its own background
+sound in tools/make_sounds.py. Build 1000 Pizza, Brain Freeze Gelato, Spill the Tea,
+Shawarma Supreme and Bread & Zaatar with the props from the table. Smoke test: walk
+into each, wait in the short queue, hold E, walk out.
+```
+
+Done when:
+
+- [ ] The 5 restaurants look like the designs, cosy and full, not big and empty
+- [ ] You can see inside from the Plaza, and the doors slide open
+- [ ] The queue is short and never annoying
+
+### Session 55: The other 5 (Tok Tok Thai, Sushi You, Mario Bonito, Burgerology, Grand Groceries)
+
+```text
+Session 55. Read PRD.md "Looks pass", the table. Using the Session 54 template, build
+Tok Tok Thai, Sushi You (sushi bar with a moving conveyor belt, stools, fish case,
+two chefs, lanterns, curtain, booth, pick-up counter), Mario Bonito and Burgerology.
+Grand Groceries is a supermarket instead: drinks fridges along the back wall, 3 shelf
+units with hanging bilingual aisle signs and price strips, fruit and veg stand, bread
+shelf, sweets rack, 2 checkouts with belts and a cashier; pick up at checkout 1;
+shoppers with trolleys and baskets. Smoke test: an order from each works.
+```
+
+Done when:
+
+- [ ] No two restaurants look alike, and Sushi You's belt moves
+- [ ] Grand Groceries looks like a real supermarket
+
+### Session 56: The gym and the C Institute inside
+
+```text
+Session 56. Read PRD.md "Looks pass", the Wahat Gym and C Institute rows. Build the
+gym as a real gym (glass wall onto the spine and lap pool, 4 treadmills facing the
+glass, bikes, squat rack with barbell, dumbbell rack, 2 rowing machines, yoga mats,
+kettlebells, mirror wall with "Train hard · تمرّن بقوة", rubber floor, water fountain,
+towel stand, reception with a smoothie cooler) with people running, rowing and
+lifting. Build the C Institute lobby two storeys tall (glass both sides, balcony,
+stairs, stepped seats with people on laptops, the talk screen that changes during
+the shift, hanging plants, wood ceiling, reception with the C logo). Smoke test: gym
+and institute orders work.
+```
+
+Done when:
+
+- [ ] The gym looks and feels like a gym
+- [ ] The C Institute lobby is tall and bright, and the talk screen changes
+
+### Session 57: Bike shop, clothes shop, stable office, farm stall and school booth
+
+```text
+Session 57. Read PRD.md "Looks pass", the last 5 rows of the table. Rebuild Pedal
+Point Bikes, Dune Drip, the stable office, the Wahat Farm Stall and the Fair Grade
+school gate booth to match. Keep the shop screens (side panel, cart, mirror) working.
+Smoke test: both shops still sell, and the three drop-off spots work.
+```
+
+Done when:
+
+- [ ] Every place you go into is as detailed as the restaurants
+
+### Session 58: Plaza, streets and the spine
+
+```text
+Session 58. Read PRD.md "Looks pass", More detail outside. Plaza: café tables outside
+the restaurants, a juice kiosk, string lights that come on at sunset, more people.
+Streets and lanes: street lamps that light up at sunset, road markings and kerbs,
+bins, bilingual street signs, bike racks. Spine: real grass blades (MultiMesh) on
+Medium and High, a sparser version on Low, plus flowers, rocks and more trees.
+```
+
+Done when:
+
+- [ ] The Plaza, streets and spine no longer look plain
+- [ ] Low still runs smoothly on an iPad-like setting
+
+### Session 59: Play-test the looks pass
+
+```text
+Session 59. Run the smoke test and every focused test, the play-test bot careful and
+careless, and the frame-rate check on Low, Medium and High at 1920 x 1080 and full
+screen. Screenshots of every interior, the Plaza, a street, the spine, and full
+screen from the bike. List anything that still flickers or looks plain and fix it.
+Then I'll play it myself; here's what felt off: [write it here].
+```
+
+Done when:
+
+- [ ] Every interior matches its design, and nothing flickers
+- [ ] 60 fps on Medium on Louis's Mac
+- [ ] Louis has played a full shift and is happy with how it looks
+
 ## When something breaks
 
 Copy one of these and fill in the brackets.

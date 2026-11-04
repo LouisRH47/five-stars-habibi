@@ -1,5 +1,12 @@
 # Progress
 
+## Next: the Looks pass (Sessions 52 to 59), planned 4 November 2026
+
+Louis played the detail pass. Next is the Looks pass in BUILD_PLAN.md: sharper full-screen
+graphics, no flicker, smaller and fuller interiors from free CC0 kits for every walk-in place,
+a real gym, the C Institute facing the spine with glass on both sides, more detail in the
+Plaza, streets and spine, and fixes for a crash loop and crashes costing too little.
+
 ## Plan review fixes — 4 November 2026
 
 A check of the plan against the code found two bugs that were still there, now fixed:
