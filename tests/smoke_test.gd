@@ -1351,6 +1351,7 @@ func _finish() -> void:
 	_check_shop_buys()
 	_check_saving()
 	_check_polish_hooks()
+	_check_phone_minimap_polish()
 	for action in ACTIONS:
 		Input.action_release(action)
 	_phase = "done"
@@ -2606,3 +2607,15 @@ func _check_polish_hooks() -> void:
 				expected.append(path)
 	_check("the polish hooks ran for the world", ok and hooks.attached == expected,
 			"%d parts: %s" % [expected.size(), expected])
+
+
+## Session 70: the clearer phone and the nicer mini-map are on in the real world.
+func _check_phone_minimap_polish() -> void:
+	var phone := _main.get_node("Phone")
+	phone._process(0.0)
+	var ring: Node = phone.find_child("Ring", true, false)
+	_check("the Session 70 phone has the offer card and its countdown ring",
+			not GameConfig.PHONE_V2 or (phone._v2 != null and ring is CountdownRing), phone.mode)
+	_check("the Session 70 mini-map has its compass ring and zoom",
+			not GameConfig.MINIMAP_V2 or (_minimap.look != null and _minimap.radius >= GameConfig.MINIMAP_RADIUS_SLOW - 0.5
+			and _minimap.radius <= GameConfig.MINIMAP_RADIUS_FAST + 0.5), "%.0f m" % _minimap.radius)

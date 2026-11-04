@@ -682,3 +682,23 @@ const PHONE_V2 := true           # Session 70
 const MINIMAP_V2 := true         # Session 70
 const CARD_V2 := true            # Session 71
 const START_DIORAMA := true      # Session 71
+
+# --- Session 70: phone app and mini-map ---
+# The phone (scripts/phone.gd, on when PHONE_V2 is true).
+const PHONE_V2_WIDTH := 380.0          # the phone card's width at the 1920 x 1080 base (old: 330)
+const PHONE_V2_CHOICE_WIDTH := 700.0   # width while you choose between two orders (old: 640)
+const PHONE_OFFER_SLIDE_PX := 320.0    # a new order slides the phone in from this far right
+const PHONE_DISTANCE_EVERY := 0.25     # seconds between updates of the live "180 m" line
+const OFFER_PACE_KMH := 20.0           # "about 3 min" on the offer card: the PRD's normal riding pace
+const OFFER_RING_SIZE := 64.0          # pixels across the countdown ring round the E key
+const OFFER_RING_WIDTH := 6.0          # the ring's thickness
+const OFFER_RING_WARN_SECONDS := 5     # the ring turns red for the last 5 seconds
+# The mini-map (scripts/minimap.gd, on when MINIMAP_V2 is true).
+const MINIMAP_RADIUS_SLOW := 60.0      # metres from the middle to the edge when you stand still
+const MINIMAP_RADIUS_FAST := 90.0      # ...and at full sprint speed (it zooms out as you go faster)
+const MINIMAP_ZOOM_TIME := 0.5         # seconds the zoom takes to catch up with your speed
+const MINIMAP_RING_WIDTH := 20.0       # the dark compass ring round the map, in pixels
+const MINIMAP_LOGO_SIZE := 22.0        # restaurant logo pins, pixels across
+# The GPS route (scripts/gps_route.gd): moving arrows on the ground line.
+const GPS_ROUTE_V2 := true             # false = the old flat see-through line
+const GPS_ARROW_SPEED := 3.0           # metres per second the arrows slide along the route
