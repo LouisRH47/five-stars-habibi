@@ -4,6 +4,10 @@ extends Node3D
 var _map: Dictionary = {}
 var _swimmers: Array[Node3D] = []
 var _clock := 0.0
+## Session 60: the real pools (scripts/pool.gd) and whether each is near enough to move.
+var pools: Array[Pool] = []
+var _pool_awake := {}
+var _pool_check_left := 0.0
 const WHITE := Color(0.97, 0.97, 0.94)
 const SAND := Color(0.88, 0.78, 0.6)
 const TEAL := Color(0.16, 0.56, 0.61)
@@ -18,8 +22,8 @@ func _ready() -> void:
 	for hill: Dictionary in _map.get("HILLS", []):
 		_hill(hill)
 	_planting()
-	_pool(_map["LAP_POOL"], "LapPool", false)
-	_pool(_map["COMMUNITY_POOL"], "CommunityPool", true)
+	_pool(_map["LAP_POOL"], "LapPool", false, _map.get("LAP_POOL_DETAIL", {}))
+	_pool(_map["COMMUNITY_POOL"], "CommunityPool", true, _map.get("COMMUNITY_POOL_DETAIL", {}))
 	for area: Rect2 in _map.get("BUILDING_SITES", []).slice(1):
 		_site(area)
 	_street_details()
@@ -145,6 +149,14 @@ func _checkpoints_and_station() -> void:
 
 
 func _plaza_floors() -> void:
+	if GameConfig.PLAZA_LOOKS_PASS and _map.has("PLAZA_ROWS"):
+		# Session 57: lower shops with three floors of flats on top, joined along each row
+		# (PlazaRows), and grass beds, planters and benches round the square (PlazaLandscape).
+		# The beds are lawns, so _grass_blades() grows grass on them too.
+		PlazaRows.build(self, _map)
+		PlazaLandscape.build(self, _map)
+		return
+	# Before Session 57: tall upper blocks on top of the 8 m shops.
 	var blocks := Node3D.new()
 	blocks.name = "PlazaUpperFloors"
 	add_child(blocks)
@@ -282,7 +294,15 @@ func _hill(spec: Dictionary) -> void:
 	body.add_child(collision)
 
 
-func _pool(area: Rect2, id: String, community: bool) -> void:
+func _pool(area: Rect2, id: String, community: bool, detail: Dictionary = {}) -> void:
+	if GameConfig.POOLS_REAL_ON and (detail.has("water") or not community):
+		# Session 60: a real pool with a fence and a gate, and people who really swim.
+		var pool := Pool.new()
+		pool.name = id
+		add_child(pool)
+		pool.setup(area, detail, community)
+		pools.append(pool)
+		return
 	var room := Node3D.new()
 	room.name = id
 	add_child(room)
@@ -345,6 +365,7 @@ func _street_details() -> void:
 			line.rotation.y = atan2(direction.x, direction.y)
 		for i in int(a.distance_to(b) / 45):
 			var p := a + direction * (i * 45 + 15) + side * 7
+			p = _clear_of_aisles(p, direction)  # Session 62: never in a car park's entrance
 			LowPoly.cylinder(props, 0.07, 0.13, 5.5, Color.DIM_GRAY, Vector3(p.x, 2.75, p.y))
 			LowPoly.box(props, Vector3(1.3, 0.15, 0.4), WHITE, Vector3(p.x, 5.5, p.y))
 	for cluster: Dictionary in _map["CLUSTERS"]:
@@ -352,9 +373,23 @@ func _street_details() -> void:
 		for i in 3:
 			LowPoly.box(props, Vector3(0.65, 1.1, 0.65), [TEAL, Color.DARK_GREEN, Color(0.2, 0.35, 0.65)][i], Vector3(c.x - 9 + i, 0.55, c.y + (70 if c.y < 0 else -70)))
 	for area: Rect2 in _map["PARKING_AREAS"]:
-		LowPoly.box(props, Vector3(0.5, 1.4, 0.4), TEAL, Vector3(area.position.x + 1, 0.7, area.position.y + 2))
+		# Session 62: on the grass verge by the ring road (south car parks have it at their south end)
+		var top := area.position.y if area.get_center().y < 0 or not GameConfig.CARPARK_ROWS else area.end.y - 7.0
+		LowPoly.box(props, Vector3(0.5, 1.4, 0.4), TEAL, Vector3(area.position.x + 1, 0.7, top + 2))
 		for i in 4:
-			LowPoly.box(props, Vector3(0.08, 0.8, 1.4), Color.GRAY, Vector3(area.end.x - 1, 0.4, area.position.y + 3 + i))
+			var rack_x := area.position.x + 3 if GameConfig.CARPARK_ROWS else area.end.x - 1   # Session 62: on the verge, not in an aisle
+			LowPoly.box(props, Vector3(0.08, 0.8, 1.4), Color.GRAY, Vector3(rack_x, 0.4, top + 3 + i))
+
+
+## Session 62: a ring road lamp post that would stand in a car park's aisle opening moves
+## along the road until it's on the grass beside it.
+func _clear_of_aisles(p: Vector2, direction: Vector2) -> Vector2:
+	for park: Dictionary in _map.get("CAR_PARKS", []):
+		for aisle: Rect2 in park["aisles"]:
+			var zone := aisle.grow(1.0)
+			while zone.has_point(p):
+				p += direction * 1.0
+	return p
 
 
 func _solid(body: StaticBody3D, size: Vector3, tint: Color, at: Vector3) -> void:
@@ -373,3 +408,26 @@ func _process(delta: float) -> void:
 	_clock += delta
 	for i in _swimmers.size():
 		_swimmers[i].position.x += sin(_clock * 0.6 + i) * delta * 0.5
+	# Session 60: swimmers swim, kids splash, people stroll. Pools far from the camera rest
+	# (their people stop animating too), and wake up again as you come near.
+	_pool_check_left -= delta
+	if _pool_check_left <= 0.0:
+		_pool_check_left = 0.5
+		_wake_pools()
+	for pool in pools:
+		if _pool_awake.get(pool, true):
+			for swimmer in pool.swimmers:
+				swimmer.step(delta)
+
+
+func _wake_pools() -> void:
+	var camera := get_viewport().get_camera_3d()
+	for pool in pools:
+		var awake := true
+		if camera != null:
+			var middle := Vector3(pool.area.get_center().x, 0, pool.area.get_center().y)
+			awake = camera.global_position.distance_to(middle) < GameConfig.POOL_PEOPLE_RANGE + pool.area.size.length() * 0.5
+		if awake != _pool_awake.get(pool, true):
+			_pool_awake[pool] = awake
+			for swimmer in pool.swimmers:
+				swimmer.process_mode = Node.PROCESS_MODE_INHERIT if awake else Node.PROCESS_MODE_DISABLED

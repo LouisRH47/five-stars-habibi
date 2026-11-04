@@ -541,6 +541,60 @@ const LOADING_TIPS := [
 # --- Session 56: the free asset packs ---
 const KIT_COUNTER_HEIGHT := 1.05      # KitProps "counter" snap: props sit on a counter top this high
 
+# --- Session 57: The Plaza outside ---
+const PLAZA_LOOKS_PASS := true        # false: the old tall shops, upper blocks and round paving come back
+const PLAZA_GROUND_FLOOR := 4.5       # metres: the shop floor (was 8)
+const PLAZA_FLAT_FLOORS := 3          # floors of flats on top, like the real Plaza
+const PLAZA_FLOOR_HEIGHT := 3.2       # metres per floor of flats
+const PLAZA_PARAPET := 0.6            # the low wall round the roof
+const PLAZA_WINDOW := Vector2(1.4, 1.6)   # flats windows, width x height
+const PLAZA_WINDOW_SPACING := 3.4     # a window every 3.4 m along the front
+const PLAZA_SIGN_BAND := 1.1          # height of the lit sign band over each shop
+const PLAZA_GLASS_TOP := 3.2          # the shop glass goes from the ground to here
+const PLAZA_AWNING_DEPTH := 1.4       # how far the striped awning sticks out
+const PLAZA_DOOR_WIDTH := 2.4         # the sliding glass door (two 1.2 m panels)
+const PLAZA_DOOR_OPEN_DISTANCE := 3.2 # the door slides open when you (or your bike) are this close
+const PLAZA_DOOR_SPEED := 3.0         # how fast it slides (share of fully open per second)
+const PLAZA_SIGN_GLOW_HOURS := Vector2(16.6, 17.4)  # signs start glowing, then are fully lit (sunset)
+const PLAZA_SIGN_GLOW_ENERGY := 0.8   # how bright the lit sign bands are at night
+const PLAZA_TROLLEYS := 8             # trolleys lined up outside Grand Groceries
+
+# --- Session 62: car parks and kerbs ---
+const CARPARK_ROWS := true            # Louis's 1-2-1 rows with solar roofs; false = the old roof over each car
+const CARPARK_CAR_BATCH := true       # parked cars drawn together (fast); false = one model per car (slow)
+const CARPARK_CAR_VIEW_RANGE := 260.0 # parked cars further than this aren't drawn
+const KERB_SIZE := Vector2(0.3, 0.15) # kerbstones: 0.3 m wide, 0.15 m high (you ride over them)
+const KERB_COLOUR := Color(0.8, 0.79, 0.75)
+const CARPARK_ROOF_LOW := 2.6         # solar roof height at the aisle side
+const CARPARK_ROOF_HIGH := 3.0        # and at the back (the middle line of a double row)
+const CARPARK_POST_EVERY := 3         # a roof post every 3 bays
+const CARPARK_LINE_WIDTH := 0.1       # white bay lines
+const CARPARK_ARROW_EVERY := 16.0     # aisle arrows every 16 m
+
+# --- Session 60: Gym and pools ---
+const GYM_ROOM_ON := true             # the real gym (scripts/gym_room.gd); false = the old restaurant-style room
+const POOLS_REAL_ON := true           # fenced pools with swimmers (scripts/pool.gd); false = the old flat pools
+const POOL_WATER_Y := 0.06            # the water's surface (the deck is a little higher)
+const POOL_DECK_Y := 0.1             # top of the stone deck round the water (not solid: you walk on it)
+const POOL_WATER_COLOUR := Color(0.18, 0.66, 0.86)
+const SWIM_SPEED := 1.05              # metres a second, an easy crawl
+const SWIM_STROKES := 0.75            # arm strokes (full circles) a second
+const SWIM_TURN_TIME := 1.3           # seconds to turn round at the wall
+const SWIM_REST_CHANCE := 0.3         # how often a swimmer rests at the wall instead of turning straight away
+const SWIM_REST_TIME := Vector2(3.0, 6.0)   # seconds resting at the wall (shortest, longest)
+const POOL_WALK_SPEED := 0.9          # people strolling round the community pool deck
+const POOL_PEOPLE_RANGE := 90.0       # swimmers further than this from the camera stop moving (saves time)
+const SPLASH_DROPS := 10              # little splash drops round each kid in the kids' pool
+
+# --- Session 61: C Institute, stable office, farm stall and school booth ---
+const INSTITUTE_LOBBY_ON := true      # the two-storey lobby (scripts/institute_lobby.gd); false = the old room
+const INSTITUTE_SCREEN_SECONDS := 15.0   # the talk screen shows the next slide after this long
+const INSTITUTE_SLIDES := [["Talk today · 4 PM", "محاضرة اليوم · ٤ مساءً"], ["Solar cities of tomorrow", "مدن الطاقة الشمسية"], ["Welcome", "أهلاً"]]
+const STABLE_OFFICE_ROOM_ON := true   # the stable office you can see into; false = the old solid box
+const FARMER_ON := true               # the farmer behind the farm stall counter hands you the order
+const FARMER_LOOK_RANGE := 9.0        # the farmer turns to look at you inside this distance
+const GLASS_BOOTHS_ON := true         # glass security booths at the school gate and the checkpoints
+
 # --- Session 64: buggies everywhere and building sites ---
 const BUGGIES_ROAM := true            # buggies drive anywhere on the buggy road map; false = the old fixed routes (BUGGY_FIXED_ROUTES)
 const BUGGY_SPEED_KMH := Vector2(10.0, 14.0)  # each buggy cruises somewhere between these
