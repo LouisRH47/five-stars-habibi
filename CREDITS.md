@@ -84,3 +84,40 @@ them back).
 The riding wind loop (assets/audio/wind_loop.wav) is original generated CC0 audio; reproduce it with tools/make_wind.py.
 
 The PERFECT and tip jingles (assets/audio/perfect.wav and tip.wav) are original generated CC0 audio, reproduced by tools/make_sounds.py.
+
+## Free model packs (Session 56)
+
+All in `assets/kits/`, all **CC0 1.0** (public domain: free for anything, no credit needed, but
+we say thank you anyway). Each folder keeps the pack's licence file. The exact downloads (git
+repository, commit, folder) and the SHA-256 of every file are in `assets/kits/sources.json`
+(remake it with `python3 tools/kit_sources.py`). Only the glTF/GLB models and the textures they
+need were kept (no FBX, OBJ, Blender files or preview images).
+
+**KayKit** by Kay Lousberg (https://www.kaylousberg.com), from the official GitHub repositories
+(https://github.com/KayKit-Game-Assets)
+- Restaurant Bits 1.0 (`kaykit_restaurant/`): https://kaylousberg.itch.io/restaurant-bits
+- Furniture Bits 1.0 (`kaykit_furniture/`): https://kaylousberg.itch.io/furniture-bits
+- City Builder Bits 1.0 (`kaykit_city/`): https://kaylousberg.itch.io/city-builder-bits
+
+**Kenney** (https://kenney.nl), from the CC0 mirror https://github.com/shorepine/kenney
+- Food Kit (`kenney_food/`): https://kenney.nl/assets/food-kit
+- Furniture Kit (`kenney_furniture/`): https://kenney.nl/assets/furniture-kit
+- Nature Kit (`kenney_nature/`): https://kenney.nl/assets/nature-kit
+- City Kit (Roads) (`kenney_city_roads/`): https://kenney.nl/assets/city-kit-roads
+- City Kit (Commercial) (`kenney_city_commercial/`): https://kenney.nl/assets/city-kit-commercial
+- Mini Market (`kenney_mini_market/`): https://kenney.nl/assets/mini-market
+
+**Quaternius** (https://quaternius.com). Only packs whose own page still says CC0 (Quaternius
+uses a different licence for some new packs; none of those are here).
+- Ultimate Nature Pack (`quaternius_nature/`, only the desert-friendly models):
+  https://quaternius.com/packs/ultimatenature.html
+- Ultimate Crops Pack (`quaternius_crops/`): https://quaternius.com/packs/ultimatecrops.html
+- Ultimate Animated Animal Pack (`quaternius_animals/`):
+  https://quaternius.com/packs/ultimateanimatedanimals.html
+- Ultimate Modular Men and Women (`quaternius_men/`, `quaternius_women/`):
+  https://quaternius.com/packs/ultimatemodularcharacters.html and
+  https://quaternius.com/packs/ultimatemodularwomen.html
+  (these four from the mirror https://github.com/trebeljahr/quaternius-showcase)
+- Universal Animation Library 1, free Standard part (`quaternius_ual/`):
+  https://quaternius.com/packs/universalanimationlibrary.html
+  (glTF from the mirror https://github.com/J-Ponzo/gltf-universal-animation-library)
