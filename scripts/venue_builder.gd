@@ -40,8 +40,12 @@ static func build(place: Dictionary, size: Vector3) -> StaticBody3D:
 		_block(body, Vector3(4, size.y, 0.25), CREAM, Vector3(0, size.y * 0.5, -size.z * 0.5))
 	else:
 		_block(body, Vector3(size.x, size.y, 0.25), CREAM, Vector3(0, size.y * 0.5, -size.z * 0.5))
+	# Session 57: a Plaza shop (it has a "row") gets the new low shop front (ShopFront).
+	var plaza_front: bool = GameConfig.PLAZA_LOOKS_PASS and place.has("row")
 	for side in [-1.0, 1.0]:
 		_block(body, Vector3(0.25, size.y, size.z - (4 if rounded else 0)), CREAM, Vector3(side * size.x * 0.5, size.y * 0.5, 2 if rounded else 0))
+		if plaza_front:
+			continue
 		var wing := size.x * 0.5 - 2.0
 		var window := _block(body, Vector3(wing, size.y, 0.25), GLASS,
 			Vector3(side * (2.0 + wing * 0.5), size.y * 0.5, size.z * 0.5))
@@ -50,7 +54,8 @@ static func build(place: Dictionary, size: Vector3) -> StaticBody3D:
 		glass.albedo_color.a = 0.24
 		window.material_override = glass
 		window.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	_block(body, Vector3(4, size.y - 3.2, 0.25), tint, Vector3(0, 3.2 + (size.y - 3.2) * 0.5, size.z * 0.5))
+	if not plaza_front:
+		_block(body, Vector3(4, size.y - 3.2, 0.25), tint, Vector3(0, 3.2 + (size.y - 3.2) * 0.5, size.z * 0.5))
 	LowPoly.box(body, Vector3(size.x, 0.06, size.z), Color(0.83, 0.78, 0.68), Vector3(0, 0.03, 0))
 	_block(body, Vector3(size.x + 0.2, 0.25, size.z + 0.2 - (4 if rounded else 0)), CREAM, Vector3(0, size.y + 0.12, 2 if rounded else 0))
 	# The counter is behind its standing target. Clear central circulation stays open.
@@ -62,18 +67,10 @@ static func build(place: Dictionary, size: Vector3) -> StaticBody3D:
 	staff.position = Vector3(0, 0, back - 1.2)
 	staff.rotation.y = PI
 	body.add_child(staff)
-	var sign := SignText.make_face(place.get("arabic", ""), place.get("name", "Reception"), 46, Color.WHITE)
-	sign.name = "BilingualSign"
-	sign.position = Vector3(0, 4.5, size.z * 0.5 + 0.16)
-	body.add_child(sign)
-	var kind: String = place.get("venue_type", "")
-	if kind in ["gelato", "boba", "tacos"]:
-		var board := LowPoly.cylinder(body, 1.4, 1.4, 0.16, tint, Vector3(0, 4.5, size.z * 0.5 + 0.03))
-		board.rotation.x = PI * 0.5
+	if plaza_front:
+		ShopFront.build(body, place, size)
 	else:
-		LowPoly.box(body, Vector3(minf(size.x - 1, 14), 1.5, 0.16), tint.darkened(0.15), Vector3(0, 4.5, size.z * 0.5 + 0.03))
-	var awning := LowPoly.box(body, Vector3(size.x + 0.5, 0.18, 2.2), tint, Vector3(0, 3.25, size.z * 0.5 + 0.8))
-	awning.rotation.x = 0.12
+		_old_front(body, place, size, tint)
 	if not see_through:
 		LowPoly.box(body, Vector3(5.4, 2.1, 0.12), DARK, Vector3(0, 3.0, -size.z * 0.5 + 0.1))
 		var menu := SignText.make_face("القائمة", place.get("food", "Welcome").capitalize(), 70, Color.WHITE)
@@ -92,11 +89,28 @@ static func build(place: Dictionary, size: Vector3) -> StaticBody3D:
 	for side in [-1.0, 1.0]:
 		_table(body, Vector3(side * minf(size.x * 0.3, 6.0), 0, size.z * 0.2), tint, not reception)
 		_planter(body, Vector3(side * (size.x * 0.5 - 0.8), 0, size.z * 0.5 - 1.0))
-		if not reception:
+		if not reception and not plaza_front:   # Session 57: ShopFront puts its own tables and bench outside
 			# Session 53: sit with your back to the shop, looking out at the Plaza (they faced the glass).
 			Props.bench(body, Vector3(side * 5.0, 0, size.z * 0.5 + 2), 0)
 	_decor(body, place.get("venue_type", ""), size, tint)
 	return body
+
+
+## The front before Session 57 (the C Institute and the gym still use it): a sign, a
+## board and an awning across the top of a tall glass front.
+static func _old_front(body: StaticBody3D, place: Dictionary, size: Vector3, tint: Color) -> void:
+	var sign := SignText.make_face(place.get("arabic", ""), place.get("name", "Reception"), 46, Color.WHITE)
+	sign.name = "BilingualSign"
+	sign.position = Vector3(0, 4.5, size.z * 0.5 + 0.16)
+	body.add_child(sign)
+	var kind: String = place.get("venue_type", "")
+	if kind in ["gelato", "boba", "tacos"]:
+		var board := LowPoly.cylinder(body, 1.4, 1.4, 0.16, tint, Vector3(0, 4.5, size.z * 0.5 + 0.03))
+		board.rotation.x = PI * 0.5
+	else:
+		LowPoly.box(body, Vector3(minf(size.x - 1, 14), 1.5, 0.16), tint.darkened(0.15), Vector3(0, 4.5, size.z * 0.5 + 0.03))
+	var awning := LowPoly.box(body, Vector3(size.x + 0.5, 0.18, 2.2), tint, Vector3(0, 3.25, size.z * 0.5 + 0.8))
+	awning.rotation.x = 0.12
 
 
 static func _rounded_back(body: StaticBody3D, size: Vector3) -> void:

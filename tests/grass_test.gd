@@ -104,8 +104,9 @@ func _run() -> void:
 	field.apply_graphics()
 
 	# Far away from every lawn there's no grass at all.
-	field.fill_around(Vector3(-200, 0, -200), -1)
-	_check("no grass far from the lawns (the Plaza)", field.chunk_count() == 0 and field.tuft_count == 0)
+	# Session 57: the Plaza has grass beds now, so check the empty north-east corner instead.
+	field.fill_around(Vector3(400, 0, -200), -1)
+	_check("no grass far from the lawns (the north-east corner)", field.chunk_count() == 0 and field.tuft_count == 0)
 	_finish()
 
 

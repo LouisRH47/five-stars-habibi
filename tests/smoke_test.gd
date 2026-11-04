@@ -1556,6 +1556,11 @@ func _check_session26() -> void:
 	# ring road, bridges over the stream, benches facing the right way).
 	for line in preload("res://tests/layout_test.gd").check_map(data, _main):
 		_check("layout: " + line[1], line[0], "")
+	# Session 57: the Plaza checks (shop order, low shops with joined flats, passages,
+	# logos and bilingual signs, nothing overlapping). Full version: tests/plaza_test.gd.
+	if data.has("PLAZA_ROWS"):
+		for line in preload("res://tests/plaza_test.gd").check_world(data, _main):
+			_check("plaza: " + line[1], line[0], "")
 
 
 ## How many house parts (bodies called Villa...) a shape at this spot touches.

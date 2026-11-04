@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><g transform="translate(0 0) scale(1)"><circle cx="128" cy="128" r="124" fill="#a8742f"/><circle cx="128" cy="128" r="112" fill="#ffffff"/><circle cx="128" cy="128" r="104" fill="#f7e7c6"/><ellipse cx="128" cy="150" rx="88" ry="50" fill="#e9c27a" stroke="#26323a" stroke-width="6"/>
+<ellipse cx="128" cy="146" rx="64" ry="32" fill="#c99a45"/>
+<circle cx="104" cy="140" r="5" fill="#557a2a"/><circle cx="140" cy="154" r="5" fill="#557a2a"/><circle cx="150" cy="134" r="4" fill="#557a2a"/><circle cx="118" cy="160" r="4" fill="#557a2a"/>
+<path d="M128 112 Q132 70 150 34" fill="none" stroke="#3f6a1f" stroke-width="6"/>
+<ellipse cx="124" cy="80" rx="16" ry="8" fill="#5f9a2c" transform="rotate(-30 124 80)"/><ellipse cx="156" cy="74" rx="16" ry="8" fill="#5f9a2c" transform="rotate(30 156 74)"/>
+<ellipse cx="134" cy="54" rx="14" ry="7" fill="#5f9a2c" transform="rotate(-40 134 54)"/><ellipse cx="160" cy="44" rx="12" ry="6" fill="#5f9a2c" transform="rotate(20 160 44)"/></g></svg>

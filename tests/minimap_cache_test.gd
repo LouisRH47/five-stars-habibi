@@ -31,7 +31,12 @@ func _run() -> void:
 			polygons += child.polygons.size()
 			chunks += 1
 	var places := world.get_node("PlaceBuilder")
-	_expect(polygons == places.villas.size() + places.restaurants.size() + 1 and chunks > 1,
+	# Session 57: plus the shop rows' units (storerooms under the flats) and the two shops.
+	var rows := 0
+	for row: Dictionary in WahatAlShams.PLAZA_ROWS:
+		for unit: Dictionary in row["units"]:
+			rows += 0 if unit["kind"] == "passage" else 1
+	_expect(polygons == places.villas.size() + places.restaurants.size() + 1 + rows + WahatAlShams.SHOPS.size() and chunks > 1,
 			"every building is retained once in spatially culled static chunks")
 	var exact := true
 	var reduced := true

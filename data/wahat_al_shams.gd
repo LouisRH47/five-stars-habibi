@@ -25,11 +25,11 @@ const HORSE_TRACK := {"half": Vector2(450, 230), "width": 5.0}
 
 const BIKE_TRACK := {"half": Vector2(438, 218), "width": 4.0}
 
-const PLAZA := {"centre": Vector2(-200, -145), "radius": 50.0, "sunken_radius": 20.0, "floor_radius": 15.0, "depth": 0.45, "steps": 3, "fountain_radius": 2.8}
+const PLAZA := {"centre": Vector2(-200, -145), "radius": 50.0, "sunken_radius": 20.0, "floor_radius": 15.0, "depth": 0.45, "steps": 3, "fountain_radius": 2.8, "core_half": 26.25}
 
 const PLAZA_SAILS := [
 	[Vector3(-224, 0, -157), Vector3(-200, 0, -170), Vector3(-176, 0, -157)],
-	[Vector3(-176, 0, -133), Vector3(-200, 0, -120), Vector3(-224, 0, -133)],
+	[Vector3(-176, 0, -133), Vector3(-206, 0, -121), Vector3(-224, 0, -133)],
 ]
 
 const PLAZA_BENCHES := [
@@ -129,6 +129,33 @@ const PAVED_AREAS := [
 	Rect2(293, -61, 130, 10),
 	Rect2(8, 51, 130, 10),
 	Rect2(238, 51, 130, 10),
+	Rect2(-284, -181, 142, 3.5),
+	Rect2(-258, -112.5, 116, 3.5),
+	Rect2(-229.75, -177.5, 3.5, 65),
+	Rect2(-173.75, -177.5, 3.5, 65),
+	Rect2(-215.75, -177.5, 3.5, 6.25),
+	Rect2(-187.75, -177.5, 3.5, 6.25),
+	Rect2(-201.75, -118.75, 3.5, 6.25),
+	Rect2(-281, -146.75, 51.25, 3.5),
+	Rect2(-170.25, -146.75, 78.25, 3.5),
+	Rect2(-258, -177.5, 4, 91),
+	Rect2(-146, -177.5, 4, 91),
+	Rect2(-287, -90, 145, 3.5),
+	Rect2(-254, -161.75, 24.25, 3.5),
+	Rect2(-170.25, -161.75, 24.25, 3.5),
+	Rect2(-254, -131.75, 24.25, 3.5),
+	Rect2(-170.25, -131.75, 24.25, 3.5),
+	Rect2(-243.75, -177.5, 3.5, 65),
+	Rect2(-159.75, -177.5, 3.5, 65),
+	Rect2(-272.75, -200, 3.5, 19),
+	Rect2(-272.75, -143.25, 3.5, 53.25),
+	Rect2(-240, -186, 80, 5),
+	Rect2(-254, -109, 108, 5),
+	Rect2(-216, -200, 4, 14),
+	Rect2(-188, -200, 4, 14),
+	Rect2(-230, -104, 4, 14),
+	Rect2(-202, -104, 4, 14),
+	Rect2(-174, -104, 4, 14),
 ]
 
 const BOLLARDS := [
@@ -328,26 +355,33 @@ const CLUSTER_NAMES := {"C1": "المجموعة ١", "C2": "المجموعة ٢"
 
 const TUTORIAL_ORDER := {"restaurant": "pizza", "villa": 101}
 
-const RESTAURANT_SIZE := Vector3(18, 8, 16)
+const RESTAURANT_SIZE := Vector3(12, 4.5, 10)
 
 const RESTAURANTS := [
-	{"id": "pizza", "name": "1000 Pizza", "arabic": "١٠٠٠ بيتزا", "food": "pizza", "colour": Color(0.35, 0.3, 0.3, 1), "position": Vector3(-252, 0, -195), "facing": 0.0, "interior": true, "venue_type": "pizza"},
-	{"id": "gelato", "name": "Brain Freeze Gelato", "arabic": "برين فريز جيلاتو", "food": "ice cream", "colour": Color(0.55, 0.45, 0.4, 1), "position": Vector3(-226, 0, -195), "facing": 0.0, "interior": true, "venue_type": "gelato"},
-	{"id": "boba", "name": "Spill the Tea", "arabic": "سبيل ذا تي", "food": "bubble tea", "colour": Color(0.75, 0.3, 0.5, 1), "position": Vector3(-200, 0, -195), "facing": 0.0, "interior": true, "venue_type": "boba", "foods": ["bubble tea", "coffee"]},
-	{"id": "shawarma", "name": "Shawarma Supreme", "arabic": "شاورما سوبريم", "food": "shawarma", "colour": Color(0.35, 0.45, 0.6, 1), "position": Vector3(-174, 0, -195), "facing": 0.0, "interior": true, "venue_type": "shawarma"},
-	{"id": "bakery", "name": "Bread & Zaatar", "arabic": "خبز وزعتر", "food": "cake", "colour": Color(0.55, 0.3, 0.3, 1), "position": Vector3(-148, 0, -195), "facing": 0.0, "interior": true, "venue_type": "bakery", "foods": ["cake", "manakish"]},
-	{"id": "market", "name": "Grand Groceries", "arabic": "جراند جروسريز", "food": "groceries", "colour": Color(0.75, 0.45, 0.4, 1), "position": Vector3(-252, 0, -95), "facing": 180.0, "interior": true, "venue_type": "market"},
-	{"id": "thai", "name": "Tok Tok Thai", "arabic": "توك توك تاي", "food": "pad thai", "colour": Color(0.35, 0.3, 0.5, 1), "position": Vector3(-226, 0, -95), "facing": 180.0, "interior": true, "venue_type": "thai"},
-	{"id": "sushi", "name": "Sushi You", "arabic": "سوشي يو", "food": "sushi", "colour": Color(0.55, 0.45, 0.6, 1), "position": Vector3(-200, 0, -95), "facing": 180.0, "interior": true, "venue_type": "sushi"},
-	{"id": "tacos", "name": "Mario Bonito", "arabic": "ماريو بونيتو", "food": "tacos", "colour": Color(0.75, 0.3, 0.3, 1), "position": Vector3(-174, 0, -95), "facing": 180.0, "interior": true, "venue_type": "tacos"},
-	{"id": "burger", "name": "Burgerology", "arabic": "برجرولوجي", "food": "burgers", "colour": Color(0.35, 0.45, 0.4, 1), "position": Vector3(-148, 0, -95), "facing": 180.0, "interior": true, "venue_type": "burger"},
+	{"id": "pizza", "name": "1000 Pizza", "arabic": "١٠٠٠ بيتزا", "position": Vector3(-234, 0, -191), "facing": 0.0, "food": "pizza", "colour": Color(0.843, 0.149, 0.239, 1), "interior": true, "venue_type": "pizza", "row": "north"},
+	{"id": "gelato", "name": "Brain Freeze Gelato", "arabic": "برين فريز جيلاتو", "position": Vector3(-222, 0, -191), "facing": 0.0, "food": "ice cream", "colour": Color(0.941, 0.435, 0.643, 1), "interior": true, "venue_type": "gelato", "row": "north"},
+	{"id": "boba", "name": "Spill the Brew", "arabic": "سبيل ذا برو", "position": Vector3(-206, 0, -191), "facing": 0.0, "food": "bubble tea", "colour": Color(0.435, 0.306, 0.216, 1), "interior": true, "venue_type": "boba", "row": "north", "foods": ["bubble tea", "coffee"]},
+	{"id": "shawarma", "name": "Shawarma Supreme", "arabic": "شاورما سوبريم", "position": Vector3(-194, 0, -191), "facing": 0.0, "food": "shawarma", "colour": Color(0.91, 0.608, 0.18, 1), "interior": true, "venue_type": "shawarma", "row": "north"},
+	{"id": "bakery", "name": "Bread & Zaatar", "arabic": "خبز وزعتر", "position": Vector3(-178, 0, -191), "facing": 0.0, "food": "cake", "colour": Color(0.659, 0.455, 0.184, 1), "interior": true, "venue_type": "bakery", "row": "north", "foods": ["cake", "manakish"]},
+	{"id": "market", "name": "Grand Groceries", "arabic": "جراند جروسريز", "position": Vector3(-242, 0, -99), "facing": 180.0, "food": "groceries", "colour": Color(0.18, 0.62, 0.31, 1), "interior": true, "venue_type": "market", "row": "south", "size": Vector3(24, 4.5, 10)},
+	{"id": "thai", "name": "Tok Tok Thai", "arabic": "توك توك تاي", "position": Vector3(-220, 0, -99), "facing": 180.0, "food": "pad thai", "colour": Color(0.482, 0.247, 0.627, 1), "interior": true, "venue_type": "thai", "row": "south"},
+	{"id": "sushi", "name": "Sushi You", "arabic": "سوشي يو", "position": Vector3(-208, 0, -99), "facing": 180.0, "food": "sushi", "colour": Color(0.122, 0.227, 0.408, 1), "interior": true, "venue_type": "sushi", "row": "south"},
+	{"id": "tacos", "name": "Mario Bonito", "arabic": "ماريو بونيتو", "position": Vector3(-192, 0, -99), "facing": 180.0, "food": "tacos", "colour": Color(1, 0.435, 0.349, 1), "interior": true, "venue_type": "tacos", "row": "south"},
+	{"id": "burger", "name": "Burgerology", "arabic": "برجرولوجي", "position": Vector3(-180, 0, -99), "facing": 180.0, "food": "burgers", "colour": Color(0.91, 0.333, 0.604, 1), "interior": true, "venue_type": "burger", "row": "south"},
 	{"id": "farm", "name": "Wahat Farm Stall", "arabic": "كشك مزرعة الواحة", "food": "farm juice", "foods": ["farm juice", "salad box"], "colour": Color(0.35, 0.65, 0.25, 1), "position": Vector3(4, 0, 17), "facing": 180.0, "style": "stall", "size": Vector3(9, 4, 6)},
 ]
 
 const SHOPS := [
-	{"id": "bikes", "name": "Pedal Point Bikes", "arabic": "بيدال بوينت", "position": Vector3(-275, 0, -145), "facing": 90.0, "size": Vector3(20, 8, 18)},
-	{"id": "clothes", "name": "Dune Drip", "arabic": "ديون دريب", "position": Vector3(-125, 0, -145), "facing": -90.0, "size": Vector3(20, 8, 18)},
+	{"id": "bikes", "name": "Pedal Point Bikes", "arabic": "بيدال بوينت", "position": Vector3(-166, 0, -191), "facing": 0.0, "size": Vector3(12, 4.5, 10), "colour": Color(0.118, 0.604, 0.604, 1), "row": "north"},
+	{"id": "clothes", "name": "Dune Drip", "arabic": "ديون دريب", "position": Vector3(-164, 0, -99), "facing": 180.0, "size": Vector3(12, 4.5, 10), "colour": Color(0.949, 0.549, 0.157, 1), "row": "south"},
 ]
+
+const PLAZA_ROWS := [
+	{"name": "North row", "from_x": -240.0, "front_z": -186.0, "facing": 0.0, "depth": 14.0, "units": [{"kind": "restaurant", "id": "pizza", "from_x": -240.0, "to_x": -228.0, "name": "1000 Pizza", "arabic": "١٠٠٠ بيتزا", "colour": Color(0.843, 0.149, 0.239, 1), "logo": "res://assets/logos/pizza_badge.svg"}, {"kind": "restaurant", "id": "gelato", "from_x": -228.0, "to_x": -216.0, "name": "Brain Freeze Gelato", "arabic": "برين فريز جيلاتو", "colour": Color(0.941, 0.435, 0.643, 1), "logo": "res://assets/logos/gelato_badge.svg"}, {"kind": "passage", "id": "passage", "from_x": -216.0, "to_x": -212.0}, {"kind": "restaurant", "id": "boba", "from_x": -212.0, "to_x": -200.0, "name": "Spill the Brew", "arabic": "سبيل ذا برو", "colour": Color(0.435, 0.306, 0.216, 1), "logo": "res://assets/logos/boba_badge.svg"}, {"kind": "restaurant", "id": "shawarma", "from_x": -200.0, "to_x": -188.0, "name": "Shawarma Supreme", "arabic": "شاورما سوبريم", "colour": Color(0.91, 0.608, 0.18, 1), "logo": "res://assets/logos/shawarma_badge.svg"}, {"kind": "passage", "id": "passage", "from_x": -188.0, "to_x": -184.0}, {"kind": "restaurant", "id": "bakery", "from_x": -184.0, "to_x": -172.0, "name": "Bread & Zaatar", "arabic": "خبز وزعتر", "colour": Color(0.659, 0.455, 0.184, 1), "logo": "res://assets/logos/bakery_badge.svg"}, {"kind": "shop", "id": "bikes", "from_x": -172.0, "to_x": -160.0, "name": "Pedal Point Bikes", "arabic": "بيدال بوينت", "colour": Color(0.118, 0.604, 0.604, 1), "logo": "res://assets/logos/bikes_badge.svg"}], "to_x": -160.0},
+	{"name": "South row", "from_x": -254.0, "front_z": -104.0, "facing": 180.0, "depth": 14.0, "units": [{"kind": "restaurant", "id": "market", "from_x": -254.0, "to_x": -230.0, "name": "Grand Groceries", "arabic": "جراند جروسريز", "colour": Color(0.18, 0.62, 0.31, 1), "logo": "res://assets/logos/market_badge.svg"}, {"kind": "passage", "id": "passage", "from_x": -230.0, "to_x": -226.0}, {"kind": "restaurant", "id": "thai", "from_x": -226.0, "to_x": -214.0, "name": "Tok Tok Thai", "arabic": "توك توك تاي", "colour": Color(0.482, 0.247, 0.627, 1), "logo": "res://assets/logos/thai_badge.svg"}, {"kind": "restaurant", "id": "sushi", "from_x": -214.0, "to_x": -202.0, "name": "Sushi You", "arabic": "سوشي يو", "colour": Color(0.122, 0.227, 0.408, 1), "logo": "res://assets/logos/sushi_badge.svg"}, {"kind": "passage", "id": "passage", "from_x": -202.0, "to_x": -198.0}, {"kind": "restaurant", "id": "tacos", "from_x": -198.0, "to_x": -186.0, "name": "Mario Bonito", "arabic": "ماريو بونيتو", "colour": Color(1, 0.435, 0.349, 1), "logo": "res://assets/logos/tacos_badge.svg"}, {"kind": "restaurant", "id": "burger", "from_x": -186.0, "to_x": -174.0, "name": "Burgerology", "arabic": "برجرولوجي", "colour": Color(0.91, 0.333, 0.604, 1), "logo": "res://assets/logos/burger_badge.svg"}, {"kind": "passage", "id": "passage", "from_x": -174.0, "to_x": -170.0}, {"kind": "shop", "id": "clothes", "from_x": -170.0, "to_x": -158.0, "name": "Dune Drip", "arabic": "ديون دريب", "colour": Color(0.949, 0.549, 0.157, 1), "logo": "res://assets/logos/clothes_badge.svg"}, {"kind": "scenery", "id": "pharmacy", "from_x": -158.0, "to_x": -146.0, "name": "Wahat Pharmacy", "arabic": "صيدلية الواحة", "colour": Color(0.169, 0.659, 0.29, 1), "logo": "res://assets/logos/pharmacy_badge.svg"}], "to_x": -146.0},
+]
+
+const PLAZA_LANDSCAPE := {"core_half": 26.25, "core_planters": [Vector3(-221.5, 0, -166.5), Vector3(-178.5, 0, -166.5), Vector3(-221.5, 0, -123.5), Vector3(-178.5, 0, -123.5)], "walks": [Rect2(-284, -181, 142, 3.5), Rect2(-258, -112.5, 116, 3.5), Rect2(-229.75, -177.5, 3.5, 65), Rect2(-173.75, -177.5, 3.5, 65), Rect2(-215.75, -177.5, 3.5, 6.25), Rect2(-187.75, -177.5, 3.5, 6.25), Rect2(-201.75, -118.75, 3.5, 6.25), Rect2(-281, -146.75, 51.25, 3.5), Rect2(-170.25, -146.75, 78.25, 3.5), Rect2(-258, -177.5, 4, 91), Rect2(-146, -177.5, 4, 91), Rect2(-287, -90, 145, 3.5), Rect2(-254, -161.75, 24.25, 3.5), Rect2(-170.25, -161.75, 24.25, 3.5), Rect2(-254, -131.75, 24.25, 3.5), Rect2(-170.25, -131.75, 24.25, 3.5), Rect2(-243.75, -177.5, 3.5, 65), Rect2(-159.75, -177.5, 3.5, 65), Rect2(-272.75, -200, 3.5, 19), Rect2(-272.75, -143.25, 3.5, 53.25)], "terraces": [Rect2(-240, -186, 80, 5), Rect2(-254, -109, 108, 5)], "passages": [Rect2(-216, -200, 4, 14), Rect2(-188, -200, 4, 14), Rect2(-230, -104, 4, 14), Rect2(-202, -104, 4, 14), Rect2(-174, -104, 4, 14)], "beds": [Rect2(-226.25, -177.5, 10.5, 6.25), Rect2(-212.25, -177.5, 24.5, 6.25), Rect2(-184.25, -177.5, 10.5, 6.25), Rect2(-226.25, -118.75, 24.5, 6.25), Rect2(-198.25, -118.75, 24.5, 6.25), Rect2(-254, -177.5, 10.25, 15.75), Rect2(-254, -158.25, 10.25, 11.5), Rect2(-254, -143.25, 10.25, 11.5), Rect2(-254, -128.25, 10.25, 15.75), Rect2(-240.25, -177.5, 10.5, 15.75), Rect2(-240.25, -158.25, 10.5, 11.5), Rect2(-240.25, -143.25, 10.5, 11.5), Rect2(-240.25, -128.25, 10.5, 15.75), Rect2(-170.25, -177.5, 10.5, 15.75), Rect2(-170.25, -158.25, 10.5, 11.5), Rect2(-170.25, -143.25, 10.5, 11.5), Rect2(-170.25, -128.25, 10.5, 15.75), Rect2(-156.25, -177.5, 10.25, 15.75), Rect2(-156.25, -158.25, 10.25, 11.5), Rect2(-156.25, -143.25, 10.25, 11.5), Rect2(-156.25, -128.25, 10.25, 15.75), Rect2(-258, -200, 18, 19), Rect2(-160, -200, 18, 19), Rect2(-269.25, -200, 11.25, 19), Rect2(-284, -200, 11.25, 19), Rect2(-274, -177.5, 16, 27.5), Rect2(-284, -138, 11.25, 48), Rect2(-269.25, -143.25, 11.25, 53.25)], "benches": [{"position": Vector3(-249, 0, -161.4), "facing": 180.0}, {"position": Vector3(-249, 0, -158.6), "facing": 0.0}, {"position": Vector3(-234.75, 0, -161.4), "facing": 180.0}, {"position": Vector3(-234.75, 0, -158.6), "facing": 0.0}, {"position": Vector3(-165.25, 0, -161.4), "facing": 180.0}, {"position": Vector3(-165.25, 0, -158.6), "facing": 0.0}, {"position": Vector3(-151, 0, -161.4), "facing": 180.0}, {"position": Vector3(-151, 0, -158.6), "facing": 0.0}, {"position": Vector3(-249, 0, -131.4), "facing": 180.0}, {"position": Vector3(-249, 0, -128.6), "facing": 0.0}, {"position": Vector3(-234.75, 0, -131.4), "facing": 180.0}, {"position": Vector3(-234.75, 0, -128.6), "facing": 0.0}, {"position": Vector3(-165.25, 0, -131.4), "facing": 180.0}, {"position": Vector3(-165.25, 0, -128.6), "facing": 0.0}, {"position": Vector3(-151, 0, -131.4), "facing": 180.0}, {"position": Vector3(-151, 0, -128.6), "facing": 0.0}], "planters": [Vector3(-228, 0, -181.7), Vector3(-216.7, 0, -181.7), Vector3(-211.3, 0, -181.7), Vector3(-200, 0, -181.7), Vector3(-188.7, 0, -181.7), Vector3(-183.3, 0, -181.7), Vector3(-172, 0, -181.7), Vector3(-230.7, 0, -108.3), Vector3(-225.3, 0, -108.3), Vector3(-214, 0, -108.3), Vector3(-202.7, 0, -108.3), Vector3(-197.3, 0, -108.3), Vector3(-186, 0, -108.3), Vector3(-174.7, 0, -108.3), Vector3(-169.3, 0, -108.3), Vector3(-158, 0, -108.3)], "bins": [Vector3(-212.4, 0, -193), Vector3(-184.4, 0, -193), Vector3(-226.4, 0, -97), Vector3(-198.4, 0, -97), Vector3(-170.4, 0, -97), Vector3(-226.6, 0, -176), Vector3(-173.4, 0, -114), Vector3(-231, 0, -146.4), Vector3(-169, 0, -143.6)], "bike_racks": [{"position": Vector3(-215.55, 0, -189.5), "facing": 90.0, "length": 3.0}, {"position": Vector3(-187.55, 0, -189.5), "facing": 90.0, "length": 3.0}, {"position": Vector3(-229.55, 0, -100.5), "facing": 90.0, "length": 3.0}, {"position": Vector3(-201.55, 0, -100.5), "facing": 90.0, "length": 3.0}, {"position": Vector3(-173.55, 0, -100.5), "facing": 90.0, "length": 3.0}], "passage_lights": [Vector3(-214, 4.4, -193), Vector3(-186, 4.4, -193), Vector3(-228, 4.4, -97), Vector3(-200, 4.4, -97), Vector3(-172, 4.4, -97)]}
 
 const VILLA_SIZE := Vector3(9, 8.5, 8)
 
@@ -896,6 +930,74 @@ const PALM_TREES := [
 	Vector3(-190, -0.45, -155),
 	Vector3(-210, -0.45, -135),
 	Vector3(-190, -0.45, -135),
+	Vector3(-221, 0, -174.38),
+	Vector3(-210.25, 0, -174.38),
+	Vector3(-200, 0, -174.38),
+	Vector3(-189.75, 0, -174.38),
+	Vector3(-179, 0, -174.38),
+	Vector3(-224.25, 0, -115.62),
+	Vector3(-214, 0, -115.62),
+	Vector3(-203.75, 0, -115.62),
+	Vector3(-196.25, 0, -115.62),
+	Vector3(-186, 0, -115.62),
+	Vector3(-175.75, 0, -115.62),
+	Vector3(-248.88, 0, -175.5),
+	Vector3(-248.88, 0, -163.75),
+	Vector3(-248.88, 0, -152.5),
+	Vector3(-248.88, 0, -137.5),
+	Vector3(-248.88, 0, -126.25),
+	Vector3(-248.88, 0, -114.5),
+	Vector3(-235, 0, -175.5),
+	Vector3(-235, 0, -163.75),
+	Vector3(-235, 0, -152.5),
+	Vector3(-235, 0, -137.5),
+	Vector3(-235, 0, -126.25),
+	Vector3(-235, 0, -114.5),
+	Vector3(-165, 0, -175.5),
+	Vector3(-165, 0, -163.75),
+	Vector3(-165, 0, -152.5),
+	Vector3(-165, 0, -137.5),
+	Vector3(-165, 0, -126.25),
+	Vector3(-165, 0, -114.5),
+	Vector3(-151.12, 0, -175.5),
+	Vector3(-151.12, 0, -163.75),
+	Vector3(-151.12, 0, -152.5),
+	Vector3(-151.12, 0, -137.5),
+	Vector3(-151.12, 0, -126.25),
+	Vector3(-151.12, 0, -114.5),
+	Vector3(-256, 0, -198),
+	Vector3(-256, 0, -183),
+	Vector3(-242, 0, -198),
+	Vector3(-242, 0, -183),
+	Vector3(-158, 0, -198),
+	Vector3(-158, 0, -183),
+	Vector3(-144, 0, -198),
+	Vector3(-144, 0, -183),
+	Vector3(-263.62, 0, -198),
+	Vector3(-263.62, 0, -183),
+	Vector3(-278.38, 0, -198),
+	Vector3(-278.38, 0, -183),
+	Vector3(-272, 0, -175.5),
+	Vector3(-272, 0, -163.75),
+	Vector3(-272, 0, -152),
+	Vector3(-260, 0, -175.5),
+	Vector3(-260, 0, -163.75),
+	Vector3(-260, 0, -152),
+	Vector3(-278.38, 0, -136),
+	Vector3(-278.38, 0, -125),
+	Vector3(-278.38, 0, -114),
+	Vector3(-278.38, 0, -103),
+	Vector3(-278.38, 0, -92),
+	Vector3(-263.62, 0, -141.25),
+	Vector3(-263.62, 0, -131.4),
+	Vector3(-263.62, 0, -121.55),
+	Vector3(-263.62, 0, -111.7),
+	Vector3(-263.62, 0, -101.85),
+	Vector3(-263.62, 0, -92),
+	Vector3(-221.5, 0, -166.5),
+	Vector3(-178.5, 0, -166.5),
+	Vector3(-221.5, 0, -123.5),
+	Vector3(-178.5, 0, -123.5),
 ]
 
 const PARKED_CAR_SIZE := Vector3(1.9, 1.5, 4.3)

@@ -37,7 +37,15 @@ func _ready() -> void:
 	var depth: float = _plaza["depth"]
 	var steps: int = _plaza["steps"]
 	# The paving from the edge of the Plaza to the top step.
-	_ring(top, outer, 0.035, 0.035 + depth * 0.5 / steps, PAVING).name = "Plaza"
+	var core: float = _plaza.get("core_half", 0.0)
+	if GameConfig.PLAZA_LOOKS_PASS and core > top:
+		# Session 57: only a paved square round the sunken square; walkways, grass beds and
+		# palms fill the rest of the Plaza (DistrictDetail, PlazaLandscape).
+		var square := _ring(top, core, 0.035, 0.035 + depth * 0.5 / steps, PAVING, true)
+		square.name = "Plaza"
+		square.material_override = TerrainMaterials.make("paving")
+	else:
+		_ring(top, outer, 0.035, 0.035 + depth * 0.5 / steps, PAVING).name = "Plaza"
 	# The steps, each a ring a bit lower than the last, then the round floor.
 	var width := (top - bottom) / steps
 	for k in steps:
@@ -123,7 +131,8 @@ func _build_sail(posts: Array) -> void:
 
 ## A flat ring (like a washer) seen from above, from inner to outer radius, its top at "top",
 ## with a wall down the inside edge "drop" metres high (the front of a step).
-func _ring(inner: float, outer: float, top: float, drop: float, colour: Color) -> MeshInstance3D:
+## Session 57: square = true makes the outside edge a square (half size "outer") instead.
+func _ring(inner: float, outer: float, top: float, drop: float, colour: Color, square := false) -> MeshInstance3D:
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	for i in SEGMENTS:
@@ -132,7 +141,9 @@ func _ring(inner: float, outer: float, top: float, drop: float, colour: Color) -
 		var da := Vector3(cos(a), 0, sin(a))
 		var db := Vector3(cos(b), 0, sin(b))
 		var up := Vector3(0, top, 0)
-		_quad(tool, da * inner + up, db * inner + up, db * outer + up, da * outer + up, Vector3.UP)
+		var out_a := outer / maxf(absf(da.x), absf(da.z)) if square else outer
+		var out_b := outer / maxf(absf(db.x), absf(db.z)) if square else outer
+		_quad(tool, da * inner + up, db * inner + up, db * out_b + up, da * out_a + up, Vector3.UP)
 		if drop > 0.0:
 			var low := Vector3(0, top - drop, 0)
 			_quad(tool, da * inner + low, db * inner + low, db * inner + up, da * inner + up, -(da + db).normalized())
