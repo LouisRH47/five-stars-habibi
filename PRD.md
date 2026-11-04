@@ -361,6 +361,18 @@ That evening Louis played again and sent a second, longer list (everything marke
 | Wahat Farm Stall | Open stall beside (not on) the farm beds with a striped awning, fruit and veg crates, a juice press and cooler, chalkboard menu, **the farmer who hands you the order** |
 | Fair Grade school gate | Glass security booth with the guard, barrier, the school wall and sign behind, a teacher waiting |
 
+**Layouts (researched online, 4 Nov 2026).** Every place is laid out the way real ones are:
+- *Restaurants and cafés:* order-at-the-counter places use most of the room for seating (about 75 to 80% dining, 20 to 25% kitchen and counter), not the 60/40 of a sit-down restaurant. Wall benches and window bar stools fit more seats into a small room. The pickup spot is separate from the till.
+- *Coffee shop:* the espresso machine, grinder and milk fridge sit together as one station; the barista faces the customers; the pastry case is on the counter by the till.
+- *Gelato shop:* the curved display case faces the door so people choose before they reach the till; the till is at the end of the case.
+- *Supermarket:* fruit and veg straight inside the door; fridges and bread round the outside walls; shelf aisles in a grid in the middle, wide enough for two trolleys; checkouts at the front by the door with sweets and drinks beside them.
+- *Gym:* cardio machines (treadmills, bikes, rowers) by the windows and near the entrance, facing out; free weights and racks in their own zone away from the walkway, on rubber floor; mirrors on the wall opposite the weights, not facing the treadmills; about 1 to 2 m of space round each machine.
+- *Community pool:* the deck is split into zones (swim, lounge, kids' play); loungers in a row along the long side; shade from umbrellas or shade sails; the kids' pool next to seats so parents can watch; the lifeguard chair where it can see the whole pool; a fence with a gate all round.
+- *Car parks:* the real ones sit beside each cluster, at most 85 m from any home, and residents walk 10 to 85 m to their door. Double rows share one solar roof down the middle.
+- *Clusters:* narrow shaded lanes (sikkas), four small plazas per cluster with one central plaza with a cooling tower, shaded gardens and playgrounds, and a recycling point.
+- *The spine:* a long park with a water channel (a falaj) lined with pebbles and papyrus, fruit trees (date palms, figs, pomegranates), 11 domes, running and cycling tracks, outdoor gym stations, basketball courts, beehives and a donkey sanctuary.
+- *The Plaza:* a sunken square with a fountain, date palms and cooling towers with seats underneath.
+
 **Free asset packs (all CC0, checked 4 Nov 2026).** The repo is public on GitHub, so only **CC0** packs go in (free for anything, no credit needed, fine to share). Check the licence on each pack's own page when downloading, and credit everything in CREDITS.md anyway. Quaternius has started using a new licence (QAL) for new packs; only use Quaternius packs whose page still says CC0.
 
 | Pack | Maker | What we use it for | Session |
@@ -826,6 +838,16 @@ Looks pass, second list (what the real places are like; every name in the game s
 - [Quaternius Ultimate Modular Women (CC0)](https://bazaar.blendernation.com/?p=12168)
 - [Hexagon Construction Site Pack (CC0)](https://hexagon6.itch.io/construction-site-pack)
 - [Poly Haven: every asset is CC0](https://docs.polyhaven.com/ar/faq)
+- [Real solar car parks flank each cluster, at most 85 m from any home, Urbanitarian](https://urbanitarian.com/masterplans_post?id=378)
+- [Residents walk 10 to 85 m from shaded parking, betterhomes](https://www.bhomes.com/en/area-guides/the-sustainable-city)
+- [Clusters: sikkas, four amenity plazas, central cooling tower, Middle East Construction News](https://meconstructionnews.com/21952/project-profile-the-sustainable-city-dubai/amp)
+- [The spine: water channels with pebbles and papyrus, fruit trees, 11 biodomes, Urbanitarian](https://urbanitarian.com/urbanscapes_post?id=35)
+- [The spine: beehives, donkeys, tracks, gyms, basketball, falaj, New Atlas](https://refractor.io/environment/beyond-oil-inside-dubais-sustainable-city/)
+- [Fast-casual restaurants: about 20% kitchen, 80% dining, LoopNet](https://loopnet.com/learn/six-considerations-for-your-new-restaurant-floor-plan/1772708744)
+- [Gym layout zones and clearances, VERVE Fitness](https://www.vervefitness.com.au/blogs/all/how-to-plan-a-gym-floor-layout-design-principles)
+- [Gym cardio by the windows, mirrors opposite weights](https://gba66.github.io/commercial-gym-equipment/commercial-gym-layout.html)
+- [Pool deck zones, shade and lifeguard sightlines, Recreation Management](https://recmanagement.com/articles/154858/diversify-your-pool)
+- [Supermarket layout: produce at the entrance, checkouts at the front, ChatDiagram](https://www.chatdiagram.com/ar/examples/floorplan/grocery-store-floor-plan)
 - [Quaternius's newer QAL licence (why to check each pack page)](https://app.cinevva.com/fr/guides/free-rigged-3d-character-models)
 
 Licence tests:

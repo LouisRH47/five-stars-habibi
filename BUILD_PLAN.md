@@ -1309,7 +1309,7 @@ Done when:
 ### Session 58: The first 6 insides (pizza, gelato, coffee, shawarma, bakery, groceries)
 
 ```text
-Session 58. Read PRD.md "Looks pass", Interiors and the table. Make one room
+Session 58. Read PRD.md "Looks pass", Interiors, the table and Layouts. Make one room
 template: about 12 x 10 m inside, 4.5 m ceiling, menu board with real items
 behind the counter, kitchen with a cook at the back, the counter with staff,
 lots of tables with people eating, drinks fridge, bin, plants, hanging lamps,
@@ -1339,7 +1339,7 @@ Done when:
 ### Session 59: The other insides (Thai, sushi, tacos, burgers, bikes, clothes)
 
 ```text
-Session 59. Read PRD.md "Looks pass", the table. Using the Session 58
+Session 59. Read PRD.md "Looks pass", the table and Layouts. Using the Session 58
 template, build Tok Tok Thai (decorated tuk-tuk inside, woks over flames,
 lanterns, bunting, fairy lights, outside tables), Sushi You (moving conveyor
 belt, stools, fish case, two chefs, lanterns, curtain, booth, pick-up
@@ -1357,7 +1357,8 @@ Done when:
 ### Session 60: Gym and pools
 
 ```text
-Session 60. Read PRD.md "Looks pass", Gym and pools, and the Wahat Gym row.
+Session 60. Read PRD.md "Looks pass", Gym and pools, the Wahat Gym row and
+Layouts (gym zones, pool deck zones).
 Make the gym smaller (data GYM) with the lap pool (LAP_POOL) right in front
 of its glass wall, with a low glass fence and a small gate. Build the real gym
 inside (treadmills facing the glass, bikes, squat rack, dumbbells, rowers,
@@ -1395,7 +1396,7 @@ Done when:
 ### Session 62: Car parks and kerbs
 
 ```text
-Session 62. Read PRD.md "Looks pass", The car parks, and look at
+Session 62. Read PRD.md "Looks pass", The car parks and Layouts, and look at
 docs/plaza_carpark_spine.svg panel B. Rebuild every car park
 (PARKING_AREAS, PARKED_CARS): one row, an aisle, two rows back to back, an
 aisle, one row, every row under solar roofs, bays packed with no wasted
@@ -1414,7 +1415,8 @@ Done when:
 ### Session 63: The spine, the farm and the stream
 
 ```text
-Session 63. Read PRD.md "Looks pass", The green spine, and look at
+Session 63. Read PRD.md "Looks pass", The green spine and Layouts (the
+falaj with pebbles and papyrus, fig and pomegranate trees too), and look at
 docs/plaza_carpark_spine.svg panel C. The path nearest the domes (Domes
 Path) becomes a red walking track; the other (Spine Path) becomes a two-way
 buggy road with a dashed white middle line; between them a thinner strip
