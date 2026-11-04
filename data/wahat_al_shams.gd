@@ -60,8 +60,8 @@ const ROADS := [
 	{"name": "Highway", "from": Vector2(-482, -245), "to": Vector2(-482, 245), "width": 10.0},
 	{"name": "Bus Access", "from": Vector2(-420, -170), "to": Vector2(-310, -170), "width": 8.0},
 	{"name": "Plaza Link", "from": Vector2(-310, -170), "to": Vector2(-280, -145), "width": 8.0},
-	{"name": "Spine Path", "from": Vector2(-350, 0), "to": Vector2(420, 0), "width": 6.0},
-	{"name": "Domes Path", "from": Vector2(-118, -11), "to": Vector2(348, -11), "width": 3.0},
+	{"name": "Spine Buggy Road", "from": Vector2(-350, 0), "to": Vector2(420, 0), "width": 6.0, "kind": "buggy_road"},
+	{"name": "Spine Walking Track", "from": Vector2(-186, -6.75), "to": Vector2(358, -6.75), "width": 3.5, "kind": "walk_track"},
 	{"name": "Western Link", "from": Vector2(-290, -200), "to": Vector2(-290, 0), "width": 6.0},
 	{"name": "Plaza to C1", "from": Vector2(-290, -40), "to": Vector2(420, -40), "width": 6.0},
 	{"name": "South Spine Link", "from": Vector2(-160, 35), "to": Vector2(420, 35), "width": 6.0},
@@ -263,7 +263,7 @@ const SPINE_DOMES := [
 	Vector3(340, 0, -20),
 ]
 
-const HILLS := [
+const HILLS_OLD := [
 	{"position": Vector3(-130, 0, 13), "height": 0.4},
 	{"position": Vector3(-60, 0, 13), "height": 0.5},
 	{"position": Vector3(32, 0, 13), "height": 0.35},
@@ -271,6 +271,21 @@ const HILLS := [
 	{"position": Vector3(330, 0, 13), "height": 0.45},
 	{"position": Vector3(392, 0, 13), "height": 0.5},
 ]
+
+const HILLS := [
+	{"position": Vector3(-133, 0, 13.5), "height": 0.35, "radius": 6},
+	{"position": Vector3(-60, 0, 14), "height": 0.5, "radius": 7},
+	{"position": Vector3(25, 0, 15), "height": 0.45, "radius": 8},
+	{"position": Vector3(52, 0, 14), "height": 0.3, "radius": 6},
+	{"position": Vector3(315, 0, 13), "height": 0.25, "radius": 5},
+	{"position": Vector3(334, 0, 14), "height": 0.5, "radius": 7},
+	{"position": Vector3(398, 0, 13), "height": 0.4, "radius": 6},
+	{"position": Vector3(-86, 0, -23), "height": 0.4, "radius": 7},
+	{"position": Vector3(17, 0, -23), "height": 0.5, "radius": 9},
+	{"position": Vector3(90, 0, -23), "height": 0.3, "radius": 5},
+]
+
+const SPINE_PATHS := {"track": "Spine Walking Track", "road": "Spine Buggy Road", "kerb_width": 0.3, "kerb_height": 0.12, "strip_width": 1.4, "walk_every": 40.0, "dash": 1.5, "gap": 1.5}
 
 const LAP_POOL := Rect2(140, 13, 42, 9)
 
@@ -866,19 +881,17 @@ const REGULARS := [
 ]
 
 const PALM_TREES := [
-	Vector3(-130, 0, -7),
-	Vector3(-85, 0, -7),
-	Vector3(-40, 0, -7),
-	Vector3(5, 0, -7),
-	Vector3(50, 0, -7),
-	Vector3(95, 0, -7),
-	Vector3(140, 0, -7),
-	Vector3(185, 0, -7),
-	Vector3(230, 0, -7),
-	Vector3(275, 0, -7),
-	Vector3(320, 0, -7),
-	Vector3(365, 0, -7),
-	Vector3(410, 0, -7),
+	Vector3(-130, 0, -10.5),
+	Vector3(-85, 0, -10.5),
+	Vector3(-40, 0, -10.5),
+	Vector3(5, 0, -10.5),
+	Vector3(50, 0, -10.5),
+	Vector3(95, 0, -10.5),
+	Vector3(140, 0, -10.5),
+	Vector3(185, 0, -10.5),
+	Vector3(275, 0, -10.5),
+	Vector3(320, 0, -10.5),
+	Vector3(365, 0, -10.5),
 	Vector3(-130, 0, 7),
 	Vector3(-85, 0, 7),
 	Vector3(-40, 0, 7),
@@ -992,15 +1005,15 @@ const BUGGIES := [
 ]
 
 const HORSE_RIDERS := [
-	{"points": [Vector3(-450, 0, -230), Vector3(450, 0, -230), Vector3(450, 0, 230), Vector3(-450, 0, 230)], "loop": true, "colour": Color(0.45, 0.28, 0.15, 1), "level": 0, "collection_id": "horse_sultan", "collection_name": "Sultan"},
-	{"points": [Vector3(450, 0, 230), Vector3(-450, 0, 230), Vector3(-450, 0, -230), Vector3(450, 0, -230)], "loop": true, "colour": Color(0.85, 0.82, 0.78, 1), "level": 1, "collection_id": "horse_noor", "collection_name": "Noor"},
+	{"points": [Vector3(-450, 0, -230), Vector3(450, 0, -230), Vector3(450, 0, 230), Vector3(-450, 0, 230)], "loop": true, "colour": Color(0.45, 0.28, 0.15, 1), "coat": "brown", "level": 0, "collection_id": "horse_sultan", "collection_name": "Sultan"},
+	{"points": [Vector3(450, 0, 230), Vector3(-450, 0, 230), Vector3(-450, 0, -230), Vector3(450, 0, -230)], "loop": true, "colour": Color(0.62, 0.61, 0.6, 1), "coat": "grey", "level": 1, "collection_id": "horse_noor", "collection_name": "Noor"},
 ]
 
 const PEOPLE_ROUTES := [
 	{"points": [Vector3(-438, 0, -218), Vector3(438, 0, -218), Vector3(438, 0, 218), Vector3(-438, 0, 218)], "loop": true, "jog": true, "look": 2, "level": 0},
-	{"points": [Vector3(-130, 0, -1.5), Vector3(405, 0, -1.5)], "jog": false, "look": 0, "level": 0},
-	{"points": [Vector3(-130, 0, 1.5), Vector3(405, 0, 1.5)], "jog": false, "look": 1, "level": 1},
-	{"points": [Vector3(-130, 0, -2.5), Vector3(405, 0, -2.5)], "jog": false, "look": 2, "level": 2},
+	{"points": [Vector3(-180, 0, -6), Vector3(352, 0, -6)], "jog": false, "look": 0, "level": 0},
+	{"points": [Vector3(-180, 0, -7.6), Vector3(352, 0, -7.6)], "jog": false, "look": 1, "level": 1},
+	{"points": [Vector3(-180, 0, -6.9), Vector3(352, 0, -6.9)], "jog": false, "look": 2, "level": 2},
 ]
 
 const GARDENERS := [

@@ -39,6 +39,8 @@ static func buggy(colour: Color) -> Array:
 ## A horse with a rider in a riding helmet. Returns [model, rider]. The legs are kept
 ## (model meta "legs") so animate() can swing them.
 static func horse(colour: Color) -> Array:
+	if GameConfig.HORSE_LOOK_V2:
+		return HorseLook.build(colour)   # Session 63: rounder horse, coat texture, mane, tack
 	var dark := colour.darkened(0.35)
 	var kit := MeshKit.new()
 	kit.box(Vector3(0.6, 0.7, 1.7), colour, Vector3(0, 1.35, 0))                         # body
