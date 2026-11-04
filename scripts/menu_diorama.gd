@@ -16,7 +16,10 @@ const KERB := Color(0.95, 0.93, 0.88)
 
 ## What the camera looks at (the bike and rider), and where it sits before the swing.
 const TARGET := Vector3(1.1, 1.05, -4.6)
-const CAMERA_FROM := Vector3(5.6, 1.75, 3.2)
+const CAMERA_FROM := Vector3(6.4, 1.9, 4.6)
+## How far right of the bike the camera aims (metres), so the bike shows between the title
+## and the phone.
+const AIM_RIGHT := 1.1
 
 var view: SubViewport
 var camera: Camera3D
@@ -27,7 +30,7 @@ var _time := 0.0
 
 func _ready() -> void:
 	stretch = true
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	view = SubViewport.new()
 	view.own_world_3d = true
@@ -66,7 +69,8 @@ func set_look(look: int) -> void:
 func _place_camera(swing: float) -> void:
 	var angle := deg_to_rad(GameConfig.DIORAMA_ORBIT_DEG) * swing
 	var from := TARGET + (CAMERA_FROM - TARGET).rotated(Vector3.UP, angle)
-	camera.look_at_from_position(from, TARGET + Vector3(-1.4, 0.55, 0), Vector3.UP)
+	var right := (TARGET - from).normalized().cross(Vector3.UP).normalized()
+	camera.look_at_from_position(from, TARGET + right * AIM_RIGHT + Vector3(0, 0.45, 0), Vector3.UP)
 
 
 func _light(world: Node3D) -> void:
@@ -87,7 +91,7 @@ func _light(world: Node3D) -> void:
 	environment.tonemap_exposure = 1.05
 	environment.fog_enabled = true
 	environment.fog_light_color = Color(1.0, 0.84, 0.64)
-	environment.fog_density = 0.006
+	environment.fog_density = 0.0025
 	environment.glow_enabled = Settings.graphics >= 1
 	environment.glow_intensity = 0.5
 	environment.glow_hdr_threshold = 1.1

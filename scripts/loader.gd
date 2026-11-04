@@ -188,7 +188,8 @@ func _next_tip() -> void:
 ## Session 71: the rider sits on top of the bar, at the front of the orange fill.
 func _place_rider() -> void:
 	var width := _track.size.x
-	rider_icon.position = Vector2(lerpf(4.0, width - 4.0, progress) - rider_icon.size.x * 0.62, -rider_icon.size.y + 6.0)
+	var shown := rider_icon.size * rider_icon.scale
+	rider_icon.position = Vector2(lerpf(4.0, width - 4.0, progress) - shown.x * 0.62, -shown.y + 6.0)
 	rider_icon.queue_redraw()
 
 
@@ -315,6 +316,7 @@ func _build_rider(column: VBoxContainer) -> void:
 	rider_icon = Control.new()
 	rider_icon.name = "RiderIcon"
 	rider_icon.size = Vector2(76, 60)
+	rider_icon.scale = Vector2.ONE * 1.4
 	rider_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	rider_icon.draw.connect(_draw_rider)
 	_track.add_child(rider_icon)
@@ -323,7 +325,7 @@ func _build_rider(column: VBoxContainer) -> void:
 	fill_style.border_color = Color(1, 0.8, 0.5)
 	fill_style.border_width_top = 3
 	var spacer := Control.new()  # room above the bar for the rider
-	spacer.custom_minimum_size = Vector2(0, 34)
+	spacer.custom_minimum_size = Vector2(0, 58)
 	column.add_child(spacer)
 	column.move_child(spacer, _track.get_index())
 
