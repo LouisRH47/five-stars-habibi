@@ -25,8 +25,14 @@ func _run() -> void:
 	traffic.data = WahatAlShams
 	world.add_child(traffic)
 	_check("every car park has a moving car route", traffic.cars.size() == 4 + WahatAlShams.PARKING_AREAS.size())
-	var bays := WahatAlShams.PARKED_CARS.filter(func(place): return place["bay"]).size()
-	_check("all marked bays and visiting car bays have a solar roof", traffic.solar_bays == bays + WahatAlShams.PARKING_AREAS.size())
+	if GameConfig.CARPARK_ROWS:
+		var rows := 0
+		for park: Dictionary in WahatAlShams.CAR_PARKS:
+			rows += park["roofs"].size()
+		_check("every car park row has its solar roof (Session 62)", traffic.solar_bays == rows and rows > 0)
+	else:
+		var bays := WahatAlShams.PARKED_CARS.filter(func(place): return place["bay"]).size()
+		_check("all marked bays and visiting car bays have a solar roof", traffic.solar_bays == bays + WahatAlShams.PARKING_AREAS.size())
 	_check("both horse-track edges and the arena have rails", traffic.rail_segments >= 16)
 	for car in traffic.cars:
 		var safe := true

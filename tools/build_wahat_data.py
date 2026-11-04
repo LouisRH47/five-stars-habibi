@@ -98,7 +98,15 @@ for n,cx,cz in clusters:
     works.append({'name':cluster+' Lane','centre':v2(cx+30,cz+30),'along':'z','width':6.,'length':10.})
 put('ROADS',roads);put('PAVED_AREAS',paving);put('BOLLARDS',bollards)
 parking=[(-92,-199,42,135),(119,-196,14,132),(274,-196,14,132),(-25,52,23,135),(152,52,60,135),(380,50,32,145)]
-put('PARKING_AREAS',[rect(*r) for r in parking])
+# --- Session 62: car parks and kerbs (the layout maths is in tools/carpark_layout.py) ---
+import sys; sys.path.insert(0,str(Path(__file__).resolve().parent))
+import carpark_layout as cp
+put('PARKING_AREAS_OLD',[rect(*r) for r in parking])   # before Session 62, kept for reference
+parks,carpark_kerbs,carpark_gardens,carpark_palms,c45_site=cp.build_all(clusters,road)
+put('PARKING_AREAS',[rect(*p['area']) for p in parks])
+put('CAR_PARKS',[cp.to_data(p,rect,v3) for p in parks])
+put('CARPARK_KERBS',[rect(*k) for k in carpark_kerbs])
+put('CARPARK_GARDENS',[rect(*g) for g in carpark_gardens])
 put('PLOTS',[{'name':'Fair Grade International School','area':rect(-425,35,120,160),'colour':colour(.95,.85,.8)},
  {'name':'C Institute','area':rect(-278,-58,126,48),'colour':colour(.65,.82,.93)},
  {'name':'Mosque','area':rect(-422,-203,70,105),'colour':colour(.93,.92,.88)},
@@ -121,7 +129,7 @@ put('GYM',{'position':v3(115,0,22),'size':v3(36,8,22),'facing':180.,'name':'Waha
 put('COMMUNITY_POOL',rect(190,-30,50,24));put('JUMPING_ARENA',rect(-282,65,115,88))
 put('STABLES',{'name':'Wahat Stables','arabic':'إسطبلات الواحة','block':{'position':v3(-224,0,174),'size':v3(100,5,14)},'paddock':rect(-280,157,110,9),'horses':4})
 put('BUILDING_SITE',{'area':rect(-135,55,110,135),'crane':v3(-80,0,120),'sign':{'name':'Phase 2 coming soon','arabic':'المرحلة الثانية قريباً','position':v3(-140,0,110),'facing':-90.}})
-put('BUILDING_SITES',[rect(-135,55,110,135),rect(217,56,16,132),rect(-275,-80,105,18),rect(-301,50,15,125),rect(-413,-89,100,84)])
+put('BUILDING_SITES',[rect(-135,55,110,135),rect(*c45_site),rect(-275,-80,105,18),rect(-301,50,15,125),rect(-413,-89,100,84)])
 put('CLUSTER_NAMES',{f'C{i}':'المجموعة '+a for i,a in enumerate('١٢٣٤٥',1)})
 put('TUTORIAL_ORDER',{'restaurant':'pizza','villa':101})
 # Session 57: the Plaza outside (looks pass, Appendix A of docs/looks_pass_detailed_plan.md).
@@ -295,8 +303,11 @@ put('VILLAS',homes)
 put('REGULARS',[{'id':'mariam','name':'Auntie Mariam','villa':207,'shop':'boba','food':'bubble tea','who':'resident','look':1},{'id':'rashid','name':'Mr Rashid','villa':503,'shop':'shawarma','food':'shawarma','who':'resident','look':0},{'id':'dana','name':'Ms Dana','villa':901,'shop':'bakery','food':'cake','who':'teacher','look':-1},{'id':'hamdan','name':'Hamdan','villa':902,'shop':'farm','food':'farm juice','who':'groom','look':-1}])
 palms=[v3(x,0,z) for z in [-7,7] for x in range(-130,411,45)] +[v3(-210,-.45,-155),v3(-190,-.45,-155),v3(-210,-.45,-135),v3(-190,-.45,-135)]
 palms+=plaza_palms  # Session 57: date palms in the Plaza's grass beds
+palms+=[v3(x,0,z) for x,z in carpark_palms]   # Session 62: palms in the car parks' grass beds
 put('PALM_TREES',palms);put('PARKED_CAR_SIZE',v3(1.9,1.5,4.3))
-put('PARKED_CARS',[{'position':v3(x+3,0,z+8+k*9),'facing':90.,'bay':True} for x,z,w,d in parking for k in range(8)])
+put('PARKED_CARS_OLD',[{'position':v3(x+3,0,z+8+k*9),'facing':90.,'bay':True} for x,z,w,d in parking for k in range(8)])
+# Session 62: about half the bays have a car; 'park' is the car park, 'model' the Kenney car, 'paint' its colour.
+put('PARKED_CARS',[{'position':v3(c['x'],0,c['z']),'facing':c['facing'],'bay':True,'park':c['park'],'model':c['model'],'paint':colour(*c['paint'])} for c in cp.parked_cars(parks)])
 put('SPEED_BUMP_SIZE',v3(10,.12,.5))
 put('SPEED_BUMPS',[{'position':v3(x,0,z),'facing':90.} for z in [-205,205] for x in [-180,50,300]]+[{'position':v3(x,0,z),'facing':0.} for x in [-425,425] for z in [-80,80]])
 put('CATS',cats);put('SCOOTER_KIDS',kids)
@@ -319,6 +330,9 @@ for name,value in constants.items():
     else:lines.append(f'const {name} := '+gd(value))
     lines.append('')
 (ROOT/'data/wahat_al_shams.gd').write_text('\n'.join(lines).rstrip()+'\n')
+# Session 62: real car parks are at most 85 m from any home. Report the homes further away.
+far=[(h['cluster'],h['house'],round(d)) for h,d in zip([h for h in homes if h['kind']!='spot'],cp.reach(parks,[(float(h['position'].split('(')[1].split(',')[0]),float(h['position'].split(',')[2].rstrip(')'))) for h in homes if h['kind']!='spot'])) if d>85]
+print('Car parks:',len(parks),'parks,',sum(len(p['rows'])*p['bays'] for p in parks),'bays,',len(constants['PARKED_CARS']),'parked cars; homes over 85 m from a car park:',len(far),sorted({c for c,_,_ in far}),max([d for *_,d in far],default=0),'m')
 assert len([v for v in homes if v['kind']!='spot'])==500
 assert len({v['number'] for v in homes})==504
 print('Generated 500 homes, 4 venues, 11 pickups and',len(roads),'road/path segments')

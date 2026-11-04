@@ -558,3 +558,15 @@ const PLAZA_DOOR_SPEED := 3.0         # how fast it slides (share of fully open 
 const PLAZA_SIGN_GLOW_HOURS := Vector2(16.6, 17.4)  # signs start glowing, then are fully lit (sunset)
 const PLAZA_SIGN_GLOW_ENERGY := 0.8   # how bright the lit sign bands are at night
 const PLAZA_TROLLEYS := 8             # trolleys lined up outside Grand Groceries
+
+# --- Session 62: car parks and kerbs ---
+const CARPARK_ROWS := true            # Louis's 1-2-1 rows with solar roofs; false = the old roof over each car
+const CARPARK_CAR_BATCH := true       # parked cars drawn together (fast); false = one model per car (slow)
+const CARPARK_CAR_VIEW_RANGE := 260.0 # parked cars further than this aren't drawn
+const KERB_SIZE := Vector2(0.3, 0.15) # kerbstones: 0.3 m wide, 0.15 m high (you ride over them)
+const KERB_COLOUR := Color(0.8, 0.79, 0.75)
+const CARPARK_ROOF_LOW := 2.6         # solar roof height at the aisle side
+const CARPARK_ROOF_HIGH := 3.0        # and at the back (the middle line of a double row)
+const CARPARK_POST_EVERY := 3         # a roof post every 3 bays
+const CARPARK_LINE_WIDTH := 0.1       # white bay lines
+const CARPARK_ARROW_EVERY := 16.0     # aisle arrows every 16 m
