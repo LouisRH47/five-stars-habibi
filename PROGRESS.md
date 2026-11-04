@@ -7,7 +7,7 @@ stables and the number of people about.
 
 **Next: Session 35**, the first of the Detail pass (Sessions 35 to 46, in BUILD_PLAN.md).
 The old Palm Grove map is gone (4 Nov), and Session 35 now also rewrites the smoke test for
-the real-size map. One thing still to settle: the school's name (see "Next" below).
+the real-size map. The school is now called Fair Grade International School (a made-up name, 4 Nov).
 
 Things Louis noticed that the Detail pass fixes: the clock looks like a sped-up timer, the camera
 goes inside houses, villas should be joined rows, a warpy smear in front of the bike (the heat
@@ -31,6 +31,8 @@ A check of the plan against the code found three bugs, now fixed on branch `revi
   builders only it used. Wahat Al Shams is the only map; the flat test area stays for tests.
   Wahat Al Shams still has no street-name signs (only its cluster, shop and landmark signs);
   that was a Palm Grove thing and can come back in the Detail pass.
+- **School renamed:** Al Shams School is now Fair Grade International School (Arabic sign
+  مدرسة فير غريد الدولية); orders go to "Fair Grade School · Gate".
 - Smoke test: new checks for all three bugs. 5 out of 5 runs pass on Wahat Al Shams, and the test
   area passes too.
 
@@ -769,9 +771,6 @@ MacBook or an iPad without installing anything: fivestarshabibi.middleleap.com.
   close and reopen the project in the editor.
 
 ## Next
-- **School name:** the code still says "Al Shams School". The name picked on 4 Nov is "Fairgreen
-  International School", but that is a real school in Dubai, and CLAUDE.md says no real names. To agree
-  before Session 41 (which builds the school).
 - Louis: try the R key and quitting mid-shift (see "Review fixes" above), and confirm the
   Session 34 tuning in the PRD Decisions log.
 - Then the Detail pass (Sessions 35 to 46), then Reasons to come back (Sessions 47 to 51).

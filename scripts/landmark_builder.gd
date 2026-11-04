@@ -1,6 +1,6 @@
 extends Node3D
 ## Builds the landmarks of Wahat Al Shams (Session 27) from data/wahat_al_shams.gd:
-## Al Shams School (a low building in a fenced yard, a sign over the gate, the security
+## Fair Grade International School (a low building in a fenced yard, a sign over the gate, the security
 ## booth), the stables (stable block, paddock with horses, stable office) and the building
 ## site (fence, crane, "Phase 2 coming soon" sign). The booth and the office are the two
 ## drop-off spots in the VILLAS list ("kind": "spot"). The mosque is built by DecorBuilder.

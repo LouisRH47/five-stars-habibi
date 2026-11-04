@@ -109,7 +109,7 @@ const BOLLARDS := [
 ## Plots for the buildings that come in Session 27 (flat for now).
 ## colour: the colour of the plot on the ground and the mini-map.
 const PLOTS := [
-	{"name": "Al Shams School", "area": Rect2(84, 37, 33, 70), "colour": Color(0.95, 0.85, 0.8, 1)},
+	{"name": "Fair Grade International School", "area": Rect2(84, 37, 33, 70), "colour": Color(0.95, 0.85, 0.8, 1)},
 	{"name": "Mosque", "area": Rect2(47, 37, 33, 70), "colour": Color(0.93, 0.92, 0.88, 1)},
 	{"name": "Stables", "area": Rect2(133, -35, 40, 70), "colour": Color(0.86, 0.75, 0.55, 1)},
 	{"name": "Building site", "area": Rect2(133, 67, 40, 40), "colour": Color(0.8, 0.78, 0.74, 1)},
@@ -152,10 +152,10 @@ const MINI_PLAZAS := [
 ]
 
 ## The landmarks (Session 27), built by scripts/landmark_builder.gd.
-## Al Shams School: a low building in a fenced yard. The gate is in the north fence; the
+## Fair Grade International School: a low building in a fenced yard. The gate is in the north fence; the
 ## security booth next to it is the only drop-off spot (see VILLAS, number 901).
 const SCHOOL := {
-	"name": "Al Shams School", "arabic": "مدرسة الشمس",
+	"name": "Fair Grade International School", "arabic": "مدرسة فير غريد الدولية",
 	"area": Rect2(84, 37, 33, 70), "gate_x": 101.0, "gate_width": 6.0,
 	"building": {"position": Vector3(100.5, 0, 84), "size": Vector3(28, 6, 16)},
 }
@@ -279,7 +279,7 @@ const VILLAS := [
 	{"number": 510, "house": 10, "cluster": "C5", "address": "C5 · Villa 10", "kind": "courtyard", "position": Vector3(-20, 0, 98.5), "facing": 180.0},
 	{"number": 511, "house": 11, "cluster": "C5", "address": "C5 · Villa 11", "kind": "courtyard", "position": Vector3(2, 0, 98.5), "facing": 180.0},
 	{"number": 512, "house": 12, "cluster": "C5", "address": "C5 · Villa 12", "kind": "signature", "position": Vector3(24, 0, 98.5), "facing": 180.0},
-	{"number": 901, "house": 0, "cluster": "", "address": "Al Shams School · Gate", "kind": "spot", "look": "booth", "position": Vector3(95, 0, 34), "facing": 180.0, "size": Vector3(2.6, 2.8, 2.6)},
+	{"number": 901, "house": 0, "cluster": "", "address": "Fair Grade School · Gate", "kind": "spot", "look": "booth", "position": Vector3(95, 0, 34), "facing": 180.0, "size": Vector3(2.6, 2.8, 2.6)},
 	{"number": 902, "house": 0, "cluster": "", "address": "Stables · Office", "kind": "spot", "look": "office", "position": Vector3(139, 0, 8), "facing": -90.0, "size": Vector3(5, 3.2, 4)},
 ]
 

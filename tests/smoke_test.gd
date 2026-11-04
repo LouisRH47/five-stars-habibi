@@ -1413,7 +1413,7 @@ func _check_session27() -> void:
 	for plot in data["PLOTS"]:
 		plots[plot["name"]] = plot["area"]
 	var mosque: Rect2 = plots["Mosque"]
-	var school: Rect2 = plots["Al Shams School"].grow(8.0)  # the booth is just outside the fence
+	var school: Rect2 = plots["Fair Grade International School"].grow(8.0)  # the booth is just outside the fence
 	var stables: Rect2 = plots["Stables"].grow(2.0)
 	var to_mosque := 0
 	var wrong_spot := 0

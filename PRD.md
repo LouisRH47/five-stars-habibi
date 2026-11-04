@@ -600,6 +600,7 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 4 Nov 2026 | Review fixes: R puts the bike on the nearest road, not back at the start (that was a free ride back to the shops). Quitting halfway through a shift and opening the game again plays that same shift again; only a finished shift counts towards "this week". Your accept / skip choices are saved, so the acceptance rate survives a restart. The Gear levels line now points to the Pedal Point Bikes table (they disagreed); cakes, not bubble tea, lose the most per bump (as the code and the fragile cakes already did) |
 | 4 Nov 2026 | The old Palm Grove map is removed (scene, data, its road, sign and park builders). Wahat Al Shams is the only map; the flat test area stays for tests. Session 35 rewrites the smoke test's Wahat checks for the real-size map and keeps it under 15 minutes |
 | 4 Nov 2026 | The game is released both on itch.io (Mac and Windows downloads) and in the browser at fivestarshabibi.middleleap.com. A crash "week" is 7 shifts (as the clinic screen already counts, CRASH_WEEK_SHIFTS), not 5 |
+| 4 Nov 2026 | The school keeps the made-up name Fair Grade International School (not the real Fairgreen). Renamed in the game now; Session 41 builds the real-looking school |
 
 ## Sources
 
