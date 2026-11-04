@@ -101,6 +101,8 @@ static func _reception(body: StaticBody3D, counter: Vector3, place: Dictionary) 
 	var staff := PeopleLooks.teacher()
 	staff.name = "CounterStaff"
 	staff.position = Vector3(0, 0, desk_z - 1.4)
+	if GameConfig.INTERIOR_REVIEW_FIXES:
+		staff.position.x = 1.0   # Review fix: standing in the middle, her head hid the name on the wall
 	staff.rotation.y = PI
 	body.add_child(staff, true)
 	# The logo wall: a white wall with a big teal "C" ring and the name.
