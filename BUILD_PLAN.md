@@ -1131,9 +1131,13 @@ Done when:
 - [ ] It's on itch.io
 - [ ] The browser version plays the same game on a Mac and an iPad
 
-## Looks pass (Sessions 52 to 59)
+## Looks pass (Sessions 52 to 65)
 
-From Louis's play-test of the detail pass on 4 November. Everything is in PRD.md, "Looks pass".
+From Louis's play-test of the detail pass on 4 November, plus his second, longer list from the same evening
+(the loading screen, ragdoll falls, the Schedule I look, the Plaza, car parks, spine, pools, and lots of
+things that overlap or float). Everything is in PRD.md, "Looks pass". Session 52 is built on the
+`looks-pass` branch; Sessions 53 to 65 replace the old 53 to 59. Render of the new Plaza row, car park
+and spine paths: docs/plaza_carpark_spine.svg.
 Same rules as always: one session at a time, headless checks, smoke test and the focused tests,
 a check for every new thing, PROGRESS.md, commit. Check the frame rate on Low, Medium and High
 after every session that adds things, and take screenshots of what changed.
@@ -1166,122 +1170,301 @@ Done when:
 - [ ] The C Institute's glass and seats face the spine, with windows on both sides
 - [ ] The careless bot earns clearly less than the careful one and never gets stuck in a crash loop
 
-### Session 53: The free asset kits
+### Session 53: Loading screen and the small fixes
 
 ```text
-Session 53. Read PRD.md "Looks pass", Interiors. Download the CC0 kits: KayKit
-Restaurant Bits and KayKit Furniture Bits (GitHub: KayKit-Game-Assets), Kenney
-Furniture Kit and Food Kit (kenney.nl), a CC0 supermarket pack, and CC0 gym models
-from Poly Pizza (check each model's licence is CC0, skip anything else). Put them
-in assets/kits/<pack>/ with their licence files, credit them in CREDITS.md, use the
-glTF versions, and make a small prop library (scripts/props.gd) that places a model
-by name with a position, rotation and scale. Keep the downloads small: only the
-models we use.
+Session 53. Read PRD.md "Looks pass": Loading screen, Small fixes.
+1) Loading screen. Today scripts/start_screen.gd calls change_scene_to_file
+after "Accepted" (and on Continue), and the game freezes while the map is
+built, so people click again and again. Grey out the button on the first
+click, show a loading screen at once (Snackaroo logo, "Getting your first
+shift ready…", progress bar with %, rotating tips, game fonts and colours),
+and build Wahat Al Shams in steps (roads, each cluster, the Plaza, the
+spine, landmarks, people) with a frame between steps so the bar really
+moves. Fade into the game when it's done.
+2) Sunglasses: centre them on the rider's head (scripts/rider_look.gd and
+the Dune Drip glasses in scripts/wardrobe.gd), same width both sides.
+3) Benches: check the facing rule in scripts/props.gd against every bench in
+data/wahat_al_shams.gd and the builders, and turn each bench to face what
+you'd look at (fountain, path, playground).
+4) Cluster signs (scripts/cluster_signs.gd): one sign per lane entrance on
+the house side, posts not touching each other, nothing in a road.
+5) Roads: the ring road always wins. Other lanes stop neatly at its kerb,
+nothing is drawn over it, no lane stops in the middle of nowhere. Check
+Cluster 5 first (Louis saw a sign in the road and roads lying over each
+other there), then every cluster.
+6) Move the Farm Stall off the farm bed (it stands at x -20, z 18, on the bed
+Rect2(-40, 13, 35, 8)) to the side, on paving. Keep hills clear of the lap
+pool, pools, buildings, paths and courts. Add a small wooden bridge
+wherever the stream meets a path or road.
+7) A layout check, tests/layout_test.gd, run from the smoke test: it fails if
+signs, benches or stalls stand in a road or on a bed, a hill overlaps a pool
+or building, two posts overlap, or a prop floats or sinks.
+```
+
+Done when:
+
+- [ ] After "Accepted" a loading screen appears at once and its bar fills up; clicking twice does nothing
+- [ ] Sunglasses look even, benches face the right way, every cluster has clean signs
+- [ ] No road lies on top of another and nothing stands in a road
+- [ ] The farm stall, the lap pool and the stream look right, and the layout check passes
+
+### Session 54: Ragdoll falls
+
+```text
+Session 54. Read PRD.md "Looks pass", Rider falls like a ragdoll, and
+"Crashes, bills and insurance". Replace the stiff authored fall from 44A
+with a ragdoll: add a PhysicalBoneSimulator3D with physical bones (hips,
+spine, head, upper and lower arms and legs, with cone and hinge joints and
+sensible limits) to the rider's skeleton. On a crash, start the simulation
+and push the bones in the impact direction with a strength from the
+captured impact; the bike becomes a tumbling rigid body. When the rider has
+settled (or after about 2.5 seconds), a small crash blends back into the
+get-up and riding animation, and a big crash fades to the clinic. Set the
+collision layers so the rider doesn't hit its own ragdoll or the bike. Keep
+44A's rules: controls locked during the fall, one bill per accident,
+bounce contacts never count twice. Low can use fewer bones. Update
+tests/crash_impact_test.gd and add a check that the ragdoll always ends.
+Record a short clip of a slow hit, a scrape and a hard crash for Louis.
+```
+
+Done when:
+
+- [ ] The rider flops like a ragdoll in the direction of the hit, not like a stiff stick
+- [ ] Small crashes get back up and carry on; big crashes go to the clinic after the fall
+- [ ] No double bills, no getting stuck, still 60 fps on Medium
+
+### Session 55: The Schedule I look and real grass
+
+```text
+Session 55. Read PRD.md "Looks pass": The Schedule I look, Grass. Keep our
+characters. 1) Light and colour: brighter sun, warmer sky, softer shadows
+that aren't black, a little more colour (Environment adjustments), gentle
+distance fog. Compare screenshots of the Plaza, a cluster lane and the spine
+before and after. 2) Swap the photo textures in assets/textures (aerial
+grass, asphalt, pavement, sand) for simple stylized CC0 ones (OpenGameArt
+CC0, ambientCG, or flat colours with painted variation made by a script).
+Credit them in CREDITS.md and update assets/textures/sources.json.
+3) Grass: replace the little triangles and boxes with grass blades in a
+MultiMesh with a CC0 wind shader (godotshaders.com "Stylized Multimesh
+Grass"): dense near the camera, fading with distance (visibility ranges),
+full on Medium and High, sparser on Low. Check the frame rate on Low,
+Medium and High.
+```
+
+Done when:
+
+- [ ] The world looks bright, clean and cartoony like Schedule I, and Louis says it fits
+- [ ] The grass looks like real swaying grass, not shapes
+- [ ] 60 fps on Medium; Low still smooth
+
+### Session 56: The free asset kits
+
+```text
+Session 56. Read PRD.md "Looks pass", Interiors. Download the CC0 kits:
+KayKit Restaurant Bits and KayKit Furniture Bits (GitHub: KayKit-Game-Assets),
+Kenney Furniture Kit and Food Kit (kenney.nl), a CC0 supermarket pack, CC0 gym
+models from Poly Pizza, and the CC0 low-poly house construction site by
+Majadroid (OpenGameArt) for the building sites. Check each licence says CC0
+and skip anything else. Put them in assets/kits/<pack>/ with their licence
+files, credit them in CREDITS.md, use the glTF versions, keep only the models
+we use. Make a small prop library (scripts/kit_props.gd) that places a model
+by name with a position, rotation and scale, and snaps it to the floor or
+counter it stands on. Make a test scene with a row of props from each kit.
+List which machines aren't in any kit (espresso machine, mosaic pizza oven,
+shawarma grill, manakish oven, gelato case) for Session 58 to build.
 ```
 
 Done when:
 
 - [ ] The kits are in assets/kits with licences, and CREDITS.md lists them
-- [ ] A test scene shows a row of props from each kit
+- [ ] A test scene shows a row of props from each kit, all standing on the floor
 
-### Session 54: The new restaurant room, and the first 5 restaurants
+### Session 57: The Plaza outside
 
 ```text
-Session 54. Read PRD.md "Looks pass", Interiors and the table. Make one restaurant
-room template: about 12 x 10 m inside, 4.5 m ceiling (the outside stays the same,
-the rest is a storeroom you can't enter), big glass front, sliding glass door, menu
-board, kitchen with a cook behind the counter, staff at the counter, tables with
-people eating, drinks fridge, bin, plants, hanging lamps with warm light and soft
-shadows, tiled floor in the shop's colours. Short queue: sometimes 1 or 2 people,
-2 to 4 seconds. The camera moves closer indoors. Each place gets its own background
-sound in tools/make_sounds.py. Build 1000 Pizza, Brain Freeze Gelato, Spill the Tea,
-Shawarma Supreme and Bread & Zaatar with the props from the table. Smoke test: walk
-into each, wait in the short queue, hold E, walk out.
+Session 57. Read PRD.md "Looks pass", The Plaza and Logos, and look at
+docs/plaza_carpark_spine.svg panel A. Rebuild the Plaza blocks from
+data/wahat_al_shams.gd (RESTAURANTS, SHOPS, RESTAURANT_SIZE): a 4.5 m shop
+floor with 3 floors of flats on top, joined all the way along; shops in
+pairs with a covered walk-through passage after every second shop; Pedal
+Point Bikes and Dune Drip moved into the rows (their separate buildings
+go). Rename Spill the Tea to Spill the Brew (سبيل ذا برو) on every sign. Make
+the logos (tools/make_logos.py writes SVGs to assets/logos/, our own art)
+and put each on a lit sign band, with an awning in the shop's colour, big
+glass, sliding doors and outside tables with umbrellas and people eating.
+Grand Groceries gets a double-width supermarket front (wide glass, trolleys,
+posters, green sign). Replace bare concrete round the Plaza with paved
+walkways, grass beds, date palms and planters. Door spots and pickups must
+still work: smoke test an order from every shop.
 ```
 
 Done when:
 
-- [ ] The 5 restaurants look like the designs, cosy and full, not big and empty
-- [ ] You can see inside from the Plaza, and the doors slide open
-- [ ] The queue is short and never annoying
+- [ ] The Plaza looks like a real low-rise shopping street: lower shops, flats on top, a passage every 2 shops
+- [ ] Every shop has its own logo and front, Grand Groceries looks like a supermarket
+- [ ] The bike shop and clothes shop are in the rows and still work
 
-### Session 55: The other 5 (Tok Tok Thai, Sushi You, Mario Bonito, Burgerology, Grand Groceries)
+### Session 58: The first 6 insides (pizza, gelato, coffee, shawarma, bakery, groceries)
 
 ```text
-Session 55. Read PRD.md "Looks pass", the table. Using the Session 54 template, build
-Tok Tok Thai, Sushi You (sushi bar with a moving conveyor belt, stools, fish case,
-two chefs, lanterns, curtain, booth, pick-up counter), Mario Bonito and Burgerology.
-Grand Groceries is a supermarket instead: drinks fridges along the back wall, 3 shelf
-units with hanging bilingual aisle signs and price strips, fruit and veg stand, bread
-shelf, sweets rack, 2 checkouts with belts and a cashier; pick up at checkout 1;
-shoppers with trolleys and baskets. Smoke test: an order from each works.
+Session 58. Read PRD.md "Looks pass", Interiors and the table. Make one room
+template: about 12 x 10 m inside, 4.5 m ceiling, menu board with real items
+behind the counter, kitchen with a cook at the back, the counter with staff,
+lots of tables with people eating, drinks fridge, bin, plants, hanging lamps,
+tiled floor in the shop's colours, sliding glass door, short queue (1 or 2
+people, 2 to 4 seconds), camera closer indoors, a sound per place. Every
+machine stands on the floor or a counter. Build, using the kits plus the
+machines Session 56 listed (made from simple shapes, checked against photos):
+1000 Pizza (mosaic dome oven with fire and chimney), Brain Freeze (gelato
+case at the front by the door with 12 labelled tubs), Spill the Brew (espresso
+machine facing customers, grinders, pastry case), Shawarma Supreme (two
+spinning grills in the window, picture menu, lower and smaller), Bread &
+Zaatar (stone manakish oven, dough table, bread racks, no cakes) and Grand
+Groceries (the supermarket). Change the food data: Spill the Brew sells coffee,
+pastries and cake (iced coffee spills like bubble tea did; the fragile cake
+special comes from here); Bread & Zaatar sells bread, manakish and fatayer;
+Auntie Mariam orders an iced latte and Ms Dana a cake from Spill the Brew
+(scripts/order_maker.gd, data/customer_lines.gd, REGULARS, game_config.gd).
+Keep old saves working. Smoke test: walk into each, queue, hold E, walk out.
 ```
 
 Done when:
 
-- [ ] No two restaurants look alike, and Sushi You's belt moves
-- [ ] Grand Groceries looks like a real supermarket
+- [ ] Each of the 6 looks like its real-life kind of shop, cosy and full, with a proper menu board
+- [ ] The coffee shop sells coffee and cakes, the bakery sells bread, and orders, specials and regulars still work
+- [ ] Nothing floats; the doors slide; the queue is short
 
-### Session 56: The gym and the C Institute inside
+### Session 59: The other insides (Thai, sushi, tacos, burgers, bikes, clothes)
 
 ```text
-Session 56. Read PRD.md "Looks pass", the Wahat Gym and C Institute rows. Build the
-gym as a real gym (glass wall onto the spine and lap pool, 4 treadmills facing the
-glass, bikes, squat rack with barbell, dumbbell rack, 2 rowing machines, yoga mats,
-kettlebells, mirror wall with "Train hard · تمرّن بقوة", rubber floor, water fountain,
-towel stand, reception with a smoothie cooler) with people running, rowing and
-lifting. Build the C Institute lobby two storeys tall (glass both sides, balcony,
-stairs, stepped seats with people on laptops, the talk screen that changes during
-the shift, hanging plants, wood ceiling, reception with the C logo). Smoke test: gym
-and institute orders work.
+Session 59. Read PRD.md "Looks pass", the table. Using the Session 58
+template, build Tok Tok Thai (decorated tuk-tuk inside, woks over flames,
+lanterns, bunting, fairy lights, outside tables), Sushi You (moving conveyor
+belt, stools, fish case, two chefs, lanterns, curtain, booth, pick-up
+counter), Mario Bonito and Burgerology, plus the insides of Pedal Point
+Bikes and Dune Drip in their new spots. Keep the shop screens (side panel,
+cart, mirror) working. Smoke test: an order from each restaurant, and both
+shops still sell.
 ```
 
 Done when:
 
-- [ ] The gym looks and feels like a gym
-- [ ] The C Institute lobby is tall and bright, and the talk screen changes
+- [ ] No two insides look alike, and Sushi You's belt moves
+- [ ] Both shops still sell, in their new places
 
-### Session 57: Bike shop, clothes shop, stable office, farm stall and school booth
+### Session 60: Gym and pools
 
 ```text
-Session 57. Read PRD.md "Looks pass", the last 5 rows of the table. Rebuild Pedal
-Point Bikes, Dune Drip, the stable office, the Wahat Farm Stall and the Fair Grade
-school gate booth to match. Keep the shop screens (side panel, cart, mirror) working.
-Smoke test: both shops still sell, and the three drop-off spots work.
+Session 60. Read PRD.md "Looks pass", Gym and pools, and the Wahat Gym row.
+Make the gym smaller (data GYM) with the lap pool (LAP_POOL) right in front
+of its glass wall, with a low glass fence and a small gate. Build the real gym
+inside (treadmills facing the glass, bikes, squat rack, dumbbells, rowers,
+mats, mirror wall "Train hard · تمرّن بقوة", rubber floor, reception with the
+smoothie cooler) with people running, rowing and lifting. Redo the community
+pool (COMMUNITY_POOL): fence all round with a small gate, paved deck, sun
+loungers and umbrellas, a shallow kids' pool, a lifeguard chair, a shower and
+a changing hut. Swimmers use a swim animation and swim lengths, kids splash,
+loungers have people lying on them; nobody floats still. The layout check
+from Session 53 must still pass. Smoke test: gym orders work.
+```
+
+Done when:
+
+- [ ] The gym looks like a gym, with the pool right in front behind a little fence and gate
+- [ ] The community pool looks real, and the swimmers swim
+
+### Session 61: C Institute, stable office, farm stall and school booth
+
+```text
+Session 61. Read PRD.md "Looks pass", the C Institute, Stable office, Wahat
+Farm Stall and Fair Grade school gate rows. Build the C Institute lobby two
+storeys tall (glass both sides, balcony, stairs, stepped seats with people on
+laptops, the talk screen that changes during the shift, hanging plants, wood
+ceiling, reception with the C logo). Rebuild the stable office, the farm stall
+(with a farmer NPC who hands you the order) and the school gate booth to
+match. Smoke test: the institute, stables, farm stall and school orders work.
 ```
 
 Done when:
 
 - [ ] Every place you go into is as detailed as the restaurants
+- [ ] The farmer hands you farm stall orders
 
-### Session 58: Plaza, streets and the spine
+### Session 62: Car parks and kerbs
 
 ```text
-Session 58. Read PRD.md "Looks pass", More detail outside. Plaza: café tables outside
-the restaurants, a juice kiosk, string lights that come on at sunset, more people.
-Streets and lanes: street lamps that light up at sunset, road markings and kerbs,
-bins, bilingual street signs, bike racks. Spine: real grass blades (MultiMesh) on
-Medium and High, a sparser version on Low, plus flowers, rocks and more trees.
+Session 62. Read PRD.md "Looks pass", The car parks, and look at
+docs/plaza_carpark_spine.svg panel B. Rebuild every car park
+(PARKING_AREAS, PARKED_CARS): one row, an aisle, two rows back to back, an
+aisle, one row, every row under solar roofs, bays packed with no wasted
+space, about half with a car. Make each car park smaller and move it right
+up to its cluster: only a kerb and a narrow buggy lane in between. Kerbstones
+between the homes and the car park all the way along. Cars still pull in and
+out (scripts/district_traffic.gd). Fill any space that frees up with grass,
+palms and building sites, never blank. Run the layout check.
 ```
 
 Done when:
 
-- [ ] The Plaza, streets and spine no longer look plain
-- [ ] Low still runs smoothly on an iPad-like setting
+- [ ] Car parks are full of bays (1, 2 back to back, 1) with solar roofs, and about half the bays have cars
+- [ ] There is almost no gap between a car park and its cluster, just a kerb and a buggy lane
 
-### Session 59: Play-test the looks pass
+### Session 63: The spine, the farm and the stream
 
 ```text
-Session 59. Run the smoke test and every focused test, the play-test bot careful and
-careless, and the frame-rate check on Low, Medium and High at 1920 x 1080 and full
-screen. Screenshots of every interior, the Plaza, a street, the spine, and full
-screen from the bike. List anything that still flickers or looks plain and fix it.
-Then I'll play it myself; here's what felt off: [write it here].
+Session 63. Read PRD.md "Looks pass", The green spine, and look at
+docs/plaza_carpark_spine.svg panel C. The path nearest the domes (Domes
+Path) becomes a red walking track; the other (Spine Path) becomes a two-way
+buggy road with a dashed white middle line; between them a thinner strip
+with a slightly raised kerb. Hills (HILLS) at most 0.5 m. Groups of palms,
+shrubs and flowers round the domes. Farm beds (FARM_BEDS): rows of
+watermelons and pumpkins on vines, tomato plants on sticks, drip pipes, a
+wheelbarrow and a farmer. Stream: stones and reeds on the banks, the bridges
+from Session 53. Beehives: low fence, flowers, a beekeeper NPC in a white suit
+with a smoker. Better horse textures (coat, mane, saddle). Run the layout
+check and the frame rate check.
 ```
 
 Done when:
 
-- [ ] Every interior matches its design, and nothing flickers
+- [ ] The red walking track and the buggy road with its middle line are there
+- [ ] The spine is full of plants round the domes, with small hills only
+- [ ] The farm, the stream, the beehives and the horses look detailed
+
+### Session 64: Buggies everywhere and building sites
+
+```text
+Session 64. Read PRD.md "Looks pass", Buggies and Building sites. Buggies
+(BUGGIES) pick random routes on the cluster lanes and the spine buggy road
+using the road network, so you see them all over; they never use the ring
+road. They keep to their side of the spine road and stop for the rider and
+people. Each building site (BUILDING_SITES) gets a half-built building from
+the construction kit (concrete frame, some floors done, scaffolding, crane,
+fence, piles of blocks, workers), keeping the "Coming soon" signs. Smoke
+test: no buggy ever on the ring road. Check the frame rate.
+```
+
+Done when:
+
+- [ ] Buggies drive all over the clusters and the spine, never on the ring road
+- [ ] Building sites look like real half-built buildings
+
+### Session 65: Play-test the looks pass
+
+```text
+Session 65. Run the smoke test, the layout check and every focused test,
+the play-test bot careful and careless, and the frame-rate check on Low,
+Medium and High at 1920 x 1080 and full screen. Screenshots of the loading
+screen, a ragdoll fall, every interior, the Plaza, a car park, the spine,
+both pools and a building site. List anything that still floats, overlaps,
+flickers or looks plain and fix it. Then I'll play it myself; here's what
+felt off: [write it here].
+```
+
+Done when:
+
+- [ ] Every interior matches its design, and nothing floats, overlaps or flickers
 - [ ] 60 fps on Medium on Louis's Mac
 - [ ] Louis has played a full shift and is happy with how it looks
 
