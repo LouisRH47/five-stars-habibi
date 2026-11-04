@@ -60,6 +60,8 @@ static func load_into(state: Node, path: String) -> bool:
 			for key in WHOLE_NUMBERS:
 				if job.has(key):
 					job[key] = int(job[key])
+			if job.has("food"):
+				job["food"] = renamed_food(str(job["food"]))
 			state.history.append(job)
 	state.rider_name = str(data.get("rider_name", ""))
 	state.rider_country = str(data.get("rider_country", ""))
@@ -111,6 +113,13 @@ static func load_into(state: Node, path: String) -> bool:
 		for cluster in ["C1", "C2", "C3", "C4", "C5"]:
 			state.collection_claims[cluster] = state.cluster_stamps(cluster) / GameConfig.COLLECTION_STAMP_INTERVAL
 	return true
+
+
+## Session 58: foods that changed name (bubble tea is an iced latte now) read as the new name.
+static func renamed_food(food: String) -> String:
+	if GameConfig.FOOD_CHANGES_ON and GameConfig.FOOD_RENAMES.has(food):
+		return GameConfig.FOOD_RENAMES[food]
+	return food
 
 
 ## Deletes the save (New game).

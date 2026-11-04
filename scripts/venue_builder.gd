@@ -20,6 +20,8 @@ static func counter_of(place: Dictionary, size: Vector3) -> Vector3:
 		own = false   # the old lobby keeps its old counter
 	if place.get("number", 0) == 904 and not GameConfig.GYM_ROOM_ON:
 		own = false
+	if place.has("row") and GameConfig.INTERIORS_LOOKS_PASS:
+		return InteriorRoom.pickup(place)   # Session 58: the pickup end of the new counters
 	return place["counter"] if own else counter_local(size)
 
 
@@ -33,6 +35,9 @@ static func build(place: Dictionary, size: Vector3) -> StaticBody3D:
 		return GymRoom.build(place, size)
 	if place.get("venue_type", "") == "institute" and GameConfig.INSTITUTE_LOBBY_ON:
 		return InstituteLobby.build(place, size)
+	# Session 58: the Plaza restaurants (they have a "row") get their real insides.
+	if place.has("row") and GameConfig.INTERIORS_LOOKS_PASS:
+		return InteriorRoom.build(place, size)
 	var body := StaticBody3D.new()
 	body.set_meta("walk_in", true)
 	body.set_meta("venue_type", place.get("venue_type", "reception"))

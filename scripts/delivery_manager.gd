@@ -167,6 +167,9 @@ func _update_hold(delta: float) -> void:
 	if _need_release or not is_near_target() or not _slow_enough() or (needs_walking and not on_foot):
 		_hold = 0.0
 		return
+	if CounterQueue.wait_left > 0.0 and GameState.stage == GameState.Stage.TO_RESTAURANT:
+		_hold = 0.0   # Session 58: someone is in front of you at the counter (2 to 4 seconds)
+		return
 	_hold += delta
 	if hold_progress() >= 1.0:
 		_hold = 0.0

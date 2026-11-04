@@ -5,7 +5,7 @@ extends RefCounted
 
 var restaurant_id := ""    # matches an "id" in data/test_area_places.gd
 var restaurant_name := ""  # shown on the phone, e.g. "Boba Oasis"
-var food := ""             # "pizza", "ice cream" or "bubble tea"
+var food := ""             # "pizza", "ice cream", "iced latte"... (GameConfig.FRESHNESS_DRAIN has them all)
 var villa_number := 0      # the villa's id in the data list (Wahat Al Shams: cluster x 100 + house)
 var address := ""          # what the phone shows, e.g. "C3 · Villa 7" (or "Villa 7" on the test area)
 var map_address := ""      # compact destination label, separate from the full phone address

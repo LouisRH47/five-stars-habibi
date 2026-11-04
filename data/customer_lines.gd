@@ -34,7 +34,7 @@ const LINES := [
 ## The keys are the "id"s in REGULARS (data/wahat_al_shams.gd).
 const REGULAR_LINES := {
 	"mariam": [
-		"{name}, habibi! Extra pearls again? You spoil me.",
+		"{name}, habibi! Extra ice in my latte again? You spoil me.",
 		"Ahh, {name}! Come, have a date, you look tired.",
 		"My favourite, {name}! Say hello to your mother for me.",
 	],
@@ -44,7 +44,7 @@ const REGULAR_LINES := {
 		"{name}, you're faster than my sons. Don't tell them.",
 	],
 	"dana": [
-		"{name}! The staff room will love this cake.",
+		"{name}! The staff room will love this cake from Spill the Brew.",
 		"Thank you, {name}! Ten out of ten, gold star.",
 		"{name}, you're never late. My class could learn from you.",
 	],
@@ -67,8 +67,8 @@ const SPOT_LINES := {
 ## Visits 1–2, 3–7 and 8+ have distinct dialogue: familiarity is earned in play.
 const REGULAR_STAGES := {
 	"mariam": {
-		"first": ["Shukran, {name}. I'm Mariam. Extra pearls, please!", "First time here, {name}? Mind my cat on your way out."],
-		"friendly": ["{name}, habibi! You remembered my extra pearls.", "Three visits already, {name}! Come, take a date for the road."],
+		"first": ["Shukran, {name}. I'm Mariam. Iced latte, extra ice, please!", "First time here, {name}? Mind my cat on your way out."],
+		"friendly": ["{name}, habibi! You remembered my extra ice.", "Three visits already, {name}! Come, take a date for the road."],
 		"best_friends": ["My favourite rider, {name}! There's always a seat for you here.", "{name}, you're family now. I saved you the best dates."],
 	},
 	"rashid": {

@@ -182,13 +182,18 @@ UNIT_DEPTH=14.0           # room + a 4 m storeroom you can't enter
 NORTH_FRONT=-186.0        # Appendix A says about -188; 2 m south so the back (-200) stops at the ring road's kerb
 SOUTH_FRONT=-104.0        # mirrored: both fronts 41 m from the square's centre
 TERRACE=5.0               # outside tables between the front and the promenade
+# Session 58 (Appendix F): Spill the Brew is a coffee shop (coffee, pastries and the fragile
+# cakes) and Bread & Zaatar sells bread, manakish and fatayer, no cakes. False: the old foods.
+FOOD_CHANGES = True
+BREW_FOODS = ['iced latte','flat white','croissant','cake'] if FOOD_CHANGES else ['bubble tea','coffee']
+BAKERY_FOODS = ['manakish','khubz bread','fatayer'] if FOOD_CHANGES else ['cake','manakish']
 # name, Arabic, food, brand colour (same as its logo in tools/make_logos.py)
 PLACE_INFO={
  'pizza':('1000 Pizza','١٠٠٠ بيتزا','pizza','#d7263d'),
  'gelato':('Brain Freeze Gelato','برين فريز جيلاتو','ice cream','#f06fa4'),
- 'boba':('Spill the Brew','سبيل ذا برو','bubble tea','#6f4e37'),   # was Spill the Tea; id stays "boba" for old saves
+ 'boba':('Spill the Brew','سبيل ذا برو','iced latte' if FOOD_CHANGES else 'bubble tea','#6f4e37'),   # was Spill the Tea; id stays "boba" for old saves
  'shawarma':('Shawarma Supreme','شاورما سوبريم','shawarma','#e89b2e'),
- 'bakery':('Bread & Zaatar','خبز وزعتر','cake','#a8742f'),
+ 'bakery':('Bread & Zaatar','خبز وزعتر','manakish' if FOOD_CHANGES else 'cake','#a8742f'),
  'market':('Grand Groceries','جراند جروسريز','groceries','#2e9e4f'),
  'thai':('Tok Tok Thai','توك توك تاي','pad thai','#7b3fa0'),
  'sushi':('Sushi You','سوشي يو','sushi','#1f3a68'),
@@ -221,8 +226,8 @@ def plaza_layout():
                 place={'id':id,'name':name,'arabic':arabic,'position':v3(x+width/2,0,centre_z),'facing':facing}
                 if unit['kind']=='restaurant':
                     place.update({'food':food,'colour':hex_colour(brand),'interior':True,'venue_type':id,'row':row_name})
-                    if id=='boba':place['foods']=['bubble tea','coffee']
-                    if id=='bakery':place['foods']=['cake','manakish']
+                    if id=='boba':place['foods']=BREW_FOODS
+                    if id=='bakery':place['foods']=BAKERY_FOODS
                     if width!=ROOM[0]:place['size']=v3(width,ROOM[1],ROOM[2])
                     found.append(place)
                 elif unit['kind']=='shop':
@@ -329,7 +334,8 @@ homes += [
  {'number':904,'house':0,'cluster':'','address':'Wahat Gym · Reception','map_address':'Gym','kind':'spot','position':GYM_AT,'facing':180.,'size':GYM_SIZE,'interior':True,'who':'gym_goer','counter':v3(0,0,4.0)},
 ]
 put('VILLAS',homes)
-put('REGULARS',[{'id':'mariam','name':'Auntie Mariam','villa':207,'shop':'boba','food':'bubble tea','who':'resident','look':1},{'id':'rashid','name':'Mr Rashid','villa':503,'shop':'shawarma','food':'shawarma','who':'resident','look':0},{'id':'dana','name':'Ms Dana','villa':901,'shop':'bakery','food':'cake','who':'teacher','look':-1},{'id':'hamdan','name':'Hamdan','villa':902,'shop':'farm','food':'farm juice','who':'groom','look':-1}])
+# Session 58: Auntie Mariam has an iced latte now, and Ms Dana's cake comes from Spill the Brew.
+put('REGULARS',[{'id':'mariam','name':'Auntie Mariam','villa':207,'shop':'boba','food':'iced latte' if FOOD_CHANGES else 'bubble tea','who':'resident','look':1},{'id':'rashid','name':'Mr Rashid','villa':503,'shop':'shawarma','food':'shawarma','who':'resident','look':0},{'id':'dana','name':'Ms Dana','villa':901,'shop':'boba' if FOOD_CHANGES else 'bakery','food':'cake','who':'teacher','look':-1},{'id':'hamdan','name':'Hamdan','villa':902,'shop':'farm','food':'farm juice','who':'groom','look':-1}])
 # Session 63: the spine's north palm row moved off the red track (was z -7).
 palms=[v3(x+6 if (z<0 and x==50) else x,0,z) for z in [-10.5,7] for x in range(-130,411,45) if not (z<0 and (x==230 or x>=376))] +[v3(-210,-.45,-155),v3(-190,-.45,-155),v3(-210,-.45,-135),v3(-190,-.45,-135)]  # Session 65: the x=50 palm moved 6 m east, off C1 Link
 palms+=plaza_palms  # Session 57: date palms in the Plaza's grass beds

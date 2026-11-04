@@ -71,6 +71,7 @@ var _clock_before := 0.0  # Session 35A: check pause/tutorial behaviour over rea
 
 
 func _initialize() -> void:
+	CounterQueue.enabled = false  # Session 58: the short counter queue would change the exact E-hold timings checked here
 	var scene_path := "res://scenes/wahat_al_shams.tscn"  # the game opens on the main menu, test the map
 	var save_dir := "user://"
 	for arg in OS.get_cmdline_user_args():
@@ -1621,7 +1622,9 @@ func _check_session27() -> void:
 			_has_arabic_label(site_sign) and _has_label_text(site_sign, "Phase 2 coming soon"), "")
 	# One order from each new pickup spot, delivered: the food has numbers in game_config.gd.
 	var gs: Node = _game_state
-	var foods := {"shawarma": ["shawarma"], "bakery": ["cake", "manakish"], "market": ["groceries"],
+	# Session 58: Bread & Zaatar sells bread, manakish and fatayer; Spill the Brew coffee, pastries and cake.
+	var foods := {"shawarma": ["shawarma"], "bakery": ["manakish", "khubz bread", "fatayer"] if GameConfig.FOOD_CHANGES_ON else ["cake", "manakish"],
+			"boba": ["iced latte", "flat white", "croissant", "cake"] if GameConfig.FOOD_CHANGES_ON else ["bubble tea", "coffee"], "market": ["groceries"],
 			"farm": ["farm juice", "salad box"], "thai": ["pad thai"], "sushi": ["sushi"],
 			"tacos": ["tacos"], "burger": ["burgers"]}
 	var start: Vector3 = data["START"]["position"]
@@ -2323,7 +2326,7 @@ func _check_session32() -> void:
 	if places.restaurants.any(func(r): return r["id"] == GameConfig.FRAGILE_SHOP):
 		gs.streak = 0  # isolate the base fragile tip chance from the preceding clean delivery
 		var cake: Object = dm.make_order("", 0, "fragile")
-		_check("a fragile order is a cake from Sunrise Bakery", cake.restaurant_id == GameConfig.FRAGILE_SHOP and cake.food == "cake", cake.describe())
+		_check("a fragile order is a cake from the cake shop (%s)" % GameConfig.FRAGILE_SHOP, cake.restaurant_id == GameConfig.FRAGILE_SHOP and cake.food == "cake", cake.describe())
 		_start_order(cake)
 		_meters.hurt_food(10.0)
 		_check("bumps do double damage to a fragile cake", absf(gs.meter_damage - (100.0 - 10.0 * GameConfig.FRAGILE_DAMAGE_TIMES)) < 0.01, "%.0f%%" % gs.meter_damage)
@@ -2472,7 +2475,9 @@ func _check_regulars() -> void:
 	gs.rider_name = "Louis"
 	var maker: Object = dm.order_maker()
 	var mariam: Object = maker.make_regular(regulars[0])
-	_check("Auntie Mariam orders bubble tea to Villa 7, Cluster 2", mariam.food == "bubble tea" and mariam.address == "Villa 7, Cluster 2", mariam.describe())
+	# Session 58: Spill the Brew is a coffee shop now, so Auntie Mariam has an iced latte.
+	var usual := "iced latte" if GameConfig.FOOD_CHANGES_ON else "bubble tea"
+	_check("Auntie Mariam orders an %s to Villa 7, Cluster 2" % usual, mariam.food == usual and mariam.address == "Villa 7, Cluster 2", mariam.describe())
 	gs.offer_order(mariam)
 	var phone := _main.get_node("Phone")
 	phone._process(0.0)

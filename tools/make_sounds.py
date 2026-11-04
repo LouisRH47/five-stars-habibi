@@ -316,6 +316,145 @@ def tip():
     return track
 
 
+# ---------------- Room sounds (Session 58 and 59) ----------------
+# Each walk-in place has its own quiet loop (4 seconds). The game plays it from inside the
+# room, so it fades in as you walk through the door. They use their own random numbers, so
+# the older sounds above come out exactly the same as before.
+ROOM = random.Random(58)
+
+
+def _hiss(seconds, smooth, volume):
+    out = array("f")
+    last = 0.0
+    for _ in range(int(seconds * RATE)):
+        last = last * smooth + ROOM.uniform(-1, 1) * (1 - smooth)
+        out.append(last * volume)
+    return out
+
+
+def _pop(volume, bright=0.3):
+    """One crackle or sizzle pop: a tiny burst of noise."""
+    out = array("f")
+    last = 0.0
+    for i in range(int(0.03 * RATE)):
+        last = last * bright + ROOM.uniform(-1, 1) * (1 - bright)
+        out.append(last * math.exp(-i / RATE * 180) * volume)
+    return out
+
+
+def _chatter(track, seconds, voices, volume):
+    """Quiet people talking: soft rising and falling hums, like voices through a wall."""
+    for _ in range(voices):
+        start = ROOM.uniform(0, seconds)
+        length = ROOM.uniform(0.5, 1.4)
+        base = ROOM.uniform(140, 260)
+        voice = array("f")
+        for i in range(int(length * RATE)):
+            t = i / RATE
+            f = base * (1 + 0.12 * math.sin(2 * math.pi * 3.1 * t))
+            env = math.sin(math.pi * t / length) * (0.6 + 0.4 * math.sin(2 * math.pi * 7 * t))
+            voice.append((math.sin(2 * math.pi * f * t) + 0.4 * math.sin(4 * math.pi * f * t)) * env * volume)
+        mix_in(track, voice, start)
+
+
+def oven_crackle():
+    """1000 Pizza: a wood fire's low roar and crackles, with chatter."""
+    track = _hiss(4.0, 0.97, 0.5)
+    for _ in range(60):
+        mix_in(track, _pop(ROOM.uniform(0.3, 0.9)), ROOM.uniform(0, 4))
+    _chatter(track, 4.0, 5, 0.05)
+    return loop_fade(track, 0.4)
+
+
+def freezer_hum():
+    """Brain Freeze: the gelato case's low hum and a soft click of scoops."""
+    track = array("f", (0.25 * math.sin(2 * math.pi * 100 * i / RATE) + 0.1 * math.sin(2 * math.pi * 200 * i / RATE) for i in range(4 * RATE)))
+    for k in range(3):
+        mix_in(track, tone(1800, 0.05, 60, 0.2), 0.7 + k * 1.3)
+    _chatter(track, 4.0, 4, 0.05)
+    return loop_fade(track, 0.4)
+
+
+def espresso():
+    """Spill the Brew: the grinder, then the machine's steam wand hissing."""
+    track = silence(4.0)
+    grind = array("f", (v * (0.6 + 0.4 * math.sin(2 * math.pi * 55 * i / RATE)) for i, v in enumerate(_hiss(0.9, 0.6, 0.6))))
+    mix_in(track, grind, 0.2)
+    mix_in(track, _hiss(1.4, 0.1, 0.35), 2.0)   # steam
+    _chatter(track, 4.0, 6, 0.06)
+    return loop_fade(track, 0.4)
+
+
+def grill_sizzle():
+    """Shawarma Supreme, Mario Bonito, Burgerology: meat sizzling on a hot grill."""
+    track = _hiss(4.0, 0.2, 0.25)
+    for _ in range(140):
+        mix_in(track, _pop(ROOM.uniform(0.1, 0.4), 0.1), ROOM.uniform(0, 4))
+    _chatter(track, 4.0, 4, 0.05)
+    return loop_fade(track, 0.4)
+
+
+def bakery_chatter():
+    """Bread & Zaatar: chatter, the oven's soft roar and a tray now and then."""
+    track = _hiss(4.0, 0.98, 0.3)
+    _chatter(track, 4.0, 9, 0.08)
+    mix_in(track, tone(620, 0.3, 14, 0.15), 1.6)
+    return loop_fade(track, 0.4)
+
+
+def till_beeps():
+    """Grand Groceries: checkout beeps, trolley rattles and the fridges' hum."""
+    track = array("f", (0.08 * math.sin(2 * math.pi * 120 * i / RATE) for i in range(4 * RATE)))
+    for start in [0.3, 0.9, 1.3, 2.6, 3.1]:
+        mix_in(track, tone(2400, 0.09, 8, 0.3), start)
+    mix_in(track, array("f", (v * 0.5 for v in _hiss(0.6, 0.5, 0.4))), 1.9)
+    _chatter(track, 4.0, 3, 0.04)
+    return loop_fade(track, 0.4)
+
+
+def wok_fire():
+    """Tok Tok Thai: a roaring wok burner and the clang of the wok."""
+    track = _hiss(4.0, 0.9, 0.5)
+    for start in [0.4, 1.1, 2.3, 3.0]:
+        mix_in(track, tone(950, 0.25, 12, 0.18), start)
+    for _ in range(50):
+        mix_in(track, _pop(ROOM.uniform(0.1, 0.4), 0.1), ROOM.uniform(0, 4))
+    return loop_fade(track, 0.4)
+
+
+def sushi_belt():
+    """Sushi You: the belt's soft whirr and plates clinking."""
+    track = array("f", (0.12 * math.sin(2 * math.pi * 80 * i / RATE) * (0.8 + 0.2 * math.sin(2 * math.pi * 2 * i / RATE)) for i in range(4 * RATE)))
+    for start in [0.5, 1.7, 2.2, 3.4]:
+        mix_in(track, tone(3100, 0.08, 40, 0.2), start)
+    _chatter(track, 4.0, 4, 0.05)
+    return loop_fade(track, 0.4)
+
+
+def workshop():
+    """Pedal Point Bikes: a freewheel ticking, a spanner clink and a pump."""
+    track = silence(4.0)
+    for k in range(20):
+        mix_in(track, tone(3200, 0.02, 200, 0.25), 0.3 + k * 0.08)
+    mix_in(track, tone(1500, 0.2, 25, 0.3), 2.5)
+    mix_in(track, _hiss(0.3, 0.3, 0.2), 3.2)
+    return loop_fade(track, 0.4)
+
+
+def shop_music():
+    """Dune Drip: a soft, slow pluck tune for the clothes shop."""
+    track = silence(4.0)
+    for k, note in enumerate([293.66, 369.99, 440.0, 369.99, 329.63, 392.0, 440.0, 293.66]):
+        mix_in(track, pluck(note, 0.9, 0.4, 0.3), k * 0.5)
+    return loop_fade(track, 0.4)
+
+
+ROOM_SOUNDS = {"room_oven.wav": oven_crackle, "room_freezer.wav": freezer_hum, "room_espresso.wav": espresso,
+               "room_grill.wav": grill_sizzle, "room_bakery.wav": bakery_chatter, "room_tills.wav": till_beeps,
+               "room_wok.wav": wok_fire, "room_sushi.wav": sushi_belt, "room_workshop.wav": workshop,
+               "room_music.wav": shop_music}
+
+
 if __name__ == "__main__":
     save("perfect.wav", perfect())
     save("tip.wav", tip())
@@ -331,3 +470,5 @@ if __name__ == "__main__":
     save("buzz.wav", buzz())    # Session 31: the phone buzz
     save("pop.wav", pop())      # Session 31: a star pops in
     save("coins.wav", coins())  # Session 31: the coins fly out
+    for room_name, make in ROOM_SOUNDS.items():   # Session 58/59: one quiet loop per walk-in place
+        save(room_name, make(), 0.5)
