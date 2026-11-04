@@ -7,6 +7,8 @@ extends HFlowContainer
 ## Gap between the chips and the clock at the top middle.
 const CLOCK_GAP := 16.0
 const MARGIN := 24.0
+## Gap after the wallet chip where "+15" floats up.
+const FLOAT_ROOM := 60.0
 
 ## The clock panel to keep clear of (ShiftScreen.clock_box), if there is one.
 var clock_box: Control
@@ -39,6 +41,12 @@ func _ready() -> void:
 	position = Vector2(MARGIN, MARGIN)
 	_wallet_chip = _chip("WALLET")
 	_wallet = _value(_wallet_chip)
+	# Room after the wallet for the floating "+15" (like the mockup).
+	var room := Control.new()
+	room.name = "FloatRoom"
+	room.custom_minimum_size = Vector2(FLOAT_ROOM, 1)
+	room.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(room)
 	var rating_chip := _chip("RATING")
 	var rating_row := HBoxContainer.new()
 	rating_row.add_theme_constant_override("separation", 8)
@@ -107,7 +115,7 @@ func _float_change(change: int) -> void:
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(label)
 	var chip := _wallet_chip.get_global_rect()
-	var start := Vector2(chip.end.x + 6.0, chip.position.y + chip.size.y * 0.35)
+	var start := Vector2(chip.end.x + 4.0, chip.position.y + chip.size.y * 0.3)
 	label.position = start
 	floats_made += 1
 	last_float = label
@@ -176,11 +184,11 @@ func _chip(caption: String) -> PanelContainer:
 	style.set_corner_radius_all(21)
 	style.content_margin_left = 21
 	style.content_margin_right = 21
-	style.content_margin_top = 10
-	style.content_margin_bottom = 10
+	style.content_margin_top = 17
+	style.content_margin_bottom = 17
 	chip.add_theme_stylebox_override("panel", style)
 	var rows := VBoxContainer.new()
-	rows.add_theme_constant_override("separation", 4)
+	rows.add_theme_constant_override("separation", 7)
 	chip.add_child(rows)
 	rows.add_child(_caption(caption))
 	add_child(chip)

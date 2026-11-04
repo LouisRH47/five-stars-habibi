@@ -296,7 +296,7 @@ func _hud_rects(tip_on: bool) -> Dictionary:
 	var rects := {}
 	var hud := _world.get_node("HUD")
 	for chip in hud.chips.get_children():
-		if chip is Control and chip.visible and not chip.top_level:
+		if chip is Control and chip.visible and not chip.top_level and chip.name != "FloatRoom":
 			rects["chip %d" % chip.get_index()] = chip.get_global_rect()
 	rects["clock"] = _world.get_node("ShiftScreen").clock_box.get_global_rect()
 	rects["speed"] = hud.get_node("Panel").get_global_rect()
