@@ -18,6 +18,8 @@ const SIGN_BLUE := Color(0.1, 0.3, 0.62)
 const PAD_TOP := 0.03       # asphalt top (just under the roads, like the old car parks)
 const LINE_TOP := 0.045     # painted lines sit on the asphalt
 const GRASS_TOP := 0.05     # grass beds and the verge
+## A quarter turn: a turned car park's sideways frame (x, z) is the map's (z, -x).
+const TURN := Basis(Vector3.UP, PI / 2.0)
 
 
 ## Builds everything. Returns how many solar roofs were built.
@@ -28,16 +30,28 @@ static func build(parent: Node3D, map: Dictionary) -> int:
 	var roofs := 0
 	for i in map.get("CAR_PARKS", []).size():
 		var park: Dictionary = map["CAR_PARKS"][i]
-		_asphalt(holder, park, i)
+		# A turned car park (rows east-west) is built like the others in its own sideways
+		# frame, then every piece is turned a quarter turn onto the map.
+		var turned: bool = park.get("turned", false)
+		var into: Node3D = Node3D.new() if turned else holder
+		if turned:
+			park = local_park(park)
+		_asphalt(into, park, i)
 		var lines := MeshKit.new()   # one mesh of paint per car park
 		_paint(lines, park)
-		holder.add_child(lines.finish("BayLines_%d" % i))
+		into.add_child(lines.finish("BayLines_%d" % i))
 		for roof: Dictionary in park["roofs"]:
-			holder.add_child(solar_roof(roof, roofs))
+			into.add_child(solar_roof(roof, roofs))
 			roofs += 1
 		for j in park["chargers"].size():
-			_charger(holder, park["chargers"][j], park["north"], "EVCharger_%d_%d" % [i, j])
-		_sign(holder, park, i)
+			_charger(into, park["chargers"][j], park["north"], "EVCharger_%d_%d" % [i, j])
+		_sign(into, park, i)
+		if turned:
+			for piece: Node3D in into.get_children():
+				into.remove_child(piece)
+				piece.transform = Transform3D(TURN, Vector3.ZERO) * piece.transform
+				holder.add_child(piece)
+			into.free()
 	for area: Rect2 in map.get("CARPARK_GARDENS", []):
 		var bed := LowPoly.box(holder, Vector3(area.size.x, 0.04, area.size.y), Color(0.47, 0.66, 0.34),
 				Vector3(area.get_center().x, GRASS_TOP - 0.02, area.get_center().y))
@@ -46,6 +60,45 @@ static func build(parent: Node3D, map: Dictionary) -> int:
 	Kerbs.build(holder, map.get("CARPARK_KERBS", []), "CarParkKerbs")
 	Kerbs.build(holder, Kerbs.ring_segments(map), "RingRoadKerbs")
 	return roofs
+
+
+## A turned car park (its rows run east-west, "turned": true in the data) as the same kind of
+## car park as the others, in its sideways frame: there its rows run along z and the ring road
+## is at the far z end, like a car park on the south ring road. TURN puts it back on the map.
+static func local_park(park: Dictionary) -> Dictionary:
+	var out := park.duplicate()
+	out["north"] = false
+	out["area"] = _local_rect(park["area"])
+	out["ring_z"] = park["ring_x"]
+	out["first_bay_z"] = park["first_bay_x"]
+	out["last_bay_z"] = park["last_bay_x"]
+	var rows: Array = []
+	for row: Dictionary in park["rows"]:
+		rows.append({"area": _local_rect(row["area"]), "facing": float(row["facing"]) - 90.0, "bays": row["bays"]})
+	out["rows"] = rows
+	var roofs: Array = []
+	for roof: Dictionary in park["roofs"]:
+		roofs.append({"area": _local_rect(roof["area"]), "double": roof["double"], "high_x": -float(roof["high_z"])})
+	out["roofs"] = roofs
+	var aisles: Array = []
+	for aisle: Rect2 in park["aisles"]:
+		aisles.append(_local_rect(aisle))
+	out["aisles"] = aisles
+	var chargers: Array = []
+	for spot: Vector3 in park["chargers"]:
+		chargers.append(_local_point(spot))
+	out["chargers"] = chargers
+	out["sign"] = {"position": _local_point(park["sign"]["position"]), "facing": float(park["sign"]["facing"]) - 90.0}
+	return out
+
+
+## A map rectangle in a turned car park's sideways frame (x = -map z, z = map x).
+static func _local_rect(area: Rect2) -> Rect2:
+	return Rect2(-area.end.y, area.position.x, area.size.y, area.size.x)
+
+
+static func _local_point(spot: Vector3) -> Vector3:
+	return Vector3(-spot.z, spot.y, spot.x)
 
 
 ## The asphalt: one slab over the rows and aisles (stylized asphalt texture, Session 55).
