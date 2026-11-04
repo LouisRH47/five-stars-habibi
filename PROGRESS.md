@@ -17,7 +17,7 @@ kinds of shops (Spill the Tea becomes the coffee shop Spill the Brew; Bread & Za
 bread only), the gym with its pool in front, a real community pool, full car parks right
 next to the clusters, a red walking track and buggy road on the spine, buggies everywhere
 except the ring road, and half-built buildings on the building sites. Render:
-docs/plaza_carpark_spine.svg.
+docs/plaza_carpark_spine.svg. Step-by-step detail for every session: docs/looks_pass_detailed_plan.md.
 
 ## Plan review fixes — 4 November 2026
 

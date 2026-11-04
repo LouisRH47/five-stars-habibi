@@ -1138,6 +1138,9 @@ From Louis's play-test of the detail pass on 4 November, plus his second, longer
 things that overlap or float). Everything is in PRD.md, "Looks pass". Session 52 is built on the
 `looks-pass` branch; Sessions 53 to 65 replace the old 53 to 59. Render of the new Plaza row, car park
 and spine paths: docs/plaza_carpark_spine.svg.
+
+**The big detailed version of Sessions 53 to 65** (every step, file, size, test and check):
+[docs/looks_pass_detailed_plan.md](docs/looks_pass_detailed_plan.md). Read it with each session's prompt below.
 Same rules as always: one session at a time, headless checks, smoke test and the focused tests,
 a check for every new thing, PROGRESS.md, commit. Check the frame rate on Low, Medium and High
 after every session that adds things, and take screenshots of what changed.
