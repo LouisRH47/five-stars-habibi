@@ -666,6 +666,44 @@ const SUSHI_BELT_SPEED := 0.3        # Session 59: the sushi plates go round at 
 const BUGGY_DEAD_END_GIVE_WAY := true # false: a buggy coming out of a dead end turns round too (and drives back in)
 const BUGGY_DEAD_END_WAIT := 15.0     # most seconds a buggy coming out of a dead end waits for one coming in to turn round
 
+# --- Session 66: polish groundwork ---
+# Every polish-pass extra can be switched off here (false = the old look). Sessions 67 to 71
+# add their own numbers in their own sections below.
+const POLISH_HOOKS_ON := true
+const HUD_TOP_CHIPS := true      # Session 69 chips at the top left; the phone hides its money and stars
+const SKY_STYLIZED := true       # Session 67
+const LOOK_LUT := "golden"       # Session 67: "golden", "fresh" or "neutral" (= off)
+const VIGNETTE_STRENGTH := 0.22  # Session 67: 0 = off
+const MARKER_V2 := true          # Session 68
+const WATER_V2 := true           # Session 68
+const ROAD_DECALS := true        # Session 68
+const VFX_AMBIENT := true        # Session 68
+const PHONE_V2 := true           # Session 70
+const MINIMAP_V2 := true         # Session 70
+const CARD_V2 := true            # Session 71
+const START_DIORAMA := true      # Session 71
+
+# --- Review (outdoor), 4 Nov 2026: fixes found by the overnight check of Sessions 53-64 ---
+## A path that ends on a road that "wins" (the spine buggy road, or any wider road) now stops at
+## that road's edge instead of being drawn on top of it to its middle line. Before, the C1-C5
+## links flickered on the buggy road (two road slabs at the same height) and the light car park
+## buggy lanes and alleys lay over the dark roads. false = the old way.
+const ROAD_ENDS_GIVE_WAY := true
+const ROAD_END_OVERLAP := 0.02        # metres a path still reaches into the road it meets (no seam)
+## The spine's old floating flower balls (Session 26) sat 30 cm up in the air and also on roads
+## and paths. Now they sit on the ground and keep off every road, path, paving and building.
+const SPINE_FLOWERS_GROUNDED := true
+## The kerbs and planted strip between the red track and the buggy road only stop where a path
+## really crosses them (the C4 and C5 links end at the buggy road, they don't cross it).
+const SPINE_GAPS_ONLY_REAL := true
+## The "Coming soon" words at the building sites get a dark board on two posts (they floated).
+const SITE_SIGN_BOARD := true
+## Both pool decks use the paving texture (PRD: "a paved deck"); they were a plain light slab.
+const POOL_DECK_PAVED := true
+## Metres the big "Wahat Stables" sign sits east of the block's middle, so the stable office's
+## roof doesn't hide it from Stables Road (0.0 = the old spot, right behind the office).
+const STABLES_SIGN_SHIFT := 13.0
+
 # --- Review: interiors (overnight check of Sessions 58-61) ---
 const MENU_TEXT_FIT := true           # menu boards use the biggest text that fits (false: the old small 19)
 const MENU_TEXT_MAX := 34             # the biggest menu text size

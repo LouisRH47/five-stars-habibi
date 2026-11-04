@@ -20,6 +20,8 @@ GameState="*res://scripts/game_state.gd"
 Music="*res://scripts/music.gd"
 TouchControls="*res://scripts/touch_controls.gd"
 Loader="*res://scripts/loader.gd"
+PolishHooks="*res://scripts/polish_hooks.gd"
+UiSounds="*res://scripts/ui_sounds.gd"
 
 [gui]
 

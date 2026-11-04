@@ -1350,6 +1350,7 @@ func _finish() -> void:
 	await _check_venue_handoffs()
 	_check_shop_buys()
 	_check_saving()
+	_check_polish_hooks()
 	for action in ACTIONS:
 		Input.action_release(action)
 	_phase = "done"
@@ -2591,3 +2592,17 @@ func _check_goals() -> void:
 func _goal_done(id: String) -> bool:
 	var goals: Script = load("res://scripts/shift_goals.gd")
 	return goals.is_done(id, _game_state.history.slice(_game_state.shift_start_index), _game_state.shift_crashes)
+
+
+## Session 66: the PolishHooks autoload saw the world open and ran the polish parts that exist
+## (none until Sessions 67 to 71 add theirs to scripts/polish/).
+func _check_polish_hooks() -> void:
+	var hooks := root.get_node_or_null("PolishHooks")
+	var ok: bool = hooks != null and (hooks.last_world == _main or not GameConfig.POLISH_HOOKS_ON)
+	var expected: Array[String] = []
+	if hooks != null and GameConfig.POLISH_HOOKS_ON:
+		for path: String in hooks.PARTS:
+			if ResourceLoader.exists(path):
+				expected.append(path)
+	_check("the polish hooks ran for the world", ok and hooks.attached == expected,
+			"%d parts: %s" % [expected.size(), expected])

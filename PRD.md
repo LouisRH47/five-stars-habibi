@@ -412,6 +412,68 @@ That evening Louis played again and sent a second, longer list (everything marke
 - Crash loop: a gardener standing still near the Cluster 4 playground (data/wahat_al_shams.gd GARDENERS, x 125, z 53) got hit, and the rider crashed into him again and again (162 times) after each fall; with an order still on, the shift never ended. Fix: after a small crash the bike is pushed back and gets a short grace period, and standing people step aside when you ring or come close.
 - Crashing costs too little: a careless bot earned 89 Dh against 95 Dh for a careful one. Small crashes should cost more (rating, food damage or a small fee) so a careful shift clearly pays better.
 
+## Polish pass (Sessions 66 to 72)
+
+After the Looks pass, Louis asked for better graphics and a better UI everywhere. Research (Nov 2026)
+on Schedule I, cosy and delivery games, driver apps, game-feel talks, accessibility guidelines and
+Godot 4's own docs is in docs/polish_plan.md. Everything new can be switched off with a GameConfig
+setting, and nothing old is deleted.
+
+**Light and colour**
+- A cartoon sky with soft, slow clouds and a glowing sun. Clouds are peach in the morning, white at
+  noon and gold and pink at sunset. (Low: no clouds.)
+- A colour grade: sunny parts warm, shade a little teal, like a film. Louis picks "Golden" or "Fresh".
+- Sharper ground into the distance (16x texture filtering on Medium and High), no stripes in the sky.
+- Soft dark corners on the screen (vignette).
+- On High: warm light bouncing off the sand onto walls.
+- Soft sunbeams with dust through shop windows and Plaza passages, strongest in the morning and late
+  afternoon (not on Low).
+- Maybe: cloud shadows sliding over the ground; thin comic outlines (off unless Louis wants them).
+
+**Details in the world**
+- The delivery beam: a soft light column with rising sparkles and a pulsing ring on the ground.
+  Orange for pick-up, teal for drop-off. It bursts when you arrive.
+- Water: foam where it meets the edges, deeper colour in the middle, sun sparkles, and moving light
+  patterns on the pool tiles.
+- Road wear: tyre marks at junctions, oil spots in car parks, manholes and drains, a few cracks, sand
+  blown onto road edges, "SLOW / ببطء" painted near the school.
+- Little life in the air: steam from hot food and kitchen vents, fountain spray, falling leaves,
+  sprinklers, splashes, and sand blowing across the ring road (fewer on Low).
+- A confetti burst at the door for a 5-star delivery, coins for a tip, a ring of light on level-up.
+- Skid marks when you brake hard.
+
+**HUD (copies the mockup)**
+- Top left: three chips, Wallet, Rating and Level (with an XP bar and your 5-star streak). Money counts
+  up with a green "+15".
+- Top middle: the clock with "Shift 3 · 41°C · today's special" and a shift progress bar.
+- Bottom middle: the three meters with icons, words (On time / A bit late / Late...) and tick marks.
+  When one drops into a worse colour it flashes and blips.
+- Bottom right: speed and a stamina bar in 5 segments.
+- A round "hold E" ring in the middle of the screen while you hold E.
+- The shift summary counts up row by row with goal stamps and "New best!" ribbons.
+
+**Phone and mini-map**
+- Bigger text (at least 18 px at 1080p for normal text) and one clear "what now" line. Goals fold into a
+  small "Goals 1/2" row. Wallet and stars moved to the HUD chips.
+- New orders slide in as a card: big pay, distance and minutes, a pick-up → drop-off line, and a ring
+  round the E key that runs down over the 30 seconds.
+- After you accept: TO RESTAURANT / TO CUSTOMER, the place name big and the live distance.
+- Mini-map: a compass ring, restaurant logo pins, an arrow on the edge when the stop is off the map,
+  zooms out a little when you go fast. Option: North up.
+
+**Screens, sounds and accessibility**
+- Delivered card: tiles flip in one by one, stars pop with rising dings, the pay counts up, a
+  "PERFECT!" stamp, the XP bar fills. E skips. On the Mac the background goes softly out of focus.
+- Start screen: a small 3D scene (a villa corner, palms, your rider by the Snackaroo bike) at golden
+  hour behind the title. The title bounces in. The loading screen has a little rider pedalling
+  along the bar.
+- Pause: the game behind goes blurry. Clinic bills count up. Shop and counter panels slide in.
+- Soft UI sounds: hover, click, open, close, money ticks, a warning blip, a level-up fanfare. All made
+  by our own script.
+- Settings → Accessibility: Text size (100 / 115 / 130%), Colour help (blue, orange and vermilion plus
+  patterns, never colour alone), Less motion (no shaking, speed lines or zoom), Mini-map (turns with
+  you / North up).
+
 ## Shops and upgrades (detail pass)
 
 Money and Rider Level finally buy things. Two shops in the Plaza, both walk-in like the restaurants.
@@ -779,6 +841,7 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 4 Nov 2026 | Looks pass planned (Sessions 52 to 59) after Louis's play-test of the detail pass: anti-aliasing on every level, sharper shadows, auto-picked graphics level, no ground flicker, smaller and fuller interiors from free CC0 kits (KayKit, Kenney, Poly Pizza), a short queue of 1 or 2 people, glass shop fronts, sliding doors, indoor camera, sounds per place, a real gym, the C Institute turned to face the spine with glass on both sides and a changing talk screen, every walk-in place rebuilt from the approved designs, more detail in the Plaza, streets and spine (grass blades, sparser on Low), and fixes for the crash loop and crashes costing too little |
 | 4 Nov 2026 | Louis's second list after playing again: plan grows to Sessions 53 to 65. Loading screen after the application; ragdoll falls; the Schedule I look (lighting, colours, simple textures; our characters stay) and real grass blades; Plaza shops lower (4.5 m) with 3 floors of joined flats above, shops in pairs with a passage after every second one, bike shop and clothes shop moved into the rows, logos and flashier fronts, Grand Groceries looks like a supermarket; Spill the Tea becomes Spill the Brew, a coffee shop (coffee, pastries, cakes), Bread & Zaatar sells bread and manakish only (fragile cakes and Ms Dana's cake move to the coffee shop, Auntie Mariam now orders an iced latte); car parks full of bays (1 row, 2 back to back, 1 row) right next to the clusters with kerbs; spine gets a red walking track and a two-way buggy road, hills at most 0.5 m, plants round the domes; gym smaller with the lap pool in front; real community pool with fence and gate; swimmers swim; beekeeper and farmer NPCs; half-built buildings with scaffolding; buggies everywhere except the ring road; and fixes for sunglasses, benches, cluster signs, crossing roads, the farm stall, the hill over the pool and a bridge over the stream |
 | 4 Nov 2026 | Session 54: the ragdoll is a small hand-made one (points and sticks, scripts/ragdoll_sim.gd) instead of Godot's PhysicalBoneSimulator3D, which doesn't suit the 23-times-size character model. The bike keeps its own tip-over, separate from the rider, so it can't hit things and start a second crash. Same look for Louis: the rider goes floppy in the direction of the hit. |
+| 4 Nov 2026 | Polish pass planned (Sessions 66 to 72) after the Looks pass: a groundwork session, then 5 sessions built in parallel (sky, light and colour grade; water, beam, road wear and particles; HUD like the mockup with top-left chips, a temperature clock, meters with icons and words; a clearer phone with an offer card and countdown ring, and a nicer mini-map; screens, UI sounds and accessibility settings), then a play-test. Louis picks the colour grade (Golden or Fresh) and whether to try outlines. All new things are behind GameConfig settings; nothing old is deleted |
 
 ## Sources
 
