@@ -46,6 +46,10 @@ static func progress(id: String, jobs: Array, crashes: int) -> Vector2i:
 			var run := 0
 			for job in jobs:
 				run = run + 1 if not job["cancelled"] and job["stars"] >= 5.0 else 0
+				# A minor crash has no delivery-history row, but the next job's
+				# saved streak records that break. Cap at this shift's job count
+				# so a streak carried over from yesterday cannot finish today's goal.
+				run = mini(run, int(job.get("streak", run)))
 				best = maxi(best, run)
 			return Vector2i(mini(best, GameConfig.GOAL_FIVE_STAR_STREAK), GameConfig.GOAL_FIVE_STAR_STREAK)
 		"no_crashes":

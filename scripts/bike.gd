@@ -473,6 +473,9 @@ func _check_crash(head_on: float, thing: Object, incoming := Vector3.ZERO,
 
 func _begin_fall(impact: Dictionary) -> void:
 	last_crash = impact.duplicate(true)
+	# Coverage belongs to this collision, even if the rider changes the phone
+	# setting while the fall is playing and before the clinic resolves its bill.
+	last_crash["insured_at_impact"] = GameState.insurance_on
 	_fall_active = true
 	_fall_big = bool(impact["big"])
 	fall_kind = impact["fall"]

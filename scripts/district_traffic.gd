@@ -10,6 +10,7 @@ const WHITE := Color(0.96, 0.96, 0.91)
 const SOLAR := Color(0.13, 0.22, 0.34)
 const METAL := Color(0.48, 0.51, 0.53)
 const ASPHALT := Color(0.33, 0.34, 0.36)
+const BUS_SIZE := Vector3(2.5, 3.0, 8.2)
 
 var cars: Array[TrafficVehicle] = []
 var buses: Array[TrafficVehicle] = []
@@ -48,7 +49,10 @@ func _physics_process(_delta: float) -> void:
 		_next_arrival = GameConfig.BUS_INTERVAL_GAME_MINUTES
 	_last_elapsed = elapsed
 	var approach := _bus_entry.distance_to(_bus_bay) / GameConfig.TRAFFIC_BUS_SPEED
-	if elapsed >= _next_arrival - approach:
+	# The bay and its short access road are one shared spur. Keep a delayed
+	# arrival pending until the departing bus has cleared it, rather than sending
+	# two buses head-on or repeatedly spawning them at the same entry point.
+	if elapsed >= _next_arrival - approach and _bus_access_clear():
 		_spawn_bus(false)
 		_next_arrival += GameConfig.BUS_INTERVAL_GAME_MINUTES
 
@@ -177,7 +181,7 @@ func _spawn_bus(already_at_bay: bool) -> TrafficVehicle:
 	add_child(bus)
 	var ring := _ring_points()
 	var route: Array[Vector3] = [_bus_entry, _bus_bay, _bus_entry, ring[0], ring[1], ring[2], ring[3], _bus_entry]
-	bus.setup(route, "bus", _bus_look(), Vector3(2.5, 3.0, 8.2), GameConfig.TRAFFIC_BUS_SPEED)
+	bus.setup(route, "bus", _bus_look(), BUS_SIZE, GameConfig.TRAFFIC_BUS_SPEED)
 	bus.stop_index = 1
 	bus.dwell_time = GameConfig.BUS_DWELL_TIME
 	bus.despawn_at_end = true
@@ -188,6 +192,23 @@ func _spawn_bus(already_at_bay: bool) -> TrafficVehicle:
 	bus_arrivals += 1
 	buses.append(bus)
 	return bus
+
+
+func _bus_access_clear() -> bool:
+	buses = buses.filter(func(bus): return is_instance_valid(bus) and not bus.is_queued_for_deletion())
+	for bus in buses:
+		if bus._next <= bus.stop_index + 1:
+			return false # Inbound, dwelling at the bay, or leaving the spur.
+	# Also let a ring-road vehicle finish passing before adding a bus at the
+	# junction. Include both bodies and the normal following gap, so a new bus
+	# cannot appear inside a car or obstruct a bus that has only just turned out.
+	for vehicle: TrafficVehicle in cars + buses:
+		if not is_instance_valid(vehicle) or vehicle.is_queued_for_deletion():
+			continue
+		var clearance := (vehicle.size.z + BUS_SIZE.z) * 0.5 + GameConfig.TRAFFIC_STOP_DISTANCE
+		if vehicle.position.distance_to(_bus_entry) < clearance:
+			return false
+	return true
 
 
 func _bus_look() -> Node3D:

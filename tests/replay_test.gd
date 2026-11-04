@@ -21,6 +21,7 @@ func _run() -> void:
 	state.goal_pool.clear()
 	_check_clock_and_days()
 	_check_streak_and_records()
+	_check_crash_aware_streak_goal()
 	_check_choices()
 	_check_friendship()
 	_check_collections_and_save()
@@ -110,6 +111,37 @@ func _check_streak_and_records() -> void:
 	_expect(state.streak == 0, "a crash resets the streak immediately")
 	var summary: Dictionary = state.end_shift()
 	_expect(not summary["new_bests"].is_empty() and state.personal_bests["deliveries"] > 0, "shift summary reports personal bests")
+	state.reset()
+	state.shift_goals.clear()
+
+
+func _check_crash_aware_streak_goal() -> void:
+	state.reset()
+	state.shift_goals.assign(["streak"])
+	_deliver(_order())
+	_deliver(_order())
+	state.note_crash()
+	_deliver(_order())
+	_expect(state.streak == 1 and not "streak" in state.goals_done()
+			and state.shift_summary()["goal_bonus"] == 0,
+			"a minor crash breaks the shift goal as well as the phone streak")
+	_deliver(_order())
+	_deliver(_order())
+	_expect("streak" in state.goals_done() and state.shift_summary()["goal_bonus"] == GameConfig.GOAL_BONUS,
+			"three new five-star jobs after the crash earn the streak goal")
+	state.note_crash()
+	_expect("streak" in state.goals_done(), "a later crash does not revoke a streak goal already earned")
+	_deliver(_order())
+	_deliver(_order())
+	_deliver(_order())
+	state.start_shift()
+	state.shift_goals.assign(["streak"])
+	_deliver(_order())
+	_expect(state.streak == 4 and not "streak" in state.goals_done(),
+			"the shift goal counts only this shift even when the lifetime streak carries over")
+	_deliver(_order())
+	_deliver(_order())
+	_expect("streak" in state.goals_done(), "a carried streak still earns the goal after three jobs this shift")
 	state.reset()
 	state.shift_goals.clear()
 

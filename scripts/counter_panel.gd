@@ -7,10 +7,15 @@ var _staff: Person
 var _bag: Node3D
 
 func _ready() -> void:
+	# The side panel also runs while paused: keep its visibility in sync with modals.
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_delivery = get_parent().get_node("DeliveryManager")
 	_places = get_parent().get_node("PlaceBuilder")
 	_panel = SidePanel.new()
 	add_child(_panel)
+	# Delivery can pause the tree before the next frame. Remove the old handoff now.
+	GameState.order_stage_changed.connect(func(_stage): _close())
+	GameState.shift_ended.connect(func(_summary): _close())
 
 
 func _process(_delta: float) -> void:

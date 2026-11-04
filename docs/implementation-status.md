@@ -1,5 +1,11 @@
 # Complete plan: implementation and acceptance ledger
 
+Post-closeout review on 4 November found seven integration defects. They are fixed
+on `codex/plan-review-fixes`, with before/after regressions and 1,469 passing Godot
+assertions plus packaging and worker checks. See [the fix record](review-fixes-2026-11-04.md).
+These corrections have not been deployed; the deployment entries below describe
+the earlier candidate.
+
 Base: main ac47818 plus the verified clock and crash plan through808413b.
 
 Completion requires code, automated checks, rendered evidence and the listed human/release gates. A passing narrow check does not close a whole session.

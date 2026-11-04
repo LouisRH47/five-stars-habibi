@@ -1,5 +1,18 @@
 # Progress
 
+## Implementation review fixes — 4 November 2026
+
+All seven findings from the implementation-plan review are fixed on
+`codex/plan-review-fixes`: tutorial recovery after a major crash, collision-time
+insurance, bus access deadlocks, crash-aware streak goals, touch rocket activation,
+upgraded stamina display, and reception panel cleanup. Focused regression suites
+now run in the browser release build, using an isolated copy and temporary saves.
+
+Fresh combined validation passed 1,469 Godot assertions across Wahat, the two
+older maps, touch controls and 15 focused suites, plus seven packaging tests and
+five worker tests. Web export passed. See [review-fixes-2026-11-04.md](docs/review-fixes-2026-11-04.md)
+for the fixes, evidence and test instructions. This fix branch has not been deployed.
+
 ## Browser distribution — 3 November 2026
 
 - Added a single-threaded browser export, a Play/loading screen, and web-only Low

@@ -39,9 +39,9 @@ logs.mkdir(parents=True, exist_ok=True)
 (root / "build" / ".gdignore").touch()
 ansi = re.compile(r"\x1b\[[0-9;]*m")
 
-def run(name, args, timeout=180, require_pass=False, bootstrap_fonts=False):
+def run(name, args, timeout=180, require_pass=False, bootstrap_fonts=False, project=root):
     print(f"\nRunning {name} (timeout {timeout}s)", flush=True)
-    command = [godot, "--headless", "--path", str(root),
+    command = [godot, "--headless", "--path", str(project),
                "--log-file", str(logs / f"{name}-engine.log"), *args]
     try:
         completed = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -101,6 +101,23 @@ with tempfile.TemporaryDirectory(prefix="habibi-web-check-") as temporary:
     run("smoke", ["--fixed-fps", "60", "-s", "tests/smoke_test.gd",
                   "--", f"--save-dir={temporary}"], timeout=900, require_pass=True)
 run("touch", ["-s", "tests/touch_controls_test.gd"], require_pass=True)
+
+# Focused suites cover interactions that the broad smoke run cannot exercise.
+# Redirect every user:// path in a temporary snapshot, including autoload startup,
+# so running release checks on a developer's machine never changes player saves.
+with tempfile.TemporaryDirectory(prefix="habibi-focused-check-") as temporary:
+    subprocess.run([sys.executable, "tools/prepare_validation.py", temporary], check=True, timeout=120)
+    focused_project = Path(temporary) / "project"
+    run("focused-bootstrap", ["--import"], timeout=300, bootstrap_fonts=True, project=focused_project)
+    run("focused-import", ["--import"], timeout=300, project=focused_project)
+    for suite in (
+        "crash_impact", "district_traffic", "detail_world", "gear_ride",
+        "housing_camera", "minimap_cache", "navigation", "phone_refresh",
+        "replay", "replay_ui", "shop", "static_batch", "lifecycle_regression",
+        "reception_panel", "bus_recovery",
+    ):
+        run(f"focused-{suite}", ["--fixed-fps", "60", "-s", f"tests/{suite}_test.gd"],
+            timeout=300, require_pass=True, project=focused_project)
 
 web = root / "build" / "web"
 if web.exists():

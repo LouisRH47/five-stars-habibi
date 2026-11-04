@@ -407,13 +407,14 @@ func set_insurance(on: bool) -> void:
 func big_crash(impact: Dictionary = {}) -> Dictionary:
 	streak = 0
 	var quote := CrashImpact.quote(impact)
+	var insured_at_impact := bool(impact.get("insured_at_impact", insurance_on))
 	var bills := {
 		"hospital": quote["hospital"],
 		"repair": quote["repair"],
 		"severity": quote.get("severity", "severe"),
 		"impact": impact.duplicate(true),
 		"boss": not boss_paid_crash,
-		"insured": insurance_on,
+		"insured": insured_at_impact,
 		"insured_cap": quote["insured"],
 		"lost_order": current_order != null,
 		"food": current_order.food if current_order != null else "",
@@ -422,7 +423,7 @@ func big_crash(impact: Dictionary = {}) -> Dictionary:
 	crash_shifts.append(shift_number)
 	if not boss_paid_crash:
 		boss_paid_crash = true
-	elif insurance_on:
+	elif insured_at_impact:
 		bills["paid"] = quote["insured"]
 	else:
 		bills["paid"] = bills["hospital"] + bills["repair"]

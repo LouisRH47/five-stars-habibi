@@ -78,11 +78,15 @@ func _run() -> void:
 					clear = false
 		_check("buggy route clears every joined home", clear)
 	_check("the first bus waits at the station", traffic.bus_arrivals == 1 and traffic.buses[0]._wait_left > 0)
+	# This narrow schedule check advances the clock directly. Move departures
+	# onto the ring too; the full physics recovery test covers blocked access.
+	traffic.buses[0].start_at(3)
 	gs.shift_time_left = GameConfig.SHIFT_LENGTH - 59.0
 	traffic._physics_process(0.0)
 	_check("the next bus approaches in time for the next game hour", traffic.bus_arrivals == 2)
 	traffic._physics_process(0.0)
 	_check("one game hour cannot spawn duplicate buses", traffic.bus_arrivals == 2)
+	traffic.buses[1].start_at(4)
 	gs.shift_time_left = GameConfig.SHIFT_LENGTH - 119.0
 	traffic._physics_process(0.0)
 	_check("another game hour schedules the following bus", traffic.bus_arrivals == 3)
