@@ -191,6 +191,7 @@ static func bikes(p: InteriorParts) -> void:
 			p.prop("kenney_furniture/cardboardBoxClosed", Vector3(x, y, back + 0.24), (k * 17) % 30 - 15.0, "floor", Vector3(0.45, 0.3, 0.35))
 	for k in 5:   # inner tubes hanging on hooks above the shelves
 		p.cyl(0.2, 0.2, 0.04, DARK, Vector3(1.4 + k * 0.95, 2.6, back + 0.02), Basis(Vector3.RIGHT, PI * 0.5), 12)
+		p.cyl(0.16, 0.16, 0.042, ShopInterior.CREAM, Vector3(1.4 + k * 0.95, 2.6, back + 0.02), Basis(Vector3.RIGHT, PI * 0.5), 12)   # the hole
 	p.sign(str(p.place.get("arabic", "")), str(p.place.get("name", "Pedal Point Bikes")), Vector3(3.1, 3.45, back + 0.045), 0.0, Color.WHITE, teal.darkened(0.2), 30)
 	# A bike on show in the window, on a low stand, for people walking past.
 	p.box(Vector3(2.0, 0.15, 0.7), DARK, Vector3(3.6, 0.075, 4.15))
