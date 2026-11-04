@@ -95,6 +95,27 @@ func path(from: int, to: int, avoid: Array = []) -> Array[int]:
 	return out
 
 
+## True if going from `to` back to `from` leads into a dead end: the only way out of that
+## side is this edge again, and it's the smaller side of the map (a car park buggy lane's
+## closed end, say). A buggy that turns round there just has to come back the same way.
+func dead_end_behind(from: int, to: int) -> bool:
+	if from < 0 or to < 0 or from >= nodes.size() or to >= nodes.size():
+		return false
+	var seen := {from: true}
+	var todo: Array[int] = [from]
+	while not todo.is_empty():
+		var n: int = todo.pop_back()
+		for m: int in links[n]:
+			if n == from and m == to:
+				continue   # not along this edge
+			if m == to:
+				return false   # there's another way round
+			if not seen.has(m):
+				seen[m] = true
+				todo.append(m)
+	return seen.size() * 2 < nodes.size()
+
+
 ## Every node a buggy can get to (all of them: only the biggest joined-up part is kept).
 func node_count() -> int:
 	return nodes.size()

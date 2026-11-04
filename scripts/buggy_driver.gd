@@ -26,6 +26,7 @@ var trips := 0
 var passenger: Person
 
 var _rng := RandomNumberGenerator.new()
+var _held := 0.0   # seconds spent giving way to a buggy because behind us is a dead end
 
 
 ## Makes the buggy's look for one line of the BUGGIES data: [model, driver].
@@ -135,6 +136,19 @@ func _buggy_ahead() -> bool:
 	return false
 
 
+## True if what's stopping it is another buggy (not the bike, a person or road works).
+func _buggy_blocks() -> bool:
+	if _buggy_ahead():
+		return true
+	var way := heading()
+	var middle := position + way * (size.z * 0.5 + look_ahead * 0.5) + Vector3.UP * size.y * 0.5
+	_ahead.transform = Transform3D(Basis.looking_at(way), middle)
+	for hit in get_world_3d().direct_space_state.intersect_shape(_ahead, 6):
+		if hit["collider"] is BuggyDriver:
+			return true
+	return false
+
+
 ## Where it will be (and which way it will face) after driving `metres` more on its route.
 func _on_route(metres: float) -> Array:
 	var at := position
@@ -199,6 +213,8 @@ func _start_somewhere() -> void:
 func _drive(delta: float) -> void:
 	speed = cruise * _corner_share()
 	super._drive(delta)
+	if moving:
+		_held = 0.0
 
 
 ## Slower near corners (the sharper the corner, the slower) and when pulling up at the end.
@@ -235,6 +251,9 @@ func _arrive() -> void:
 
 
 ## Something stayed in the way: turn round and find another way, not back through it.
+## But if it's another buggy and behind us is a dead end (it's coming in, we're coming out),
+## we keep waiting and let the other one turn round: turning round here would only send us
+## to the dead end and straight back. After BUGGY_DEAD_END_WAIT seconds we turn anyway.
 func _turn_round() -> void:
 	if roads == null or edges.is_empty():
 		super._turn_round()
@@ -245,6 +264,11 @@ func _turn_round() -> void:
 	if from == to or from >= roads.node_count() or to >= roads.node_count():
 		replan()
 		return
+	if GameConfig.BUGGY_DEAD_END_GIVE_WAY and _held < GameConfig.BUGGY_DEAD_END_WAIT \
+			and roads.dead_end_behind(from, to) and _buggy_blocks():
+		_held += GameConfig.LIFE_GIVE_UP_TIME
+		return
+	_held = 0.0
 	var back := (roads.nodes[from] - roads.nodes[to]).normalized()
 	var here := Vector2(position.x, position.z)
 	var middle := Geometry2D.get_closest_point_to_segment(here, roads.nodes[from], roads.nodes[to])
