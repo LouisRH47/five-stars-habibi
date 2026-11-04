@@ -239,7 +239,7 @@ func _check_particles() -> void:
 	Settings.graphics = 1
 	vfx.test_eye = Vector3(plaza.x, 2, plaza.y)
 	vfx.apply_graphics()
-	var mist := vfx.emitters.filter(func(e): return (e["node"] as Node).name == "FountainMist")
+	var mist: Array = vfx.emitters.filter(func(e): return (e["node"] as Node).name == "FountainMist")
 	_check(not mist.is_empty() and (mist[0]["node"] as GPUParticles3D).emitting, "mist round the fountain when you're near")
 	vfx.test_eye = Vector3(5000, 0, 5000)
 	vfx.apply_graphics()
@@ -254,7 +254,7 @@ func _check_particles() -> void:
 	gs.accept_offer()
 	gs.pick_up()
 	await process_frame
-	var steam := _dm.actor.find_children("PickupSteam*", "GPUParticles3D", false, false)
+	var steam: Array = _dm.actor.find_children("PickupSteam*", "GPUParticles3D", false, false)
 	_check(not steam.is_empty() and (steam[0] as GPUParticles3D).emitting, "steam rises from the bag at a pizza pick-up")
 	gs.reset()
 
@@ -275,9 +275,10 @@ func _check_confetti() -> void:
 	gs.meter_damage = 100.0
 	var before: int = bursts.made["confetti"]
 	gs.deliver()
-	var confetti: GPUParticles3D = bursts.last_burst
+	var confetti: GPUParticles3D = bursts.last_of.get("confetti")
 	_check(gs.last_result["stars"] >= 5.0 and bursts.made["confetti"] == before + 1 and confetti != null
-			and confetti.name.begins_with("Confetti") and confetti.emitting, "a 5-star delivery makes one confetti burst")
+			and confetti.name.begins_with("Confetti") and confetti.emitting, "a 5-star delivery makes one confetti burst (%.1f stars, %d made, %s)"
+			% [gs.last_result.get("stars", 0.0), bursts.made["confetti"] - before, confetti])
 	paused = true   # the Delivered card pauses the game; the confetti still finishes
 	var wait := Time.get_ticks_msec()
 	while is_instance_valid(confetti) and Time.get_ticks_msec() - wait < 3000:

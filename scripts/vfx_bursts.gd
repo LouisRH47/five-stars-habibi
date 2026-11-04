@@ -9,8 +9,9 @@ extends Node3D
 
 ## How many of each it has made (tests read them).
 var made := {"confetti": 0, "coins": 0, "level_ring": 0}
-## The last burst made (tests watch it finish).
+## The last burst made, and the last of each kind (tests watch them finish).
 var last_burst: Node3D
+var last_of := {}
 var _world: Node
 var _level := 0
 
@@ -137,6 +138,7 @@ func _fire(p: GPUParticles3D, spot: Vector3, kind: String) -> GPUParticles3D:
 	p.global_position = spot
 	made[kind] += 1
 	last_burst = p
+	last_of[kind] = p
 	return p
 
 
