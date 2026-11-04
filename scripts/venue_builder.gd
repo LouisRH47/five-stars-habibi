@@ -12,11 +12,23 @@ static func counter_local(size: Vector3) -> Vector3:
 	return Vector3(0, 0, -size.z * 0.15 + 1.8)
 
 
+## Sessions 60-61: where you stand at this place's desk. A place in the data can give its own
+## "counter" spot (the gym and the C Institute have their reception by the door).
+static func counter_of(place: Dictionary, size: Vector3) -> Vector3:
+	var own := place.has("counter")
+	if place.get("number", 0) == 904 and not GameConfig.GYM_ROOM_ON:
+		own = false
+	return place["counter"] if own else counter_local(size)
+
+
 static func world_point(place: Dictionary, local: Vector3) -> Vector3:
 	return place["position"] + local.rotated(Vector3.UP, deg_to_rad(place.get("facing", 0.0)))
 
 
 static func build(place: Dictionary, size: Vector3) -> StaticBody3D:
+	# Session 60: the real gym is built by its own script.
+	if place.get("venue_type", "") == "gym" and GameConfig.GYM_ROOM_ON:
+		return GymRoom.build(place, size)
 	var body := StaticBody3D.new()
 	body.set_meta("walk_in", true)
 	body.set_meta("venue_type", place.get("venue_type", "reception"))

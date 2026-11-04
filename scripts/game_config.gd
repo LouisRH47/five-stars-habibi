@@ -537,3 +537,19 @@ const LOADING_TIPS := [
 	"The red track is for walkers: mind them.",
 	"Sprinting uses stamina. Coast to get it back.",
 ]
+
+# --- Session 60: Gym and pools ---
+const GYM_ROOM_ON := true             # the real gym (scripts/gym_room.gd); false = the old restaurant-style room
+const POOLS_REAL_ON := true           # fenced pools with swimmers (scripts/pool.gd); false = the old flat pools
+const POOL_WATER_Y := 0.06            # the water's surface (the deck is a little higher)
+const POOL_DECK_Y := 0.1             # top of the stone deck round the water (not solid: you walk on it)
+const POOL_WATER_COLOUR := Color(0.18, 0.66, 0.86)
+const SWIM_SPEED := 1.05              # metres a second, an easy crawl
+const SWIM_STROKES := 0.75            # arm strokes (full circles) a second
+const SWIM_TURN_TIME := 1.3           # seconds to turn round at the wall
+const SWIM_REST_CHANCE := 0.3         # how often a swimmer rests at the wall instead of turning straight away
+const SWIM_REST_TIME := Vector2(3.0, 6.0)   # seconds resting at the wall (shortest, longest)
+const POOL_WALK_SPEED := 0.9          # people strolling round the community pool deck
+const POOL_PEOPLE_RANGE := 90.0       # swimmers further than this from the camera stop moving (saves time)
+const SPLASH_DROPS := 10              # little splash drops round each kid in the kids' pool
+
