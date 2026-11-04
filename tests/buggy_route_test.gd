@@ -9,6 +9,7 @@ extends SceneTree
 ##   - building sites: each has a half-built frame, scaffolding and a fence, nothing sticks
 ##     into a road, and the old crane is still there
 ## Run it on its own:  Godot --path . --headless -s tests/buggy_route_test.gd
+## (add "-- sites" to check only the building sites, quicker)
 var _failed := false
 var _map: Dictionary
 
@@ -39,11 +40,11 @@ func _run() -> void:
 		if life.buggy_roads_checked:
 			break
 	_expect(life.buggy_roads_checked, "the buggy road map was checked for things in the way")
-	var roads: BuggyRoads = life.buggy_roads
+	var roads: Object = life.buggy_roads
 	_check_road_map(roads, world)
-	var buggies: Array[BuggyDriver] = []
+	var buggies: Array[Node3D] = []
 	for mover in life.movers:
-		if mover is BuggyDriver:
+		if mover.has_method("drive_route"):
 			buggies.append(mover)
 	_expect(buggies.size() >= 12 and buggies.size() <= 16 and buggies.size() == _map["BUGGIES"].size(),
 			"12 to 16 roaming buggies were built", str(buggies.size()))
@@ -53,8 +54,9 @@ func _run() -> void:
 	_expect(riders.has("gardener") and riders.has("resident"), "some buggies carry a resident, some a gardener with tools")
 	for mover in life.movers:
 		mover.set_physics_process(false)   # the test moves everything itself from here on
-	await _check_stops(buggies, life, world)
-	await _simulate(buggies, life, roads)
+	if not "sites" in OS.get_cmdline_user_args():   # "-- sites": only the building site checks
+		await _check_stops(buggies, life, world)
+		await _simulate(buggies, life, roads)
 	_check_sites(world)
 	print("RESULT: " + ("FAIL" if _failed else "PASS"))
 	quit(1 if _failed else 0)
@@ -63,7 +65,7 @@ func _run() -> void:
 # --- The road map ------------------------------------------------------------------------
 
 func _black_rects() -> Array[Rect2]:
-	return BuggyRoads.black_rects(_map, 0.0)
+	return load("res://scripts/buggy_roads.gd").black_rects(_map, 0.0)
 
 
 ## Metres from a spot to the nearest black road (0 if on one).
@@ -75,7 +77,7 @@ func _black_distance(spot: Vector2) -> float:
 	return best
 
 
-func _check_road_map(roads: BuggyRoads, world: Node3D) -> void:
+func _check_road_map(roads: Object, world: Node3D) -> void:
 	print("      buggy road map: %d junctions, roads: %s" % [roads.node_count(), roads.road_names()])
 	if not roads.blocked.is_empty():
 		print("      stretches dropped because something is in the way: %s" % roads.blocked)
@@ -87,11 +89,11 @@ func _check_road_map(roads: BuggyRoads, world: Node3D) -> void:
 			if b < a:
 				continue
 			total += roads.nodes[a].distance_to(roads.nodes[b])
-			var name: String = roads.road_of[BuggyRoads.key(a, b)]
+			var name: String = roads.road_of[roads.key(a, b)]
 			if name in GameConfig.BLACK_ROADS or name.to_lower().contains("track") or name == "Domes Path":
 				forbidden.append(name)
 			for step in 11:
-				var spot := roads.nodes[a].lerp(roads.nodes[b], step / 10.0)
+				var spot: Vector2 = roads.nodes[a].lerp(roads.nodes[b], step / 10.0)
 				if _black_distance(spot) < GameConfig.BUGGY_BLACK_ROAD_GAP - 0.5:
 					near_black.append("%s (%d, %d)" % [name, spot.x, spot.y])
 	_expect(forbidden.is_empty(), "no black road, red walking track or other track is on the buggy road map", str(forbidden))
@@ -129,7 +131,7 @@ func _check_road_map(roads: BuggyRoads, world: Node3D) -> void:
 					var thing: Node = hit["collider"]
 					if thing.is_in_group("critter") or thing.is_in_group("bike") or thing.name == "Walker":
 						continue
-					hits.append("%s near (%.1f, %.1f) on %s" % [thing.name, spot.x, spot.z, roads.road_of[BuggyRoads.key(a, b)]])
+					hits.append("%s near (%.1f, %.1f) on %s" % [thing.name, spot.x, spot.z, roads.road_of[roads.key(a, b)]])
 					break
 	_expect(hits.is_empty(), "every buggy driving line is clear of walls, posts and buildings", str(hits.slice(0, 6)))
 
@@ -137,16 +139,16 @@ func _check_road_map(roads: BuggyRoads, world: Node3D) -> void:
 # --- Stopping ----------------------------------------------------------------------------
 
 ## A long straight stretch of the road map (for the stop checks).
-func _long_stretch(roads: BuggyRoads, length: float) -> Array[int]:
+func _long_stretch(roads: Object, length: float) -> Array[int]:
 	for a in roads.node_count():
 		for b: int in roads.links[a]:
-			if roads.nodes[a].distance_to(roads.nodes[b]) >= length and roads.road_of[BuggyRoads.key(a, b)].contains("Lane"):
+			if roads.nodes[a].distance_to(roads.nodes[b]) >= length and roads.road_of[roads.key(a, b)].contains("Lane"):
 				return [a, b] as Array[int]
 	return [] as Array[int]
 
 
-func _check_stops(buggies: Array[BuggyDriver], life: Node, world: Node3D) -> void:
-	var roads: BuggyRoads = life.buggy_roads
+func _check_stops(buggies: Array[Node3D], life: Node, world: Node3D) -> void:
+	var roads: Object = life.buggy_roads
 	var buggy := buggies[0]
 	var stretch := _long_stretch(roads, 30.0)
 	if stretch.is_empty():
@@ -168,10 +170,10 @@ func _check_stops(buggies: Array[BuggyDriver], life: Node, world: Node3D) -> voi
 	buggy._pause_left = 0.0
 	for i in 30:
 		buggy._physics_process(1.0 / 30.0)
-	var a := roads.nodes[stretch[0]]
-	var b := roads.nodes[stretch[1]]
-	var way := (b - a).normalized()
-	var beside := (Vector2(buggy.position.x, buggy.position.z) - a).dot(BuggyRoads.right_of(way))
+	var a: Vector2 = roads.nodes[stretch[0]]
+	var b: Vector2 = roads.nodes[stretch[1]]
+	var way: Vector2 = (b - a).normalized()
+	var beside: float = (Vector2(buggy.position.x, buggy.position.z) - a).dot(roads.right_of(way))
 	_expect(beside > 0.5 and beside < 1.6, "a buggy keeps to the right side of the lane", "%.2f m right of the middle" % beside)
 	_expect(absf(angle_difference(buggy.rotation.y, atan2(-way.x, -way.y))) < 0.2, "a buggy faces the way it drives")
 	# The bike stands 3 m in front: it stops.
@@ -180,7 +182,7 @@ func _check_stops(buggies: Array[BuggyDriver], life: Node, world: Node3D) -> voi
 		buggy._blocked = 0.0
 		for i in 15:
 			buggy._physics_process(1.0 / 30.0)
-		var nose := buggy.position + buggy.heading() * (buggy.size.z * 0.5 + 2.5)
+		var nose: Vector3 = buggy.position + buggy.heading() * (buggy.size.z * 0.5 + 2.5)
 		var thing: Node3D
 		match what:
 			"bike":
@@ -192,7 +194,7 @@ func _check_stops(buggies: Array[BuggyDriver], life: Node, world: Node3D) -> voi
 				thing._pause_left = 1000.0
 			"road works":
 				var works := {"name": "test", "centre": Vector2(nose.x, nose.z) + way * 1.5, "along": "z" if absf(way.y) > 0.5 else "x", "width": 6.0, "length": 3.0}
-				thing = RoadWorks.build(world.get_node("EventManager"), works)
+				thing = load("res://scripts/road_works.gd").build(world.get_node("EventManager"), works)
 		await physics_frame
 		await physics_frame
 		var at := buggy.position
@@ -228,7 +230,7 @@ func _check_stops(buggies: Array[BuggyDriver], life: Node, world: Node3D) -> voi
 
 # --- 600 seconds of driving --------------------------------------------------------------
 
-func _simulate(buggies: Array[BuggyDriver], life: Node, roads: BuggyRoads) -> void:
+func _simulate(buggies: Array[Node3D], life: Node, roads: Object) -> void:
 	var step := 0.1
 	var seconds := 600.0
 	var on_black: Array[String] = []
@@ -261,15 +263,15 @@ func _simulate(buggies: Array[BuggyDriver], life: Node, roads: BuggyRoads) -> vo
 			# Which side of the lane it's on, when driving along a stretch.
 			if one.moving and one._next < one.edges.size():
 				var edge: Array = one.edges[one._next]
-				if edge[0] != edge[1]:
-					var a := roads.nodes[edge[0]]
-					var b := roads.nodes[edge[1]]
-					var way := (b - a).normalized()
-					var t := (here - a).dot(way)
+				if edge[0] != edge[1] and roads.keep_of.get(roads.key(edge[0], edge[1]), 0.0) >= 0.5:
+					var a: Vector2 = roads.nodes[edge[0]]
+					var b: Vector2 = roads.nodes[edge[1]]
+					var way: Vector2 = (b - a).normalized()
+					var t: float = (here - a).dot(way)
 					if t > 4.0 and t < a.distance_to(b) - 4.0:
-						if (here - a).dot(BuggyRoads.right_of(way)) > 0.3:
+						if (here - a).dot(roads.right_of(way)) > 0.3:
 							right_side += 1
-						else:
+						elif (here - a).dot(roads.right_of(way)) < -0.3:
 							left_side += 1
 		if tick % int(60.0 / step) == int(60.0 / step) - 1:   # every minute: did each one move?
 			for buggy in buggies:
@@ -290,7 +292,7 @@ func _simulate(buggies: Array[BuggyDriver], life: Node, roads: BuggyRoads) -> vo
 
 
 ## True if two buggies' boxes overlap (seen from above).
-func _overlap(a: BuggyDriver, b: BuggyDriver) -> bool:
+func _overlap(a: Node3D, b: Node3D) -> bool:
 	if a.position.distance_to(b.position) > 3.0:
 		return false
 	var corners_a := _corners(a)
@@ -306,7 +308,7 @@ func _overlap(a: BuggyDriver, b: BuggyDriver) -> bool:
 	return true
 
 
-func _corners(buggy: BuggyDriver) -> Array:
+func _corners(buggy: Node3D) -> Array:
 	var half := Vector2(1.2, 2.3) * 0.5 - Vector2(0.05, 0.05)
 	var out := []
 	var basis := buggy.global_basis
@@ -327,4 +329,56 @@ func _span(points: Array, axis: Vector2) -> Vector2:
 # --- Building sites ----------------------------------------------------------------------
 
 func _check_sites(world: Node3D) -> void:
-	pass
+	var detail := world.get_node("DistrictDetail")
+	var sites: Array = _map["BUILDING_SITES"]
+	var found := {}
+	for node in detail.find_children("BuildingSite_*", "Node3D", true, false):
+		if node.get_script() != null and String(node.get_script().resource_path).ends_with("building_site.gd"):
+			found[int(String(node.name).get_slice("_", 1))] = node
+	_expect(found.size() == sites.size(), "every building site has a half-built building", "%d of %d" % [found.size(), sites.size()])
+	var roads: Array[Rect2] = []
+	for road: Dictionary in _map["ROADS"]:
+		roads.append(ClusterSigns.road_rect(road, _map["ROAD_WIDTH"]))
+	for i: int in found:
+		var site: Node3D = found[i]
+		var area: Rect2 = sites[i]
+		var frame := site.get_node_or_null("HalfBuiltFrame")
+		_expect(frame != null and site.floors >= 2 and site.floors <= 3 and frame.get_meta("columns", 0) >= 6,
+				"site %d: a concrete frame with %d floors" % [i, site.floors])
+		_expect(site.pole_count > 60 and site.get_node_or_null("Scaffolding/SafetyNet") != null,
+				"site %d: scaffolding (%d poles) with safety net" % [i, site.pole_count])
+		_expect(site.workers.size() >= 3, "site %d: workers in hi-vis" % i)
+		var fences := 0
+		var holder := site.get_parent()
+		for child in holder.get_children():
+			if child is StaticBody3D:
+				fences += 1
+		if i == 0:
+			var landmark := world.get_node_or_null("LandmarkBuilder/BuildingSite")
+			_expect(landmark != null and landmark.get_node_or_null("Crane") != null, "site 0: the big site keeps its hoarding fence and crane")
+		else:
+			_expect(fences >= 4 and site.get_node_or_null("Crane") != null and site.get_node_or_null("SiteCabin") != null
+					and site.get_node_or_null("Hoarding") != null, "site %d: fence, crane, cabin and Phase 2 hoarding" % i)
+		# Nothing sticks out of the site or into a road.
+		var bound := (_map["BUILDING_SITE"]["work_area"] as Rect2) if i == 0 else area
+		var out: Array[String] = []
+		for part in site.find_children("*", "GeometryInstance3D", true, false):
+			if _in_person(part, site):
+				continue
+			var box: AABB = (part as Node3D).global_transform * (part as VisualInstance3D).get_aabb()
+			var flat := Rect2(box.position.x, box.position.z, box.size.x, box.size.z)
+			if not bound.grow(0.3).encloses(flat):
+				out.append("%s outside the site %s" % [part.name, flat])
+			for road in roads:
+				if road.intersects(flat):
+					out.append("%s in a road" % part.name)
+					break
+		_expect(out.is_empty(), "site %d: nothing sticks out of the site or into a road" % i, str(out.slice(0, 4)))
+
+
+func _in_person(node: Node, stop: Node) -> bool:
+	while node != null and node != stop:
+		if node.has_method("paint") and node.has_method("play"):
+			return true
+		node = node.get_parent()
+	return false

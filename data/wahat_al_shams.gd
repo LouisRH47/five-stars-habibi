@@ -492,7 +492,7 @@ const JUMPING_ARENA := Rect2(-282, 65, 115, 88)
 
 const STABLES := {"name": "Wahat Stables", "arabic": "إسطبلات الواحة", "block": {"position": Vector3(-224, 0, 174), "size": Vector3(100, 5, 14)}, "paddock": Rect2(-280, 157, 110, 9), "horses": 4}
 
-const BUILDING_SITE := {"area": Rect2(-135, 55, 110, 135), "crane": Vector3(-80, 0, 120), "sign": {"name": "Phase 2 coming soon", "arabic": "المرحلة الثانية قريباً", "position": Vector3(-140, 0, 110), "facing": -90.0}}
+const BUILDING_SITE := {"area": Rect2(-135, 55, 110, 135), "crane": Vector3(-80, 0, 120), "sign": {"name": "Phase 2 coming soon", "arabic": "المرحلة الثانية قريباً", "position": Vector3(-140, 0, 110), "facing": -90.0}, "work_area": Rect2(-133, 140, 106, 48)}
 
 const BUILDING_SITES := [
 	Rect2(-135, 55, 110, 135),

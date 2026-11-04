@@ -43,9 +43,10 @@ static func allowed(road: Dictionary) -> bool:
 	var name := String(road.get("name", ""))
 	if name in GameConfig.BLACK_ROADS:
 		return false
-	if float(road.get("width", 6.0)) < GameConfig.BUGGY_MIN_ROAD_WIDTH:
-		return false
 	var low := name.to_lower()
+	var thinnest: float = GameConfig.BUGGY_LANE_MIN_WIDTH if low.contains("buggy") else GameConfig.BUGGY_MIN_ROAD_WIDTH
+	if float(road.get("width", 6.0)) < thinnest:
+		return false
 	for word: String in GameConfig.BUGGY_NO_GO_WORDS:
 		if low.contains(word):
 			return false

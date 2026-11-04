@@ -24,8 +24,13 @@ func _ready() -> void:
 	_planting()
 	_pool(_map["LAP_POOL"], "LapPool", false, _map.get("LAP_POOL_DETAIL", {}))
 	_pool(_map["COMMUNITY_POOL"], "CommunityPool", true, _map.get("COMMUNITY_POOL_DETAIL", {}))
-	for area: Rect2 in _map.get("BUILDING_SITES", []).slice(1):
-		_site(area)
+	if GameConfig.SITE_HALF_BUILT:   # Session 64: every site gets a half-built building
+		var sites: Array = _map.get("BUILDING_SITES", [])
+		for i in sites.size():
+			_site(sites[i], i)
+	else:
+		for area: Rect2 in _map.get("BUILDING_SITES", []).slice(1):
+			_site(area)
 	_street_details()
 	TerrainMaterials.dress_ground(get_parent().get_node("WahatBuilder"))
 	TerrainMaterials.dress_ground(get_parent().get_node("SpineBuilder"))
@@ -323,10 +328,27 @@ func _pool(area: Rect2, id: String, community: bool, detail: Dictionary = {}) ->
 		LowPoly.cylinder(room, 3, 3, 0.05, Color(0.35, 0.76, 0.88), c + Vector3(area.size.x * 0.5 - 4, 0.15, 0))
 
 
-func _site(area: Rect2) -> void:
+## A "coming soon" building site. Session 64 (GameConfig.SITE_HALF_BUILT): the fence and the
+## "Coming soon" sign stay, and scripts/building_site.gd adds a half-built building with
+## scaffolding, the crane, the cabin, materials and workers. Site 0 is the big site that
+## LandmarkBuilder makes (fence, crane, containers, sign): only its BUILDING_SITE
+## "work_area" gets the building. index -1: the old site (before Session 64).
+func _site(area: Rect2, index := -1) -> void:
 	var holder := Node3D.new()
 	holder.name = "ConstructionSite"
 	add_child(holder)
+	if index >= 0:
+		var main: bool = index == 0 and _map.has("BUILDING_SITE")
+		if main:
+			BuildingSite.build(holder, _map["BUILDING_SITE"].get("work_area", area), true, index)
+			return
+		var c2 := Vector3(area.get_center().x, 0, area.get_center().y)
+		LowPoly.box(holder, Vector3(area.size.x, 0.03, area.size.y), Color(0.8, 0.75, 0.66), c2 + Vector3.UP * 0.04)
+		for pair in [[area.position, Vector2(area.end.x, area.position.y)], [Vector2(area.end.x, area.position.y), area.end], [area.end, Vector2(area.position.x, area.end.y)], [Vector2(area.position.x, area.end.y), area.position]]:
+			Props.fence(holder, pair[0], pair[1], 2, TEAL)
+		BuildingSite.build(holder, area, false, index)
+		_sign(holder, "قريباً", "Coming soon", c2 + Vector3(0, 2.6, -area.size.y * 0.5 - 0.1), 180, 52)
+		return
 	var c := Vector3(area.get_center().x, 0, area.get_center().y)
 	LowPoly.box(holder, Vector3(area.size.x, 0.03, area.size.y), Color(0.8, 0.75, 0.66), c + Vector3.UP * 0.04)
 	for pair in [[area.position, Vector2(area.end.x, area.position.y)], [Vector2(area.end.x, area.position.y), area.end], [area.end, Vector2(area.position.x, area.end.y)], [Vector2(area.position.x, area.end.y), area.position]]:

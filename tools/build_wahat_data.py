@@ -141,7 +141,7 @@ GYM_AT=v3(115,0,-30.1); GYM_SIZE=v3(24,6,13)   # Session 60: smaller (was 36 x 2
 put('GYM',{'position':GYM_AT,'size':GYM_SIZE,'facing':180.,'name':'Wahat Gym','arabic':'نادي الواحة الرياضي'})
 put('COMMUNITY_POOL',rect(270,-35.5,50,22.5));put('JUMPING_ARENA',rect(-282,65,115,88))
 put('STABLES',{'name':'Wahat Stables','arabic':'إسطبلات الواحة','block':{'position':v3(-224,0,174),'size':v3(100,5,14)},'paddock':rect(-280,157,110,9),'horses':4})
-put('BUILDING_SITE',{'area':rect(-135,55,110,135),'crane':v3(-80,0,120),'sign':{'name':'Phase 2 coming soon','arabic':'المرحلة الثانية قريباً','position':v3(-140,0,110),'facing':-90.}})
+put('BUILDING_SITE',{'area':rect(-135,55,110,135),'crane':v3(-80,0,120),'sign':{'name':'Phase 2 coming soon','arabic':'المرحلة الثانية قريباً','position':v3(-140,0,110),'facing':-90.},'work_area':rect(-133,140,106,48)})  # Session 64: the half-built building goes in work_area (clear of the crane, containers and sand)
 put('BUILDING_SITES',[rect(-135,55,110,135),rect(*c45_site),rect(-275,-80,105,18),rect(-301,50,15,125),rect(-413,-89,100,84)])
 put('CLUSTER_NAMES',{f'C{i}':'المجموعة '+a for i,a in enumerate('١٢٣٤٥',1)})
 put('TUTORIAL_ORDER',{'restaurant':'pizza','villa':101})
