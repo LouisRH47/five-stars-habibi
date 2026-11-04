@@ -25,7 +25,7 @@ at the end so anyone can render them again with `tests/_shots.gd`.
 | 7 | **"Coming soon" words hanging in the air** at the 4 small building sites (white letters with nothing behind them, 2.6 m up). | `site_plaza3` | A dark board behind the words on two posts. | `SITE_SIGN_BOARD` |
 | 8 | **Pool decks were a plain light slab** (PRD: "a paved deck"). | `comm_pool_deck`, `comm_pool_high` | Both pool decks use the paving texture. | `POOL_DECK_PAVED` |
 | 9 | **The big "Wahat Stables" sign was half hidden** behind the stable office roof (Session 61 put the office right in front of the middle of the block). | `stables` | The sign moved 13 m along the block, clear of the office. | `STABLES_SIGN_SHIFT` (0 = old spot) |
-| 10 | **Play-test bot stuck for the rest of the shift** (both careful and careless): on foot at Shawarma Supreme it pushed against the glass beside the door for 7 minutes and the shift never ended. The pickup spot (Session 58) is inside, off to the side of the sliding door; the bot's map scan saw the door shut, so it walked in a straight line into the glass, outside the door's 3.2 m reach. A player steers to the door, so this was the bot, not the game. | bot logs | The bot walks to the doorway first, then in to the counter, like a player. | (test code only) |
+| 10 | **Play-test bot stuck for the rest of the shift** (both careful and careless): on foot at Shawarma Supreme (and in another run at Grand Groceries) it pushed against the glass beside the door for 7 minutes and the shift never ended. The pickup spot (Session 58) is inside, off to the side of the sliding door; the bot's map scan saw the door shut, so it walked in a straight line into the glass, outside the door's 3.2 m reach. A player steers to the door, so this was the bot, not the game. | bot logs | The bot now goes through the doorway (just outside the door, or 1 m inside it) whenever it has to cross a Plaza shop's glass, in and out, like a player. It also prints why a long walk might not move (paused, walker active, stage). | (test code only) |
 
 ## New checks (so these can't come back)
 
@@ -52,6 +52,26 @@ beekeeper), the stream (pebbles, reeds, lily pads) and both bridges, the half-bu
 scaffolding and cranes, the school gate booth and barrier, the stable office and paddock, the
 institute's glass front, the ring road kerbs with openings, palms (none in a road: I checked all
 231 in the data).
+
+## Play-test bot (after the fixes)
+
+| Run | Deliveries | Stars | Earned | Crashes | Stuck/reset | Notes |
+|---|---|---|---|---|---|---|
+| Careful (before the bot fix) | 3 | 4.50 | 69 Dh | 1 small | 0 resets, but **stuck 7 min at Shawarma Supreme's glass**, shift never ended | fixed (row 10) |
+| Careful | 5 | 5.00 | 87 Dh | 1 small (the gardener by the Cluster 4 playground) | 0 | |
+| Careful (final bot) | 5 | 4.80 | 110 Dh | 0 | 0 | No-crash goal done |
+| Careless (final bot) | 5 | 4.40 | 78 Dh | 6 small | 0 | careful pays clearly more |
+| Careless, 5 other runs | 0 to 2 | | 0 to 26 Dh | | | 3 ended early with a **big crash in the Plaza** (20 to 27 km/h into an outside table or a bed palm: the clinic ends the shift); 2 got **stuck on foot inside Burgerology** (below) |
+
+**Stuck inside Burgerology (seen twice, not found):** in two careless runs the rider stood at
+(-177.95, -101.02), 3.5 m in front of Burgerology's counter, "going to the bike", and never moved
+again (not even turning), so the shift never ended. Static things don't trap that spot (I checked
+with physics queries: the rider can move 1 m every way). In the second run the bot's new doorway
+step didn't kick in, which suggests there was no current order at that moment. It didn't happen
+again in 3 more careless runs. The bot now prints the pause state, whether the walker is active,
+the stage and the order when a walk takes long, so the next run that hits it says why. Burgerology's
+inside is Session 59 (not built yet) and insides belong to the other review, so I didn't dig into
+the room code.
 
 ## Not fixed, and why
 
@@ -91,7 +111,7 @@ institute's glass front, the ring road kerbs with openings, palms (none in a roa
 - `tools/build_wahat_data.py`: a block just before the file is written (stall paving, institute
   plot colour); `data/wahat_al_shams.gd` regenerated (2 paved areas, 1 plot colour).
 - `tests/layout_test.gd` (3 checks + `_old_ends`), `tests/spine_test.gd`, `tests/playtest_bot.gd`
-  (`_walk`: the doorway step).
+  (`_walk` calls the new `_via_doorway`; `_say_walk_trouble` prints more).
 
 ## Louis's check
 
