@@ -1474,6 +1474,159 @@ Done when:
 - [ ] 60 fps on Medium on Louis's Mac
 - [ ] Louis has played a full shift and is happy with how it looks
 
+## Polish pass (Sessions 66 to 72)
+
+Louis asked for better graphics and a better UI everywhere. Everything is in PRD.md, "Polish pass",
+and the full plan with research, numbers, file ownership and tests is in
+[docs/polish_plan.md](docs/polish_plan.md). Session 66 is small and goes first. Sessions 67 to 71
+can be built at the same time by separate agents (each owns its own files, see the plan's section 4),
+then Session 72 merges and play-tests. Same rules as always: headless checks, smoke test, focused tests,
+a new test per session, screenshots, session notes, commit. Nothing old is deleted: every new thing
+has a GameConfig switch.
+```
+
+### Session 66: Polish groundwork
+
+```text
+Session 66. Read docs/polish_plan.md sections 4 and Appendix C. Add exactly
+the groundwork in Appendix C: the PolishHooks and UiSounds autoloads, the
+scripts/polish/ folder, ui/palette.gd (UiPalette), scripts/ui_juice.gd
+(UiJuice), the new saved settings (text size, colour help, less motion,
+mini-map north up, outlines) with text size applied as the window's content
+scale, and the "Session 66: polish groundwork" section in game_config.gd.
+Don't change how anything looks yet. Add tests/polish_groundwork_test.gd.
+Smoke test, then commit, before Sessions 67 to 71 start.
+```
+
+Done when:
+
+- [ ] The game looks and plays exactly as before
+- [ ] polish_groundwork_test and the smoke test pass
+- [ ] Settings saved with the new values load again after a restart
+
+### Session 67: Sky, light and colour
+
+```text
+Session 67. Read PRD.md "Polish pass" (Light and colour) and docs/polish_plan.md
+items L1 to L8 and Session 67's file list (only edit those files). 1) 16x
+texture filtering on Medium/High and debanding on the Mac. 2) Our own
+stylised sky shader with soft cartoon clouds and a sun disc, coloured from
+LIGHT_KEYS, no clouds on Low, clouds skipped in the lighting pass. 3) Make
+"golden" and "fresh" 3D LUTs with tools/make_luts.py and use one as the
+colour grade. 4) A soft vignette under the HUD. 5) SSIL on High. 6) Light
+shafts through shop glass and Plaza passages (Medium/High). 7) Try cloud
+shadows and depth-only outlines, both off by default. Renders before and
+after at 8:30, 12:00 and 17:30, both LUTs, outlines on/off.
+```
+
+Done when:
+
+- [ ] The sky has soft clouds that change colour through the day (none on Low)
+- [ ] Ground stays sharp far ahead on the Mac
+- [ ] Louis has picked Golden or Fresh, and said yes or no to outlines
+- [ ] 60 fps on Medium on Louis's Mac; the browser still smooth on the iPad
+
+### Session 68: Water, beam, road wear and particles
+
+```text
+Session 68. Read PRD.md "Polish pass" (Details in the world) and
+docs/polish_plan.md items W1 to W6 and Session 68's file list. 1) The new
+delivery beam (soft column, sparkles, pulsing ring, orange pick-up / teal
+drop-off, burst on arrival). 2) Water with edge foam, depth colour, sun
+glints and pool caustics. 3) Road wear decals and sand drifts, placed from
+the map data (read only), fewer on Low. 4) Ambient particles (steam, spray,
+leaves, sprinklers, splashes, sand wisps) within the particle budget.
+5) Confetti, coins and a level-up ring in the world. 6) Skid marks.
+Renders of a junction, a car park, the stream, the pool, the fountain and
+the beam.
+```
+
+Done when:
+
+- [ ] The beam is easy to see and shows orange for pick-up, teal for drop-off
+- [ ] Water has foam at the edges and pools shimmer
+- [ ] Roads look used (marks, sand) but nothing floats or shows on grass or walls
+- [ ] Particle numbers stay in budget on Low, Medium and High
+
+### Session 69: HUD, meters, clock and shift summary
+
+```text
+Session 69. Read PRD.md "Polish pass" (HUD) and docs/polish_plan.md items
+H1 to H7 and Session 69's file list. Copy the mockup: wallet, rating and
+level chips at the top left (money counts up, "+15" floats), the clock with
+temperature, today's special and a shift progress bar, the meters at the
+bottom middle with icons, words and tick marks that flash and blip when they
+drop a band, a tidy speed and segmented stamina panel, a hold-E ring in the
+middle of the screen, Less motion respected by the camera and speed lines,
+and the shift summary counting up with stamps. Use UiPalette, UiJuice and
+UiSounds. Check no panels overlap at 1280x720, 1920x1080, 1024x768 and
+2732x2048 at text sizes 100% and 130%.
+```
+
+Done when:
+
+- [ ] The HUD looks like the mockup: chips top left, clock top middle, meters bottom middle
+- [ ] A meter turning orange is easy to notice, even with Colour help on
+- [ ] Nothing overlaps on the iPad at 130% text
+
+### Session 70: Phone app and mini-map
+
+```text
+Session 70. Read PRD.md "Polish pass" (Phone and mini-map) and
+docs/polish_plan.md items P1 to P5 and Session 70's file list. Make the phone
+readable (18 px body text, one clear "what now" line, goals folded, money
+and stars moved to the HUD chips when HUD_TOP_CHIPS is on), the offer card
+(big pay, distance and minutes, a pick-up to drop-off line, a countdown ring
+round E, slide-in), the job view with live distance, and the mini-map
+(compass ring, logo pins, edge arrow with distance, zoom with speed,
+North-up option). Keep every name the existing phone and mini-map tests use.
+```
+
+Done when:
+
+- [ ] You can read the phone at a glance while riding
+- [ ] The countdown ring runs down over 30 seconds and the offer slides in
+- [ ] The mini-map shows where to go even when the stop is far away; North up works
+
+### Session 71: Screens, menus, sounds and accessibility
+
+```text
+Session 71. Read PRD.md "Polish pass" (Screens, sounds and accessibility) and
+docs/polish_plan.md items S1 to S6 and Session 71's file list. The Delivered
+card reveal (tiles, rising star dings, count-up, PERFECT stamp, XP bar, E to
+skip, background blur on the Mac), Settings → Accessibility (text size,
+colour help, less motion, mini-map), UI sounds made by tools/make_sounds.py
+and button hover/press feel in the theme, the 3D start-screen scene with the
+bouncing title, the loading-screen rider, the blurred pause menu, the clinic
+count-up and sliding side panels. Keep the old start screen behind
+START_DIORAMA.
+```
+
+Done when:
+
+- [ ] A perfect delivery feels like a reward (stamp, dings, count-up) and E skips it
+- [ ] Settings has Text size, Colour help, Less motion and Mini-map, and they're saved
+- [ ] Menus click and whoosh; the start screen shows the 3D scene
+
+### Session 72: Play-test the polish pass
+
+```text
+Session 72. Merge 67 to 71 in order (see docs/polish_plan.md section 4),
+re-running the smoke test and each session's suites after each merge. Then
+run everything, the play-test bot careful and careless, the frame-rate check
+on Low, Medium and High at 1920x1080, and the browser build on the iPad.
+Screenshots of the gameplay HUD, phone states, Delivered card, shift summary,
+start and loading screens, Settings, and the world at 8:30, 12:00 and 17:30.
+Ask Louis the choices in section 6 and set the GameConfig switches. Then
+I'll play it myself; here's what felt off: [write it here].
+```
+
+Done when:
+
+- [ ] All tests pass and the release run stays under 15 minutes
+- [ ] 60 fps on Medium on Louis's Mac; the browser smooth on the iPad
+- [ ] Louis has played a full shift and is happy with the look and the screens
+
 ## When something breaks
 
 Copy one of these and fill in the brackets.
