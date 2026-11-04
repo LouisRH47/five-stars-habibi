@@ -3,6 +3,9 @@ extends GPUParticles3D
 ## while you ride on sand, and a short puff when you brake hard (on any ground).
 ## Fewer puffs on Graphics Low, more on High. The bike adds this in its _ready().
 ## The numbers are in scripts/game_config.gd ("Juice").
+## Session 68 (W6): braking hard on hard ground leaves a short dark skid line that fades away
+## over 20 s (GameConfig.SKID_MARKS), and the puffs are soft round blobs lit by the sun
+## (GameConfig.DUST_SOFT; off = the old little balls).
 
 const SAND_COLOUR := Color(0.7, 0.58, 0.42, 1)
 
@@ -13,6 +16,10 @@ var _bike: Node3D
 var _map: Dictionary = {}
 var _brake_left := 0.0
 var _check_left := 0.0
+## Session 68: the skid marks on the ground now, oldest first (tests read it).
+var skid_marks: Array[Decal] = []
+var _skid_ages: Array[float] = []
+var _skid_from := Vector3.INF
 
 
 func _ready() -> void:
@@ -53,6 +60,7 @@ func _physics_process(delta: float) -> void:
 	var sand_dust := riding and on_sand and kmh > GameConfig.DUST_MIN_KMH
 	var brake_dust := riding and _brake_left > 0.0 and kmh > 2.0
 	emitting = sand_dust or brake_dust
+	_update_skids(delta, brake_dust and not on_sand)
 	# Faster = more dust. Braking hard always gives a full puff.
 	amount_ratio = 1.0 if brake_dust else clampf(kmh / GameConfig.BIKE_MAX_SPEED_KMH, 0.35, 1.0)
 
@@ -87,8 +95,80 @@ func _make_material() -> ParticleProcessMaterial:
 	return stuff
 
 
-## One puff: a little low-poly ball, soft and see-through.
+## Session 68: lays a skid mark every SKID_SPACING metres while braking hard, and fades the
+## old ones out (gone after SKID_LIFETIME seconds). At most SKID_MAX for the Graphics level.
+func _update_skids(delta: float, skidding: bool) -> void:
+	for i in range(skid_marks.size() - 1, -1, -1):
+		_skid_ages[i] += delta
+		var mark := skid_marks[i]
+		if _skid_ages[i] >= GameConfig.SKID_LIFETIME or not is_instance_valid(mark):
+			if is_instance_valid(mark):
+				mark.queue_free()
+			skid_marks.remove_at(i)
+			_skid_ages.remove_at(i)
+		else:
+			mark.modulate.a = GameConfig.SKID_DARKNESS * (1.0 - _skid_ages[i] / GameConfig.SKID_LIFETIME)
+	if not GameConfig.SKID_MARKS or not skidding or not is_inside_tree():
+		_skid_from = Vector3.INF
+		return
+	var tyre := global_position - Vector3(0, position.y, 0)   # on the ground under the back tyre
+	if _skid_from == Vector3.INF:
+		_skid_from = tyre
+		return
+	var gap := tyre - _skid_from
+	gap.y = 0.0
+	if gap.length() < GameConfig.SKID_SPACING:
+		return
+	_add_skid(_skid_from, tyre)
+	_skid_from = tyre
+
+
+func _add_skid(from: Vector3, to: Vector3) -> void:
+	var holder := _bike.get_parent() as Node3D
+	if holder == null:
+		return
+	var limit: int = GameConfig.SKID_MAX[clampi(Settings.graphics, 0, 2)]
+	while skid_marks.size() >= limit:
+		if is_instance_valid(skid_marks[0]):
+			skid_marks[0].queue_free()
+		skid_marks.remove_at(0)
+		_skid_ages.remove_at(0)
+	var way := to - from
+	way.y = 0.0
+	var mark := Decal.new()
+	mark.name = "SkidMark"
+	mark.texture_albedo = _skid_picture()
+	mark.size = Vector3(GameConfig.SKID_WIDTH, 0.4, way.length() + 0.06)
+	mark.upper_fade = 0.3
+	mark.lower_fade = 0.3
+	mark.normal_fade = 0.5
+	mark.modulate = Color(1, 1, 1, GameConfig.SKID_DARKNESS)
+	var z := way.normalized()
+	holder.add_child(mark)
+	mark.global_transform = Transform3D(Basis(Vector3.UP.cross(z), Vector3.UP, z), (from + to) * 0.5)
+	skid_marks.append(mark)
+	_skid_ages.append(0.0)
+
+
+static var _skid_texture: ImageTexture
+
+## A dark rubber streak, a little lighter at its sides (made once, in code).
+static func _skid_picture() -> ImageTexture:
+	if _skid_texture == null:
+		var img := Image.create(8, 8, false, Image.FORMAT_RGBA8)
+		for x in 8:
+			var a := 1.0 - absf(x - 3.5) / 4.5
+			for y in 8:
+				img.set_pixel(x, y, Color(0.07, 0.07, 0.08, a))
+		_skid_texture = ImageTexture.create_from_image(img)
+	return _skid_texture
+
+
+## One puff: a little low-poly ball, soft and see-through. Session 68: a soft round blob that
+## faces the camera and is lit by the sun (the old ball with DUST_SOFT off).
 func _make_puff() -> Mesh:
+	if GameConfig.DUST_SOFT:
+		return VfxKit.quad(VfxKit.DOT, GameConfig.DUST_SOFT_SIZE, true)
 	var ball := SphereMesh.new()
 	ball.radius = GameConfig.DUST_PUFF_SIZE * 0.5
 	ball.height = GameConfig.DUST_PUFF_SIZE

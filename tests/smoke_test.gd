@@ -1351,6 +1351,7 @@ func _finish() -> void:
 	_check_shop_buys()
 	_check_saving()
 	_check_polish_hooks()
+	_check_world_polish()
 	for action in ACTIONS:
 		Input.action_release(action)
 	_phase = "done"
@@ -2606,3 +2607,19 @@ func _check_polish_hooks() -> void:
 				expected.append(path)
 	_check("the polish hooks ran for the world", ok and hooks.attached == expected,
 			"%d parts: %s" % [expected.size(), expected])
+
+
+## Session 68: the new delivery beam, water, road wear and particles are in the world
+## (tests/world_polish_test.gd checks them in detail).
+func _check_world_polish() -> void:
+	var dm: Node = null
+	for node in _main.get_children():
+		if node.get_script() != null and str(node.get_script().resource_path).ends_with("delivery_manager.gd"):
+			dm = node
+	var new_beam: bool = dm != null and dm._marker.get_script() != null \
+			and str(dm._marker.get_script().resource_path).ends_with("arrival_marker.gd")
+	_check("the delivery beam is the new one (Session 68)", dm != null and new_beam == GameConfig.MARKER_V2, "")
+	var hooked: bool = GameConfig.POLISH_HOOKS_ON
+	_check("the water, road wear and particles were added (Session 68)", not hooked or (
+			_main.has_node("WaterLook") and _main.has_node("RoadDecals") == GameConfig.ROAD_DECALS
+			and _main.has_node("VfxAmbient") == GameConfig.VFX_AMBIENT and _main.has_node("VfxBursts") == GameConfig.WORLD_BURSTS), "")

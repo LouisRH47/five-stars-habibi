@@ -169,6 +169,7 @@ func _water(hole: Rect2, id: String) -> void:
 	ripples.shader = WATER_SHADER
 	ripples.set_shader_parameter("water_colour", GameConfig.POOL_WATER_COLOUR)
 	ripples.set_shader_parameter("flow_speed", 0.25)
+	ripples.set_shader_parameter("kind", 1)  # Session 68: pool water (light patterns on the tiles)
 	view.material_override = ripples
 
 
