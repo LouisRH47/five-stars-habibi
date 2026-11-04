@@ -37,6 +37,12 @@ at the end so anyone can render them again with `tests/_shots.gd`.
 - `tests/spine_test.gd`: "no kerb gap where no path crosses (C4 and C5 links)", and the
   "kerbs stop where paths cross" check uses the real crossings.
 
+## Tests run (all on this branch, after the fixes)
+
+Smoke test RESULT: PASS (with the 3 new layout checks). layout (14 checks), spine (40),
+coplanar (0 flicker pairs), grass (13), detail_world (27), pool, venues, minimap_cache,
+static_batch, navigation, carpark (23) and buggy_route `-- sites`: all PASS.
+
 ## What I looked at and found fine
 
 The Plaza (both rows, flats joined over the passages, a passage after every second shop,
