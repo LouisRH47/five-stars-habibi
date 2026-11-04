@@ -124,7 +124,7 @@ func _run() -> void:
 	_check("the light shafts are there", shafts != null)
 	if shafts != null:
 		var list: Array = shafts.shafts
-		var rooms := LightShafts.find_rooms(world)
+		var rooms: Array = LightShafts.find_rooms(world)
 		_check("shafts in the shop rooms (%d shafts, %d rooms)" % [list.size(), rooms.size()], list.size() > 0 and list.size() <= GameConfig.SHAFT_MAX)
 		Settings.graphics = 0
 		Settings.apply()

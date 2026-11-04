@@ -83,11 +83,12 @@ func _use_sky_look(stylized: bool = GameConfig.SKY_STYLIZED) -> void:
 		if _sky != null:
 			sky.sky_material = _sky
 		return
-	if sky.sky_material is ShaderMaterial and (sky.sky_material as ShaderMaterial).shader == SkyLook.SHADER:
-		_sky_shader = sky.sky_material
+	if sky.has_meta("cartoon_sky"):
+		_sky_shader = sky.get_meta("cartoon_sky")
 	else:
 		_sky_shader = SkyLook.make_material(_sky)
-		sky.sky_material = _sky_shader
+		sky.set_meta("cartoon_sky", _sky_shader)
+	sky.sky_material = _sky_shader
 	_sky_hour = -100.0  # set the colours again straight away
 	if is_inside_tree():
 		_apply_polish_graphics(Settings.graphics, not OS.has_feature("web"))
