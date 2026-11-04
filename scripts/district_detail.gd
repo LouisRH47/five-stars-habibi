@@ -386,13 +386,29 @@ func _street_details() -> void:
 		var c: Vector2 = cluster["centre"]
 		for i in 3:
 			LowPoly.box(props, Vector3(0.65, 1.1, 0.65), [TEAL, Color.DARK_GREEN, Color(0.2, 0.35, 0.65)][i], Vector3(c.x - 9 + i, 0.55, c.y + (70 if c.y < 0 else -70)))
-	for area: Rect2 in _map["PARKING_AREAS"]:
+	for n in _map["PARKING_AREAS"].size():
+		var area: Rect2 = _map["PARKING_AREAS"][n]
+		var parks: Array = _map.get("CAR_PARKS", [])
+		if GameConfig.CARPARK_ROWS and n < parks.size() and parks[n].get("turned", false):
+			_turned_park_props(props, parks[n])
+			continue
 		# Session 62: on the grass verge by the ring road (south car parks have it at their south end)
 		var top := area.position.y if area.get_center().y < 0 or not GameConfig.CARPARK_ROWS else area.end.y - 7.0
 		LowPoly.box(props, Vector3(0.5, 1.4, 0.4), TEAL, Vector3(area.position.x + 1, 0.7, top + 2))
 		for i in 4:
 			var rack_x := area.position.x + 3 if GameConfig.CARPARK_ROWS else area.end.x - 1   # Session 62: on the verge, not in an aisle
 			LowPoly.box(props, Vector3(0.08, 0.8, 1.4), Color.GRAY, Vector3(rack_x, 0.4, top + 3 + i))
+
+
+## The turned car park (Cluster 3 East, rows east-west): the ticket machine and the bike rack
+## stand on its verge by the east ring road, in front of the middle (back to back) rows.
+func _turned_park_props(props: Node3D, park: Dictionary) -> void:
+	var middle: Rect2 = (park["rows"][1]["area"] as Rect2).merge(park["rows"][2]["area"])
+	var verge_x: float = park["first_bay_x"] + 1.5
+	var z := middle.get_center().y
+	LowPoly.box(props, Vector3(0.4, 1.4, 0.5), TEAL, Vector3(verge_x, 0.7, z - 2.0))
+	for i in 4:
+		LowPoly.box(props, Vector3(1.4, 0.8, 0.08), Color.GRAY, Vector3(verge_x + 1.0 + i, 0.4, z + 1.5))
 
 
 ## Session 62: a ring road lamp post that would stand in a car park's aisle opening moves

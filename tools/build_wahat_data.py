@@ -106,7 +106,7 @@ import sys; sys.path.insert(0,str(Path(__file__).resolve().parent))
 import carpark_layout as cp
 put('PARKING_AREAS_OLD',[rect(*r) for r in parking])   # before Session 62, kept for reference
 parks,carpark_kerbs,carpark_gardens,carpark_palms,c45_site=cp.build_all(clusters,road)
-put('PARKING_AREAS',[rect(*p['area']) for p in parks])
+put('PARKING_AREAS',[rect(*cp.area_of(p)) for p in parks])   # (the 8th, Cluster 3 East, is planned sideways)
 put('CAR_PARKS',[cp.to_data(p,rect,v3) for p in parks])
 put('CARPARK_KERBS',[rect(*k) for k in carpark_kerbs])
 put('CARPARK_GARDENS',[rect(*g) for g in carpark_gardens])

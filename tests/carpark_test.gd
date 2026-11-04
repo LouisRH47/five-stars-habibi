@@ -3,10 +3,13 @@ extends SceneTree
 ## (1 row, 2 back to back, 1 row), a solar roof over every row, the kerbs, the buggy lanes,
 ## that nothing overlaps, that the parked cars stand inside their bays and that real-life
 ## distances hold (every car park hugs its cluster; homes are at most 85 m from a car park).
+## The 8th car park (Cluster 3 East) is turned: its rows run east-west ("turned": true). The
+## layout checks look at it with x and z swapped (_flip), so the same rules apply to it.
 ## Run it on its own:  Godot --path . --headless -s tests/carpark_test.gd
 const WahatBuilder := preload("res://scripts/wahat_builder.gd")
 const MAX_WALK := 85.0       # real car parks are at most 85 m from any home
 const MAX_GAP := 3.5         # kerb + buggy lane + kerb between a cluster and its car park
+const MAX_WALK_NO_LAND := 115.0   # C3's far east homes, with no free land within 85 m (were up to 120 m)
 var _failed := false
 var _count := 0
 
@@ -42,6 +45,7 @@ func _check_layout(map: Dictionary) -> void:
 	var fill: Array[String] = []
 	var bays_total := 0
 	for park: Dictionary in parks:
+		park = _flat(park)
 		var rows: Array = park["rows"].duplicate()
 		rows.sort_custom(func(a, b): return (a["area"] as Rect2).position.x < (b["area"] as Rect2).position.x)
 		# the pattern across the rows: "|" back to back, "a" an aisle between
@@ -82,9 +86,12 @@ func _check_layout(map: Dictionary) -> void:
 	for car: Dictionary in map["PARKED_CARS"]:
 		if not car.has("park"):
 			continue
-		var park: Dictionary = parks[int(car["park"])]
+		var park: Dictionary = _flat(parks[int(car["park"])])
 		var spot := Vector2(car["position"].x, car["position"].z)
 		var half := Vector2(0.95, 2.15) if absf(sin(deg_to_rad(float(car["facing"])))) < 0.5 else Vector2(2.15, 0.95)
+		if park.get("turned", false):
+			spot = Vector2(spot.y, spot.x)
+			half = Vector2(half.y, half.x)
 		var body := Rect2(spot - half, half * 2.0)
 		var in_bay := false
 		for row: Dictionary in park["rows"]:
@@ -98,8 +105,8 @@ func _check_layout(map: Dictionary) -> void:
 		if not in_bay:
 			outside.append("car at (%.1f, %.1f)" % [spot.x, spot.y])
 		per_park[int(car["park"])] = per_park.get(int(car["park"]), 0) + 1
-		var visitor: Vector3 = park["visitor"]["bay"]
-		if Vector2(visitor.x, visitor.z).distance_to(spot) < 2.0:
+		var visitor: Vector3 = parks[int(car["park"])]["visitor"]["bay"]
+		if Vector2(visitor.x, visitor.z).distance_to(Vector2(car["position"].x, car["position"].z)) < 2.0:
 			outside.append("a car in the visitor's bay")
 	var doubled := by_bay.values().filter(func(n): return n > 1).size()
 	_expect(outside.is_empty() and doubled == 0, "every parked car stands inside one bay, one car per bay, the visitor's bay free %s" % [outside.slice(0, 5)])
@@ -114,6 +121,12 @@ func _check_layout(map: Dictionary) -> void:
 	# Tight against the cluster: the car park starts within 3.5 m of its cluster's outside lane.
 	var loose: Array[String] = []
 	for park: Dictionary in parks:
+		if park.get("turned", false):
+			# Cluster 3 East is in the spine lawn: it hugs the path into its cluster instead
+			var path := _nearest_cluster_path(map, park)
+			if path.y > MAX_GAP + 0.01:
+				loose.append("%s to the path into %s: %.1f m" % [park["name"], park["clusters"][0], path.y])
+			continue
 		var area: Rect2 = park["area"]
 		for id: String in park["clusters"]:
 			var centre := _cluster_centre(map, id)
@@ -126,10 +139,18 @@ func _check_layout(map: Dictionary) -> void:
 				loose.append("%s to %s: %.1f m" % [park["name"], id, gap])
 			if park["kind"] == "full" and nearest_row > MAX_GAP + 0.01:
 				loose.append("%s first row to %s: %.1f m" % [park["name"], id, nearest_row])
-	_expect(loose.is_empty(), "every car park is within %.1f m of its cluster (just a kerb and a buggy lane) %s" % [MAX_GAP, loose])
-	# 85 m from every home (the real community's rule).
-	var far := {}
-	var worst := {}
+	_expect(loose.is_empty(), "every car park is within %.1f m of its cluster (just a kerb and a buggy lane; Cluster 3 East: of the path into C3) %s" % [MAX_GAP, loose])
+	# 85 m from every home (the real community's rule). Cluster 3's homes run right up to the
+	# ring road, so the only free land for its east homes is the spine lawn's north-east corner
+	# (up to the ring road kerb), where Cluster 3 East Parking now is. A home may only be further
+	# than 85 m if even that free land is further than 85 m from it (the far, north end of C3's
+	# east rows): then it must still be no further than before (MAX_WALK_NO_LAND).
+	var ring_kerb := 425.0 - float(map["ROAD_WIDTH"]) * 0.5
+	var corner: Rect2 = GameConfig.SPINE_FREE_CORNER
+	var free_land := corner.expand(Vector2(ring_kerb, corner.end.y))
+	var far: Array[String] = []
+	var no_land: Array[String] = []
+	var worst := 0.0
 	for home: Dictionary in map["VILLAS"]:
 		if home.get("kind", "") == "spot":
 			continue
@@ -137,15 +158,17 @@ func _check_layout(map: Dictionary) -> void:
 		var best := INF
 		for area: Rect2 in map["PARKING_AREAS"]:
 			best = minf(best, _distance(p, area))
-		if best > MAX_WALK:
-			far[home["cluster"]] = far.get(home["cluster"], 0) + 1
-			worst[home["cluster"]] = maxf(worst.get(home["cluster"], 0.0), best)
-	var others := far.keys().filter(func(id): return id != "C3")
-	_expect(others.is_empty(), "every home in C1, C2, C4 and C5 is within %d m of a car park %s" % [MAX_WALK, far])
-	if far.has("C3"):
-		# No room east of Cluster 3: its homes run right up to the ring road, and the only free
-		# space nearby is the spine lawn (Session 63's area). Louis decides (see s62 notes).
-		print("KNOWN: %d homes on the east side of C3 are up to %d m from a car park (no room east of C3)" % [far["C3"], worst["C3"]])
+		if best <= MAX_WALK:
+			continue
+		if home["cluster"] == "C3" and _distance(p, free_land) > MAX_WALK and best <= MAX_WALK_NO_LAND:
+			no_land.append(home["map_address"])
+			worst = maxf(worst, best)
+		else:
+			far.append("%s %d m" % [home["map_address"], roundi(best)])
+	_expect(far.is_empty(), "every home is within %d m of a car park, unless no free land is that close (C3's 29 east homes were up to 120 m) %s" % [MAX_WALK, far])
+	_expect(no_land.size() <= 12, "Cluster 3 East Parking brings C3's far east homes down to %d (from 29), none over %d m" % [no_land.size(), MAX_WALK_NO_LAND])
+	if not no_land.is_empty():
+		print("NOTE: %d homes at the north end of C3's east rows are up to %d m from a car park: no free land within %d m of them (%s ... %s)" % [no_land.size(), roundi(worst), MAX_WALK, no_land[0], no_land[-1]])
 	# Buggy lanes: both ends join another (non-black) road, never the ring road.
 	var lanes := 0
 	var loose_ends: Array[String] = []
@@ -177,11 +200,11 @@ func _check_layout(map: Dictionary) -> void:
 			if cross.size.x > 0.05 and cross.size.y > 0.05:
 				hits.append("%s and %s" % [parks[i]["name"], road["name"]])
 		for name: String in solid:
-			if (solid[name] as Rect2).intersects(area):
+			if (solid[name] as Rect2).intersects(area) and not _in_free_corner(name, solid[name], area):
 				hits.append("%s and %s" % [parks[i]["name"], name])
 	for bed: Rect2 in map["CARPARK_GARDENS"]:
 		for name: String in solid:
-			if (solid[name] as Rect2).intersects(bed):
+			if (solid[name] as Rect2).intersects(bed) and not _in_free_corner(name, solid[name], bed):
 				hits.append("grass bed %s and %s" % [bed, name])
 		for road: Dictionary in map["ROADS"]:
 			var cross := bed.intersection(ClusterSigns.road_rect(road, 6.0))
@@ -191,10 +214,12 @@ func _check_layout(map: Dictionary) -> void:
 	# Kerbs: along the cluster side of every car park, all the way along its rows.
 	var no_kerb: Array[String] = []
 	for park: Dictionary in parks:
+		park = _flat(park)
 		var area: Rect2 = park["area"]
 		var rows_z := Vector2(minf(park["first_bay_z"], park["last_bay_z"]), maxf(park["first_bay_z"], park["last_bay_z"]))
 		var found := false
 		for kerb: Rect2 in map["CARPARK_KERBS"]:
+			kerb = _swap(kerb) if park.get("turned", false) else kerb
 			var on_edge := absf(kerb.position.x - area.position.x) < 0.01 or absf(kerb.end.x - area.end.x) < 0.01
 			if on_edge and kerb.size.x <= 0.31 and kerb.position.y <= rows_z.x + 0.01 and kerb.end.y >= rows_z.y - 0.01:
 				found = true
@@ -294,7 +319,7 @@ func _check_built(map: Dictionary, world: Node3D) -> void:
 		visitors += 1
 		for i in route.size() - 1:
 			for road: Dictionary in map["ROADS"]:
-				if String(road["name"]).contains("Buggy") and _segment_hits(route[i], route[i + 1], ClusterSigns.road_rect(road, 6.0).grow(1.0)):
+				if String(road["name"]).contains("Buggy") and _segment_hits(route[i], route[i + 1], _road_body(road).grow(1.0)):
 					on_buggy.append("%s on %s" % [car.name, road["name"]])
 	_expect(visitors == map["CAR_PARKS"].size() and on_buggy.is_empty(), "a visiting car drives in and out of every car park, never on a buggy lane %s" % [on_buggy.slice(0, 3)])
 	# Street furniture (ring road lamp posts, the bike racks) never stands in an aisle.
@@ -309,6 +334,65 @@ func _check_built(map: Dictionary, world: Node3D) -> void:
 						if aisle.has_point(p):
 							lamps_in.append("(%d, %d)" % [p.x, p.y])
 	_expect(lamps_in.is_empty(), "no lamp post, bike rack or ticket machine stands in a car park aisle %s" % [lamps_in])
+
+
+## A turned car park (rows east-west) with x and z swapped, so its rows run along z like the
+## others'. Other car parks come back unchanged.
+func _flat(park: Dictionary) -> Dictionary:
+	if not park.get("turned", false):
+		return park
+	var out := park.duplicate()
+	out["area"] = _swap(park["area"])
+	out["first_bay_z"] = park["first_bay_x"]
+	out["last_bay_z"] = park["last_bay_x"]
+	var rows: Array = []
+	for row: Dictionary in park["rows"]:
+		rows.append({"area": _swap(row["area"]), "facing": row["facing"], "bays": row["bays"]})
+	out["rows"] = rows
+	var roofs: Array = []
+	for roof: Dictionary in park["roofs"]:
+		roofs.append({"area": _swap(roof["area"]), "double": roof["double"]})
+	out["roofs"] = roofs
+	var aisles: Array = []
+	for aisle: Rect2 in park["aisles"]:
+		aisles.append(_swap(aisle))
+	out["aisles"] = aisles
+	return out
+
+
+func _swap(r: Rect2) -> Rect2:
+	return Rect2(r.position.y, r.position.x, r.size.y, r.size.x)
+
+
+## Only the spine lawn's free corner (kept for Cluster 3 East Parking) may hold a car park.
+func _in_free_corner(name: String, solid: Rect2, area: Rect2) -> bool:
+	return name == "spine" and GameConfig.SPINE_FREE_CORNER.grow(0.01).encloses(solid.intersection(area))
+
+
+## The non-black path nearest to a turned car park that leads into its cluster (it joins one
+## of the cluster's lanes or its link): x = how many paths were found, y = the gap in metres.
+func _nearest_cluster_path(map: Dictionary, park: Dictionary) -> Vector2:
+	var id: String = park["clusters"][0]
+	var area: Rect2 = park["area"]
+	var best := INF
+	var found := 0
+	for road: Dictionary in map["ROADS"]:
+		var name := String(road["name"])
+		if WahatBuilder.is_black_road(road) or name.contains("Buggy") or name.begins_with(id):
+			continue
+		var r := ClusterSigns.road_rect(road, 6.0)
+		var joins := false
+		for lane: Dictionary in map["ROADS"]:
+			var lane_name := String(lane["name"])
+			if (lane_name == id + " Lane" or lane_name == id + " Link") and ClusterSigns.road_rect(lane, 6.0).intersects(r):
+				joins = true
+		if not joins:
+			continue
+		found += 1
+		var dx := maxf(0.0, maxf(r.position.x - area.end.x, area.position.x - r.end.x))
+		var dz := maxf(0.0, maxf(r.position.y - area.end.y, area.position.y - r.end.y))
+		best = minf(best, Vector2(dx, dz).length())
+	return Vector2(found, best)
 
 
 ## Overlapping by more than a centimetre (edges that only touch don't count).
@@ -356,6 +440,20 @@ func _cluster_centre(map: Dictionary, id: String) -> Vector2:
 func _distance(p: Vector2, area: Rect2) -> float:
 	var nearest := Vector2(clampf(p.x, area.position.x, area.end.x), clampf(p.y, area.position.y, area.end.y))
 	return nearest.distance_to(p)
+
+
+## The paved strip of a road, not past its ends (ClusterSigns.road_rect adds half a width at
+## each end, so the Spine Buggy Road's would reach onto the ring road where the cars drive).
+func _road_body(road: Dictionary) -> Rect2:
+	var a: Vector2 = road["from"]
+	var b: Vector2 = road["to"]
+	var half: float = float(road.get("width", 6.0)) * 0.5
+	var box := Rect2(a, Vector2.ZERO).expand(b)
+	if absf(a.y - b.y) < 0.01:
+		return box.grow_individual(0, half, 0, half)
+	if absf(a.x - b.x) < 0.01:
+		return box.grow_individual(half, 0, half, 0)
+	return box.grow(half)
 
 
 func _segment_hits(a: Vector3, b: Vector3, box: Rect2) -> bool:
