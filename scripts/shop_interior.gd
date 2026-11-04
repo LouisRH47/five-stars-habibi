@@ -38,6 +38,7 @@ static func build(place: Dictionary) -> StaticBody3D:
 	_solid(room, Vector3(size.x, 0.2, size.z), Vector3(0, size.y + 0.1, 0), CREAM)
 	if plaza_front:
 		ShopFront.build(room, place, size)
+	if plaza_front and not GameConfig.INTERIORS_LOOKS_PASS:
 		var lamp := OmniLight3D.new()
 		lamp.name = "InteriorLight"
 		lamp.position = Vector3(0, size.y - 0.6, 0)
@@ -56,7 +57,19 @@ static func build(place: Dictionary) -> StaticBody3D:
 	staff.position = COUNTER + Vector3(0, 0, -1.25)
 	staff.rotation.y = PI
 	room.add_child(staff)
-	if place["id"] == "bikes":
+	if plaza_front and GameConfig.INTERIORS_LOOKS_PASS:
+		# Session 59: the insides rebuilt for the 12 x 10 m room (ShopRooms); the old
+		# _bikes() and _clothes() below are kept for the old layout and the test area.
+		room.set_meta("interior_looks", true)
+		room.set_meta("room_size", size)
+		room.set_meta("pickup", COUNTER + Vector3(0, 0, 1.0))
+		var parts := InteriorParts.new(room, place.merged({"colour": place.get("colour", TEAL)}), size)
+		if place["id"] == "bikes":
+			ShopRooms.bikes(parts)
+		else:
+			ShopRooms.clothes(parts)
+		parts.finish()
+	elif place["id"] == "bikes":
 		_bikes(room, half)
 	else:
 		_clothes(room, half)

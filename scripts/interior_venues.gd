@@ -50,7 +50,7 @@ static func style(id: String) -> Dictionary:
 		"sushi":
 			return {"floor": [Color(0.72, 0.62, 0.46), Color(0.62, 0.52, 0.38)], "pattern": "planks", "tile": 0.25,
 					"wall": Color(0.95, 0.93, 0.88), "band": Color(0.12, 0.2, 0.38), "back": Color(0.12, 0.2, 0.38),
-					"till": Vector3(2.0, 0, -1.5)}
+					"till": Vector3(4.8, 0, -1.5)}
 		"tacos":
 			return {"floor": [Color(0.86, 0.5, 0.32), Color(0.95, 0.9, 0.8)], "wall": Color(0.98, 0.93, 0.8),
 					"band": Color(0.1, 0.55, 0.55), "back": Color(0.98, 0.75, 0.3)}
