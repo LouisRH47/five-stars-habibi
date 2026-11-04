@@ -159,7 +159,7 @@ static func _sushi(p: InteriorParts) -> void:
 		p.cyl(0.2, 0.2, 0.04, Color(0.1, 0.1, 0.1), at + Vector3(0, 0.27, 0), Basis(), 8)
 	for spot in [Vector3(-5.6, 0, -1.7), Vector3(-5.6, 0, 3.6), Vector3(5.6, 0, -1.6)]:
 		for k in 4:
-			var stalk := spot + Vector3((k % 2) * 0.12 - 0.06, 0, (k / 2) * 0.12 - 0.06)
+			var stalk: Vector3 = spot + Vector3((k % 2) * 0.12 - 0.06, 0, (k / 2) * 0.12 - 0.06)
 			p.cyl(0.035, 0.035, 2.6 + k * 0.3, Color(0.45, 0.65, 0.3), stalk + Vector3(0, (2.6 + k * 0.3) * 0.5, 0), Basis(), 6)
 		p.cyl(0.2, 0.17, 0.35, Color(0.2, 0.2, 0.2), spot + Vector3(0, 0.175, 0), Basis(), 10)
 	p.bin(Vector3(1.75, 0, 4.35))
