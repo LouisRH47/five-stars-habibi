@@ -1351,6 +1351,7 @@ func _finish() -> void:
 	_check_shop_buys()
 	_check_saving()
 	_check_polish_hooks()
+	_check_look_polish()
 	for action in ACTIONS:
 		Input.action_release(action)
 	_phase = "done"
@@ -2606,3 +2607,18 @@ func _check_polish_hooks() -> void:
 				expected.append(path)
 	_check("the polish hooks ran for the world", ok and hooks.attached == expected,
 			"%d parts: %s" % [expected.size(), expected])
+
+
+## Session 67: the sky, light and colour extras are on in the real game world (the cartoon
+## sky, the colour grade, the vignette under the HUD and the light shafts).
+func _check_look_polish() -> void:
+	var env: Environment = (_main.get_node("WorldEnvironment") as WorldEnvironment).environment
+	var sky_ok: bool = (env.sky.sky_material is ShaderMaterial) == GameConfig.SKY_STYLIZED
+	var lut_ok: bool = (env.adjustment_color_correction != null) == (GameConfig.LOOK_LUT != "neutral")
+	var vignette := _main.get_node_or_null("Vignette")
+	var shafts := _main.get_node_or_null("LightShafts")
+	_check("the sky, colour grade, vignette and light shafts are on", sky_ok and lut_ok
+			and (vignette != null) == (GameConfig.VIGNETTE_STRENGTH > 0.0)
+			and (shafts != null) == GameConfig.LIGHT_SHAFTS_ON,
+			"sky %s, LUT %s, vignette %s, %d shafts" % [sky_ok, lut_ok, vignette != null,
+			shafts.shafts.size() if shafts != null else 0])

@@ -682,3 +682,51 @@ const PHONE_V2 := true           # Session 70
 const MINIMAP_V2 := true         # Session 70
 const CARD_V2 := true            # Session 71
 const START_DIORAMA := true      # Session 71
+
+# --- Session 67: Sky, light and colour ---
+# (The on/off switches SKY_STYLIZED, LOOK_LUT and VIGNETTE_STRENGTH are in the Session 66
+# section above.) scripts/sun_cycle.gd, sky_look.gd, light_shafts.gd and
+# scripts/polish/look_extras.gd use these.
+# L1: sharper ground far ahead (texture filtering at low angles), Low / Medium / High.
+const ANISO_LEVEL := [Viewport.ANISOTROPY_4X, Viewport.ANISOTROPY_16X, Viewport.ANISOTROPY_16X]
+const DEBANDING_ON := true          # smooth sky gradients on the Mac (Medium and High; not in the browser)
+# L2: the cartoon sky (assets/shaders/sky_stylized.gdshader).
+const SKY_SUN_SIZE := 2.5           # degrees: how big the sun disc is
+const SKY_HALO_SIZE := 12.0         # degrees: the soft glow round the sun
+const SKY_HALO_STRENGTH := 0.45
+const SKY_DISC_ENERGY := 6.0        # how bright the sun disc is (bright enough to glow)
+const CLOUDS_FROM_LEVEL := 1        # clouds from this Graphics level up (1 = Medium; none on Low)
+const CLOUD_COVER := 0.56           # higher = fewer clouds (0.45 = cloudy, 0.65 = a few)
+const CLOUD_SCALE := 1.1            # higher = smaller clouds
+const CLOUD_OPACITY := 0.95
+const CLOUD_WIND := Vector2(0.11, 0.045)  # how far the clouds drift per game hour (and their shadows)
+const CLOUD_WARM_HEIGHTS := Vector2(8.0, 40.0)  # sun height (degrees): fully warm clouds below x, white above y
+const CLOUD_SHADE_NOON := Color(0.8, 0.85, 0.93)  # cloud bottoms at noon (soft blue-grey)...
+const CLOUD_SHADE_LOW := Color(0.93, 0.68, 0.7)   # ...and with the sun low (pink)
+# L3: the colour grade. LUTs made by tools/make_luts.py (assets/luts/<LOOK_LUT>.png).
+const LOOK_LUT_SATURATION := 1.25   # the saturation with a LUT on (the LUT adds a little colour itself)
+# L5: warm bounce light (SSIL) on High, Mac only.
+const SSIL_ON := true
+const SSIL_RADIUS := 5.0
+const SSIL_INTENSITY := 0.8
+const SSIL_SHARPNESS := 0.98
+const SSIL_NORMAL_REJECTION := 1.0
+const WEB_SSAO := false             # true = try the simple corner shadows in the browser on Medium (test on the iPad first)
+# L6: light shafts through the shop glass (Medium and High only).
+const LIGHT_SHAFTS_ON := true
+const SHAFT_MAX := 24               # at most this many in the whole map
+const SHAFTS_PER_ROOM := 2
+const SHAFT_WIDTH := 1.6            # metres across each beam
+const SHAFT_ALPHA := 0.18           # how strong the beams are at their brightest
+const SHAFT_RANGE := 40.0           # metres: beams are only drawn this close to the camera
+# How strong the beams are through the day: strong when the sun is low, faint at noon.
+const SHAFT_HOUR_KEYS := [[8.0, 1.0], [9.5, 1.0], [11.0, 0.3], [14.0, 0.3], [16.0, 1.0], [18.0, 1.0]]
+# L7: cloud shadows sliding over the ground (a try: off until Louis has seen it on his Mac).
+const CLOUD_SHADOWS := false
+const CLOUD_SHADOW_ALPHA := 0.12
+const CLOUD_SHADOW_SIZE := 1600.0   # metres: one big decal over the whole map
+# L8: thin comic outlines (only when Settings.outlines is on; off by default).
+const OUTLINE_COLOUR := Color(0.106, 0.227, 0.251)  # #1B3A40, dark teal
+const OUTLINE_ALPHA := 0.4
+const OUTLINE_DEPTH_JUMP := 0.03    # a line where the distance jumps by more than 3%
+const OUTLINE_FADE := Vector2(40.0, 80.0)  # metres: lines fade out between these distances
