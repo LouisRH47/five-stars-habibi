@@ -107,13 +107,19 @@ static func _reception(body: StaticBody3D, counter: Vector3, place: Dictionary) 
 	var wall_z := desk_z - 3.4
 	var logo_wall := _solid(body, Vector3(8.0, 4.6, 0.4), Vector3(0, 2.3, wall_z), WHITE)
 	logo_wall.name = "LogoWall"
+	# Review fix: the name sat at 1 m, behind the desk, so from the door you only saw the top
+	# of the Arabic. Now the C is a little smaller and higher and the name sits above the desk.
+	var fixed := GameConfig.INTERIOR_REVIEW_FIXES
+	var c_y := 3.15 if fixed else 2.9
+	var c_r := 1.15 if fixed else 1.3
 	for i in 18:
 		var a := deg_to_rad(45.0 + i * 15.0)   # a ring with a gap on the right: a "C"
-		var piece := LowPoly.box(body, Vector3(0.38, 0.42, 0.12), TEAL, Vector3(cos(a) * 1.3, 2.9 + sin(a) * 1.3, wall_z + 0.25))
+		var piece := LowPoly.box(body, Vector3(0.38, 0.42, 0.12), TEAL, Vector3(cos(a) * c_r, c_y + sin(a) * c_r, wall_z + 0.25))
 		piece.rotation.z = a + PI * 0.5
 		piece.name = "LogoC"
-	var name := SignText.make_face(place.get("arabic", ""), place.get("name", "C Institute"), 64, DARK)
-	name.position = Vector3(0, 1.0, wall_z + 0.22)
+	var name := SignText.make_face(place.get("arabic", ""), place.get("name", "C Institute"), 56 if fixed else 64, DARK)
+	name.name = "LogoName"
+	name.position = Vector3(0, 1.4 if fixed else 1.0, wall_z + 0.22)
 	body.add_child(name, true)
 	# Two lounge corners in the open lobby: low sofas round a coffee table, and big plants.
 	for corner in [Vector3(7.0, 0, 1.0), Vector3(12.0, 0, -7.0)]:

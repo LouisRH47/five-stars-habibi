@@ -54,6 +54,7 @@ func _run() -> void:
 			_check_room(id, room)
 	_check_neighbour_walls()
 	_check_bakery_peel()
+	await _check_indoor_camera()
 	_check_food_changes()
 	_check_kitchens()
 	await _check_queue()
@@ -397,6 +398,39 @@ func _check_neighbour_walls() -> void:
 					if both.has_volume() and both.get_volume() > 0.001:
 						clashes.append("%s+%s" % [ids[i], ids[k]])
 	_expect(not GameConfig.INTERIOR_REVIEW_FIXES or clashes.is_empty(), "no two shops side by side build their walls in the same space %s" % [clashes])
+
+
+## Overnight review (PRD "Interiors"): inside a restaurant or shop the follow camera comes
+## closer and a little higher, and goes back to normal outside.
+func _check_indoor_camera() -> void:
+	var walker := Node3D.new()
+	walker.name = "CameraTarget"
+	root.add_child(walker)
+	var room: Node3D = _rooms["pizza"]
+	walker.global_position = room.to_global(Vector3(-3.0, 0, -1.45))
+	var cam := Camera3D.new()
+	cam.set_script(load("res://scripts/follow_camera.gd"))
+	cam.set("target", walker)
+	root.add_child(cam)
+	var inside: bool = cam.call("target_indoors")
+	for i in 30:
+		cam.call("_process", 0.1)
+	var arm: Vector3 = cam.call("_wanted_position") - walker.global_position
+	var close_in := Vector2(arm.x, arm.z).length()
+	walker.global_position = room.to_global(Vector3(0, 0, 9.0))   # out on the Plaza
+	var outside: bool = not cam.call("target_indoors")
+	for i in 30:
+		cam.call("_process", 0.1)
+	arm = cam.call("_wanted_position") - walker.global_position
+	var shop_inside := false
+	walker.global_position = _rooms["clothes"].to_global(Vector3(0, 0, 0))
+	shop_inside = cam.call("target_indoors")
+	_expect(not GameConfig.INDOOR_CAMERA_ON or (inside and outside and shop_inside and absf(close_in - GameConfig.INDOOR_CAMERA_DISTANCE) < 0.05
+			and absf(Vector2(arm.x, arm.z).length() - GameConfig.CAMERA_DISTANCE) < 0.05),
+			"the camera comes closer indoors (%.1f m) and goes back outside (%.1f m)" % [close_in, Vector2(arm.x, arm.z).length()])
+	cam.free()
+	walker.free()
+	await process_frame
 
 
 ## Overnight review: the baker's peel goes bread-first into the oven's mouth, and its handle

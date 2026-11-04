@@ -20,6 +20,7 @@ static func build(place: Dictionary, size: Vector3) -> StaticBody3D:
 	body.set_meta("interior_looks", true)
 	body.set_meta("room_size", size)
 	body.set_meta("pickup", pickup(place))
+	body.add_to_group("interior_room")   # the follow camera comes closer in here
 	var p := InteriorParts.new(body, place, size)
 	var style := InteriorVenues.style(id)
 	_shell(p, style)

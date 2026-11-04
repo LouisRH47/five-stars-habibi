@@ -72,6 +72,20 @@ func _institute() -> void:
 	var to := places.villa_door(903) + Vector3.UP * 0.8
 	var hit := _world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(from, to))
 	_check(hit.is_empty() and from.distance_to(to) < 16.0, "reception is just inside the door (%.1f m walk, clear)" % from.distance_to(to))
+	if GameConfig.INTERIOR_REVIEW_FIXES:
+		# Overnight review: from the door you can read the name under the C (it was behind the desk).
+		var name_face: Node3D = lobby.find_child("LogoName", true, false)
+		var pieces := lobby.find_children("LogoC*", "", true, false).map(func(n): return (n as Node3D).position.y)
+		var lowest_c: float = pieces.min() - 0.21
+		var low_text := 0.0
+		if name_face != null:
+			low_text = name_face.position.y - 0.32   # the English line's bottom (font 56)
+		var desk_top := 1.125
+		var eye := Vector3(0, 1.7, 16.5)   # standing in the doorway (building directions)
+		var desk_z: float = places.villas.filter(func(v): return v["number"] == 903)[0]["counter"].z - 1.2
+		var hidden_below := eye.y - (eye.y - desk_top) * (eye.z - (name_face.position.z if name_face else 0.0)) / (eye.z - desk_z) if name_face else 9.0
+		_check(name_face != null and low_text > hidden_below and name_face.position.y + 0.37 < lowest_c,
+				"the institute's name shows over the desk from the door, under the C (bottom %.2f m, desk hides below %.2f m)" % [low_text, hidden_below])
 
 
 func _stable_office() -> void:
@@ -81,6 +95,11 @@ func _stable_office() -> void:
 	_check(groom != null and groom.action == "sit", "the groom sits at his desk")
 	_check(_count(office, "RidingHelmet") == 3 and _count(office, "OfficeWindow") >= 2 and _count(office, "WoodenDoor") == 1,
 			"helmets on hooks, windows and a wooden door")
+	if GameConfig.INTERIOR_REVIEW_FIXES:
+		# Overnight review: real triangle gables under the roof, no sky showing through steps.
+		var gables := office.find_children("Gable*", "MeshInstance3D", true, false)
+		_check(gables.size() == 2 and gables.all(func(g): return (g as MeshInstance3D).mesh is PrismMesh),
+				"the office's gable ends are full triangles (no gaps under the roof)")
 	var paddock: Node = _world.get_node_or_null("LandmarkBuilder/OfficePaddock")
 	_check(paddock != null and paddock.get_child_count() > 4, "a little paddock with a horse outside the office window")
 	var place: Dictionary = {}

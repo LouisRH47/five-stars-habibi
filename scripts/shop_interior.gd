@@ -71,6 +71,7 @@ static func build(place: Dictionary) -> StaticBody3D:
 		room.set_meta("interior_looks", true)
 		room.set_meta("room_size", size)
 		room.set_meta("pickup", COUNTER + Vector3(0, 0, 1.0))
+		room.add_to_group("interior_room")   # the follow camera comes closer in here
 		var parts := InteriorParts.new(room, place.merged({"colour": place.get("colour", TEAL)}), size)
 		if place["id"] == "bikes":
 			ShopRooms.bikes(parts)

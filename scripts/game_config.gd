@@ -670,3 +670,7 @@ const BUGGY_DEAD_END_WAIT := 15.0     # most seconds a buggy coming out of a dea
 const MENU_TEXT_FIT := true           # menu boards use the biggest text that fits (false: the old small 19)
 const MENU_TEXT_MAX := 34             # the biggest menu text size
 const INTERIOR_REVIEW_FIXES := true   # the small fixes from the overnight check (things inside each other, hidden tags...); false: as Sessions 58-61 built them
+const INDOOR_CAMERA_ON := true        # PRD "Interiors": inside a restaurant or shop the camera comes closer and a little higher (false: the same as outside)
+const INDOOR_CAMERA_DISTANCE := 3.0   # metres behind you indoors (outside: CAMERA_DISTANCE, 4.5)
+const INDOOR_CAMERA_HEIGHT := 2.7     # metres above your feet indoors (outside: CAMERA_HEIGHT, 2.2)
+const INDOOR_CAMERA_BLEND := 1.5      # how fast it changes when you walk in or out (1.5 = about 2/3 of a second)
