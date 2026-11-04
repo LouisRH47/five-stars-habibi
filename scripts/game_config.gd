@@ -661,3 +661,19 @@ const QUEUE_WAIT := Vector2(2.0, 4.0) # ...and you wait 2 to 4 seconds (never mo
 const PIZZA_PEEL_EVERY := 10.0        # the pizza maker slides a pizza in this often (seconds)
 const SPIT_TURN_SPEED := 0.6          # radians a second, the shawarma spits
 const SUSHI_BELT_SPEED := 0.3        # Session 59: the sushi plates go round at 0.3 m/s
+
+# --- Review (outdoor), 4 Nov 2026: fixes found by the overnight check of Sessions 53-64 ---
+## A path that ends on a road that "wins" (the spine buggy road, or any wider road) now stops at
+## that road's edge instead of being drawn on top of it to its middle line. Before, the C1-C5
+## links flickered on the buggy road (two road slabs at the same height) and the light car park
+## buggy lanes and alleys lay over the dark roads. false = the old way.
+const ROAD_ENDS_GIVE_WAY := true
+const ROAD_END_OVERLAP := 0.02        # metres a path still reaches into the road it meets (no seam)
+## The spine's old floating flower balls (Session 26) sat 30 cm up in the air and also on roads
+## and paths. Now they sit on the ground and keep off every road, path, paving and building.
+const SPINE_FLOWERS_GROUNDED := true
+## The kerbs and planted strip between the red track and the buggy road only stop where a path
+## really crosses them (the C4 and C5 links end at the buggy road, they don't cross it).
+const SPINE_GAPS_ONLY_REAL := true
+## The "Coming soon" words at the building sites get a dark board on two posts (they floated).
+const SITE_SIGN_BOARD := true
