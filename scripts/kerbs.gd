@@ -41,7 +41,10 @@ static func _openings(map: Dictionary) -> Array[Rect2]:
 			holes.append(ClusterSigns.road_rect(road, map.get("ROAD_WIDTH", 6.0)))
 	for park: Dictionary in map.get("CAR_PARKS", []):
 		for aisle: Rect2 in park["aisles"]:
-			holes.append(aisle.grow_individual(0, 1.0, 0, 1.0))
+			if park.get("turned", false):   # rows east-west: the aisle meets the east ring road
+				holes.append(aisle.grow_individual(1.0, 0, 1.0, 0))
+			else:
+				holes.append(aisle.grow_individual(0, 1.0, 0, 1.0))
 	for crossing: Dictionary in map.get("HORSE_CROSSINGS", []):
 		var a: Vector3 = crossing["from"]
 		var b: Vector3 = crossing["to"]

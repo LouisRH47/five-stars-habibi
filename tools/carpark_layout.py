@@ -35,7 +35,11 @@ MODELS = 5            # sedan, suv, hatchback, suv-luxury, van (scripts/parked_c
 
 
 def _strips(kind, buggy, aisle):
-    """The cross-section from the cluster's side outwards: (what, width, nose)."""
+    """The cross-section from the cluster's side outwards: (what, width, nose).
+    buggy None: no buggy lane alongside (the turned car park has it across its far end)."""
+    if kind == 'full' and buggy is None:
+        return [('kerb', KERB, 0), ('row', BAY_D, +1), ('aisle', aisle, 0), ('row', BAY_D, -1), ('row', BAY_D, +1),
+                ('aisle', aisle, 0), ('row', BAY_D, -1), ('kerb', KERB, 0)]
     if kind == 'full':
         return [('kerb', KERB, 0), ('buggy', buggy, 0), ('kerb', KERB, 0),
                 ('row', BAY_D, +1), ('aisle', aisle, 0), ('row', BAY_D, -1), ('row', BAY_D, +1),
@@ -46,11 +50,12 @@ def _strips(kind, buggy, aisle):
             ('kerb', KERB, 0)]
 
 
-def plan(name, arabic, clusters, start_x, direction, north, kind, bays, buggy=BUGGY, aisle=AISLE):
+def plan(name, arabic, clusters, start_x, direction, north, kind, bays, buggy=BUGGY, aisle=AISLE, ring=None):
     """One car park. start_x: the cluster lane edge it hugs; direction: +1 east, -1 west.
-    north: True for the car parks on the north ring road. bays: bays in each row."""
+    north: True for the car parks on the north ring road. bays: bays in each row.
+    ring: where the ring road's kerb is (default: the north or south ring road)."""
     sz = 1 if north else -1                  # rows grow away from the ring road
-    z0 = -RING_KERB_Z if north else RING_KERB_Z
+    z0 = ring if ring is not None else (-RING_KERB_Z if north else RING_KERB_Z)
     zr0 = z0 + sz * VERGE                     # first bay line
     zr1 = zr0 + sz * bays * BAY_W             # last bay line
     toward = 90.0 if direction < 0 else -90.0  # nose pointing back at the (first) cluster
@@ -92,8 +97,8 @@ def plan(name, arabic, clusters, start_x, direction, north, kind, bays, buggy=BU
     # Kerbs (rects x0, z0, x1, z1): both long sides of the asphalt, the far end, and the ends of
     # each row block at the verge (the aisles stay open to the ring road).
     # (the long kerb beside the buggy lane is added with the buggy lane, all the way along it)
-    bi = [n for n, s in enumerate(strips) if s['what'] == 'buggy'][0]
-    near_buggy = [strips[bi - 1], strips[bi + 1]]
+    bis = [n for n, s in enumerate(strips) if s['what'] == 'buggy']
+    near_buggy = [strips[bis[0] - 1], strips[bis[0] + 1]] if bis else []
     for x0k in (ax0, ax1 - KERB):
         if not any(abs(k['x0'] - x0k) < 0.01 for k in near_buggy):
             kerbs.append((x0k, rz0, x0k + KERB, rz1))
@@ -163,7 +168,8 @@ def parked_cars(parks, seed=62):
             # nose 0.35 m short of the back line, so it never touches the kerb or a roof post
             shift = (BAY_D - 4.3) * 0.5 - 0.35
             dx = math.sin(math.radians(facing)) * shift
-            cars.append({'x': round(cx + dx, 3), 'z': round(cz, 3), 'facing': facing, 'park': pi,
+            x, z = to_world(park, cx + dx, cz)
+            cars.append({'x': round(x, 3), 'z': round(z, 3), 'facing': world_facing(park, facing), 'park': pi,
                          'model': rng.randrange(MODELS), 'paint': PAINTS[rng.randrange(len(PAINTS))]})
     return cars
 
@@ -252,9 +258,90 @@ def build_all(clusters, road, bays=32):
                 _rect((site[0], SOUTH_SPINE_EDGE, site[0] + site[2], site[1])), _rect((site[0], site[1] + site[3], site[0] + site[2], RING_KERB_Z))]
     east = parks[6]['area']
     gardens.append(_rect((east[0] + east[2], SOUTH_SPINE_EDGE, 420.0, RING_KERB_Z)))
+    # Cluster 3's east homes: the 8th car park, turned sideways in the spine lawn's free corner.
+    turned, more_kerbs, more_gardens = plan_turned(road)
+    parks.append(turned)
+    kerbs += more_kerbs
+    gardens += more_gardens
     gardens = [tuple(round(v, 3) for v in g) for g in gardens if g[2] > 0.05 and g[3] > 0.05]
     kerbs = [tuple(round(v, 3) for v in k) for k in kerbs if k[2] > 0.05 and k[3] > 0.05]
     return parks, kerbs, gardens, palms_in(gardens), site
+
+
+# --- The turned car park (Cluster 3 East, follow-up to Session 62) ---
+# Cluster 3's homes run right up to the east ring road, so 29 of them were 86-120 m from the
+# only car park (between C2 and C3). The nearest free land is the north-east corner of the spine
+# lawn, which Session 63 kept free: x 376-415, z -37 (the "Plaza to C1" path) to -3 (the
+# spine buggy road), with grass up to the ring road kerb at x 420. A car park there must open
+# east onto the ring road, so its rows run east-west: it's the usual layout turned a quarter
+# turn. It's planned with plan() in its own "turned" frame and every output goes through
+# to_world(): local (x, z) is the real map's (z, -x), so local z is the map's x (the ring road
+# kerb at local z 420) and local x is minus the map's z.
+CORNER = (376.0, -37.0, 415.0, -3.0)   # x0, z0, x1, z1 (GameConfig.SPINE_FREE_CORNER)
+EAST_RING_KERB = 420.0
+
+
+def to_world(p, x, z):
+    """A point of a car park on the real map (a turned car park is planned sideways)."""
+    return (z, -x) if p.get('turned') else (x, z)
+
+
+def world_rect(p, r):
+    """A rectangle (x, z, w, d) of a car park on the real map."""
+    if not p.get('turned'):
+        return r
+    x, z, w, d = r
+    return (z, -(x + w), d, w)
+
+
+def area_of(p):
+    return world_rect(p, p['area'])
+
+
+def world_facing(p, facing):
+    """Which way a car's nose points on the real map (degrees, 0 = +z, 90 = +x)."""
+    if not p.get('turned'):
+        return facing
+    return ((facing + 90.0 + 180.0) % 360.0) - 180.0
+
+
+def plan_turned(road):
+    """The 8th car park, Louis's 1-2-1 rows running east-west in the spine lawn's north-east
+    corner. Returns the park (planned sideways), its kerbs and grass beds (on the real map)."""
+    x0, z0, x1, z1 = CORNER
+    across = KERB + 4 * BAY_D + 2 * AISLE + KERB          # 32.6 m: fits the 34 m corner
+    north_edge = (z0 + z1) * 0.5 - across * 0.5            # an equal strip of lawn each side
+    first_bay = EAST_RING_KERB - VERGE
+    # the buggy lane (kerb + lane + kerb) runs across the far (west) end of the rows
+    bays = int((first_bay - (x0 + 2 * KERB + BUGGY)) // BAY_W)
+    p = plan('Cluster 3 East Parking', 'مواقف المجموعة ٣ شرق', ['C3'], -north_edge, -1, False, 'full', bays,
+             None, AISLE, EAST_RING_KERB)
+    p['turned'] = True
+    last_bay = p['zr1']
+    # the buggy lane: from the "Plaza to C1" path (into Cluster 3) to the spine buggy road. Its
+    # ends stop 0.4 m inside their edges (paths are drawn half a width longer, and a light lane
+    # drawn to the middle of the buggy road would cover its dashed line).
+    lane_x = round(last_bay - KERB - BUGGY * 0.5, 3)
+    name = 'C3 East Car Park Buggy Lane'
+    road(name, (lane_x, z0 + 0.4), (lane_x, z1 - 0.4), BUGGY)
+    p['buggy_lane'] = {'name': name, 'x': lane_x, 'width': BUGGY, 'from': z0 + 0.4, 'to': z1 - 0.4}
+    kerbs, gardens = [], []
+    for k in p['kerbs']:
+        kx0, kz0, kx1, kz1 = k
+        if abs(min(kz0, kz1) - (last_bay - KERB)) < 0.01 and abs(max(kz0, kz1) - last_bay) < 0.01:
+            kx0, kx1 = -z1, -z0   # the far kerb runs the buggy lane's whole length
+        kerbs.append(world_rect(p, _rect((kx0, kz0, kx1, kz1))))
+    outer = last_bay - 2 * KERB - BUGGY
+    kerbs.append((round(outer, 3), z0, KERB, z1 - z0))      # the lawn side of the buggy lane
+    for a in p['aisles']:   # the aisle openings through the verge get a kerb on each side
+        for xk in (a['x0'] - KERB, a['x1']):
+            kerbs.append(world_rect(p, _rect((xk, p['z0'] - KERB, xk + KERB, p['zr0']))))
+    ax0, _, w, _ = p['area']
+    for b in _blocks(p['rows']):   # the grass verge in front of every row block
+        bx0 = ax0 if abs(b[0] - KERB - ax0) < 0.01 else b[0]
+        bx1 = ax0 + w if abs(b[1] + KERB - (ax0 + w)) < 0.01 else b[1]
+        gardens.append(world_rect(p, _rect((bx0, p['z0'], bx1, p['zr0'] + KERB))))
+    return p, kerbs, gardens
 
 
 def palms_in(gardens, spacing=15.0, inset=4.0):
@@ -280,7 +367,7 @@ def reach(parks, homes):
         hx, hz = h
         best = 1e9
         for p in parks:
-            x, z, w, d = p['area']
+            x, z, w, d = area_of(p)
             dx = max(x - hx, 0, hx - (x + w))
             dz = max(z - hz, 0, hz - (z + d))
             best = min(best, math.hypot(dx, dz))
@@ -290,6 +377,8 @@ def reach(parks, homes):
 
 def to_data(p, rect, v3):
     """The car park as the data file stores it (CAR_PARKS)."""
+    if p.get('turned'):
+        return _turned_data(p, rect, v3)
     R = lambda a: rect(*_rect(a))
     rows = [{'area': R((r['x0'], r['z0'], r['x1'], r['z1'])), 'facing': r['facing'], 'bays': r['bays']} for r in p['rows']]
     roofs = []
@@ -307,3 +396,29 @@ def to_data(p, rect, v3):
             'visitor': {'bay': v3(round(vis[0], 3), 0, round(vis[1], 3)), 'aisle_x': round(vis[3], 3), 'facing': vis[2]},
             'chargers': [v3(x, 0, z) for x, z in chargers(p)],
             'sign': {'position': v3(round(sign_x, 3), 0, round(sign_z, 3)), 'facing': 180.0 if p['north'] else 0.0}}
+
+
+def _turned_data(p, rect, v3):
+    """The turned car park on the real map. Its rows run east-west, so it has 'turned': true,
+    each roof's high line is a z ('high_z'), and the ring road kerb, the first and the last bay
+    line are x values ('ring_x', 'first_bay_x', 'last_bay_x'). CarParkBuilder.local_park()
+    turns it back to build it with the same code as the others."""
+    R = lambda a: rect(*world_rect(p, _rect(a)))
+    P = lambda x, z: v3(*(lambda w: (round(w[0], 3), 0, round(w[1], 3)))(to_world(p, x, z)))
+    rows = [{'area': R((r['x0'], r['z0'], r['x1'], r['z1'])), 'facing': world_facing(p, r['facing']), 'bays': r['bays']}
+            for r in p['rows']]
+    roofs = []
+    for r in p['roofs']:
+        high = (r['x0'] + r['x1']) * 0.5 if r['double'] else r['high_x']
+        roofs.append({'area': R((r['x0'], r['z0'], r['x1'], r['z1'])), 'double': r['double'], 'high_z': round(-high, 3)})
+    vis = visitor_bay(p)
+    first = p['aisles'][0]
+    sign_x = first['x0'] - 1.2 if first['x0'] - 1.2 > p['area'][0] + 0.5 else first['x1'] + 1.2
+    sign_z = (p['z0'] + p['zr0']) * 0.5
+    return {'name': p['name'], 'arabic': p['arabic'], 'clusters': p['clusters'], 'kind': p['kind'], 'north': False,
+            'turned': True, 'area': rect(*area_of(p)), 'rows': rows, 'roofs': roofs,
+            'aisles': [R((a['x0'], a['z0'], a['x1'], a['z1'])) for a in p['aisles']],
+            'buggy_lane': p['buggy_lane']['name'], 'ring_x': p['z0'], 'first_bay_x': p['zr0'], 'last_bay_x': p['zr1'],
+            'visitor': {'bay': P(vis[0], vis[1]), 'aisle_z': round(-vis[3], 3), 'facing': world_facing(p, vis[2])},
+            'chargers': [P(x, z) for x, z in chargers(p)],
+            'sign': {'position': P(sign_x, sign_z), 'facing': 90.0}}

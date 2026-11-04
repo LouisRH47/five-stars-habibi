@@ -600,6 +600,49 @@ const FARMER_ON := true               # the farmer behind the farm stall counter
 const FARMER_LOOK_RANGE := 9.0        # the farmer turns to look at you inside this distance
 const GLASS_BOOTHS_ON := true         # glass security booths at the school gate and the checkpoints
 
+# --- Session 63: the spine, the farm and the stream ---
+const SPINE_LOOKS_V2 := true          # false = the old spine (plain beds, hives, no kerb strip, plain horses)
+const SPINE_TRACK_TOP := 0.03         # the red walking track's top (Appendix D)
+const SPINE_STRIP_TOP := 0.115        # the planted strip's top, just under its kerbs (0.12), so they don't flicker
+const SPINE_DOME_RING := Vector2(9.0, 11.5)   # planting round a dome: from / to this far from its middle (dome radius 7)
+const SPINE_DOME_PALMS := 3           # per dome: date palms...
+const SPINE_DOME_FRUIT_TREES := 2     # ...fig or pomegranate trees...
+const SPINE_DOME_SHRUBS := 12         # ...and shrubs and flower clumps (8 to 12)
+const SPINE_PLANT_CLEARANCE := 1.2    # plants keep this far from paths, pools, courts and gates
+const SPINE_PLANT_VIEW := 160.0       # metres: small plants further away than this aren't drawn
+const FARM_BED_HEIGHT := 0.3          # the raised beds' wooden sides
+const FARM_PLANT_SPACING := 0.85      # metres between crop plants in a row
+const STREAM_REED_SPACING := 2.2      # metres between reed clumps along each bank
+const BEEKEEPER_SPEED := 0.9          # m/s, a slow careful walk between the hives
+const BEEKEEPER_LID_TIME := 4.0       # seconds a hive lid stays open when the beekeeper checks it
+const FIELD_FARMER_SPEED := 1.0       # m/s, the farmer walking the rows
+const FIELD_FARMER_WATER_TIME := 3.5  # seconds the farmer waters at each stop
+const HORSE_LOOK_V2 := true           # false = the old box horses
+const SPINE_FREE_CORNER := Rect2(376, -37, 39, 34)   # kept free for a future car park (no plants, beds or hills)
+const SPINE_BUGGY_ROAD_TINT := Color(1.35, 1.35, 1.32)   # the buggy road's asphalt, lighter than the car roads
+const FARM_CROP_SCALE := 1.3         # crop models a little bigger than the pack, so you can see the melons from the path
+const SPINE_DOME_BED := 1.6           # the flower bed hugging each dome is this wide (metres)
+
+# --- Session 64: buggies everywhere and building sites ---
+const BUGGIES_ROAM := true            # buggies drive anywhere on the buggy road map; false = the old fixed routes (BUGGY_FIXED_ROUTES)
+const BUGGY_SPEED_KMH := Vector2(10.0, 14.0)  # each buggy cruises somewhere between these
+const BUGGY_KEEP_RIGHT := 1.5         # metres right of the lane middle (less on narrow paths)
+const BUGGY_HALF_WIDTH := 0.6         # half a buggy's width (Appendix H: 1.2 m wide)
+const BUGGY_POST_CLEARANCE := 1.15    # a buggy's middle stays this far from a bollard's middle
+const BUGGY_BLACK_ROAD_GAP := 6.0     # buggies stay this far from the black car roads (never on or along them)
+const BUGGY_MIN_ROAD_WIDTH := 3.0     # thinner paths are for walking only...
+const BUGGY_LANE_MIN_WIDTH := 1.4     # ...except buggy lanes (a name with "Buggy"), e.g. the car park buggy lanes
+const BUGGY_NO_GO_WORDS := ["walk", "track", "domes path", "door", "horse", "bridle", "jog"]  # paths with these in the name aren't for buggies
+const BUGGY_LOOK_AHEAD := 3.0         # metres in front it looks for people (stops about 4 m before the rider)
+const BUGGY_CORNER_SLOW := 0.45       # share of its speed left in the tightest corners
+const BUGGY_CORNER_ROUND := 2.0       # corners are cut this far, so turns are smooth
+const BUGGY_STOP_TIME := Vector2(2.0, 6.0)  # seconds it waits when it gets where it was going
+const SITE_HALF_BUILT := true         # building sites get a half-built building (false = only the old crane, cabin and sand)
+const SITE_FLOOR_HEIGHT := 3.2        # metres per floor of the half-built building
+const SITE_SCAFFOLD_LIFT := 2.0       # scaffolding: a board level every 2 m
+const SITE_SCAFFOLD_BAY := 2.0        # scaffolding: a pole every 2 m along the wall
+const SITE_WORKERS := 3               # workers in hi-vis per building site
+
 # --- Session 58: the first 6 insides and the food changes ---
 const FOOD_CHANGES_ON := true         # false: Spill the Brew sells bubble tea again and cakes come from the bakery
 ## Old saves: a food that was renamed is read as its new name (regular visit counts are kept).

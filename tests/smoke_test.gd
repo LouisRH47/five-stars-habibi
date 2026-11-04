@@ -1432,7 +1432,11 @@ func _check_venue_handoffs() -> void:
 				dismounted and _delivery.target_door() == target and _delivery.is_near_target(),
 				"%.1f m from target" % _on_foot.walker.global_position.distance_to(target))
 		if number != GameConfig.SCHOOL_SPOT:
-			await process_frame
+			# Session 65: give the panel a few frames when the machine is busy (it was flaky).
+			for wait in 10:
+				await process_frame
+				if counter != null and counter._panel.visible:
+					break
 			_check("the staffed counter panel opens at " + order.address,
 					counter != null and counter._panel.visible and counter._panel.heading.text == order.address
 					and counter._staff != null, "")
@@ -1956,6 +1960,8 @@ func _check_session30() -> void:
 	buggy.scared_left = 0.0
 	buggy._pause_left = 0.0
 	buggy._blocked = 0.0
+	if buggy.has_method("drive_route"):  # Session 64: roaming buggies get a long straight lane for this probe
+		buggy.drive_route(_long_buggy_stretch(life.buggy_roads, 30.0))
 	buggy.start_at(0, 0.35, true)  # start mid-segment, not at a random endpoint pause
 	var start: Vector3 = buggy.position
 	for i in 60:
@@ -2204,10 +2210,22 @@ func _check_session33() -> void:
 	_bike.global_transform = keep_bike
 
 
+## Session 64: a long straight stretch of a lane on the buggy road map: [from node, to node].
+func _long_buggy_stretch(roads: Object, length: float) -> Array[int]:
+	for a in roads.node_count():
+		for b: int in roads.links[a]:
+			if roads.nodes[a].distance_to(roads.nodes[b]) >= length and roads.road_of[roads.key(a, b)].contains("Lane"):
+				return [a, b] as Array[int]
+	return [] as Array[int]
+
+
 ## Sessions 30 + 33 together: a golf buggy stops at road works instead of driving through.
 func _check_life_meets_events() -> void:
 	var life: Node = _main.get_node_or_null("LifeBuilder")
 	var events: Node = _main.get_node_or_null("EventManager")
+	if life != null and events != null and life.get_node_or_null("Buggy_0") != null and life.get_node("Buggy_0").has_method("drive_route"):
+		await _check_roaming_buggy_meets_works(life, events)
+		return
 	if life == null or events == null or events._works_list.size() < 11:
 		print("      no buggies or road works on this map, buggy-meets-road-works check skipped")
 		return
@@ -2229,6 +2247,58 @@ func _check_life_meets_events() -> void:
 	events.remove_child(works)
 	works.queue_free()
 	await physics_frame
+
+## Session 64: the same check for the roaming buggies. Buggies don't use the ring road any
+## more, so the road works go on a cluster lane from ROAD_WORKS that's on the buggy road
+## map; the buggy drives at it and must stop before the barrier.
+func _check_roaming_buggy_meets_works(life: Node, events: Node) -> void:
+	var roads: Object = life.buggy_roads
+	var pick := {}
+	for works: Dictionary in events._works_list:
+		var centre: Vector2 = works["centre"]
+		for a in roads.node_count():
+			for b: int in roads.links[a]:
+				var near := Geometry2D.get_closest_point_to_segment(centre, roads.nodes[a], roads.nodes[b])
+				if pick.is_empty() and near.distance_to(centre) < 0.5 and roads.nodes[a].distance_to(centre) >= 20.0:
+					pick = {"works": works, "from": a, "to": b}
+	_check("a cluster lane with road works is on the buggy road map", not pick.is_empty(), "")
+	if pick.is_empty():
+		return
+	var works: Node3D = load("res://scripts/road_works.gd").build(events, pick["works"])
+	await physics_frame
+	await physics_frame
+	var buggy: Node3D = life.get_node("Buggy_0")
+	var keep_exclude: Array[RID] = buggy._ahead.exclude.duplicate()
+	var keep_watch: Array[Node3D] = buggy.watch.duplicate()
+	var probe_exclude: Array[RID] = keep_exclude.duplicate()
+	for other in get_nodes_in_group("critter"):   # only the road works may stop it here
+		if other is CollisionObject3D and other != buggy:
+			probe_exclude.append(other.get_rid())
+	buggy._ahead.exclude = probe_exclude
+	buggy.watch = [] as Array[Node3D]
+	var a: Vector2 = roads.nodes[pick["from"]]
+	var b: Vector2 = roads.nodes[pick["to"]]
+	var way := (b - a).normalized()
+	var barrier: float = a.distance_to(pick["works"]["centre"]) - float(pick["works"]["length"]) * 0.5
+	buggy.drive_route([pick["from"], pick["to"]] as Array[int])
+	buggy.start_at(0, (barrier - 12.0) / a.distance_to(b), true)   # 12 m before the barrier
+	buggy.scared_left = 0.0
+	buggy._pause_left = 0.0
+	buggy._blocked = 0.0
+	var start := (Vector2(buggy.position.x, buggy.position.z) - a).dot(way)
+	var furthest := start
+	for i in 120:  # 4 seconds: long enough to drive through, not to give up and turn round
+		buggy._physics_process(1.0 / 30.0)
+		furthest = maxf(furthest, (Vector2(buggy.position.x, buggy.position.z) - a).dot(way))
+	_check("a golf buggy stops at road works instead of driving through", furthest > start + 2.0 and furthest + buggy.size.z * 0.5 < barrier,
+			"got %.1f m along, barrier at %.1f m" % [furthest, barrier])
+	buggy._ahead.exclude = keep_exclude
+	buggy.watch = keep_watch
+	events.remove_child(works)
+	works.queue_free()
+	buggy.replan()
+	await physics_frame
+
 
 ## Session 32: special orders (rush, fragile cake, neighbour, big family) each with their rule
 ## and reward, school orders only 08:00 to 15:00 and more at lunch, stables and farm orders,

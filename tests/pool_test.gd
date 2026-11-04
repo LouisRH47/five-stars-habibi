@@ -254,7 +254,7 @@ func _check_hills_and_grass(world: Node3D) -> void:
 		for name in keep:
 			var rect: Rect2 = keep[name]
 			var closest := Vector2(clampf(c.x, rect.position.x, rect.end.x), clampf(c.y, rect.position.y, rect.end.y))
-			if closest.distance_to(c) < GameConfig.HILL_RADIUS + GameConfig.HILL_CLEARANCE:
+			if closest.distance_to(c) < float(hill.get("radius", GameConfig.HILL_RADIUS)) + GameConfig.HILL_CLEARANCE:   # Session 63: hills have their own size
 				near.append("hill (%d, %d) and %s" % [c.x, c.y, name])
 	_check(near.is_empty(), "no hill within 4 m of the pools or the gym %s" % [near])
 	var field: GrassField = world.get_node("DistrictDetail").get_node_or_null("GrassField")

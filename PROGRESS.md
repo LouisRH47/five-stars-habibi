@@ -19,6 +19,51 @@ next to the clusters, a red walking track and buggy road on the spine, buggies e
 except the ring road, and half-built buildings on the building sites. Render:
 docs/plaza_carpark_spine.svg. Step-by-step detail for every session: docs/looks_pass_detailed_plan.md.
 
+## Sessions 56, 57 and 60 to 64 — built in parallel (4 November 2026)
+
+Louis asked for the rest to be built by several agents at once. Each session was built on its
+own branch (looks-s56, looks-s57, looks-s60-61, looks-s62, looks-s63, looks-s64 and two small
+fix branches), then merged into `looks-build` one at a time, with the map data regenerated and
+the tests re-run after every merge. Full details, choices and **Louis's check** for each session
+are in docs/session_notes/sNN.md.
+
+- **56 Free asset packs** (s56.md): 15 CC0 packs (1,221 models, 57 MB) in assets/kits/ from the
+  official KayKit GitHub and GitHub mirrors of Kenney and Quaternius (their own sites are blocked
+  from the build machine; each pack's official page says CC0). scripts/kit_props.gd places them at
+  real size; scenes/kit_preview.tscn shows them all (F6). Left out of the browser build for now
+  (it must stay under 25 MB). Not downloadable here: Stylized Nature MegaKit, Universal Animation
+  Library 2, the construction-site packs.
+- **57 Plaza outside** (s57.md): shops 4.5 m high in two joined rows with 3 floors of flats on
+  top, a passage after every second shop, bike shop and Dune Drip in the rows, a pharmacy, logos
+  (tools/make_logos.py), lit sign bands at sunset, sliding doors, outside tables, the Grand
+  Groceries supermarket front, 28 grass beds with real grass, 68 palms. Spill the Tea → Spill the
+  Brew (id still "boba"). PLAZA_LOOKS_PASS = false brings the old Plaza back.
+- **60 Gym and pools** (s60.md): smaller gym with a glass wall onto the 4-lane lap pool, people
+  working out, swimmers doing front crawl and turning at the wall, the community pool with a
+  1.4 m fence, one gate, a kids' pool, loungers and a lifeguard. The gym and both pools moved to
+  the north side of the spine (the old gym sat over the stream; paths ran through the old pool).
+- **61 Institute, stable office, farm stall, booths** (s61.md): C Institute lobby, a wooden
+  stable office with a paddock, a farmer at the farm stall who hands over orders, glass security
+  booths at the school and gates.
+- **62 Car parks and kerbs** (s62.md): 8 car parks (1 row, 2 back to back, 1 row) with solar
+  roofs, painted bays, half full of cars (drawn in batches), EV chargers, P signs, buggy lanes,
+  visiting cars, and kerbstones round the car parks and along the ring road. 12 homes in
+  Cluster 3's north-east are still up to 114 m from a car park (no free land closer; Louis to
+  decide if Cluster 3 should move).
+- **63 Spine, farm and stream** (s63.md): red walking track, kerbs and a raised planted strip,
+  a two-way buggy road; 12 gentle hills; plants, palms and fruit trees round every dome; farm beds
+  with crops; a farmer watering and a beekeeper in a fenced bee yard; pebbles and reeds on the
+  stream; better horses.
+- **64 Buggies and building sites** (s64.md): 14 golf buggies drive anywhere except the black
+  roads (ring road, gate roads, highway, bus road) and the walking track, keep right, stop for
+  you, people and road works, and turn round if blocked. Every building site has a half-built
+  concrete frame with scaffolding, netting, a cabin, materials and 3 workers.
+- **Fixes after merging:** 14 flickering faces (institute stairs, an exercise bike, farm bed
+  edges, bee yard gate), the car park test after the spine merge, and a palm standing in the
+  C1 Link (moved; the layout check now looks for palms in roads).
+
+Everything old is kept behind GameConfig switches (nothing deleted).
+
 ## Session 55 — The Schedule I look and real grass (4 November 2026)
 
 Built by Claude in a cloud session, on the `looks-build` branch. Screenshots now use the real

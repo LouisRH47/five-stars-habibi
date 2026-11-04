@@ -1,6 +1,7 @@
 extends Node3D
 ## Life on the map (Session 30). Builds everything that moves around Wahat Al Shams by
-## itself, from the lists in data/wahat_al_shams.gd: golf buggies (BUGGIES), horses with
+## itself, from the lists in data/wahat_al_shams.gd: golf buggies (BUGGIES, Session 64: they
+## drive anywhere on the buggy road map, scripts/buggy_driver.gd), horses with
 ## riders (HORSE_RIDERS), joggers and walkers (PEOPLE_ROUTES), gardeners (GARDENERS), kids at
 ## the playgrounds (PLAY_KIDS) and ducks on the stream (DUCKS). Each one is a RouteMover
 ## (scripts/route_mover.gd) that follows its own route. Node names: Buggy_<n>, Horse_<n>,
@@ -19,6 +20,10 @@ var movers: Array[RouteMover] = []
 ## The lowest Graphics level that shows each thing: {node: level}.
 var levels := {}
 var ambient: AmbientMotion
+## Session 64: the golf buggies' road map (null with the old fixed routes).
+var buggy_roads: BuggyRoads
+## True once the buggy road map has been checked for things in the way.
+var buggy_roads_checked := false
 
 var _map := {}
 var _check_left := 0.0
@@ -31,9 +36,13 @@ func _ready() -> void:
 		return
 	_map = data.get_script_constant_map()
 	var list: Array = _map.get("BUGGIES", [])
-	for i in list.size():
-		var look := LifeLooks.buggy(list[i]["colour"])
-		_add("Buggy_%d" % i, "buggy", list[i], GameConfig.BUGGY_SPEED, Vector3(1.3, 1.9, 2.4), look[0], look[1])
+	if GameConfig.BUGGIES_ROAM:
+		_build_roaming_buggies(list)
+	else:  # the old way (before Session 64): each buggy up and down its own fixed route
+		list = _map.get("BUGGY_FIXED_ROUTES", list)
+		for i in list.size():
+			var look := LifeLooks.buggy(list[i]["colour"])
+			_add("Buggy_%d" % i, "buggy", list[i], GameConfig.BUGGY_SPEED, Vector3(1.3, 1.9, 2.4), look[0], look[1])
 	list = _map.get("HORSE_RIDERS", [])
 	for i in list.size():
 		var look := LifeLooks.horse(list[i]["colour"])
@@ -48,6 +57,8 @@ func _ready() -> void:
 	_build_gardeners()
 	_build_kids()
 	_build_ducks()
+	if GameConfig.SPINE_LOOKS_V2:
+		_build_spine_workers.call_deferred()   # Session 63: after SpineBuilder made the hives
 	ambient = AmbientMotion.new()
 	ambient.name = "AmbientMotion"
 	add_child(ambient)
@@ -91,10 +102,45 @@ func _process(delta: float) -> void:
 			mover.set_near(mover.global_position.distance_to(camera.global_position) < far)
 
 
+## Session 64: golf buggies that drive anywhere on the buggy road map (scripts/buggy_roads.gd)
+## instead of one fixed route each. Once everything solid is in place (two physics frames),
+## the road map drops any stretch with something in the way and the buggies plan again.
+func _build_roaming_buggies(list: Array) -> void:
+	buggy_roads = BuggyRoads.build(_map)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 6400
+	for i in list.size():
+		var look := BuggyDriver.look(list[i])
+		var driver: BuggyDriver = BuggyDriver.new()
+		driver.roads = buggy_roads
+		driver.start_spot = list[i].get("start", list[i]["points"][0])
+		var pace := rng.randf_range(GameConfig.BUGGY_SPEED_KMH.x, GameConfig.BUGGY_SPEED_KMH.y) / 3.6
+		_add("Buggy_%d" % i, "buggy", list[i], pace, Vector3(1.3, 1.9, 2.4), look[0], look[1], driver)
+	_check_buggy_roads.call_deferred()
+
+
+func _check_buggy_roads() -> void:
+	if not is_inside_tree():
+		return
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	if not is_inside_tree():
+		return
+	var dropped := buggy_roads.check_clear(get_world_3d())
+	buggy_roads_checked = true
+	if dropped > 0:
+		print("BUGGY_ROADS: %d stretches dropped (something in the way): %s" % [dropped, buggy_roads.blocked])
+	for mover in movers:
+		if mover is BuggyDriver:
+			(mover as BuggyDriver).replan()
+
+
 ## Makes one RouteMover from a line in the data. place: the line (points, loop, level).
+## mover: a ready-made one to use (a BuggyDriver), or null for a plain RouteMover.
 func _add(node_name: String, kind: String, place: Dictionary, pace: float, body: Vector3,
-		look: Node3D, rider: Person) -> RouteMover:
-	var mover: RouteMover = MOVER.new()
+		look: Node3D, rider: Person, mover: RouteMover = null) -> RouteMover:
+	if mover == null:
+		mover = MOVER.new()
 	mover.name = node_name
 	for watched in ["Bike", "Walker"]:
 		var node := get_parent().get_node_or_null(watched) as Node3D
@@ -138,6 +184,45 @@ func _build_ducks() -> void:
 		var line: Dictionary = list[i].duplicate()
 		line["points"] = route
 		var mover := _add("Duck_%d" % i, "duck", line, GameConfig.DUCK_SPEED, Vector3(0.3, 0.4, 0.45), LifeLooks.duck(i % 2 == 0), null)
+
+
+## Session 63: the beekeeper walking between the hives, and a farmer watering the beds
+## next to the farm stall (scripts/beekeeper.gd).
+func _build_spine_workers() -> void:
+	var hives: Rect2 = _map["BEEHIVES"]
+	var lane := BeeYard.aisle(hives)
+	var lids := get_tree().get_nodes_in_group("hive_lid")
+	var stops: Array = []
+	for spot: Vector3 in BeeYard.hive_spots(hives):
+		var lid: Node3D = null
+		for node: Node3D in lids:
+			if Vector2(node.global_position.x - spot.x, node.global_position.z - spot.z).length() < 0.3:
+				lid = node
+		var at := Vector3(spot.x, 0, lane + (-0.75 if spot.z < lane else 0.75))
+		stops.append({"at": at, "lane": lane, "face": spot, "lid": lid})
+	var keeper := Beekeeper.new()
+	keeper.name = "Beekeeper"
+	add_child(keeper)
+	keeper.setup("beekeeper", stops)
+	register(keeper, 0)
+	# The farmer works the beds nearest the farm stall.
+	var beds: Array = _map["FARM_BEDS"]
+	if beds.is_empty():
+		return
+	var area: Rect2 = beds[mini(1, beds.size() - 1)]
+	var rows := FarmBeds.bed_lines(area)
+	stops = []
+	for i in FarmBeds.walk_lines(area).size():
+		var z: float = FarmBeds.walk_lines(area)[i]
+		var x := area.position.x + 3.0
+		while x < area.end.x - 2.0:
+			stops.append({"at": Vector3(x, 0, z), "lane": z, "face": Vector3(x, 0, rows[i + absi(int(x)) % 2])})
+			x += 6.0
+	var farmer := Beekeeper.new()
+	farmer.name = "FieldFarmer"
+	add_child(farmer)
+	farmer.setup("farmer", stops, [area.position.x - 0.6, area.end.x + 0.6])
+	register(farmer, 0)
 
 
 ## A plain holder for a person, so the mover can hide the holder.

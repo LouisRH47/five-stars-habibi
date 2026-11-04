@@ -77,11 +77,12 @@ static func check_map(map: Dictionary, world: Node3D) -> Array:
 		var c := Vector2(hill["position"].x, hill["position"].z)
 		if float(hill["height"]) > GameConfig.HILL_MAX_HEIGHT + 0.001:
 			too_tall.append("(%d, %d) %.1f m" % [c.x, c.y, hill["height"]])
+		var reach: float = hill.get("radius", GameConfig.HILL_RADIUS)   # Session 63: hills have their own size
 		for name: String in keep_clear:
-			if _circle_hits(c, GameConfig.HILL_RADIUS + GameConfig.HILL_CLEARANCE, keep_clear[name]):
+			if _circle_hits(c, reach + GameConfig.HILL_CLEARANCE, keep_clear[name]):
 				hill_hits.append("hill (%d, %d) and %s" % [c.x, c.y, name])
 		for road: Dictionary in roads:
-			if _circle_hits(c, GameConfig.HILL_RADIUS - 0.01, ClusterSigns.road_rect(road, width)):
+			if _circle_hits(c, reach - 0.01, ClusterSigns.road_rect(road, width)):
 				hill_hits.append("hill (%d, %d) and %s" % [c.x, c.y, road["name"]])
 	results.append([too_tall.is_empty(), "every hill is at most %.1f m high %s" % [GameConfig.HILL_MAX_HEIGHT, too_tall]])
 	results.append([hill_hits.is_empty(), "hills keep clear of pools, beds, the gym, the stall and roads %s" % [hill_hits]])
@@ -146,6 +147,15 @@ static func check_map(map: Dictionary, world: Node3D) -> Array:
 					facing_shop += 1
 	results.append([shop_benches >= 10 and facing_shop == 0,
 			"the benches outside the shops look out at the Plaza, not at the glass (%d benches)" % shop_benches])
+	# Session 65: no palm stands in a road or path (buggies had to drive round one on C1 Link).
+	var palm_hits := []
+	for palm: Vector3 in map.get("PALM_TREES", []):
+		var spot := Vector2(palm.x, palm.z)
+		for road: Dictionary in map["ROADS"]:
+			var near := Geometry2D.get_closest_point_to_segment(spot, road["from"], road["to"])
+			if spot.distance_to(near) < float(road.get("width", 6.0)) * 0.5:
+				palm_hits.append("%s in %s" % [spot, road["name"]])
+	results.append([palm_hits.is_empty(), "no palm stands in a road or path %s" % [palm_hits]])
 	return results
 
 
