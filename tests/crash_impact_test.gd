@@ -93,6 +93,14 @@ func _run() -> void:
 	_check("a low-speed collision selects a gentle fall", bike._check_crash(1.0, wall) and bike.fall_kind == "tip" and not bike.wrecked)
 	bike._step_fall(GameConfig.CRASH_FALL_DURATIONS["tip"] + 0.1)
 	_check("minor falls return control without a clinic bill", bike.fallen_left == 0.0 and not clinic.showing and not gs.boss_paid_crash)
+	bike.speed = 3.0
+	_check("Session 52: right after getting up, a small knock doesn't knock you off again", not bike._check_crash(1.0, wall))
+	bike.speed = 0.0
+	gs.offer_order(pizza)
+	gs.accept_offer()
+	gs.note_crash()
+	_check("Session 52: a crash marks the order you carry (so it gets no tip)", gs.current_order != null and gs.current_order.crashed)
+	gs.reset()
 	var scrape_hit := CrashImpact.capture(Vector3(0, 0, -8), Vector3(1, 0, 0.5).normalized(), wall)
 	bike._begin_fall(scrape_hit)
 	_check("an oblique impact selects the sideways skid", bike.fall_kind == "skid")

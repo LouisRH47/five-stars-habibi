@@ -31,6 +31,8 @@ func _ready() -> void:
 func _finish_static_world() -> void:
 	# AmbientMotion and deferred shop setup must bind their live nodes first.
 	await get_tree().process_frame
+	# Session 52: stop flicker where two boxes share a face, before they're merged.
+	set_meta("zfight_fixed", ZFightFix.apply(get_parent()))
 	var report := StaticBatch.bake(get_parent(), 48.0)
 	set_meta("static_batch_report", report)
 	print("STATIC_BATCH: ", JSON.stringify(report))
@@ -202,22 +204,28 @@ func _school_details() -> void:
 
 
 func _institute_steps() -> void:
+	# Session 52: built in the institute's own directions, so the stepped seats sit in front
+	# of its glass front (facing the spine) and the small car park is behind it.
 	var institution: Dictionary = _map["INSTITUTE"]
-	var c: Vector3 = institution["position"]
+	var size: Vector3 = institution["size"]
 	var steps := Node3D.new()
 	steps.name = "InstituteSeating"
+	steps.position = institution["position"]
+	steps.rotation.y = deg_to_rad(institution.get("facing", 0.0))
 	add_child(steps)
+	var front := size.z * 0.5
 	# Seating leaves the central doorway and its level access clear.
 	for side in [-1.0, 1.0]:
 		for level in 4:
-			LowPoly.box(steps, Vector3(26, 0.35 * (level + 1), 1.4), WHITE, c + Vector3(side * 25, 0.175 * (level + 1), 23 + level * 1.4))
+			LowPoly.box(steps, Vector3(16, 0.35 * (level + 1), 1.4), WHITE,
+					Vector3(side * 11, 0.175 * (level + 1), front + 0.7 + level * 1.4))
 		var visitor := PeopleLooks.teacher()
-		visitor.position = c + Vector3(side * 24, 0.7 - visitor.spot("Hips").y, 25)
+		visitor.position = Vector3(side * 10, 0.7 - visitor.spot("Hips").y, front + 2.8)
 		visitor.rotation.y = PI
 		steps.add_child(visitor)
 		visitor.play("sit")
-	for x in [-248.0, -238.0, -228.0]:
-		LowPoly.box(steps, Vector3(7, 0.03, 4), GLASS.darkened(0.5), Vector3(x, 0.04, -61))
+	for x in [-10.0, 0.0, 10.0]:
+		LowPoly.box(steps, Vector3(7, 0.03, 4), GLASS.darkened(0.5), Vector3(x, 0.04, -front - 6.0))
 
 
 func _hill(spec: Dictionary) -> void:

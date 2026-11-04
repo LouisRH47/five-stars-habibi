@@ -91,6 +91,7 @@ var _wobble_time := 0.0      # seconds of riding with a heavy load (for the wobb
 var _extra_bag: Node3D       # the second bag, on the handlebars (big family orders)
 var _braking := false        # true while a brake key is held (so a long press counts once)
 var _bump_cooldown := 0.0
+var _crash_grace := 0.0  # Session 52: no new fall right after getting back up
 var _start_transform: Transform3D
 var _hop_active := false     # true while the bike is going over a speed bump
 var _hop_dist := 0.0         # metres ridden since the bike touched the bump
@@ -139,6 +140,7 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	boost_cooldown_left = maxf(boost_cooldown_left - delta, 0.0)
 	_boost_left = maxf(_boost_left - delta, 0.0)
+	_crash_grace = maxf(_crash_grace - delta, 0.0)
 	if _flames != null:
 		_flames.visible = boost_active
 		_flames.scale = Vector3.ONE * (0.9 + sin(Time.get_ticks_msec() * 0.04) * 0.1)
@@ -176,6 +178,7 @@ func reset_to_start() -> void:
 	speed = 0.0
 	fallen_left = 0.0
 	wrecked = false
+	_crash_grace = 0.0
 	if parked:
 		set_parked(false)
 	_model.rotation.z = 0.0
@@ -465,6 +468,9 @@ func _check_crash(head_on: float, thing: Object, incoming := Vector3.ZERO,
 	var impact := CrashImpact.capture(incoming, normal, thing, other_velocity, boost_active)
 	if not impact["crash"]:
 		return false
+	# Just got back up: small knocks don't make you fall again (a big hit still does).
+	if _crash_grace > 0.0 and not impact["big"]:
+		return false
 	last_crash = impact.duplicate(true)
 	bumped.emit(clampf(float(impact["score"]) / GameConfig.CRASH_CRITICAL_SCORE, 0.0, 1.0))
 	_begin_fall(impact)
@@ -555,7 +561,20 @@ func _step_fall(delta: float) -> void:
 			_model.position = Vector3.ZERO
 			_model.rotation = Vector3.ZERO
 			_bump_cooldown = GameConfig.BUMP_COOLDOWN
+			_step_back_after_fall()
 		fall_completed.emit(_fall_big, last_crash.duplicate(true))
+
+
+## Session 52: after a small fall, move the bike a little away from what it hit and give a
+## short grace time, so you don't fall straight off again (the old "crash loop").
+func _step_back_after_fall() -> void:
+	_crash_grace = GameConfig.CRASH_GRACE_TIME
+	var away: Vector3 = last_crash.get("normal", Vector3.ZERO)
+	away.y = 0.0
+	if away.length_squared() < 0.0001 or not is_inside_tree():
+		return
+	move_and_collide(away.normalized() * GameConfig.CRASH_PUSH_BACK)
+	_safe_transform = global_transform
 
 
 func _restore_rider() -> void:

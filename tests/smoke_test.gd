@@ -1452,7 +1452,8 @@ func _check_session28() -> void:
 		Settings.apply()  # applies straight away, without saving the settings file
 		cycle.apply_hour(12.5)
 		seen[level] = {"ssao": env.ssao_enabled, "haze": env.fog_enabled, "glow": env.glow_enabled,
-				"shimmer": cycle.get_node_or_null("HeatShimmer") != null, "shadows": sun.directional_shadow_max_distance}
+				"shimmer": cycle.get_node_or_null("HeatShimmer") != null, "shadows": sun.directional_shadow_max_distance,
+				"msaa": get_root().msaa_3d, "fxaa": get_root().screen_space_aa, "splits": sun.directional_shadow_mode}
 	_check("Low: no SSAO, haze or shimmer",
 			not seen[0]["ssao"] and not seen[0]["haze"] and not seen[0]["shimmer"], str(seen[0]))
 	_check("Medium: SSAO, haze and glow on, shimmer removed",
@@ -1460,6 +1461,13 @@ func _check_session28() -> void:
 	_check("High: visual effects on without heat shimmer", seen[2]["ssao"] and seen[2]["haze"] and not seen[2]["shimmer"], str(seen[2]))
 	_check("shadows reach further on higher settings",
 			seen[0]["shadows"] < seen[1]["shadows"] and seen[1]["shadows"] < seen[2]["shadows"], "")
+	_check("Session 52: Low uses FXAA, Medium and High use MSAA 4x",
+			seen[0]["fxaa"] == Viewport.SCREEN_SPACE_AA_FXAA and seen[1]["msaa"] == Viewport.MSAA_4X
+			and seen[2]["msaa"] == Viewport.MSAA_4X, "")
+	_check("Session 52: 4 shadow cascades on Medium and High",
+			seen[1]["splits"] == DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
+			and seen[2]["splits"] == DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS, "")
+	_check("Session 52: a graphics level is picked on first start", Settings.detect_graphics() in [0, 1, 2], "")
 	cycle.apply_hour(8.0)
 	_check("no heat shimmer in the morning", cycle.get_node_or_null("HeatShimmer") == null, "")
 	Settings.graphics = before

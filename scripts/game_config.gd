@@ -175,7 +175,9 @@ const CRASH_HEAD_ON := 0.6
 const CRASH_SMALL_KMH := 10.0         # hitting anything at this speed or more: you fall off
 const CRASH_BIG_KMH := 20.0           # hitting a car, wall or pole faster than this: clinic (PRD)
 const CRASH_FALLEN_TIME := 2.0        # seconds on the ground after a small crash
-const CRASH_SMALL_DAMAGE := 30.0      # % off the damage meter for a small crash
+const CRASH_SMALL_DAMAGE := 40.0      # % off the damage meter for a small crash (was 30, Session 52)
+const CRASH_GRACE_TIME := 2.0         # seconds after getting back up when you can't fall off again
+const CRASH_PUSH_BACK := 0.8          # metres the bike is moved away from what you hit, after a small fall
 const HOSPITAL_BILL := 150            # Dh, big crash on the bicycle (PRD)
 const REPAIR_BILL := 80               # Dh
 const INSURED_CRASH_COST := 20        # Dh, all you pay for a big crash with insurance
@@ -252,6 +254,11 @@ const SHIMMER_FULL := 55.0         # metres: full shimmer from here on
 const SHIMMER_AMOUNT := 0.0018     # how far the picture wobbles (part of the screen width)
 # The Graphics setting (0 Low, 1 Medium, 2 High): how far away shadows are still drawn (metres).
 const SHADOW_DISTANCE := [60.0, 150.0, 260.0]
+# Session 52: the sun turns in steps this long (in game hours), so shadows don't shimmer.
+const SUN_STEP_HOURS := 2.0 / 60.0
+const SHADOW_MAP_SIZE := [2048, 4096, 8192]  # sun shadow map size on Low, Medium, High (Session 52)
+const CAMERA_NEAR := 0.1              # metres: a little further than Godot's 0.05 stops far-off flicker
+const CAMERA_FAR := 1500.0            # metres: the whole map fits, nothing past it is drawn
 # --- Houses (Session 26) ---
 const HOUSE_STOREY := 2.6             # metres per floor (homes have 2 floors)
 const HOUSE_PARAPET := 0.5            # the low wall round the roof terrace

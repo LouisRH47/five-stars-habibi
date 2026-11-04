@@ -32,6 +32,9 @@ static func load_once() -> void:
 		graphics = clampi(file.get_value("video", "graphics", graphics), 0, GRAPHICS_NAMES.size() - 1)
 		for bus in BUSES:
 			volumes[bus] = clampf(file.get_value("audio", bus, volumes[bus]), 0.0, 1.0)
+	else:
+		# First start (Session 52): pick Low, Medium or High for this computer.
+		graphics = detect_graphics()
 	if OS.has_feature("web"):
 		fullscreen = false
 	apply()
@@ -48,6 +51,34 @@ static func save() -> void:
 	apply()
 
 
+## Guesses the best Graphics setting for this computer (Session 52). Settings can change it.
+## Browser and phones/tablets: Low. Apple M-series Macs and computers with their own
+## graphics card: High. Everything else: Medium. The headless tests always get Medium.
+static func detect_graphics() -> int:
+	if OS.has_feature("web") or OS.has_feature("mobile"):
+		return 0
+	if DisplayServer.get_name() == "headless":
+		return 1
+	var adapter := RenderingServer.get_video_adapter_name().to_lower()
+	var kind := RenderingServer.get_video_adapter_type()
+	if kind == RenderingDevice.DEVICE_TYPE_CPU:
+		return 0
+	if kind == RenderingDevice.DEVICE_TYPE_DISCRETE_GPU or adapter.contains("apple m"):
+		return 2
+	return 1
+
+
+## Smooths the jagged edges for the Graphics setting (Session 52): Low uses FXAA (cheap),
+## Medium MSAA 4x, High MSAA 4x plus TAA. TAA only works on the desktop renderer.
+static func apply_anti_aliasing(viewport: Viewport) -> void:
+	if viewport == null:
+		return
+	var desktop := not OS.has_feature("web")
+	viewport.msaa_3d = Viewport.MSAA_4X if graphics >= 1 else Viewport.MSAA_DISABLED
+	viewport.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA if graphics == 0 else Viewport.SCREEN_SPACE_AA_DISABLED
+	viewport.use_taa = graphics == 2 and desktop
+
+
 static func apply() -> void:
 	for bus in BUSES:
 		var index := AudioServer.get_bus_index(bus)
@@ -57,6 +88,7 @@ static func apply() -> void:
 	# Tell the map that's running (if any) to switch its graphics extras straight away.
 	var tree := Engine.get_main_loop() as SceneTree
 	if tree != null:
+		apply_anti_aliasing(tree.root)
 		tree.call_group("graphics", "apply_graphics")
 	if DisplayServer.get_name() == "headless":
 		return  # no window in the smoke test

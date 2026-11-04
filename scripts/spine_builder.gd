@@ -49,10 +49,16 @@ func _build_dome(spot: Vector3, radius: float) -> StaticBody3D:
 	add_child(body)
 	LowPoly.cylinder(body, radius, radius, 0.5, DOME_RIB, Vector3(0, 0.25, 0))
 	LowPoly.sphere(body, radius, radius * 1.5, DOME, Vector3(0, 0.5, 0))
+	# Session 52: the ribs are thin slices of a slightly bigger dome, so they follow its
+	# curve instead of sticking out as flat boards. None crosses the door (at +Z).
 	for i in 3:
-		var rib := LowPoly.box(body, Vector3(0.08, radius * 0.78, radius * 2.0 + 0.1), DOME_RIB, Vector3(0, 0.5, 0))
-		rib.rotation.y = PI * i / 3.0
-	LowPoly.box(body, Vector3(1.2, 2.0, 0.3), Color(0.3, 0.45, 0.35, 1), Vector3(0, 1.0, radius + 0.08))
+		var rib := LowPoly.sphere(body, radius + 0.04, (radius + 0.04) * 1.5, DOME_RIB, Vector3(0, 0.5, 0))
+		rib.scale.x = 0.08 / (radius * 2.0)
+		rib.rotation.y = PI / 6.0 + PI * i / 3.0
+	# The door sits in a small porch that pokes out of the dome, so nothing cuts through it.
+	var door_z := radius + 0.15
+	LowPoly.box(body, Vector3(1.8, 2.5, 1.0), DOME_RIB, Vector3(0, 1.25, door_z - 0.45))
+	LowPoly.box(body, Vector3(1.2, 2.0, 0.1), Color(0.3, 0.45, 0.35, 1), Vector3(0, 1.0, door_z + 0.1))
 	LowPoly.solid_cylinder(body, radius, 3.0, Vector3(0, 1.5, 0))
 	return body
 

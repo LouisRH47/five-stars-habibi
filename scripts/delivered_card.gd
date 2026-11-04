@@ -115,6 +115,8 @@ func _on_delivered(_order: Order) -> void:
 		_row("5-star tip", "+%d Dh" % job["tip"], GREEN)
 	if job.get("collection_bonus", 0) > 0:
 		_row("Stamp card bonus", "+%d Dh" % job["collection_bonus"], GREEN)
+	if job.get("crashed", false) and job["stars"] >= 5.0:
+		_row("Crashed on the way", "no tip", SOFT)
 	if job["insurance"] > 0:
 		_row("Insurance", "-%d Dh" % job["insurance"], SOFT)
 	_earned.text = "%d Dh" % earned

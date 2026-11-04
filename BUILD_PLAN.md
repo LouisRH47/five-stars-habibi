@@ -1163,8 +1163,8 @@ Done when:
 
 - [ ] Full screen looks sharp on Louis's Mac, with no jagged edges
 - [ ] Roads, paths and the dome doors don't flicker
-- [ ] The C Institute's glass and seats face the spine, with windows on both sides
-- [ ] The careless bot earns clearly less than the careful one and never gets stuck in a crash loop
+- [x] The C Institute's glass and seats face the spine, with windows on both sides
+- [x] The careless bot earns clearly less than the careful one and never gets stuck in a crash loop
 
 ### Session 53: The free asset kits
 

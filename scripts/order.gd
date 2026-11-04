@@ -13,6 +13,7 @@ var pay := 0               # Dh you get for delivering it
 var note := ""             # a short note from the customer, usually empty
 var leave_at_door := false # nobody comes out: leave the bag on the doorstep (Session 11)
 var boring := false        # a boring order (you skipped too many): lowest pay, no tip
+var crashed := false       # you fell off while carrying it (Session 52): no tip
 # Session 32: special orders, regulars, school and stables orders.
 var base_pay := 0          # the pay before the special order's extra (pay - base_pay = the extra)
 var special := ""          # "", "rush", "fragile", "neighbour" or "family" (GameConfig.SPECIAL_KINDS)

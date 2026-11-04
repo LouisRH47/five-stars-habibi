@@ -24,6 +24,8 @@ func _ready() -> void:
 	# The camera moves every frame in _process, so it shouldn't be smoothed again by physics.
 	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	base_fov = fov
+	near = GameConfig.CAMERA_NEAR
+	far = GameConfig.CAMERA_FAR
 	_camera_shape.radius = GameConfig.CAMERA_COLLISION_RADIUS
 	_camera_query.shape = _camera_shape
 	_camera_query.margin = GameConfig.CAMERA_COLLISION_MARGIN

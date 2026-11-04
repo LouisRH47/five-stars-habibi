@@ -7,6 +7,36 @@ graphics, no flicker, smaller and fuller interiors from free CC0 kits for every 
 a real gym, the C Institute facing the spine with glass on both sides, more detail in the
 Plaza, streets and spine, and fixes for a crash loop and crashes costing too little.
 
+## Session 52 — Sharper graphics, no flicker, C Institute, crash fixes (4 November 2026)
+
+What works:
+- **Sharper full screen.** Anti-aliasing (smooths jagged edges) on every level: Low uses FXAA,
+  Medium MSAA 4x, High MSAA 4x + TAA. 4 shadow cascades and a bigger shadow map on Medium and
+  High. The sun turns in small steps, so shadows don't shimmer. Signs and 3D text are drawn at
+  double resolution, so they stay crisp.
+- **Graphics level picked for you.** On the very first start the game looks at the computer
+  (Apple M chips and gaming cards get High, laptops Medium, browser and phones Low). Settings
+  can still change it.
+- **No more flicker.** A new script, scripts/zfight_fix.gd, finds boxes whose faces sit exactly on
+  top of each other with different colours (speed bump stripes, gate pillars, roofs, Plaza floors,
+  the mosque) and grows the smaller one by 6 mm while the map loads. tests/coplanar_test.gd checks
+  the whole map: 0 overlapping faces left (126 fixed). The camera's near/far planes are now
+  0.1 m / 1500 m (GameConfig.CAMERA_NEAR / CAMERA_FAR).
+- **Domes.** The rib boards no longer stick out of the dome; each dome has a proper porch and door.
+- **C Institute** turned to face the spine (east), with the stepped seats and a teacher in front,
+  glass on both long sides, a small car park behind and a new "Institute Door" road.
+- **Crash loop fixed.** After a small fall the bike is moved 0.8 m away from what you hit, and for
+  2 seconds small knocks can't knock you off again (a big hit still counts).
+- **Crashes cost more.** Food damage per small crash is 40% (was 30%), and an order you crash with
+  gets no tip (the Delivered card says "Crashed on the way · no tip").
+- Play-test bot: careful 128 Dh with 0 crashes; careless 97 Dh with 4 crashes. No crash loops.
+
+Known gaps:
+- Standing people don't step aside yet; the push-back and grace time already stop the loop.
+- Full-screen sharpness must be checked on Louis's Mac (the cloud has no real graphics card).
+
+Next: Session 53, the free CC0 asset kits.
+
 ## Plan review fixes — 4 November 2026
 
 A check of the plan against the code found two bugs that were still there, now fixed:

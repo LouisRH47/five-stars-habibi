@@ -67,7 +67,10 @@ const ROADS := [
 	{"name": "South Spine Link", "from": Vector2(-145, 35), "to": Vector2(425, 35), "width": 6.0},
 	{"name": "School Road", "from": Vector2(-425, 20), "to": Vector2(-145, 20), "width": 8.0},
 	{"name": "School Link", "from": Vector2(-350, 0), "to": Vector2(-350, 20), "width": 6.0},
-	{"name": "Institute Access", "from": Vector2(-210, 0), "to": Vector2(-210, -6), "width": 5.0},
+	# Session 52: the C Institute faces the spine (east), so its path comes up from School Road
+	# along the front and turns in at the door.
+	{"name": "Institute Access", "from": Vector2(-186, 20), "to": Vector2(-186, -33), "width": 5.0},
+	{"name": "Institute Door", "from": Vector2(-186, -33), "to": Vector2(-197, -33), "width": 5.0},
 	{"name": "Stables Road", "from": Vector2(-320, 195), "to": Vector2(-160, 195), "width": 6.0},
 	{"name": "Stables Link", "from": Vector2(-160, 20), "to": Vector2(-160, 205), "width": 6.0},
 	{"name": "C1 Lane", "from": Vector2(-12, -205), "to": Vector2(-12, -47), "width": 6.0},
@@ -306,7 +309,7 @@ const MOSQUE := {"name": "Wahat Al Shams Mosque", "arabic": "مسجد واحة �
 
 const BUS_STATION := {"position": Vector3(-310, 0, -174), "area": Rect2(-336, -202, 52, 52), "name": "Wahat Bus Station", "arabic": "محطة حافلات الواحة"}
 
-const INSTITUTE := {"position": Vector3(-215, 0, -33), "size": Vector3(100, 16, 42), "facing": 0.0, "name": "C Institute", "arabic": "معهد سي"}
+const INSTITUTE := {"position": Vector3(-215, 0, -33), "size": Vector3(46, 14, 36), "facing": 90.0, "name": "C Institute", "arabic": "معهد سي"}
 
 const GYM := {"position": Vector3(115, 0, 22), "size": Vector3(36, 8, 22), "facing": 180.0, "name": "Wahat Gym", "arabic": "نادي الواحة الرياضي"}
 
@@ -856,7 +859,7 @@ const VILLAS := [
 	{"number": 600, "house": 100, "cluster": "C5", "address": "Villa 100, Cluster 5", "map_address": "C5 · Villa 100", "kind": "signature", "row": "C5_R4", "row_mode": true, "position": Vector3(352, 0, 177.5), "facing": 90.0, "size": Vector3(9, 8.5, 8), "approach": Vector3(360, 0, 177.5)},
 	{"number": 901, "house": 0, "cluster": "", "address": "Fair Grade School · Gate", "map_address": "School Gate", "kind": "spot", "look": "booth", "position": Vector3(-365, 0, 32), "facing": 180.0, "size": Vector3(4, 3, 4), "who": "teacher"},
 	{"number": 902, "house": 0, "cluster": "", "address": "Wahat Stables · Office", "map_address": "Stables Office", "kind": "spot", "position": Vector3(-224, 0, 190), "facing": 0.0, "size": Vector3(7, 4, 6), "who": "groom"},
-	{"number": 903, "house": 0, "cluster": "", "address": "C Institute · Reception", "map_address": "C Institute", "kind": "spot", "position": Vector3(-215, 0, -33), "facing": 0.0, "size": Vector3(100, 16, 42), "interior": true, "who": "staff"},
+	{"number": 903, "house": 0, "cluster": "", "address": "C Institute · Reception", "map_address": "C Institute", "kind": "spot", "position": Vector3(-215, 0, -33), "facing": 90.0, "size": Vector3(46, 14, 36), "interior": true, "who": "staff"},
 	{"number": 904, "house": 0, "cluster": "", "address": "Wahat Gym · Reception", "map_address": "Gym", "kind": "spot", "position": Vector3(115, 0, 22), "facing": 180.0, "size": Vector3(36, 8, 22), "interior": true, "who": "gym_goer"},
 ]
 

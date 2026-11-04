@@ -277,7 +277,7 @@ func deliver() -> bool:
 		regular_visits[done.regular_id] = int(regular_visits.get(done.regular_id, 0)) + 1
 	# Tips only on 5-star jobs, and not every time. Boring orders never tip (PRD).
 	var tip := 0
-	if stars >= 5.0 and not done.boring and randf() < tip_chance(done):
+	if stars >= 5.0 and not done.boring and not done.crashed and randf() < tip_chance(done):
 		tip = randi_range(GameConfig.TIP_MIN, GameConfig.TIP_MAX)
 	var goals_before := goals_done()
 	var earned_xp := GameConfig.XP_PER_DELIVERY + roundi(GameConfig.XP_PER_STAR * stars)
@@ -298,6 +298,7 @@ func deliver() -> bool:
 		"stars": stars,
 		"xp": earned_xp,
 		"left_at_door": done.leave_at_door,
+		"crashed": done.crashed,
 		"insurance": insurance,
 		"cancelled": false,
 		# Session 32: special orders, regulars, school lunch orders and clusters (for the goals).
@@ -358,6 +359,9 @@ func send_to_neighbour(number: int, address: String, cluster: String, compact_ad
 ## You crashed (small or big). "No crashes" goal (Session 32). The ShiftManager calls this.
 func note_crash() -> void:
 	shift_crashes += 1
+	# Session 52: a crash with food on board costs that order its tip.
+	if current_order != null:
+		current_order.crashed = true
 	streak = 0
 	stats_changed.emit()
 
