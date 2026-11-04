@@ -17,6 +17,14 @@ static var fullscreen := false
 ## 0 Low (browser default), 1 Medium (desktop default), 2 High. scripts/sun_cycle.gd does what each one means.
 static var graphics := 0 if OS.has_feature("web") else 1
 static var volumes := {"Master": 0.8, "Music": 0.6, "Effects": 0.8, "Ambience": 0.5}
+## Session 66 (polish pass): accessibility settings, saved in the "access" section.
+## Text size makes every screen bigger (the window's content scale). Session 71 shows them in Settings.
+const TEXT_SCALES := [1.0, 1.15, 1.3]
+static var text_size := 0            # 0 = 100%, 1 = 115%, 2 = 130%
+static var colour_assist := false    # meter colours that work for colour-blind players (UiPalette.band_colour)
+static var reduce_motion := false    # "Less motion": no shakes, quicker pops (UiJuice)
+static var minimap_north_up := false # the mini-map keeps north up instead of turning with you
+static var outlines := false         # dark outlines round things (Session 67, off by default)
 static var _loaded := false
 
 
@@ -32,6 +40,11 @@ static func load_once() -> void:
 		graphics = clampi(file.get_value("video", "graphics", graphics), 0, GRAPHICS_NAMES.size() - 1)
 		for bus in BUSES:
 			volumes[bus] = clampf(file.get_value("audio", bus, volumes[bus]), 0.0, 1.0)
+		text_size = clampi(int(file.get_value("access", "text_size", text_size)), 0, TEXT_SCALES.size() - 1)
+		colour_assist = bool(file.get_value("access", "colour_assist", colour_assist))
+		reduce_motion = bool(file.get_value("access", "reduce_motion", reduce_motion))
+		minimap_north_up = bool(file.get_value("access", "minimap_north_up", minimap_north_up))
+		outlines = bool(file.get_value("access", "outlines", outlines))
 	else:
 		# First start (Session 52): pick Low, Medium or High for this computer.
 		graphics = detect_graphics()
@@ -47,6 +60,11 @@ static func save() -> void:
 	file.set_value("video", "graphics", graphics)
 	for bus in BUSES:
 		file.set_value("audio", bus, volumes[bus])
+	file.set_value("access", "text_size", text_size)
+	file.set_value("access", "colour_assist", colour_assist)
+	file.set_value("access", "reduce_motion", reduce_motion)
+	file.set_value("access", "minimap_north_up", minimap_north_up)
+	file.set_value("access", "outlines", outlines)
 	file.save(PATH)
 	apply()
 
@@ -92,9 +110,22 @@ static func apply() -> void:
 		tree.call_group("graphics", "apply_graphics")
 	if DisplayServer.get_name() == "headless":
 		return  # no window in the smoke test
+	if tree != null:
+		apply_text_size(tree.root)
 	var mode := DisplayServer.WINDOW_MODE_FULLSCREEN if fullscreen else DisplayServer.WINDOW_MODE_WINDOWED
 	if DisplayServer.window_get_mode() != mode:
 		DisplayServer.window_set_mode(mode)
+
+
+## Text size (Session 66): 100%, 115% or 130% of the normal size, as the window's content scale.
+## The game window is 1920x1080 "canvas_items", so this makes all text and screens bigger together.
+static func text_scale() -> float:
+	return TEXT_SCALES[clampi(text_size, 0, TEXT_SCALES.size() - 1)]
+
+
+static func apply_text_size(window: Window) -> void:
+	if window != null:
+		window.content_scale_factor = text_scale()
 
 
 ## False in the headless smoke test: there are no speakers, and sounds still playing when

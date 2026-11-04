@@ -665,3 +665,20 @@ const SUSHI_BELT_SPEED := 0.3        # Session 59: the sushi plates go round at 
 # --- Session 64 fix: buggies meeting in a dead-end lane ---
 const BUGGY_DEAD_END_GIVE_WAY := true # false: a buggy coming out of a dead end turns round too (and drives back in)
 const BUGGY_DEAD_END_WAIT := 15.0     # most seconds a buggy coming out of a dead end waits for one coming in to turn round
+
+# --- Session 66: polish groundwork ---
+# Every polish-pass extra can be switched off here (false = the old look). Sessions 67 to 71
+# add their own numbers in their own sections below.
+const POLISH_HOOKS_ON := true
+const HUD_TOP_CHIPS := true      # Session 69 chips at the top left; the phone hides its money and stars
+const SKY_STYLIZED := true       # Session 67
+const LOOK_LUT := "golden"       # Session 67: "golden", "fresh" or "neutral" (= off)
+const VIGNETTE_STRENGTH := 0.22  # Session 67: 0 = off
+const MARKER_V2 := true          # Session 68
+const WATER_V2 := true           # Session 68
+const ROAD_DECALS := true        # Session 68
+const VFX_AMBIENT := true        # Session 68
+const PHONE_V2 := true           # Session 70
+const MINIMAP_V2 := true         # Session 70
+const CARD_V2 := true            # Session 71
+const START_DIORAMA := true      # Session 71
