@@ -57,7 +57,7 @@ Six tiers, each one with a new vehicle, new areas and better pay. Pay numbers ar
 **Getting sent down**
 
 - **Bad ratings:** if your rating (the average of your last 50 deliveries, same number everywhere) drops below your tier's minimum, you get a warning. Still below after 10 more deliveries means you go down a tier.
-- **Crashing a lot:** 3 big crashes within 5 shifts sends you down a tier, and you have to retake that tier's test (100 Dh retake).
+- **Crashing a lot:** 3 big crashes within 7 shifts (a "week") sends you down a tier, and you have to retake that tier's test (100 Dh retake).
 - **Climbing back:** meet the requirements again and you go straight back up. No new test unless crashes were the reason you went down.
 
 ## Start of the game
@@ -517,7 +517,7 @@ Build it in milestones and play-test at the end of each one. Only move on when t
 7. **Start screen and polish:** application form and the 3 presets, menu, saving, sounds and music, then the polish pass (hold E, get off the bike, screens like the mockup).
 8. **Graphics pass:** the Wahat Al Shams community, the house kit, light and weather, animated people, the real bike, juice, life on the map, special orders, goals and events.
 9. **Detail pass:** real-size Wahat Al Shams with joined rows of homes, walk-in restaurants, Fair Grade School, the C Institute, gym and pools, horse tracks, textures, the bike shop and the clothes shop.
-10. **Reasons to come back:** streaks, choosing orders, tomorrow's special, collections, then itch.io.
+10. **Reasons to come back:** streaks, choosing orders, tomorrow's special, collections, then release on itch.io and the browser site.
 11. **Motorbike test:** yard course, instructor, theory quiz, fail and retake rules.
 12. **Tier 2 and beyond:** motorbike, Old Town, then the next tiers one by one.
 
@@ -530,8 +530,6 @@ Build it in milestones and play-test at the end of each one. Only move on when t
 - Pay for the new foods, special orders and goal bonuses: starting ideas are in the PRD, tune them after the graphics pass play-test
 - Upgrade prices and how much a shift pays at real size and 8 minutes: tune in the detail pass play-test
 - What goes on the building sites later (a sixth cluster, a hotel, something else)
-- Where the finished game goes in Session 51: itch.io (the plan) or the browser site fivestarshabibi.middleleap.com (built 3 Nov), or both
-- Crashes "this week": the code counts 7 shifts as a week (CRASH_WEEK_SHIFTS); the career ladder above says 3 big crashes within 5 shifts. Pick one
 
 ## Decisions log
 
@@ -601,6 +599,7 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 3 Nov 2026 | Browser distribution requested by Michael: publish the current game at fivestarshabibi.middleleap.com for Louis to test on MacBook and potentially iPad, with GitHub deployment and releases. Keep desktop Forward+; use Compatibility/Low for web and add landscape touch controls. Browser saves stay on each device. |
 | 4 Nov 2026 | Review fixes: R puts the bike on the nearest road, not back at the start (that was a free ride back to the shops). Quitting halfway through a shift and opening the game again plays that same shift again; only a finished shift counts towards "this week". Your accept / skip choices are saved, so the acceptance rate survives a restart. The Gear levels line now points to the Pedal Point Bikes table (they disagreed); cakes, not bubble tea, lose the most per bump (as the code and the fragile cakes already did) |
 | 4 Nov 2026 | The old Palm Grove map is removed (scene, data, its road, sign and park builders). Wahat Al Shams is the only map; the flat test area stays for tests. Session 35 rewrites the smoke test's Wahat checks for the real-size map and keeps it under 15 minutes |
+| 4 Nov 2026 | The game is released both on itch.io (Mac and Windows downloads) and in the browser at fivestarshabibi.middleleap.com. A crash "week" is 7 shifts (as the clinic screen already counts, CRASH_WEEK_SHIFTS), not 5 |
 
 ## Sources
 
