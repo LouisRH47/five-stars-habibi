@@ -524,7 +524,7 @@ const JUMPING_ARENA := Rect2(-282, 65, 115, 88)
 
 const STABLES := {"name": "Wahat Stables", "arabic": "إسطبلات الواحة", "block": {"position": Vector3(-224, 0, 174), "size": Vector3(100, 5, 14)}, "paddock": Rect2(-280, 157, 110, 9), "horses": 4}
 
-const BUILDING_SITE := {"area": Rect2(-135, 55, 110, 135), "crane": Vector3(-80, 0, 120), "sign": {"name": "Phase 2 coming soon", "arabic": "المرحلة الثانية قريباً", "position": Vector3(-140, 0, 110), "facing": -90.0}}
+const BUILDING_SITE := {"area": Rect2(-135, 55, 110, 135), "crane": Vector3(-80, 0, 120), "sign": {"name": "Phase 2 coming soon", "arabic": "المرحلة الثانية قريباً", "position": Vector3(-140, 0, 110), "facing": -90.0}, "work_area": Rect2(-133, 140, 106, 48)}
 
 const BUILDING_SITES := [
 	Rect2(-135, 55, 110, 135),
@@ -1845,13 +1845,30 @@ const SCOOTER_KIDS := [
 	{"from": Vector3(288, 0, 197), "to": Vector3(318, 0, 197), "shirt": Color(0.2, 0.7, 0.8, 1)},
 ]
 
-const BUGGIES := [
+const BUGGY_FIXED_ROUTES := [
 	{"points": [Vector3(-12, 0, -126), Vector3(108, 0, -126), Vector3(108, 0, -185)], "colour": Color(0.85, 0.85, 0.76, 1), "level": 0},
 	{"points": [Vector3(143, 0, -126), Vector3(263, 0, -126), Vector3(263, 0, -185)], "colour": Color(0.85, 0.85, 0.76, 1), "level": 1},
 	{"points": [Vector3(298, 0, -126), Vector3(388, 0, -126), Vector3(388, 0, -185)], "colour": Color(0.85, 0.85, 0.76, 1), "level": 2},
 	{"points": [Vector3(13, 0, 126), Vector3(133, 0, 126), Vector3(133, 0, 185)], "colour": Color(0.85, 0.85, 0.76, 1), "level": 0},
 	{"points": [Vector3(243, 0, 126), Vector3(363, 0, 126), Vector3(363, 0, 185)], "colour": Color(0.85, 0.85, 0.76, 1), "level": 1},
 	{"points": [Vector3(-140, 0, -1), Vector3(410, 0, -1)], "colour": Color(0.3, 0.5, 0.5, 1), "level": 1},
+]
+
+const BUGGIES := [
+	{"start": Vector3(18, 0, -126), "points": [Vector3(18, 0, -126)], "colour": Color(0.96, 0.96, 0.94, 1), "level": 0, "rider": "resident"},
+	{"start": Vector3(173, 0, -126), "points": [Vector3(173, 0, -126)], "colour": Color(0.9, 0.85, 0.7, 1), "level": 0, "rider": "pair"},
+	{"start": Vector3(328, 0, -126), "points": [Vector3(328, 0, -126)], "colour": Color(0.45, 0.55, 0.38, 1), "level": 0, "rider": "gardener"},
+	{"start": Vector3(43, 0, 126), "points": [Vector3(43, 0, 126)], "colour": Color(0.3, 0.4, 0.55, 1), "level": 0, "rider": "resident"},
+	{"start": Vector3(273, 0, 126), "points": [Vector3(273, 0, 126)], "colour": Color(0.85, 0.85, 0.76, 1), "level": 0, "rider": "pair"},
+	{"start": Vector3(78, 0, -86), "points": [Vector3(78, 0, -86)], "colour": Color(0.3, 0.5, 0.5, 1), "level": 1, "rider": "gardener"},
+	{"start": Vector3(233, 0, -86), "points": [Vector3(233, 0, -86)], "colour": Color(0.96, 0.96, 0.94, 1), "level": 1, "rider": "resident"},
+	{"start": Vector3(388, 0, -86), "points": [Vector3(388, 0, -86)], "colour": Color(0.9, 0.85, 0.7, 1), "level": 1, "rider": "pair"},
+	{"start": Vector3(103, 0, 86), "points": [Vector3(103, 0, 86)], "colour": Color(0.45, 0.55, 0.38, 1), "level": 1, "rider": "gardener"},
+	{"start": Vector3(333, 0, 86), "points": [Vector3(333, 0, 86)], "colour": Color(0.3, 0.4, 0.55, 1), "level": 1, "rider": "resident"},
+	{"start": Vector3(-100, 0, 0), "points": [Vector3(-100, 0, 0)], "colour": Color(0.85, 0.85, 0.76, 1), "level": 2, "rider": "pair"},
+	{"start": Vector3(150, 0, 0), "points": [Vector3(150, 0, 0)], "colour": Color(0.3, 0.5, 0.5, 1), "level": 2, "rider": "gardener"},
+	{"start": Vector3(250, 0, 35), "points": [Vector3(250, 0, 35)], "colour": Color(0.96, 0.96, 0.94, 1), "level": 2, "rider": "resident"},
+	{"start": Vector3(0, 0, -40), "points": [Vector3(0, 0, -40)], "colour": Color(0.9, 0.85, 0.7, 1), "level": 2, "rider": "pair"},
 ]
 
 const HORSE_RIDERS := [

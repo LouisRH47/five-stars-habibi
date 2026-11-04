@@ -154,7 +154,7 @@ GYM_AT=v3(115,0,-30.1); GYM_SIZE=v3(24,6,13)   # Session 60: smaller (was 36 x 2
 put('GYM',{'position':GYM_AT,'size':GYM_SIZE,'facing':180.,'name':'Wahat Gym','arabic':'نادي الواحة الرياضي'})
 put('COMMUNITY_POOL',rect(270,-35.5,50,22.5));put('JUMPING_ARENA',rect(-282,65,115,88))
 put('STABLES',{'name':'Wahat Stables','arabic':'إسطبلات الواحة','block':{'position':v3(-224,0,174),'size':v3(100,5,14)},'paddock':rect(-280,157,110,9),'horses':4})
-put('BUILDING_SITE',{'area':rect(-135,55,110,135),'crane':v3(-80,0,120),'sign':{'name':'Phase 2 coming soon','arabic':'المرحلة الثانية قريباً','position':v3(-140,0,110),'facing':-90.}})
+put('BUILDING_SITE',{'area':rect(-135,55,110,135),'crane':v3(-80,0,120),'sign':{'name':'Phase 2 coming soon','arabic':'المرحلة الثانية قريباً','position':v3(-140,0,110),'facing':-90.},'work_area':rect(-133,140,106,48)})  # Session 64: the half-built building goes in work_area (clear of the crane, containers and sand)
 put('BUILDING_SITES',[rect(-135,55,110,135),rect(*c45_site),rect(-275,-80,105,18),rect(-301,50,15,125),rect(-413,-89,100,84)])
 put('CLUSTER_NAMES',{f'C{i}':'المجموعة '+a for i,a in enumerate('١٢٣٤٥',1)})
 put('TUTORIAL_ORDER',{'restaurant':'pizza','villa':101})
@@ -341,7 +341,16 @@ put('PARKED_CARS',[{'position':v3(c['x'],0,c['z']),'facing':c['facing'],'bay':Tr
 put('SPEED_BUMP_SIZE',v3(10,.12,.5))
 put('SPEED_BUMPS',[{'position':v3(x,0,z),'facing':90.} for z in [-205,205] for x in [-180,50,300]]+[{'position':v3(x,0,z),'facing':0.} for x in [-425,425] for z in [-80,80]])
 put('CATS',cats);put('SCOOTER_KIDS',kids)
-put('BUGGIES',[{'points':[v3(cx-60,0,cz),v3(cx+(30 if n==3 else 60),0,cz),v3(cx+(30 if n==3 else 60),0,-185 if cz<0 else 185)],'colour':colour(.85,.85,.76),'level':(n-1)%3} for n,cx,cz in clusters]+[{'points':[v3(-140,0,-1),v3(410,0,-1)],'colour':colour(.3,.5,.5),'level':1}])
+# Before Session 64: each buggy went up and down one fixed route (kept for GameConfig.BUGGIES_ROAM = false).
+put('BUGGY_FIXED_ROUTES',[{'points':[v3(cx-60,0,cz),v3(cx+(30 if n==3 else 60),0,cz),v3(cx+(30 if n==3 else 60),0,-185 if cz<0 else 185)],'colour':colour(.85,.85,.76),'level':(n-1)%3} for n,cx,cz in clusters]+[{'points':[v3(-140,0,-1),v3(410,0,-1)],'colour':colour(.3,.5,.5),'level':1}])
+# Session 64: 14 buggies that drive anywhere on the buggy road map (scripts/buggy_roads.gd).
+# 'start' is a spot on a lane (it starts at the nearest junction); 'points' keeps the old
+# shape for older checks. Low graphics shows level 0 (one per cluster), Medium adds level 1.
+# rider: 'resident' (one person), 'pair' (two) or 'gardener' (with tools in the back).
+buggy_colours=[colour(.96,.96,.94),colour(.9,.85,.7),colour(.45,.55,.38),colour(.3,.4,.55),colour(.85,.85,.76),colour(.3,.5,.5)]
+buggy_starts=[(cx-30,cz,0) for n,cx,cz in clusters]+[(cx+30,cz+(40 if cz<0 else -40),1) for n,cx,cz in clusters]+[(-100,0,2),(150,0,2),(250,35,2),(0,-40,2)]
+riders=['resident','pair','gardener']
+put('BUGGIES',[{'start':v3(x,0,z),'points':[v3(x,0,z)],'colour':buggy_colours[i%len(buggy_colours)],'level':level,'rider':riders[i%3]} for i,(x,z,level) in enumerate(buggy_starts)])
 put('HORSE_RIDERS',[{'points':[v3(-450,0,-230),v3(450,0,-230),v3(450,0,230),v3(-450,0,230)],'loop':True,'colour':colour(.45,.28,.15),'coat':'brown','level':0,'collection_id':'horse_sultan','collection_name':'Sultan'},{'points':[v3(450,0,230),v3(-450,0,230),v3(-450,0,-230),v3(450,0,-230)],'loop':True,'colour':colour(.62,.61,.6),'coat':'grey','level':1,'collection_id':'horse_noor','collection_name':'Noor'}])
 put('PEOPLE_ROUTES',[{'points':[v3(-438,0,-218),v3(438,0,-218),v3(438,0,218),v3(-438,0,218)],'loop':True,'jog':True,'look':2,'level':0}]+[{'points':[v3(-180,0,z),v3(352,0,z)],'jog':False,'look':i,'level':i%3} for i,z in enumerate([-6.0,-7.6,-6.9])])  # Session 63: walkers on the red walking track
 put('GARDENERS',gardeners);put('PLAY_KIDS',plays)

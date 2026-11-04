@@ -617,3 +617,23 @@ const SPINE_FREE_CORNER := Rect2(376, -37, 39, 34)   # kept free for a future ca
 const SPINE_BUGGY_ROAD_TINT := Color(1.35, 1.35, 1.32)   # the buggy road's asphalt, lighter than the car roads
 const FARM_CROP_SCALE := 1.3         # crop models a little bigger than the pack, so you can see the melons from the path
 const SPINE_DOME_BED := 1.6           # the flower bed hugging each dome is this wide (metres)
+
+# --- Session 64: buggies everywhere and building sites ---
+const BUGGIES_ROAM := true            # buggies drive anywhere on the buggy road map; false = the old fixed routes (BUGGY_FIXED_ROUTES)
+const BUGGY_SPEED_KMH := Vector2(10.0, 14.0)  # each buggy cruises somewhere between these
+const BUGGY_KEEP_RIGHT := 1.5         # metres right of the lane middle (less on narrow paths)
+const BUGGY_HALF_WIDTH := 0.6         # half a buggy's width (Appendix H: 1.2 m wide)
+const BUGGY_POST_CLEARANCE := 1.15    # a buggy's middle stays this far from a bollard's middle
+const BUGGY_BLACK_ROAD_GAP := 6.0     # buggies stay this far from the black car roads (never on or along them)
+const BUGGY_MIN_ROAD_WIDTH := 3.0     # thinner paths are for walking only...
+const BUGGY_LANE_MIN_WIDTH := 1.4     # ...except buggy lanes (a name with "Buggy"), e.g. the car park buggy lanes
+const BUGGY_NO_GO_WORDS := ["walk", "track", "domes path", "door", "horse", "bridle", "jog"]  # paths with these in the name aren't for buggies
+const BUGGY_LOOK_AHEAD := 3.0         # metres in front it looks for people (stops about 4 m before the rider)
+const BUGGY_CORNER_SLOW := 0.45       # share of its speed left in the tightest corners
+const BUGGY_CORNER_ROUND := 2.0       # corners are cut this far, so turns are smooth
+const BUGGY_STOP_TIME := Vector2(2.0, 6.0)  # seconds it waits when it gets where it was going
+const SITE_HALF_BUILT := true         # building sites get a half-built building (false = only the old crane, cabin and sand)
+const SITE_FLOOR_HEIGHT := 3.2        # metres per floor of the half-built building
+const SITE_SCAFFOLD_LIFT := 2.0       # scaffolding: a board level every 2 m
+const SITE_SCAFFOLD_BAY := 2.0        # scaffolding: a pole every 2 m along the wall
+const SITE_WORKERS := 3               # workers in hi-vis per building site
