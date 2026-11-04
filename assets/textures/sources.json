@@ -26,5 +26,35 @@
     "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/pavement_02/pavement_02_diff_1k.jpg",
     "license": "CC0-1.0",
     "sha256": "791d39aadbd48b483468d2ed68d21efce5be197c1d91cf7f3fad7e561c8e7675"
+  },
+  {
+    "file": "stylized/grass.png",
+    "source": "made by tools/make_textures.py (Session 55)",
+    "license": "CC0-1.0",
+    "sha256": "548aca827985156104640c0a2812640e8c52ae68d6f58b1f3ff09aa28676012f"
+  },
+  {
+    "file": "stylized/sand.png",
+    "source": "made by tools/make_textures.py (Session 55)",
+    "license": "CC0-1.0",
+    "sha256": "703dd0551e9afcfa6371b952df1f1fcecde8aede5b296d29d80cc2723dddc234"
+  },
+  {
+    "file": "stylized/asphalt.png",
+    "source": "made by tools/make_textures.py (Session 55)",
+    "license": "CC0-1.0",
+    "sha256": "3ae541391419cdd0cfb6d4bd5d8f8c58cdce805638a3775899d997b2d2bd846a"
+  },
+  {
+    "file": "stylized/paving.png",
+    "source": "made by tools/make_textures.py (Session 55)",
+    "license": "CC0-1.0",
+    "sha256": "851821c389af33b25fb27a0c6ad8b43aa2c9a78f7304a2f7a89984f74da3dde5"
+  },
+  {
+    "file": "stylized/track.png",
+    "source": "made by tools/make_textures.py (Session 55)",
+    "license": "CC0-1.0",
+    "sha256": "83299a656d579f216e39aa4cb170396efd521466b872f4459f7a1066f08b9b89"
   }
 ]

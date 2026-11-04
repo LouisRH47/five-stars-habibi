@@ -21,6 +21,7 @@ func _ready() -> void:
 		_sky = _environment.sky.sky_material as ProceduralSkyMaterial
 		# Spread sky updates over a few frames instead of all in one go.
 		_environment.sky.process_mode = Sky.PROCESS_MODE_INCREMENTAL
+	_apply_look()
 	Settings.load_once()
 	apply_graphics()
 	apply_hour(hour_now())
@@ -51,12 +52,28 @@ func apply_hour(hour: float) -> void:
 	sun.light_energy = look["energy"]
 	if absf(hour - _sky_hour) >= GameConfig.SKY_UPDATE_HOURS:
 		_sky_hour = hour
-		_environment.ambient_light_energy = look["ambient"]
+		_environment.ambient_light_energy = look["ambient"] * GameConfig.LOOK_AMBIENT_SCALE
 		_environment.fog_light_color = look["horizon"]
 		if _sky != null:
 			_sky.sky_top_color = look["top"]
 			_sky.sky_horizon_color = look["horizon"]
 			_sky.ground_horizon_color = look["horizon"].lerp(Color(0.91, 0.83, 0.65), 0.5)
+
+
+## Session 55, the Schedule I look: soft tone mapping, a little more colour, a little
+## brighter, and shadows that aren't black. Numbers in game_config.gd ("The Schedule I look").
+func _apply_look() -> void:
+	if not GameConfig.STYLIZED_TEXTURES:
+		return
+	var env := _environment
+	env.tonemap_mode = Environment.TONE_MAPPER_AGX
+	env.tonemap_exposure = GameConfig.LOOK_EXPOSURE
+	env.tonemap_white = GameConfig.LOOK_WHITE
+	env.adjustment_enabled = true
+	env.adjustment_saturation = GameConfig.LOOK_SATURATION
+	env.adjustment_contrast = GameConfig.LOOK_CONTRAST
+	env.adjustment_brightness = 1.0
+	sun.shadow_opacity = GameConfig.LOOK_SHADOW_OPACITY
 
 
 ## Blends the two nearest lines of GameConfig.LIGHT_KEYS for this hour.
@@ -96,6 +113,12 @@ func apply_graphics() -> void:
 				level < 2, 0.5, 2, 50.0, 300.0)
 	env.fog_enabled = level > 0
 	env.fog_density = GameConfig.HAZE_DENSITY
+	if GameConfig.STYLIZED_TEXTURES:
+		# Session 55: a gentle haze that only starts far away (the near world stays crisp).
+		env.fog_mode = Environment.FOG_MODE_DEPTH
+		env.fog_depth_begin = GameConfig.LOOK_FOG_BEGIN
+		env.fog_depth_end = GameConfig.LOOK_FOG_END
+		env.fog_density = GameConfig.LOOK_FOG_AMOUNT
 	env.fog_aerial_perspective = GameConfig.HAZE_SKY_MIX
 	env.fog_sky_affect = 0.0
 	env.glow_enabled = level > 0 and forward_plus

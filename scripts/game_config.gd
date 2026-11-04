@@ -230,6 +230,36 @@ const APPLICATION_REVIEW_TIME := 2.0  # seconds of "Reviewing..." before you're 
 const RIDER_NAME_MAX := 16            # letters allowed in your name
 const TUTORIAL_LAST_TIPS_TIME := 7.0  # seconds each of the last two tips stays up
 
+# --- The Schedule I look and real grass (Session 55) ---
+# Bright, clean and cartoony: warm light, shadows that aren't black, a little more colour,
+# matte (not shiny) surfaces and simple painted ground textures. scripts/sun_cycle.gd uses these.
+const STYLIZED_TEXTURES := true     # false = the old photo textures
+const LOOK_EXPOSURE := 1.3          # overall brightness
+const LOOK_SATURATION := 1.3        # 1 = normal colour, more = more colourful
+const LOOK_CONTRAST := 1.05
+const LOOK_WHITE := 6.0             # how bright something must be to show as pure white (higher = fewer burnt-out whites)
+const LOOK_AMBIENT_SCALE := 1.0     # times the "ambient" numbers in LIGHT_KEYS (the light in the shadows)
+const LOOK_SHADOW_OPACITY := 0.78   # 1 = shadows as dark as possible, lower = softer, never black
+const LOOK_FOG_BEGIN := 130.0       # metres: the soft haze starts here...
+const LOOK_FOG_END := 900.0         # ...and is full here
+const LOOK_FOG_AMOUNT := 0.55       # how thick the haze is at its fullest (0 to 1)
+const MATTE_SPECULAR := 0.25        # how much surfaces shine (0.5 is Godot's normal)
+const MATTE_MIN_ROUGHNESS := 0.8    # surfaces are at least this rough (matte) unless meant to shine (glass, water)
+# Grass blades (scripts/grass_field.gd): tufts of 6 blades that sway in the wind and bend
+# away from the bike. Only built close to the camera, in squares of GRASS_CHUNK metres.
+const GRASS_BLADES_ON := true
+const GRASS_TUFTS_PER_M2 := [3.0, 7.0, 12.0]   # Low, Medium, High (6 blades each)
+const GRASS_RADIUS := [26.0, 38.0, 45.0]        # metres from the camera with grass (Low, Medium, High)
+const GRASS_FADE := 10.0                        # the last 10 m the blades shrink away
+const GRASS_CHUNK := 16.0
+const GRASS_BUILD_MS := 2.0                     # milliseconds per frame spent filling in new grass
+const GRASS_HEIGHT := Vector2(0.22, 0.42)       # shortest and tallest blade (metres)
+const GRASS_WIND_STRENGTH := 0.08               # how far the tips sway (metres)
+const GRASS_WIND_SPEED := 1.4
+const GRASS_PUSH_RADIUS := 1.3                  # blades this close to the bike bend away
+const GRASS_ROOT := Color(0.2, 0.42, 0.14)      # colour at the bottom of a blade...
+const GRASS_TIP := Color(0.62, 0.8, 0.32)       # ...and at the tip
+
 # --- Light and sky (Session 28) ---
 # The sun follows the shift clock (scripts/sun_cycle.gd). Each line is one moment of the
 # day; in between, everything blends smoothly. hour = clock time, height = how high the

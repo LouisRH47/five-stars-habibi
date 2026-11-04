@@ -33,6 +33,10 @@ func _finish_static_world() -> void:
 	await get_tree().process_frame
 	# Session 52: stop flicker where two boxes share a face, before they're merged.
 	set_meta("zfight_fixed", ZFightFix.apply(get_parent()))
+	if GameConfig.STYLIZED_TEXTURES:
+		set_meta("matte_materials", TerrainMaterials.make_matte(get_parent()))  # Session 55
+	if GameConfig.GRASS_BLADES_ON:
+		_grass_blades()
 	var report := StaticBatch.bake(get_parent(), 48.0)
 	set_meta("static_batch_report", report)
 	print("STATIC_BATCH: ", JSON.stringify(report))
@@ -78,6 +82,7 @@ func _planting() -> void:
 	view.name = "SpineGrassTufts"
 	view.multimesh = many
 	view.visibility_range_end = 100
+	view.visible = not GameConfig.GRASS_BLADES_ON   # Session 55: real grass blades instead
 	add_child(view)
 	var flowers := MultiMesh.new()
 	flowers.transform_format = MultiMesh.TRANSFORM_3D
@@ -100,6 +105,22 @@ func _planting() -> void:
 	blooms.multimesh = flowers
 	blooms.visibility_range_end = 90
 	add_child(blooms)
+
+
+## Session 55: real grass blades on the lawns (scripts/grass_field.gd). Made before the
+## static batch merges everything, so it can see what stands on the lawn.
+func _grass_blades() -> void:
+	var lawns: Array = []
+	var grass := TerrainMaterials.make("grass")
+	for part: MeshInstance3D in get_parent().find_children("*", "MeshInstance3D", true, false):
+		if part.material_override == grass and (part.global_transform * part.get_aabb()).size.y < 0.1:
+			lawns.append(part)
+	var field := GrassField.new()
+	field.name = "GrassField"
+	add_child(field)
+	var keep_clear: Array = _map["FARM_BEDS"] + [_map["COMMUNITY_POOL"], _map["LAP_POOL"],
+			_map["BASKETBALL_COURT"], _map["PLAYGROUND"], _map["BEEHIVES"], _map["DONKEY_PEN"]["area"]]
+	field.setup(get_parent(), lawns, _map.get("HILLS", []), keep_clear)
 
 
 func _checkpoints_and_station() -> void:

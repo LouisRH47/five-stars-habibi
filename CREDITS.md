@@ -69,6 +69,18 @@ Shared albedo textures tile in world metres. License: https://polyhaven.com/lice
 
 Exact download URLs and SHA-256 checksums: assets/textures/sources.json.
 
+These photo textures are kept but no longer used (GameConfig.STYLIZED_TEXTURES = false brings
+them back).
+
+## The Schedule I look (Session 55)
+
+- The painted ground textures in assets/textures/stylized/ (grass, sand, asphalt, paving and
+  the red rubber track) were made for this game by tools/make_textures.py (CC0). Nothing was
+  downloaded.
+- The grass blades and their wind shader (assets/shaders/grass.gdshader, scripts/grass_field.gd)
+  were written for this game (CC0), after the idea of the CC0 "Stylized Multimesh Grass" shader
+  on godotshaders.com (tufts in a MultiMesh, swayed in the vertex shader). No code was copied.
+
 The riding wind loop (assets/audio/wind_loop.wav) is original generated CC0 audio; reproduce it with tools/make_wind.py.
 
 The PERFECT and tip jingles (assets/audio/perfect.wav and tip.wav) are original generated CC0 audio, reproduced by tools/make_sounds.py.

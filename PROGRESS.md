@@ -19,6 +19,45 @@ next to the clusters, a red walking track and buggy road on the spine, buggies e
 except the ring road, and half-built buildings on the building sites. Render:
 docs/plaza_carpark_spine.svg. Step-by-step detail for every session: docs/looks_pass_detailed_plan.md.
 
+## Session 55 — The Schedule I look and real grass (4 November 2026)
+
+Built by Claude in a cloud session, on the `looks-build` branch. Screenshots now use the real
+Forward+ renderer (Vulkan on the CPU), so they match what Louis sees.
+
+What works:
+- **Light and colour** (sun_cycle.gd `_apply_look`): soft AgX tone mapping, a bit brighter
+  (exposure 1.3) and more colourful (saturation 1.3), softer shadows that aren't black
+  (shadow opacity 0.78), and a gentle haze that only starts 130 m away, so the near world stays
+  crisp. All numbers in game_config.gd ("The Schedule I look").
+- **Matte surfaces**: every surface is made rough with little shine (265 materials), except
+  glass, water, see-through things, metal and anything meant to shine.
+- **New painted ground textures** (assets/textures/stylized/): grass, sand, asphalt, paving
+  (light pavers in rows) and a red rubber track (for Session 63). Made by
+  tools/make_textures.py, so they're ours (CC0). The old photo textures are still there:
+  STYLIZED_TEXTURES = false brings them back.
+- **Real grass** (scripts/grass_field.gd + assets/shaders/grass.gdshader): tufts of 6 blades
+  that sway in slow waves and bend away from the bike when you ride through. Grass only exists
+  near the camera (38 m on Medium, 26 m Low, 45 m High) in 16 m squares that fill in 2 ms per
+  frame as you ride, so there's no stutter; the last 10 m the blades shrink away instead of
+  popping. No grass on paths, roads, pools, courts, the farm beds, the hives, the donkey pen,
+  buildings or the stream (anything standing on the lawn makes a hole; palms and posts only a
+  small one). Grass grows over the hills. About 27,000 tufts near you on Medium, 7,000 on Low,
+  56,000 on High. The old little triangle shapes are hidden (still in the code).
+
+Checks: new tests/grass_test.gd (13 checks: look settings, textures, matte, grass near the spine,
+time per frame, no grass on any path/road/pool/court/bed, grass on hills, Low < Medium < High,
+no grass far from the lawns). Smoke test PASS; all focused suites pass (crash_impact,
+district_traffic, detail_world, gear_ride, housing_camera, minimap_cache, navigation,
+phone_refresh, replay, replay_ui, shop, static_batch, lifecycle_regression, reception_panel,
+bus_recovery, loading, layout, ragdoll, grass).
+
+Not measured here: the real frame rate (this computer has no graphics card). **Louis: please
+check the FPS on Medium** (press F3 if the FPS counter is on, or watch for stutter). If it's
+slow, lower GRASS_TUFTS_PER_M2 or GRASS_RADIUS in game_config.gd.
+
+**Louis's check:** F5, start a shift, ride onto the spine: brighter, warmer light, clean
+ground, and grass that sways and parts round your bike. Try Settings → Graphics Low and High.
+
 ## Session 54 — Ragdoll falls (4 November 2026)
 
 Built by Claude in a cloud session, on the `looks-build` branch.

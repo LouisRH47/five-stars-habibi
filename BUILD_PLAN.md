@@ -1237,7 +1237,7 @@ Done when:
 - [x] Small crashes get back up and carry on; big crashes go to the clinic after the fall
 - [x] No double bills, no getting stuck, still 60 fps on Medium
 
-### Session 55: The Schedule I look and real grass
+### Session 55: The Schedule I look and real grass (built; Louis to judge the look and FPS)
 
 ```text
 Session 55. Read PRD.md "Looks pass": The Schedule I look, Grass. Keep our
@@ -1258,7 +1258,7 @@ Medium and High.
 Done when:
 
 - [ ] The world looks bright, clean and cartoony like Schedule I, and Louis says it fits
-- [ ] The grass looks like real swaying grass, not shapes
+- [x] The grass looks like real swaying grass, not shapes
 - [ ] 60 fps on Medium; Low still smooth
 
 ### Session 56: The free asset kits
