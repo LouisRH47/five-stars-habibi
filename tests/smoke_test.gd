@@ -1,9 +1,9 @@
 extends SceneTree
-## Smoke test: loads the main scene (Palm Grove), pedals for a few seconds and checks
+## Smoke test: loads Wahat Al Shams (or the scene after "--"), pedals for a few seconds and checks
 ## the bike actually moves, sprints and stops. It checks the sign font and that the
-## restaurants and street signs have Arabic + English text. Then it does one full delivery
+## restaurants have Arabic + English text. Then it does one full delivery
 ## (offer, accept, pick up, drop off, get paid), skips an order and lets one run out of time.
-## On Palm Grove it then checks the decorations (mosque, mini market, palms, parked cars,
+## It then checks the decorations (mosque, mini market, palms, parked cars,
 ## speed bumps) were built and rides over the first speed bump.
 ## It also checks the mini-map (Session 7): it turns with the bike, and its pin shows the
 ## restaurant, then the villa number, and stays on the map when the stop is far away.
@@ -327,7 +327,7 @@ func _start_delivery_check() -> void:
 
 
 ## The sign font has Arabic and Latin letters, every restaurant has an Arabic and an
-## English sign, and (on Palm Grove) every road end has a street sign, plus the welcome sign.
+## English sign.
 func _check_signs() -> void:
 	var font := load(FONT_PATH) as Font
 	_check("sign font loads", font != null, FONT_PATH)
@@ -344,20 +344,6 @@ func _check_signs() -> void:
 		if restaurant != null:
 			_check(node_name + " has an Arabic sign", _has_arabic_label(restaurant), "")
 			_check(node_name + " has an English sign", _has_label_text(restaurant, place["name"]), place["name"])
-	var signs := _main.get_node_or_null("SignBuilder")
-	if signs == null:
-		print("      no SignBuilder in this scene, street signs not checked")
-		return
-	var good := 0
-	for i in signs.roads.size():
-		for end in 2:
-			var street_sign := signs.get_node_or_null("StreetSign_%d_%d" % [i, end])
-			if street_sign != null and _has_arabic_label(street_sign):
-				good += 1
-	var wanted: int = signs.roads.size() * 2
-	_check("every road end has a street sign with Arabic", wanted > 0 and good == wanted, "%d of %d" % [good, wanted])
-	var welcome := signs.get_node_or_null("WelcomeSign")
-	_check("the welcome sign has Arabic", welcome != null and _has_arabic_label(welcome), "")
 
 
 func _labels_under(node: Node) -> Array[Node]:
@@ -429,9 +415,6 @@ func _start_decor_check() -> void:
 		if building != null:
 			_check(node_name + " has an Arabic sign", _has_arabic_label(building), "")
 			_check(node_name + " has an English sign", _has_label_text(building, english), english)
-	if map.has("PARK"):
-		var park := decor.get_node_or_null("Park")
-		_check("the park sign has Arabic", park != null and _has_arabic_label(park), "")
 	if decor.speed_bumps.is_empty():
 		_finish()
 		return

@@ -734,8 +734,11 @@ per cluster: "Villa 45, Cluster 1" on the phone, "C1 · Villa 45" on the
 mini-map. Each shift starts in front of the bus station. Move the shops' door
 spots to the new Plaza so deliveries still work.
 4) The mini-map and route finder work on the bigger map. Smoke test and
-play-test bot run on the new map. Take a top-down screenshot and compare it
-with the sketch.
+play-test bot run on the new map. Rewrite the smoke test's Wahat checks that
+assume the old map (60 homes, start at the gate, a 5-minute shift, fixed spots
+on the map). Check routes to a sample of doors, not all 500, so the whole
+smoke test stays well under GitHub's 15-minute limit. Take a top-down
+screenshot and compare it with the sketch.
 ```
 
 Done when:
@@ -743,6 +746,7 @@ Done when:
 - [ ] The map is real size and laid out like the sketch, with nothing big left blank
 - [ ] A shift lasts 8 minutes and the clock says AM and PM
 - [ ] You start in front of the bus station and a full delivery works
+- [ ] The smoke test passes on the new map and takes well under 15 minutes
 
 ### Session 36: Joined rows of homes and the camera fix
 

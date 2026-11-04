@@ -6,8 +6,8 @@ graphics pass). Louis played the graphics pass on 3 Nov. He likes the houses, pl
 stables and the number of people about.
 
 **Next: Session 35**, the first of the Detail pass (Sessions 35 to 46, in BUILD_PLAN.md).
-Before starting it, decide two things (see "Next" below): what happens to the old Palm Grove
-map, and how the smoke test changes for the real-size map.
+The old Palm Grove map is gone (4 Nov), and Session 35 now also rewrites the smoke test for
+the real-size map. One thing still to settle: the school's name (see "Next" below).
 
 Things Louis noticed that the Detail pass fixes: the clock looks like a sped-up timer, the camera
 goes inside houses, villas should be joined rows, a warpy smear in front of the bike (the heat
@@ -27,8 +27,12 @@ A check of the plan against the code found three bugs, now fixed on branch `revi
   "2 Dh" in 3 places), and a smoke test check on the ducks could fail by chance (a duck that
   started near the end of its path stopped for a moment). The PRD's small contradictions are
   fixed and logged (Decisions log, 4 Nov).
-- Smoke test: new checks for all three bugs. 5 out of 5 runs pass on Wahat Al Shams, and Palm
-  Grove and the test area pass too.
+- **Palm Grove removed:** its scene, its data list, and the road, street-sign and park
+  builders only it used. Wahat Al Shams is the only map; the flat test area stays for tests.
+  Wahat Al Shams still has no street-name signs (only its cluster, shop and landmark signs);
+  that was a Palm Grove thing and can come back in the Detail pass.
+- Smoke test: new checks for all three bugs. 5 out of 5 runs pass on Wahat Al Shams, and the test
+  area passes too.
 
 ### Playing in a web browser (3 Nov 2026)
 Michael set up a version of the game that plays in a web browser, so Louis can try it on a
@@ -737,7 +741,7 @@ MacBook or an iPad without installing anything: fivestarshabibi.middleleap.com.
   pass too.
 - The play-test bot now rides (instead of walking) when a "leave it with the neighbour" order
   sends it to a far door, and says when a walk takes longer than 20 seconds.
-- Not done yet: removing the old Palm Grove map. It's still the smoke test's second map; remove
+- Not done yet (done on 4 Nov): removing the old Palm Grove map. It's still the smoke test's second map; remove
   it once Louis has played Wahat Al Shams and is happy.
 - **Louis's turn:** play a full shift and write down what felt off.
 
@@ -759,22 +763,15 @@ MacBook or an iPad without installing anything: fivestarshabibi.middleleap.com.
   `-- timeline` prints every step.
 - The bot once got stuck nose-to-nose with a kid on a scooter (the kid waits for the bike,
   the bot kept pushing). A person just steers round, but say if it happens to you.
-- Palm Grove rides take up to about a minute, not the 2 to 3 minutes the PRD hoped for
-  (see "Still open" in PRD.md).
 
 - New scripts with class_name need Godot to refresh its class list once. Opening the
   project in the Godot editor does it. If F5 shows "Could not find type Order" or similar,
   close and reopen the project in the editor.
 
 ## Next
-- Decide before Session 35:
-  - **Palm Grove:** remove the old map now, or keep it working through the Detail pass? It is the
-    smoke test's second map, and Session 35 changes code it shares.
-  - **The smoke test:** Session 35 breaks its Wahat checks (60 homes, start at the gate, 5-minute
-    shift, fixed spots on the map). It also finds a path to every door; with 500 doors that may
-    take longer than the 15 minutes GitHub allows. Rewrite those checks as part of Session 35.
-  - **School name:** the code still says "Al Shams School"; the PRD says Fair Grade. Pick which
-    session renames it (Session 41 builds the school).
+- **School name:** the code still says "Al Shams School". The name picked on 4 Nov is "Fairgreen
+  International School", but that is a real school in Dubai, and CLAUDE.md says no real names. To agree
+  before Session 41 (which builds the school).
 - Louis: try the R key and quitting mid-shift (see "Review fixes" above), and confirm the
   Session 34 tuning in the PRD Decisions log.
 - Then the Detail pass (Sessions 35 to 46), then Reasons to come back (Sessions 47 to 51).

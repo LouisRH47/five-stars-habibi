@@ -11,7 +11,7 @@ extends Node3D
 ##   Horses crossing: a groom leads 2 or 3 horses across a road near the stables
 ##     (scripts/horse_crossing.gd). Riding into them is a small crash.
 ## The places come from the map's data list (data/wahat_al_shams.gd); maps without them
-## (Palm Grove, the test area) have no events. Numbers: game_config.gd, Random events.
+## (the test area) have no events. Numbers: game_config.gd, Random events.
 
 ## Sent when the phone starts warning about an event (kind: ROAD_WORKS or HORSES).
 signal warned(kind: String, place: String)

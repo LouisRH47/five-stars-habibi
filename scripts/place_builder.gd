@@ -2,8 +2,8 @@ class_name PlaceBuilder
 extends Node3D
 ## Builds the restaurants and villas from a data list when the game starts, and tells
 ## other scripts where each front door is. Which list is set in the scene (the "data"
-## property): data/wahat_al_shams.gd for the real map, data/palm_grove.gd for the old map,
-## data/test_area_places.gd for the test area. Palm Grove villas are scenes/villa.tscn;
+## property): data/wahat_al_shams.gd for the real map,
+## data/test_area_places.gd for the test area. Test-area villas are scenes/villa.tscn;
 ## Wahat Al Shams homes come from the house kit (scripts/villa_builder.gd, Session 26).
 ## Shops are scenes/restaurant.tscn (with Arabic + English signs); each shop node is called
 ## Restaurant_<id>, e.g. Restaurant_pizza. Session 27: a shop with "style": "market" looks like

@@ -1,5 +1,5 @@
 extends StaticBody3D
-## The Palm Grove mosque: a white prayer hall with a teal dome on a drum, one tall
+## The mosque: a white prayer hall with a teal dome on a drum, one tall
 ## minaret with a balcony ring and a small golden top, a big arched door, tall arched
 ## windows, a stone forecourt out to the street and a bilingual sign over the door.
 ## The front is the +Z side. DecorBuilder places scenes/mosque.tscn and calls setup().

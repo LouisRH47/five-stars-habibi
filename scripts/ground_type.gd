@@ -1,6 +1,6 @@
 class_name GroundType
 ## Is this spot bare sand? (Session 31, for the tyre dust.) It looks at the map's data list
-## (data/wahat_al_shams.gd or data/palm_grove.gd): roads, lanes, paving, grass, plots and
+## (data/wahat_al_shams.gd): roads, lanes, paving, grass, plots and
 ## car parks are not sand. Everywhere else on the map is. A map without a data list (the
 ## old test area) has no sand.
 
@@ -26,11 +26,7 @@ static func is_sand(map: Dictionary, spot: Vector2) -> bool:
 			return false
 	if map.has("SPINE") and (map["SPINE"] as Rect2).has_point(spot):
 		return false
-	if map.has("PARK") and (map["PARK"]["area"] as Rect2).has_point(spot):
-		return false
 	if map.has("PLAZA") and spot.distance_to(map["PLAZA"]["centre"]) <= map["PLAZA"]["radius"]:
-		return false
-	if map.has("ROUNDABOUT_CENTRE") and spot.distance_to(map["ROUNDABOUT_CENTRE"]) <= map["ROUNDABOUT_RADIUS"]:
 		return false
 	return not _on_track(map.get("BIKE_TRACK", {}), spot)  # the red paved bike track
 
