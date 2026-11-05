@@ -52,6 +52,17 @@ static func crossings(map: Dictionary, z0: float, z1: float, extra := 0.0) -> Ar
 	return cuts
 
 
+## Review (outdoor): the gaps in the kerbs and planted strip. Only paths that really cross the
+## strip (from the track's south edge to the buggy road's north edge) cut it, plus the dome
+## crossings. Before, the C4 and C5 links (which end at the buggy road from the south) also
+## left a grassy gap with no path in it.
+static func strip_gaps(map: Dictionary) -> Array:
+	var section := cross_section(map)
+	var z0: float = section[1][1]   # the north kerb's north edge
+	var z1: float = section[3][2]   # the south kerb's south edge
+	return crossings(map, z0 + 0.05, z1 - 0.05) + dome_gaps(map)
+
+
 ## Dome crossings: a 2.4 m gap in the strip in front of every dome door, so you can walk
 ## from the buggy road across to the dome.
 static func dome_gaps(map: Dictionary) -> Array:
@@ -89,6 +100,8 @@ static func build(parent: Node3D, map: Dictionary) -> Array:
 	var x1: float = t["to"].x
 	var strips: Array = []
 	var gaps := crossings(map, -20.0, 20.0) + dome_gaps(map)
+	if GameConfig.SPINE_GAPS_ONLY_REAL:
+		gaps = strip_gaps(map)
 	for part: Array in cross_section(map):
 		var z0: float = part[1]
 		var z1: float = part[2]

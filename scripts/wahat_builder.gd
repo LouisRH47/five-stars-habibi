@@ -106,6 +106,10 @@ func _build_road(road: Dictionary) -> void:
 	var black := not is_black_road(road)
 	var start := from - dir * (0.0 if black and ends_on_black_road(_map, from) else width * 0.5)
 	var finish := to + dir * (0.0 if black and ends_on_black_road(_map, to) else width * 0.5)
+	if GameConfig.ROAD_ENDS_GIVE_WAY:
+		var ends := drawn_ends(_map, road)   # Review: stop at the edge of a road that wins
+		start = ends[0]
+		finish = ends[1]
 	var length := start.distance_to(finish)
 	var middle := (start + finish) * 0.5
 	var kind: String = road.get("kind", "")
@@ -128,6 +132,84 @@ func _build_road(road: Dictionary) -> void:
 ## Session 53: the "black" roads cars use. Every other path gives way to them.
 static func is_black_road(road: Dictionary) -> bool:
 	return String(road["name"]) in GameConfig.BLACK_ROADS
+
+
+## Review (outdoor): where a road's strip is drawn from and to. Like before, each end sticks
+## out half a width to fill the corner where paths meet (but not onto a black road). New: if an
+## end lies on a road that wins (see gives_way_to), the strip stops at that road's edge instead
+## of being drawn over it to its middle (two slabs at one height flicker, and a light lane on a
+## dark road looks like one road lying on another). Returns [start, finish].
+static func drawn_ends(map: Dictionary, road: Dictionary) -> Array[Vector2]:
+	var width: float = road.get("width", map["ROAD_WIDTH"])
+	var from: Vector2 = road["from"]
+	var to: Vector2 = road["to"]
+	var length := from.distance_to(to)
+	if length < 0.01:
+		return [from, to]
+	var dir := (to - from) / length
+	var stops := not is_black_road(road)
+	var start := from - dir * (0.0 if stops and ends_on_black_road(map, from) else width * 0.5)
+	var finish := to + dir * (0.0 if stops and ends_on_black_road(map, to) else width * 0.5)
+	var winners: Array = []
+	for other: Dictionary in map["ROADS"]:
+		if gives_way_to(road, other) and not (is_black_road(other) and _shares_end(road, other)):
+			winners.append(other)   # (a path carrying straight on from a black road's end, like the Plaza Link, keeps its corner)
+	# Walk in from each drawn tip until we're off every winning road that tip lies on.
+	var out := start.distance_to(finish) * 0.5 - 0.05   # never past the middle (a path inside a road keeps its ends)
+	var tips := [start, finish]
+	for side in [[start, dir, 0], [finish, -dir, 1]]:
+		var tip: Vector2 = side[0]
+		var on: Array = winners.filter(func(r: Dictionary) -> bool: return on_road(map, r, tip))
+		if on.is_empty():
+			continue
+		var t := 0.0
+		while t < out and on.any(func(r: Dictionary) -> bool: return on_road(map, r, tip + side[1] * t)):
+			t += 0.02
+		if t >= out:
+			continue
+		tips[side[2]] = tip + side[1] * maxf(t - GameConfig.ROAD_END_OVERLAP, 0.0)
+	return [tips[0], tips[1]]
+
+
+static func _shares_end(a: Dictionary, b: Dictionary) -> bool:
+	for p: Vector2 in [a["from"], a["to"]]:
+		for q: Vector2 in [b["from"], b["to"]]:
+			if p.distance_to(q) < 0.5:
+				return true
+	return false
+
+
+## True if `road` gives way to `other` where it ends on it: black roads (ring road...) always
+## win, then the spine buggy road, then any road that's wider. Same-width paths meet as equals.
+static func gives_way_to(road: Dictionary, other: Dictionary) -> bool:
+	if other == road or is_black_road(road):
+		return false
+	if is_black_road(other):
+		return true
+	var kind := String(road.get("kind", ""))
+	if kind == "buggy_road":
+		return false
+	if String(other.get("kind", "")) == "buggy_road":
+		return true
+	return float(other.get("width", 6.0)) > float(road.get("width", 6.0)) + 0.01
+
+
+## True if the point is on the strip drawn for `road` (its middle line, half a width out to the
+## sides and past the ends, but not past an end that stops at a black road).
+static func on_road(map: Dictionary, road: Dictionary, point: Vector2) -> bool:
+	var width: float = road.get("width", map["ROAD_WIDTH"])
+	var a: Vector2 = road["from"]
+	var b: Vector2 = road["to"]
+	var length := a.distance_to(b)
+	if length < 0.01:
+		return false
+	var dir := (b - a) / length
+	var stops := not is_black_road(road)
+	var before := 0.0 if stops and ends_on_black_road(map, a) else width * 0.5
+	var after := 0.0 if stops and ends_on_black_road(map, b) else width * 0.5
+	var along := (point - a).dot(dir)
+	var across := absf((point - a).dot(Vector2(-dir.y, dir.x)))
+	return along >= -before - 0.001 and along <= length + after + 0.001 and across <= width * 0.5 + 0.001
 
 
 ## True if this point is on (or at the kerb of) a black road.
