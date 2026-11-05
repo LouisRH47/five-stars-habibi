@@ -1,5 +1,44 @@
 # Progress
 
+## Sessions 75 and 76: ride freely, jump on foot, buggies on roads, kerbs that join up — 5 November 2026
+
+Built by two helpers in parallel (roads, and people for the jump), then merged and re-tested.
+75 and 76 go in as one commit because the roads helper built them as one piece: the
+75 part uses the new kerbs from 76.
+
+What works:
+- **No invisible walls.** Kerbs have no collision any more. Riding over one is a small bump
+  and you keep 90% of your speed, never a crash (scripts/kerb_bumps.gd, `Bike.hit_kerb()`).
+  The new focused test tests/ride_edges_test.gd walks the bike's shape along every road edge,
+  the red and blue tracks and the car parks: 0 invisible walls (it does find a hidden test wall).
+- **Speed bumps only on the ring road.**
+- **Space jumps on foot** (about 0.6 m, short wait, knees up in the air, knee bend on landing).
+  On the bike Space is still the handbrake. PRD Controls table and the pause menu key list updated.
+- **Buggies only drive on roads.** Their routes are found on the road network, they keep 1.5 m
+  right of the yellow line and slow down at junctions and the roundabout. The new focused test
+  tests/buggy_roads_test.gd drives every buggy for a whole shift: 0 steps off the asphalt.
+- **Raised kerbs that join up** (12 cm high) along every road edge, closed at junctions, all the
+  way round the roundabout (island and outside), gaps only at paths, crossings and car parks
+  (scripts/road_kerbs.gd, road_area.gd).
+- **Curved corners** wherever roads meet: about 6 m for lanes, 10 m for bigger roads
+  (scripts/road_corners.gd). Each cluster's lanes are one rounded loop; the cluster entrance
+  islands have rounded ends; the C Institute road is one smooth curve.
+- road_mesh_test finds 0 kerb ends in mid-air and 0 kerbs lying on a road.
+- Checked: smoke test PASS, all focused suites PASS (ride_edges, buggy_roads and road_mesh
+  three times in a row). Play-test bot careful: 5 deliveries, 4.9 stars, no crashes.
+- Screenshots on the Mac (Forward+): the roundabout, cluster entrances (Louis's 05 and 07) and
+  spine junctions now have continuous curved kerbs.
+
+Known bugs:
+- The careless play-test bot can park its bike right in its own path and then walk into it
+  (it got stuck by the C Institute). That's the bot, not the game: walking round works.
+- After a buggy turns round because something blocks it, it drives over to its own side of the
+  road by the next turn point, so for a few seconds it's on the wrong side.
+
+**Louis's turn:** press F5 and ride over a kerb and across the red track (small wobble, no crash),
+round the roundabout and into a cluster (curved kerbs all the way). Press F to get off and Space
+to jump. Watch a buggy: it stays on the road on its own side.
+
 ## Fixes after the careless play-test — 5 November 2026
 
 The careless play-test bot found three things that could end a shift unfairly:

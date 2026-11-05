@@ -3,13 +3,15 @@ extends Node3D
 ## Session 62: the spine road copies Louis's photo. On both sides of the asphalt:
 ## a narrow planter (low kerb, grass, hedges, bougainvillea and purple flowers under the
 ## date palms), then a smooth matte red-brown walking track, slightly raised.
-## A solid kerb on the road side and on the park side stops the bike and buggies getting
-## onto the red track, except at the gaps: where a road joins (the planter and track stop
-## and white stripes mark the crossing) and at paths (the planter becomes a marked paved
-## crossing). Joggers and walkers use the tracks (PEOPLE_ROUTES in the data).
-## Layout numbers come from SPINE_TRACKS in data/wahat_al_shams.gd.
+## Gaps: where a road joins, the planter and track stop and white stripes mark the crossing;
+## at paths, the planter becomes a marked paved crossing. Joggers and walkers use the tracks
+## (PEOPLE_ROUTES in the data). Layout numbers come from SPINE_TRACKS in the data.
+## Session 75: no invisible walls any more. The low planter kerbs are just kerbs: you can
+## ride over them anywhere with a small bump (KerbBumps). Session 76: the kerb along the
+## road's edge is RoadMesh's (so it curves round the junctions); this builds the planter's
+## other kerb and a kerb across each end of a planter, so every planter is closed.
 
-const KERB := Color(0.86, 0.84, 0.8)
+const KERB := RoadMesh.KERB
 const GRASS := Color(0.36, 0.58, 0.25)
 const HEDGE := Color(0.18, 0.4, 0.17)
 const BUSH := Color(0.22, 0.45, 0.2)
@@ -21,27 +23,29 @@ const TRACK_SIDE := Color(0.5, 0.25, 0.2)
 
 const TRACK_TOP := 0.08      # the red track (raised a little)
 const GRASS_TOP := 0.1       # planter soil and grass
-const KERB_TOP := 0.15
 const PAD_TOP := 0.06        # paved crossing through the planter
-const KERB_WIDTH := 0.2
-const SOLID_HEIGHT := 0.6    # the kerb's collision: tall enough that the bike can't hop it
 const CHUNK := 120.0
 
-## For the smoke test: [x from, x to, side] of every solid kerb piece, and the gaps.
-var solid_runs: Array = []
+## For the tests: the gaps [x from, x to, side, kind], and every planter kerb line (the
+## park-side kerbs and the ends) as a list of flat points.
 var gaps: Array = []
+var kerb_lines: Array = []
 var plants := 0
 
 var track_length := 0.0
+
+## Session 75: the kerb lines are given to this, so riding over them gives a small bump.
+var bumps: KerbBumps
 
 var _spec: Dictionary = {}
 var _kits := {}
 var _tracks := {}
 
 
-static func build(parent: Node3D, map: Dictionary) -> SpineTracks:
+static func build(parent: Node3D, map: Dictionary, kerb_bumps: KerbBumps = null) -> SpineTracks:
 	var tracks := SpineTracks.new()
 	tracks.name = "SpineTracks"
+	tracks.bumps = kerb_bumps
 	parent.add_child(tracks)
 	tracks.make(map.get("SPINE_TRACKS", {}))
 	return tracks
@@ -68,40 +72,48 @@ func make(spec: Dictionary) -> void:
 	var planter: float = spec["planter"]
 	var track: float = spec["track"]
 	for side: int in [-1, 1]:
-		# The gaps on this side, as [from, to, kind].
+		# The gaps on this side, as [from, to, kind]. Road gaps: [x, side, planter half gap,
+		# track half gap] (Session 76: the planter stops where the road's curved corner
+		# starts; the red track runs on a little closer, up to the curve).
 		var cuts: Array = []
+		var track_cuts: Array = []
 		for g in spec["road_gaps"]:
 			if int(g[1]) == 0 or int(g[1]) == side:
+				var track_half: float = g[3] if g.size() > 3 else g[2]
 				cuts.append([g[0] - g[2], g[0] + g[2], "road"])
+				track_cuts.append([g[0] - track_half, g[0] + track_half, "road"])
 		for g in spec["path_gaps"]:
 			if int(g[1]) == 0 or int(g[1]) == side:
 				cuts.append([g[0] - g[2], g[0] + g[2], "path"])
 		cuts.sort_custom(func(a, b): return a[0] < b[0])
+		track_cuts.sort_custom(func(a, b): return a[0] < b[0])
 		gaps.append_array(cuts.map(func(c): return [c[0], c[1], side, c[2]]))
-		# The open runs between the gaps.
-		var runs: Array = []
-		var x := from_x
-		for cut in cuts:
-			if cut[0] > x:
-				runs.append([x, cut[0]])
-			x = maxf(x, cut[1])
-		if x < to_x:
-			runs.append([x, to_x])
 		var z0 := road * side                     # road edge
 		var z1 := (road + planter) * side         # planter / track edge
 		var z2 := (road + planter + track) * side # track / park edge
-		for run in runs:
+		for run in _runs_between(cuts, from_x, to_x):
 			_planter(run[0], run[1], z0, z1, side)
+		for run in _runs_between(track_cuts, from_x, to_x):
 			_track(run[0], run[1], z1, z2)
-			_solid_kerb(run[0], run[1], z0 + KERB_WIDTH * 0.5 * side, side)
-			_solid_kerb(run[0], run[1], z2 + KERB_WIDTH * 0.5 * side, side)
 		for cut in cuts:
 			if cut[2] == "path":
-				_track(cut[0], cut[1], z1, z2)  # the red track carries on across a path
 				_crossing_pad(cut[0], cut[1], z0, z1)
-			else:
-				_road_stripes(cut[0], cut[1], z1, z2)
+		for cut in track_cuts:
+			_road_stripes(cut[0], cut[1], z1, z2)
 	_finish()
+
+
+## The open stretches [from, to] between the gaps.
+func _runs_between(cuts: Array, from_x: float, to_x: float) -> Array:
+	var runs: Array = []
+	var x := from_x
+	for cut in cuts:
+		if cut[0] > x:
+			runs.append([x, cut[0]])
+		x = maxf(x, cut[1])
+	if x < to_x:
+		runs.append([x, to_x])
+	return runs
 
 
 func _kit(key: String, x: float) -> MeshKit:
@@ -112,16 +124,22 @@ func _kit(key: String, x: float) -> MeshKit:
 
 
 ## Grass between two low kerbs, then the plants (no palms: DecorBuilder places those).
+## The road-side kerb is RoadMesh's; this adds the track-side kerb and one across each end.
 func _planter(a: float, b: float, z0: float, z1: float, side: int) -> void:
 	var length := b - a
 	var mid := (a + b) * 0.5
 	var kit := _kit("planter", mid)
-	var inner := z0 + KERB_WIDTH * 0.5 * side
-	var outer := z1 - KERB_WIDTH * 0.5 * side
-	kit.box(Vector3(length, KERB_TOP, KERB_WIDTH), KERB, Vector3(mid, KERB_TOP * 0.5, inner))
-	kit.box(Vector3(length, KERB_TOP, KERB_WIDTH), KERB, Vector3(mid, KERB_TOP * 0.5, outer))
-	var soil := absf(z1 - z0) - KERB_WIDTH * 2.0
-	kit.box(Vector3(length, GRASS_TOP, soil), GRASS, Vector3(mid, GRASS_TOP * 0.5, (z0 + z1) * 0.5))
+	var w := GameConfig.KERB_WIDTH
+	var top := RoadMesh.ASPHALT_TOP + GameConfig.KERB_HEIGHT
+	var outer := z1 - w * 0.5 * side
+	kit.box(Vector3(length, top, w), KERB, Vector3(mid, top * 0.5, outer))
+	var inside := absf(z1 - z0) - w * 2.0  # between the road's kerb and this one
+	for x in [a + w * 0.5, b - w * 0.5]:
+		kit.box(Vector3(w, top, inside), KERB, Vector3(x, top * 0.5, (z0 + z1) * 0.5))
+	_kerb_line([Vector2(a, outer), Vector2(b, outer)])
+	for x in [a + w * 0.5, b - w * 0.5]:
+		_kerb_line([Vector2(x, z0 + w * side), Vector2(x, z1 - w * side)])
+	kit.box(Vector3(length - w * 2.0, GRASS_TOP, inside), GRASS, Vector3(mid, GRASS_TOP * 0.5, (z0 + z1) * 0.5))
 	# Plants: a repeating pattern every 15 m (hedge, bougainvillea, purple flowers).
 	var green := _kit("plants", mid)
 	var centre := (z0 + z1) * 0.5
@@ -180,18 +198,11 @@ func _track_mat() -> StandardMaterial3D:
 	return _mat
 
 
-## An invisible solid kerb (the visible kerb is the low one in the planter).
-func _solid_kerb(a: float, b: float, z: float, side: int) -> void:
-	var body := StaticBody3D.new()
-	body.name = "SpineKerb_%d" % solid_runs.size()
-	body.set_meta("impact_category", "rigid")
-	body.set_meta("impact_name", "a kerb")
-	# Riding into a kerb is a bump, not a wall: it can knock you about but never sends you
-	# to hospital (see CrashImpact.hardness_for).
-	body.set_meta("impact_hardness", GameConfig.KERB_IMPACT_HARDNESS)
-	add_child(body)
-	LowPoly.solid_box(body, Vector3(b - a, SOLID_HEIGHT, KERB_WIDTH), Vector3((a + b) * 0.5, SOLID_HEIGHT * 0.5, z))
-	solid_runs.append([a, b, side])
+## Remembers a planter kerb line (for the tests) and gives it to KerbBumps.
+func _kerb_line(points: Array) -> void:
+	kerb_lines.append(points)
+	if bumps != null:
+		bumps.add_line(points)
 
 
 ## A paved crossing through the planter with white stripes.
@@ -208,8 +219,8 @@ func _crossing_pad(a: float, b: float, z0: float, z1: float) -> void:
 ## Where a road crosses the red track: white stripes on the road across the track's line.
 func _road_stripes(a: float, b: float, z1: float, z2: float) -> void:
 	var kit := _kit("pads", a)
-	var x := a + 3.6
-	while x + 0.5 <= b - 3.4:
+	var x := a + 0.3
+	while x + 0.5 <= b - 0.3:
 		kit.box(Vector3(0.5, 0.01, absf(z2 - z1)), STRIPE, Vector3(x + 0.25, RoadMesh.ASPHALT_TOP + 0.012, (z1 + z2) * 0.5))
 		x += 1.0
 

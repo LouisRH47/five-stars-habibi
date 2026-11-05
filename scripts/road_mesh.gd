@@ -4,11 +4,14 @@ extends Node3D
 ## The short pieces of each road are joined into one smooth strip ("chain"), so rounded
 ## corners and the roundabout are real curves, not overlapping boxes. On every asphalt road:
 ## a CC0 asphalt texture that is a little darker in the middle, a yellow dashed centre line,
-## white arrows on each side showing which way to drive (on the right, like the UAE), and a
-## low kerb on both sides. Where a road meets another, it stops at the other road's edge and
-## a curved corner piece (a "fillet") fills the gap, so no two road surfaces lie on top of
-## each other at the same height (that is what made textures flicker). Pavers sit lower than
-## asphalt, so asphalt always runs through on top.
+## white arrows on each side showing which way to drive (on the right, like the UAE).
+## Where a road meets another, it stops at the other road's edge and a curved corner piece
+## (a "fillet", worked out by RoadCorners) rounds off each inside corner. Roads that meet sit
+## a couple of millimetres apart in height, so no two surfaces lie on top of each other at
+## the same height (that is what made textures flicker). Pavers sit lower than asphalt.
+## Session 76: the kerbs are raised stone strips that follow every road edge, curve round
+## every corner and join up (RoadKerbs works out where), with gaps only at paver paths,
+## crossings and car parks. Kerbs have no collision: KerbBumps gives a small bump instead.
 ## Everything is flat with no collision (you ride over it) and merged into a few big meshes
 ## per 120 m square, so it stays fast on Low.
 
@@ -17,9 +20,7 @@ const UNDER_TOP := 0.04       # a road that passes under a crossing road (the hi
 const LEVEL_STEP := 0.002     # roads that meet are this much apart in height (never equal)
 const PAVING_TOP := 0.035     # paver paths, lower than asphalt
 const MARK_LIFT := 0.006      # paint sits this far above the asphalt
-const KERB_TOP := 0.13
-const KERB_WIDTH := 0.25
-const FILLET := 3.0           # radius of the curved corner where two roads meet
+const PAINT_GAP := 6.0        # no centre line this close to where a road joins another
 const STEP := 1.5             # roads are cut into pieces this long (for curves and gaps)
 const TILE := 6.0             # one asphalt texture tile covers this many metres
 const DASH := 3.0             # centre line: 3 m paint, 3 m gap
@@ -28,25 +29,44 @@ const ARROW_EVERY := 40.0
 const RING_ARROW_EVERY := 60.0
 const ROUNDABOUT_ARROW_EVERY := 14.0
 const CELL := 120.0
+const KINDS := ["asphalt", "paving", "kerb", "yellow", "white"]  # the kinds of mesh
 const ASPHALT_MIN_WIDTH := 6.0
 ## One-way roads: +1 drives from the first point to the last, -1 the other way.
 ## The roundabout goes anticlockwise, as roundabouts do when you drive on the right.
 const ONE_WAY := {"Institute Roundabout": -1, "Bus Loop": 1}
 const UNDER := ["Highway"]
-## Roads whose kerbs another builder makes (Session 62: SpineTracks builds the spine road's).
-const NO_KERB := ["Spine Road"]
+## A dead-end road this close to the Plaza's edge runs into it (no kerb across its end).
+const PLAZA_REACH := 4.0
+## Kerb gap where the horses cross a road (HORSE_CROSSINGS).
+const HORSE_CROSSING_HALF := 2.5
+## Data lists of extra kerb gaps (crossings, car park entrances). Each item can be a point
+## (Vector2/Vector3), or {position/at/centre, width or half}, or {from, to, width or half}.
+const GAP_LISTS := ["KERB_GAPS", "CAR_PARK_ENTRANCES", "PARKING_ENTRANCES"]
 
 const YELLOW := Color(0.96, 0.78, 0.18)
 const WHITE := Color(0.95, 0.95, 0.92)
-const KERB := Color(0.8, 0.78, 0.74)
+const KERB := Color(0.66, 0.65, 0.62)       # the top of a kerb (concrete, not paint white)
+const KERB_FACE := Color(0.52, 0.51, 0.49)  # its sides, a little darker
 
 ## The joined roads: {name, width, asphalt, points (Array of Vector2), closed, top}.
 var chains: Array = []
+## Session 76: where the asphalt is (roads, curved corners, kerb gaps): kerbs, tests, buggies.
+var area: RoadArea
+## The curved inside corners (RoadCorners) and the kerb runs (RoadKerbs).
+var corners: Array = []
+var kerbs: RoadKerbs
+## Session 75: gives the bike a small bump when it rides over a kerb.
+var bumps: KerbBumps
 ## Counts for the smoke test.
 var stats := {"chains": 0, "asphalt_chains": 0, "dashes": 0, "arrows": 0, "fillets": 0,
-		"kerb_pieces": 0, "same_height_overlaps": 0, "meshes": 0}
+		"kerb_pieces": 0, "kerb_runs": 0, "kerb_metres": 0, "dead_end_caps": 0,
+		"same_height_overlaps": 0, "meshes": 0}
 
-var _batches := {}           # "kind|cell" -> {verts, normals, colours, uvs}
+var _joins: Array = []       # roads that end on another road (for the curved corners)
+var _crosses: Array = []     # asphalt roads that cross each other in the middle
+var _dead_ends: Array = []   # [chain, end] of roads that just stop
+
+var _batches := {}           # Vector3i(kind, square x, square z) -> {kind, verts, normals, colours, uvs}
 var _materials := {}
 static var _asphalt_cache: StandardMaterial3D
 
@@ -92,13 +112,25 @@ func apply_graphics() -> void:
 
 func make(map: Dictionary) -> void:
 	chains = make_chains(map.get("ROADS", []), map.get("ROAD_WIDTH", 10.0))
+	var clock := Time.get_ticks_msec()  # build times (ms since the start) go in stats
 	_add_parking_access(map)
 	var junctions := _find_junctions()
 	_pick_heights(junctions)
+	_fill_area(map, junctions)
+	stats["ms_junctions"] = Time.get_ticks_msec() - clock
+	corners = RoadCorners.make(chains, _joins, _crosses, area, map.get("ROAD_CORNERS", {}))
+	stats["ms_corners"] = Time.get_ticks_msec() - clock
 	for i in chains.size():
 		_build_chain(i, junctions[i])
+	for corner: Dictionary in corners:
+		_fillet(corner)
+	stats["ms_surfaces"] = Time.get_ticks_msec() - clock
+	_build_kerbs()
+	stats["ms_kerbs"] = Time.get_ticks_msec() - clock
 	_count_overlaps(junctions)
 	_finish()
+	stats["ms_total"] = Time.get_ticks_msec() - clock
+	stats["fillets"] = corners.size()
 	stats["chains"] = chains.size()
 	stats["asphalt_chains"] = chains.filter(func(c): return c["asphalt"]).size()
 
@@ -130,22 +162,27 @@ func _add_parking_access(map: Dictionary) -> void:
 	if ring.is_empty():
 		return
 	var half: Vector2 = ring["half"]
-	for area: Rect2 in map.get("PARKING_AREAS", []):
-		var north := area.get_center().y < 0.0
-		var x := parking_access_x(area)
+	for lot: Rect2 in map.get("PARKING_AREAS", []):
+		var north := lot.get_center().y < 0.0
+		var x := parking_access_x(lot)
 		var edge := -half.y if north else half.y
 		chains.append({"name": "Car Park Access", "width": 6.0, "asphalt": true,
-				"points": [Vector2(x, edge), Vector2(x, area.end.y - 9.0)], "closed": false})
+				"points": [Vector2(x, edge), Vector2(x, lot.end.y - 9.0)], "closed": false})
 
 
 # --- Where roads meet ---------------------------------------------------------------
 
-## For every chain: {trim: [start, end] metres (negative = longer), fillets: [...],
-## gaps: [[point, half length, side or Vector2.ZERO], ...], crossings: [point...]}.
+
+## For every chain: {trim: [start, end] metres (negative = longer), gaps (no paint here):
+## [[point, half length], ...], crossings: [[point, half], ...], neighbours: [chain...]}.
+## Also fills _joins (a road ending on another: curved corners), _crosses and _dead_ends.
 func _find_junctions() -> Array:
 	var info: Array = []
+	_joins.clear()
+	_crosses.clear()
+	_dead_ends.clear()
 	for i in chains.size():
-		info.append({"trim": [0.0, 0.0], "fillets": [], "gaps": [], "crossings": [], "neighbours": []})
+		info.append({"trim": [0.0, 0.0], "gaps": [], "crossings": [], "neighbours": []})
 	for i in chains.size():
 		var chain: Dictionary = chains[i]
 		if chain["closed"]:
@@ -156,61 +193,57 @@ func _find_junctions() -> Array:
 			var inward: Vector2 = ((pts[0] - pts[1]) if end == 0 else (pts.back() - pts[pts.size() - 2])).normalized()
 			var host := _host_at(p, i)
 			if host < 0:
+				_dead_ends.append([i, end])
 				continue
 			var other: Dictionary = chains[host]
 			var hit := _closest_on(other, p)
 			if not chain["asphalt"]:
 				if other["asphalt"]:
 					info[i]["trim"][end] = other["width"] * 0.5
-					info[host]["gaps"].append([hit[0], chain["width"] * 0.5 + 0.3, -inward])
 				continue
 			if not other["asphalt"]:
 				continue
-			var away: Array[Vector2] = []
+			var join := {"chain": i, "host": host, "point": p, "inward": inward,
+					"host_point": hit[0], "host_dir": hit[1], "round": false}
 			var at_end := _end_of(other, p)
 			if at_end >= 0:
 				var opts: Array = other["points"]
 				var leave: Vector2 = ((opts[1] - opts[0]) if at_end == 0 else (opts[opts.size() - 2] - opts.back())).normalized()
 				if leave.dot(inward) > 0.7:
 					continue  # the road just carries on under another name
+				# An L corner: the bigger road runs on to cover the corner square.
 				var major: bool = chain["width"] > other["width"] or (is_equal_approx(chain["width"], other["width"]) and i < host)
 				if major:
 					info[i]["trim"][end] = -other["width"] * 0.5
-					info[i]["gaps"].append([p, other["width"] * 0.5 + FILLET, leave])
 					info[i]["neighbours"].append(host)
 					continue
-				away.append(leave)
+				join["host_dir"] = leave
 			elif other["closed"] and _length(other) < 150.0:
-				# A roundabout: the road runs a little way into the curved ring (it sits lower,
-				# so the ring stays on top) instead of curved corners against a curved edge.
+				# A roundabout: the road runs a little way under the ring (which sits higher),
+				# and curved corners round its edges onto the ring's outside.
 				info[i]["trim"][end] = other["width"] * 0.5 - 1.5
 				info[i]["neighbours"].append(host)
 				info[host]["neighbours"].append(i)
-				info[host]["gaps"].append([hit[0], chain["width"] * 0.5 + 1.2, -inward])
+				info[i]["gaps"].append([p, other["width"] * 0.5 + PAINT_GAP])
+				join["round"] = true
+				_joins.append(join)
 				continue
-			else:
-				var tangent: Vector2 = hit[1]
-				away.append(tangent)
-				away.append(-tangent)
 			info[i]["trim"][end] = other["width"] * 0.5
 			info[i]["neighbours"].append(host)
 			info[host]["neighbours"].append(i)
-			var gap_half: float = chain["width"] * 0.5 + FILLET
-			info[host]["gaps"].append([hit[0], gap_half, -inward])
-			for u: Vector2 in away:
-				if absf(u.dot(inward)) < 0.8:
-					info[i]["fillets"].append({"point": p, "inward": inward, "along": u,
-							"host_half": other["width"] * 0.5, "own_half": chain["width"] * 0.5, "top": 0.0, "host": host})
-			# Its own kerbs stop where the curved corners start.
-			info[i]["gaps"].append([p - inward * other["width"] * 0.5, FILLET, Vector2.ZERO])
+			info[i]["gaps"].append([p, other["width"] * 0.5 + PAINT_GAP])
+			_joins.append(join)
 	# Roads that cross in the middle (the highway and the gate roads, lanes and alleys).
 	for i in chains.size():
 		for j in range(i + 1, chains.size()):
 			for spot: Vector2 in _crossings(chains[i], chains[j]):
 				for pair in [[i, j], [j, i]]:
 					var other: Dictionary = chains[pair[1]]
-					info[pair[0]]["gaps"].append([spot, other["width"] * 0.5 + 0.4, Vector2.ZERO])
+					info[pair[0]]["gaps"].append([spot, other["width"] * 0.5 + 0.4])
 					info[pair[0]]["crossings"].append([spot, other["width"] * 0.5 + 0.5])
+				if chains[i]["asphalt"] and chains[j]["asphalt"]:
+					_crosses.append({"a": i, "b": j, "spot": spot,
+							"dir_a": _closest_on(chains[i], spot)[1], "dir_b": _closest_on(chains[j], spot)[1]})
 	return info
 
 
@@ -222,17 +255,114 @@ func _length(chain: Dictionary) -> float:
 	return total
 
 
-## The asphalt (or any, for paver paths) chain whose middle line passes through p.
+## The chain whose middle line passes through p (the widest). A road that p lies in the
+## middle of wins over one that only ends there, so a lane and a link meeting a cross road
+## from opposite sides both join the cross road (not each other).
 func _host_at(p: Vector2, skip: int) -> int:
 	var best := -1
+	var best_middle := false
 	for j in chains.size():
 		if j == skip:
 			continue
 		var hit := _closest_on(chains[j], p)
-		if (hit[0] as Vector2).distance_to(p) < 0.6:
-			if best < 0 or chains[j]["width"] > chains[best]["width"]:
-				best = j
+		if (hit[0] as Vector2).distance_to(p) >= 0.6:
+			continue
+		var middle := _end_of(chains[j], p) < 0
+		if best < 0 or (middle and not best_middle) \
+				or (middle == best_middle and chains[j]["width"] > chains[best]["width"]):
+			best = j
+			best_middle = middle
 	return best
+
+
+## Session 76: fills in where the asphalt and the kerb gaps are (RoadArea).
+func _fill_area(map: Dictionary, junctions: Array) -> void:
+	area = RoadArea.new()
+	RoadArea.current = area
+	for i in chains.size():
+		var chain: Dictionary = chains[i]
+		var pts: Array = chain["points"].duplicate()
+		if not chain["closed"]:
+			# A road that runs on past an L corner covers the corner square too.
+			var trim: Array = junctions[i]["trim"]
+			if trim[0] < 0.0:
+				pts[0] = pts[0] + (pts[0] - pts[1]).normalized() * -trim[0]
+			if trim[1] < 0.0:
+				pts[-1] = pts[-1] + (pts[-1] - pts[-2]).normalized() * -trim[1]
+		area.add_road(i, pts, chain["width"], chain["closed"], chain["asphalt"])
+	# Crossings through the spine road's planters (where paths cross).
+	var spine: Dictionary = map.get("SPINE_TRACKS", {})
+	for gap: Array in spine.get("path_gaps", []):
+		for side in [-1, 1]:
+			if int(gap[1]) == 0 or int(gap[1]) == side:
+				area.add_gap_circle(Vector2(gap[0], spine["road_half"] * side), gap[2])
+	# Where the blue run-and-cycle track and the horse track cross a road (the gate roads).
+	for key in ["BIKE_TRACK", "HORSE_TRACK"]:
+		var track: Dictionary = map.get(key, {})
+		if track.is_empty():
+			continue
+		var loop := EdgeBuilder.rounded_rect(track["half"], track.get("radius", 0.0))
+		for k in loop.size():
+			area.add_gap_line(loop[k], loop[(k + 1) % loop.size()], track["width"] * 0.5 + 0.3)
+	for crossing: Dictionary in map.get("HORSE_CROSSINGS", []):
+		var a: Vector3 = crossing["from"]
+		var b: Vector3 = crossing["to"]
+		area.add_gap_line(Vector2(a.x, a.z), Vector2(b.x, b.z), HORSE_CROSSING_HALF)
+	# Car parks: their kerbs and layout are DistrictDetail's; the road kerbs stop at them.
+	for lot: Rect2 in map.get("PARKING_AREAS", []):
+		area.add_gap_rect(lot.grow(0.5))
+	if map.has("PLAZA"):
+		area.add_gap_circle(map["PLAZA"]["centre"], map["PLAZA"]["radius"] + PLAZA_REACH)
+	for list_name: String in GAP_LISTS:
+		for item in map.get(list_name, []):
+			_add_gap_item(item)
+	# Car parks listed in PARKING_LOTS (when the data has it): no kerb inside a lot, and a
+	# gap all along each entrance, from where it leaves the road (at) to the lot (lot_at).
+	for lot: Dictionary in map.get("PARKING_LOTS", []):
+		for key in ["area", "rect", "bounds"]:
+			if lot.get(key) is Rect2:
+				area.add_gap_rect((lot[key] as Rect2).grow(0.5))
+		for entrance: Dictionary in lot.get("entrances", []):
+			var half: float = entrance.get("width", 6.0) * 0.5 + 0.5
+			var ends: Array = []
+			for key in ["at", "lot_at"]:
+				if entrance.has(key):
+					var p = entrance[key]
+					ends.append(Vector2(p.x, p.z) if p is Vector3 else p)
+			if ends.size() == 2:
+				# If `at` is in the middle of a road, start the gap where the entrance leaves
+				# that road's asphalt, so the kerb on the far side of the road stays. (The
+				# entrance's own road, the one the lot end is on, doesn't count.)
+				var own := area.road_at(ends[1])
+				var dir: Vector2 = (ends[1] - ends[0]).normalized()
+				var walked := 0.0
+				while walked < ends[0].distance_to(ends[1]) and area.road_at(ends[0] + dir * walked, 0.0, own) >= 0:
+					walked += 0.25
+				var start: Vector2 = ends[0] + dir * walked
+				area.add_gap_line(start, ends[1], half)
+				if area.road_at(ends[0], 0.5, own) < 0:
+					area.add_gap_circle(ends[0], half)
+			if not ends.is_empty():
+				area.add_gap_circle(ends.back(), half)
+
+
+## One kerb gap from a data list: a point, {position, width}, or {from, to, width}.
+func _add_gap_item(item) -> void:
+	var flat := func(v) -> Vector2:
+		return Vector2(v.x, v.z) if v is Vector3 else v
+	if item is Vector2 or item is Vector3:
+		area.add_gap_circle(flat.call(item), 3.0)
+		return
+	if not item is Dictionary:
+		return
+	var half: float = item.get("half", item.get("width", 6.0) * 0.5)
+	if item.has("from") and item.has("to"):
+		area.add_gap_line(flat.call(item["from"]), flat.call(item["to"]), half)
+		return
+	for key in ["position", "at", "centre"]:
+		if item.has(key):
+			area.add_gap_circle(flat.call(item[key]), half)
+			return
 
 
 ## [closest point, unit direction there] on a chain's middle line.
@@ -379,18 +509,10 @@ func _build_chain(index: int, info: Dictionary) -> void:
 					[Vector2(u0, v_a), Vector2(u1, v_a), Vector2(u0, v_b), Vector2(u1, v_b)])
 	if not chain["asphalt"]:
 		return
-	for fillet: Dictionary in info["fillets"]:
-		# Just under both roads it joins, so it never shares their height.
-		fillet["top"] = minf(top, chains[fillet["host"]]["top"]) - LEVEL_STEP * 0.5
-		_fillet(fillet, top)
-	if not chain["name"] in NO_KERB:
-		_kerbs(pts, sides, closed, half, top, info["gaps"])
-	var no_paint: Array = []
-	for g in info["gaps"]:
-		if g[2] == Vector2.ZERO:
-			no_paint.append([g[0], g[1]])
-	for c in info["crossings"]:
-		no_paint.append(c)
+	# Kept for the kerbs: the road's edges are these points moved half the width sideways.
+	chain["drawn"] = pts
+	chain["sides"] = sides
+	var no_paint: Array = info["gaps"] + info["crossings"]
 	var one_way: int = ONE_WAY.get(chain["name"], 0)
 	if one_way == 0:
 		_centre_line(pts, along, closed, top, no_paint)
@@ -467,74 +589,107 @@ func _noise(x: float) -> float:
 	return 0.5 + 0.3 * sin(x * 1.7) + 0.2 * sin(x * 4.3 + 1.1)
 
 
-## The curved corner piece between a road that ends and the road it meets.
-func _fillet(f: Dictionary, top: float) -> void:
-	var d: Vector2 = f["inward"]
-	var u: Vector2 = f["along"]
-	var corner: Vector2 = f["point"] - d * f["host_half"] + u * f["own_half"]
-	var t1 := corner - d * FILLET
-	var t2 := corner + u * FILLET
-	var centre := corner - d * FILLET + u * FILLET
-	var arc: Array = []
-	for s in 7:  # from t1 (centre - u R) round to t2 (centre + d R)
-		var angle := PI * 0.5 * s / 6.0
-		arc.append(centre + (-u * cos(angle) + d * sin(angle)) * FILLET)
-	arc[0] = t1
-	arc[6] = t2
-	for s in 6:
-		_tri("asphalt", [corner, arc[s], arc[s + 1]], f["top"], Color.WHITE, corner / TILE, arc[s] / TILE, arc[s + 1] / TILE)
-	# The kerb follows the curve, set back from the road.
-	for s in 6:
-		var a0: Vector2 = arc[s]
-		var a1: Vector2 = arc[s + 1]
-		var o0: Vector2 = a0 + (centre - a0).normalized() * KERB_WIDTH
-		var o1: Vector2 = a1 + (centre - a1).normalized() * KERB_WIDTH
-		_kerb_piece(a0, a1, o0, o1, top)
-	stats["fillets"] += 1
+## A curved corner piece: asphalt filling the corner up to the curve, just under both
+## roads it joins, so it never shares their height.
+func _fillet(corner: Dictionary) -> void:
+	var top: float = minf(chains[corner["chain"]]["top"], chains[corner["host"]]["top"]) - LEVEL_STEP * 0.5
+	var poly: PackedVector2Array = corner["poly"]
+	var tris := Geometry2D.triangulate_polygon(poly)
+	for k in range(0, tris.size(), 3):
+		var a := poly[tris[k]]
+		var b := poly[tris[k + 1]]
+		var c := poly[tris[k + 2]]
+		_tri("asphalt", [a, b, c], top, Color.WHITE, a / TILE, b / TILE, c / TILE)
 
 
-## Low kerbs along both edges, with gaps where other roads and paths join.
-func _kerbs(pts: Array, sides: Array, closed: bool, half: float, top: float, gaps: Array) -> void:
-	var n := pts.size()
-	var count := n if closed else n - 1
-	for side in [-1.0, 1.0]:
-		for k in count:
-			var a := k
-			var b := (k + 1) % n
-			var mid: Vector2 = (pts[a] + pts[b]) * 0.5
-			var out_dir: Vector2 = (sides[a] + sides[b]).normalized() * side
-			if _in_gap(mid, out_dir, gaps):
-				continue
-			var i0: Vector2 = pts[a] + sides[a] * half * side
-			var i1: Vector2 = pts[b] + sides[b] * half * side
-			var o0: Vector2 = pts[a] + sides[a] * (half + KERB_WIDTH) * side
-			var o1: Vector2 = pts[b] + sides[b] * (half + KERB_WIDTH) * side
-			_kerb_piece(i0, i1, o0, o1, top)
-
-
-func _in_gap(mid: Vector2, out_dir: Vector2, gaps: Array) -> bool:
-	for g in gaps:
-		var spot: Vector2 = g[0]
-		var gap_half: float = g[1]
-		var side: Vector2 = g[2]
-		if mid.distance_to(spot) > gap_half:
+## Session 76: the kerbs. Every road edge, every curved corner and the end of every road
+## that just stops is a kerb line; RoadKerbs cuts them where they'd lie on other asphalt or
+## in a gap. The runs that are left are drawn as raised kerbs and given to KerbBumps.
+func _build_kerbs() -> void:
+	kerbs = RoadKerbs.new(area)
+	for i in chains.size():
+		var chain: Dictionary = chains[i]
+		if not chain["asphalt"] or not chain.has("drawn"):
 			continue
-		if side == Vector2.ZERO or side.dot(out_dir) > 0.3:
-			return true
-	return false
+		var pts: Array = chain["drawn"]
+		var sides: Array = chain["sides"]
+		var half: float = chain["width"] * 0.5
+		for side in [-1.0, 1.0]:
+			var edge: Array = []
+			var out: Array = []
+			for k in pts.size():
+				edge.append(pts[k] + sides[k] * half * side)
+				out.append((sides[k] as Vector2).normalized() * side)
+			kerbs.add_line(edge, out, chain["closed"], i)
+	for f in corners.size():
+		var arc: Array = corners[f]["arc"]
+		var centre: Vector2 = corners[f]["centre"]
+		kerbs.add_line(arc, arc.map(func(q): return (centre - q).normalized()), false, -1, f)
+	# A road that just stops (and doesn't run into a car park or the Plaza): a kerb across its end.
+	for dead: Array in _dead_ends:
+		var chain: Dictionary = chains[dead[0]]
+		if not chain["asphalt"] or not chain.has("drawn"):
+			continue
+		var pts: Array = chain["drawn"]
+		var k: int = 0 if dead[1] == 0 else pts.size() - 1
+		var p: Vector2 = pts[k]
+		if area.in_gap(p):
+			continue
+		var ahead: Vector2 = ((pts[0] - pts[1]) if k == 0 else (pts[k] - pts[k - 1])).normalized()
+		var across: Vector2 = Vector2(-ahead.y, ahead.x) * float(chain["width"]) * 0.5
+		kerbs.add_line([p - across, p + across], [ahead, ahead], false, dead[0])
+		stats["dead_end_caps"] += 1
+	bumps = KerbBumps.new()
+	bumps.name = "KerbBumps"
+	add_child(bumps)
+	for run: Dictionary in kerbs.runs:
+		_kerb_run(run)
+		var middle: Array = []
+		for k in run["points"].size():
+			middle.append(run["points"][k] + run["out"][k] * GameConfig.KERB_WIDTH * 0.5)
+		if run["closed"]:
+			middle.append(middle[0])
+		bumps.add_line(middle)
+	stats["kerb_runs"] = kerbs.runs.size()
+	stats["kerb_metres"] = roundi(kerbs.length())
 
 
-## One bit of kerb: a top and the face towards the road.
-func _kerb_piece(i0: Vector2, i1: Vector2, o0: Vector2, o1: Vector2, top: float) -> void:
-	_quad("kerb", [i0, o0, i1, o1], KERB_TOP, [KERB, KERB, KERB, KERB], [i0, o0, i1, o1])
-	var a := Vector3(i0.x, top - 0.01, i0.y)
-	var b := Vector3(i1.x, top - 0.01, i1.y)
-	var c := Vector3(i0.x, KERB_TOP, i0.y)
-	var d := Vector3(i1.x, KERB_TOP, i1.y)
-	var facing := Vector3(i0.x - o0.x, 0, i0.y - o0.y).normalized()
-	_tri3("kerb", [a, b, c], facing, KERB)
-	_tri3("kerb", [b, d, c], facing, KERB)
-	stats["kerb_pieces"] += 1
+## One kerb run as a raised strip: a top, the face towards the road, the back face and an
+## end at each open end.
+func _kerb_run(run: Dictionary) -> void:
+	var pts: Array = run["points"]
+	var outs: Array = run["out"]
+	var n := pts.size()
+	var count := n if run["closed"] else n - 1
+	var top := ASPHALT_TOP + GameConfig.KERB_HEIGHT
+	var width := GameConfig.KERB_WIDTH
+	for k in count:
+		var a: Vector2 = pts[k]
+		var b: Vector2 = pts[(k + 1) % n]
+		var oa: Vector2 = a + (outs[k] as Vector2) * width
+		var ob: Vector2 = b + (outs[(k + 1) % n] as Vector2) * width
+		_quad("kerb", [a, oa, b, ob], top, [KERB, KERB, KERB, KERB], [a, oa, b, ob])
+		var out: Vector2 = ((outs[k] as Vector2) + (outs[(k + 1) % n] as Vector2)).normalized()
+		_wall(a, b, top, -out, KERB_FACE)
+		_wall(oa, ob, top, out, KERB_FACE)
+		stats["kerb_pieces"] += 1
+	if not run["closed"]:
+		for k in [0, n - 1]:
+			var p: Vector2 = pts[k]
+			var o: Vector2 = p + (outs[k] as Vector2) * width
+			var end_dir: Vector2 = (pts[0] - pts[1]) if k == 0 else (pts[k] - pts[k - 1])
+			_wall(p, o, top, end_dir.normalized(), KERB_FACE)
+
+
+## A flat upright face from a to b, from the ground up to `top`, facing `facing` (flat).
+func _wall(a: Vector2, b: Vector2, top: float, facing: Vector2, colour: Color) -> void:
+	var face := Vector3(facing.x, 0, facing.y)
+	var a0 := Vector3(a.x, 0.0, a.y)
+	var b0 := Vector3(b.x, 0.0, b.y)
+	var a1 := Vector3(a.x, top, a.y)
+	var b1 := Vector3(b.x, top, b.y)
+	_tri3("kerb", [a0, b0, a1], face, colour)
+	_tri3("kerb", [b0, b1, a1], face, colour)
 
 
 ## Yellow dashes down the middle.
@@ -621,7 +776,8 @@ func _near(p: Vector2, spots: Array, extra := 0.0) -> bool:
 # --- Mesh batching -------------------------------------------------------------------
 
 func _batch(kind: String, at: Vector2) -> Dictionary:
-	var key := "%s|%d|%d" % [kind, floori(at.x / CELL), floori(at.y / CELL)]
+	# A number key (kind, square) is much quicker than building a text key every triangle.
+	var key := Vector3i(KINDS.find(kind), floori(at.x / CELL), floori(at.y / CELL))
 	if not _batches.has(key):
 		_batches[key] = {"kind": kind, "verts": PackedVector3Array(), "normals": PackedVector3Array(),
 				"colours": PackedColorArray(), "uvs": PackedVector2Array()}
@@ -689,7 +845,7 @@ func _material(kind: String) -> Material:
 
 
 func _finish() -> void:
-	for key: String in _batches:
+	for key: Vector3i in _batches:
 		var batch: Dictionary = _batches[key]
 		if batch["verts"].is_empty():
 			continue
@@ -703,7 +859,7 @@ func _finish() -> void:
 		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 		mesh.surface_set_material(0, _material(batch["kind"]))
 		var view := MeshInstance3D.new()
-		view.name = key.replace("|", "_").replace("-", "m")
+		view.name = ("%s_%d_%d" % [batch["kind"], key.y, key.z]).replace("-", "m")
 		view.mesh = mesh
 		view.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		if batch["kind"] in ["yellow", "white"]:

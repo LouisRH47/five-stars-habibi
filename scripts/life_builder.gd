@@ -37,7 +37,11 @@ func _ready() -> void:
 	var list: Array = _map.get("BUGGIES", [])
 	for i in list.size():
 		var look := LifeLooks.buggy(list[i]["colour"])
-		_add("Buggy_%d" % i, "buggy", list[i], GameConfig.BUGGY_SPEED, Vector3(1.3, 1.9, 2.4), look[0], look[1])
+		var buggy := _add("Buggy_%d" % i, "buggy", list[i], GameConfig.BUGGY_SPEED, Vector3(1.3, 1.9, 2.4), look[0], look[1])
+		# Session 75: buggies follow the roads, keep to their side and slow at junctions.
+		buggy.slow_spots = list[i].get("slow", [])
+		if list[i].get("lane", 0.0) > 0.0:
+			buggy.keep_right(list[i]["lane"])
 	list = _map.get("HORSE_RIDERS", [])
 	for i in list.size():
 		var look := LifeLooks.horse(list[i]["colour"])

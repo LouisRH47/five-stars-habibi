@@ -34,6 +34,19 @@ const SPOTS := {
 	"blue_track": [Vector3(-438, 2.0, 0), Vector3(-438, 0.3, -40)],
 	"spine_grass": [Vector3(0, 2.0, -20), Vector3(40, 0.3, -5)],
 	"cluster_playground_top": [Vector3(48, 40, -100), Vector3(48, 0, -126)],
+	# lane R1
+	"r1_roundabout_above": [Vector3(-118, 26, -40), Vector3(-132, 0, -62)],
+	"r1_c1_entrance_top": [Vector3(48, 30, -22), Vector3(48, 0, -45)],
+	"r1_c4_entrance_top": [Vector3(73, 30, 18), Vector3(73, 0, 40)],
+	"r1_lane_corner_top": [Vector3(96, 22, -36), Vector3(106, 0, -50)],
+	"r1_spine_west_junction": [Vector3(-272, 10, 10), Vector3(-290, 0, -6)],
+	"r1_spine_east_end": [Vector3(378, 12, 12), Vector3(396, 0, 0)],
+	"r1_institute_access_top": [Vector3(-168, 30, -6), Vector3(-190, 0, -20)],
+	"r1_gate_north": [Vector3(-450, 30, -160), Vector3(-430, 0, -190)],
+	"r1_kerb_close": [Vector3(58, 1.2, -1.2), Vector3(70, 0.0, -3.4)],
+	"r1_c1_entrance_ground": [Vector3(40, 1.8, -34), Vector3(48, 0.2, -47)],
+	"r1_institute_back_road": [Vector3(-150, 2.4, -61), Vector3(-185, 0.3, -64)],
+	"r1_institute_access_ground": [Vector3(-183, 2.2, 1), Vector3(-190, 0.5, -28)],
 }
 
 var _main: Node

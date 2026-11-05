@@ -52,8 +52,8 @@ func _ready() -> void:
 	for area: Rect2 in _map["PAVED_AREAS"]:
 		_flat(area.get_center(), area.size, 0.02, PAVING, 0.03)
 	# Session 61: smooth road strips with markings, kerbs and curved corners.
-	RoadMesh.build(self, _map)
-	SpineTracks.build(self, _map)  # Session 62: planters and red walking tracks on the spine road
+	var roads := RoadMesh.build(self, _map)
+	SpineTracks.build(self, _map, roads.bumps)  # Session 62: planters and red walking tracks on the spine road
 	for spot: Vector2 in _map["BOLLARDS"]:
 		var post := StaticBody3D.new()
 		post.position = Vector3(spot.x, 0, spot.y)

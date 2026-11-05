@@ -551,11 +551,16 @@ const SPINE_TREES := 45
 const KERB_IMPACT_HARDNESS := 0.35     # the spine kerbs count as a soft bump (rigid walls are 1.0)
 
 # --- Fix pass Session 75: ride freely, jump on foot, buggies on roads ---
-# (Session 75 numbers go here)
+const KERB_SPEED_KEEP := 0.9          # share of speed kept riding over a kerb (a little lost)
+const KERB_SHAKE := 0.2               # camera shake riding over a kerb at full speed (0 to 1)
+const KERB_BUMP_COOLDOWN := 0.25      # seconds before the next kerb counts (two kerbs close together)
+const BUGGY_JUNCTION_SPEED_SHARE := 0.45  # buggies slow to this share of their speed at junctions
+const BUGGY_SLOW_RAMP := 5.0          # metres over which a buggy slows down before a junction
 
 
 # --- Fix pass Session 76: kerbs that join up and curved corners ---
-# (Session 76 numbers go here)
+const KERB_HEIGHT := 0.12             # metres a kerb stands above the road
+const KERB_WIDTH := 0.25              # metres across the top of a kerb
 
 
 # --- Fix pass Session 77: square Plaza floor and the Dune Drip buggy park ---
@@ -587,7 +592,11 @@ const KERB_IMPACT_HARDNESS := 0.35     # the spine kerbs count as a soft bump (r
 
 
 # --- Fix pass Session 75 (people): jumping on foot ---
-# (numbers go here)
+const JUMP_HEIGHT := 0.6              # m, how high Space lifts the rider on foot
+const JUMP_COOLDOWN := 0.6            # s before you can jump again (counted from take-off)
+const JUMP_LAND_TIME := 0.3           # s the knees bend when you land
+const JUMP_LAND_SQUAT := 0.16         # m the hips drop in that landing bend
+const JUMP_TUCK := 0.22               # m the feet lift towards the body in the air
 
 # --- Fix pass Session 81 (people): swimmers and the lifeguard ---
 # (numbers go here)

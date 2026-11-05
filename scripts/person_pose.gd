@@ -18,6 +18,11 @@ var feet: Array[Vector3] = [Vector3(-0.1, 0.3, -0.1), Vector3(0.1, 0.3, -0.1)]
 var hands: Array[Vector3] = [Vector3(-0.25, 1.05, -0.5), Vector3(0.25, 1.05, -0.5)]
 ## For "pedal": degrees the body leans forward.
 var lean := 0.0
+## Session 75 (the jump on foot), on top of standing, walking or jogging:
+## squat: metres the hips drop while the feet stay where they are (landing).
+## tuck: metres the feet lift up towards the body (in the air).
+var squat := 0.0
+var tuck := 0.0
 
 var _time := 0.0
 var _bones := {}
@@ -33,6 +38,8 @@ func _process_modification_with_delta(delta: float) -> void:
 		_lie()
 	elif mode == "sit":
 		_sit()
+	if (squat > 0.001 or tuck > 0.001) and mode in ["", "wave"]:
+		_bend_legs()
 
 
 func _wave() -> void:
@@ -67,6 +74,20 @@ func _sit() -> void:
 		_point(side + "Leg", side + "Foot", Vector3.DOWN)
 		_reach(side + "Arm", side + "ForeArm", side + "Hand",
 				Vector3(x, hip_height - 0.1, -0.35), Vector3(x * 3, -0.3, 0.1))
+
+
+## Bends the knees: the hips go down by `squat` and the feet up by `tuck`.
+func _bend_legs() -> void:
+	var to_me := person.skeleton_to_me
+	var feet := [to_me * _at("LeftFoot"), to_me * _at("RightFoot")]
+	if squat > 0.001:
+		var skel := get_skeleton()
+		var hips := _bone("Hips")  # the root bone, so its position is in skeleton space
+		var down := to_me.affine_inverse().basis * Vector3(0, -squat, 0)
+		skel.set_bone_pose_position(hips, skel.get_bone_pose_position(hips) + down)
+	var lift := Vector3(0, tuck, -tuck * 0.3)
+	_reach("LeftUpLeg", "LeftLeg", "LeftFoot", feet[0] + lift, Vector3(0, 0.3, -1))
+	_reach("RightUpLeg", "RightLeg", "RightFoot", feet[1] + lift, Vector3(0, 0.3, -1))
 
 
 ## Bends a limb (upper bone, lower bone, end bone) so its end reaches `target`.

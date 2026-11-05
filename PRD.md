@@ -203,11 +203,11 @@ Keys are placeholders until the controls are tested. Controller support comes la
 | S or Down arrow | Brake, then roll slowly backwards |
 | A / D or Left / Right | Steer (only while moving) |
 | Shift | Sprint (uses stamina) |
-| Space | Handbrake |
+| Space | Handbrake on the bike. On foot: jump (about 0.6 m, short wait between jumps) |
 | B | Bike bell (people and kids look up and wave, cats move aside) |
 | E | Tap: accept order, Next order on the Delivered card. Hold 1.5 s at the door (on foot): pick up, drop off |
 | F | Get off the bike / get back on (only when nearly stopped) |
-| W A S D (on foot) | Walk. Shift to jog |
+| W A S D (on foot) | Walk. Shift to jog, Space to jump |
 | Q | Skip order |
 | I | Switch crash insurance on or off (shown on the phone) |
 | X | Rocket booster (once you own it, see "Shops and upgrades") |
@@ -534,7 +534,7 @@ Wahat Al Shams (واحة الشمس, "Sun Oasis") is a made-up eco community. It
 | Solar car parks | **In the gaps between clusters** (Plaza and C1, C1 and C2, C2 and C3, C4 and C5) | A short road off the ring road with car bays, every bay under a **solar panel roof**. Parked cars. Not behind the houses: homes go there instead |
 | Building sites | Where there's nothing yet: south of the spine's west end (where the horse ring was), the south-east block where a sixth cluster could go, and any other empty patch | Fence with a bilingual "Coming soon" banner, a crane, sand piles, a site cabin and a couple of workers. Later we can swap them for real buildings |
 
-*Who drives where:* cars only on the ring road and in the car parks, never in the lanes. Golf buggies only on the lanes inside the clusters and the spine paths, never on the ring road. People walk, and kids ride bikes and scooters, on the lanes and paths. Your bike can go everywhere except the horse track.
+*Who drives where:* cars only on the ring road and in the car parks, never in the lanes. Golf buggies only on the asphalt roads inside the ring road (the cluster lanes, the spine road, the spine loop, the roundabout and the road behind the C Institute), keeping to the right of the yellow line and slowing at junctions; never on the ring road. People walk, and kids ride bikes and scooters, on the lanes and paths. Your bike can go everywhere except the horse track.
 
 *The homes (joined rows, like the real ones):* homes are joined side by side in long rows with no gaps. Two rows sit back to back with just a wall between them, so each double row has a lane on both sides and every front door faces a lane. Now and then a small alley cuts through a row. Each cluster has 4 of these double rows of about 12 to 13 homes a side. Same 3 types as the real place: **90 courtyard villas, 8 garden villas and 2 signature villas per cluster** (the house kit from Session 26 stays: Louis likes the houses). Each double row is built as one merged mesh, and far-away rows use a simpler version, so 500 homes stay fast. The cluster mini-plazas (cooling tower, playground, benches) stay.
 
@@ -708,6 +708,8 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 5 Nov 2026 | Fix pass planned (Sessions 75 to 84): no invisible walls (red tracks can be ridden across), speed bumps only on the ring road, Space jumps on foot, buggies stay on roads, kerbs join up and corners are curved |
 | 5 Nov 2026 | Plaza gets one square paved floor touching every door (fountain stays); the Plaza road ends in a small buggy park behind Dune Drip; the mosque gets its own car park off the ring road |
 | 5 Nov 2026 | Textures: real CC0 photo textures from Poly Haven (running track blue and red, brick pavers, square concrete pavers), old grass, sand and water looks restored, new asphalt kept |
+| 5 Nov 2026 | Session 75: kerbs have no invisible walls; riding over one is a small bump (you keep 90% of your speed, never a crash). Speed bumps only on the ring road. Buggies drive only on roads, keep right of the yellow line and slow at junctions. Space jumps on foot (about 0.6 m) |
+| 5 Nov 2026 | Session 76: kerbs are raised (12 cm) and continuous, with gaps only at paths, crossings and car parks. Road corners are curved (about 6 m for lanes, 10 m for bigger roads); each cluster's lanes form a rounded loop; the C Institute road is one smooth curve |
 
 ## Sources
 

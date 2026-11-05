@@ -2657,7 +2657,7 @@ func _check_roads_polish() -> void:
 	var ray := PhysicsRayQueryParameters3D.create(Vector3(60, 0.3, 0), Vector3(60, 0.3, 7))
 	ray.exclude = [_bike.get_rid()]
 	var hit := space.intersect_ray(ray)
-	_check("Session 62: a kerb stops the bike riding onto the red track", not hit.is_empty() and String((hit["collider"] as Node).name).begins_with("SpineKerb"), "%s" % [hit.get("collider")])
+	_check("Session 62 (Session 75: no invisible walls): nothing invisible stops the bike riding onto the red track", hit.is_empty(), "%s" % [hit.get("collider")])
 	var open_gaps := 0
 	for gap: Array in spec["path_gaps"] + spec["road_gaps"]:
 		var side := -1.0 if int(gap[1]) < 0 else 1.0
@@ -2680,7 +2680,7 @@ func _check_roads_polish() -> void:
 	_check("Session 62: no palm stands on a red track", palms_clear, "")
 	var access_ok := false
 	for road: Dictionary in data["ROADS"]:
-		if road["name"] == "Institute Access" and _on_any_road(data, road["from"], -2.0):
+		if road["name"] == "Institute Access" and not access_ok and _on_any_road(data, road["from"], -2.0):  # Session 76: the first piece of the curve
 			access_ok = spec["path_gaps"].any(func(g): return absf(g[0] - road["from"].x) < 0.5)
 	_check("Session 62: the C Institute path joins the spine road through a crossing", access_ok, "")
 	var seats := _main.get_node("DistrictDetail/InstituteSeating")
@@ -2945,7 +2945,47 @@ func _check_fix_pass() -> void:
 ## Session 75: ride freely, jump on foot, buggies on roads.
 ## (Session 75 checks go here.)
 func _check_session75() -> void:
-	await process_frame
+	var roads: RoadMesh = _main.get_node_or_null("WahatBuilder/Roads")
+	if roads == null:
+		print("      no RoadMesh on this map, Session 75 checks skipped")
+		return
+	var data: Dictionary = (_main.get_node("WahatBuilder").data as Script).get_script_constant_map()
+	# 1) No invisible walls: the spine's solid kerbs are gone; kerbs give a small bump instead.
+	_check("Session 75: no invisible solid kerbs left", _main.find_children("SpineKerb*", "", true, false).is_empty(), "")
+	var bumps: KerbBumps = roads.bumps
+	_check("Session 75: riding across the spine planter crosses kerb lines", bumps != null
+			and bumps.crosses(Vector2(70, 0), Vector2(70, 9)), "")
+	var keep_speed: float = _bike.speed
+	_bike.speed = 5.0
+	var crash_before: Dictionary = _bike.last_crash.duplicate()
+	_bike.hit_kerb()
+	_check("Session 75: a kerb is a small bump (a little speed lost, no crash)", _bike.speed > 4.0 and _bike.speed < 5.0
+			and _bike.fallen_left <= 0.0 and _bike.last_crash == crash_before, "%.2f m/s" % _bike.speed)
+	_bike.speed = keep_speed
+	# 2) Speed bumps only on the ring road.
+	var ring: Vector2 = data["RING_ROAD"]["half"]
+	var inside: Array = []
+	for bump: Dictionary in data["SPEED_BUMPS"]:
+		var p: Vector3 = bump["position"]
+		if absf(absf(p.x) - ring.x) > 3.0 and absf(absf(p.z) - ring.y) > 3.0:
+			inside.append(p)
+	_check("Session 75: speed bumps only on the ring road", inside.is_empty() and data["SPEED_BUMPS"].size() > 0, "%s" % [inside])
+	# 4) Buggies drive on the roads, on their side, and slow at junctions.
+	var life: Node = _main.get_node_or_null("LifeBuilder")
+	if life == null:
+		return
+	var off: Array = []
+	var sided := 0
+	for mover in life.movers:
+		if mover.kind != "buggy":
+			continue
+		if mover.lane > 0.0 and not mover.slow_spots.is_empty():
+			sided += 1
+		for p: Vector3 in mover.points:
+			if not roads.area.on_asphalt(Vector2(p.x, p.z), 0.6):
+				off.append(p)
+	_check("Session 75: every buggy route runs on asphalt", off.is_empty(), "%s" % [off.slice(0, 4)])
+	_check("Session 75: buggies keep right of the yellow line and slow at junctions", sided == data["BUGGIES"].size(), "%d" % sided)
 
 # --- end of Session 75 checks ---
 
@@ -2953,7 +2993,38 @@ func _check_session75() -> void:
 ## Session 76: kerbs that join up and curved corners.
 ## (Session 76 checks go here.)
 func _check_session76() -> void:
-	await process_frame
+	var roads: RoadMesh = _main.get_node_or_null("WahatBuilder/Roads")
+	var tracks: SpineTracks = _main.get_node_or_null("WahatBuilder/SpineTracks")
+	if roads == null or tracks == null:
+		print("      no RoadMesh on this map, Session 76 checks skipped")
+		return
+	var data: Dictionary = (_main.get_node("WahatBuilder").data as Script).get_script_constant_map()
+	# 4) No kerb ends in mid-air (the same check as tests/road_mesh_test.gd).
+	var loose: Array = load("res://tests/road_mesh_test.gd").dangling_ends(roads.kerbs, tracks.kerb_lines, roads.area)
+	_check("Session 76: no kerb ends in mid-air", loose.is_empty(), "%s" % [loose.slice(0, 4)])
+	# 1) Raised kerbs that wrap the whole roundabout (island and outside).
+	var centre: Vector2 = data["ROUNDABOUTS"][0]["centre"]
+	var island: bool = roads.kerbs.runs.any(func(r): return r["closed"] and (r["points"][0] as Vector2).distance_to(centre) < 7.0)
+	_check("Session 76: raised kerbs wrap the roundabout's island", island and GameConfig.KERB_HEIGHT >= 0.08, "")
+	# 2) Curved corners: at the roundabout, the cluster lane loops and where roads meet.
+	var near_round := roads.corners.filter(func(c): return (c["corner"] as Vector2).distance_to(centre) < 20.0)
+	var loops := roads.chains.filter(func(c): return String(c["name"]).ends_with(" Lane") and c["closed"])
+	_check("Session 76: curved corners at junctions, the roundabout and the cluster lane loops",
+			roads.corners.size() >= 80 and near_round.size() == 6 and loops.size() == 5,
+			"%d corners, %d at the roundabout, %d lane loops" % [roads.corners.size(), near_round.size(), loops.size()])
+	# 3) The C Institute access road is one smooth curve from the spine road to the door.
+	var access: Array = data["ROADS"].filter(func(r): return r["name"] == "Institute Access")
+	_check("Session 76: the C Institute access road is a smooth curve", access.size() >= 8
+			and access[0]["from"].distance_to(Vector2(-186, 0)) < 0.5 and access.back()["to"].distance_to(Vector2(-197, -33)) < 0.5, "")
+	# Nothing placed beside the roads stands on a curved corner.
+	var on_corner := 0
+	var details: Node = _main.find_child("StreetDetails", true, false)
+	var heads: Array = details.lamp_heads if details != null else []
+	for head: Transform3D in heads:
+		var pole: Vector3 = head.origin - head.basis * Vector3(0, 0, 1.2)
+		if roads.area.fillet_at(Vector2(pole.x, pole.z)) >= 0:
+			on_corner += 1
+	_check("Session 76: no street lamp stands on a curved corner", on_corner == 0, "%d" % on_corner)
 
 # --- end of Session 76 checks ---
 
@@ -3016,7 +3087,41 @@ func _check_session83() -> void:
 
 ## Session 75 (people): jumping on foot.
 func _check_session75_people() -> void:
-	await process_frame
+	if _on_foot == null:
+		return
+	var walker: Node = _on_foot.walker
+	var keep_bike := _bike.global_transform
+	var start: Vector3 = _main.get_node("PlaceBuilder").data.get_script_constant_map()["START"]["position"]
+	_move_bike_to(start)
+	_check("on the bike Space doesn't make the rider jump", not walker.jump(), "")
+	_check("you can get off for the jump test", _on_foot.get_off(), "")
+	walker.velocity = Vector3.ZERO
+	for i in 20:  # settle on the ground
+		await physics_frame
+	var ground: float = walker.global_position.y
+	var jumps_before: int = walker.jumps
+	Input.action_press("handbrake")
+	await physics_frame
+	Input.action_release("handbrake")
+	var top := ground
+	var landed := false
+	var tucked := false
+	for i in 90:
+		await physics_frame
+		top = maxf(top, walker.global_position.y)
+		tucked = tucked or walker.get_node("Model").pose.tuck > 0.05
+		landed = landed or walker.landing()
+	var rise := top - ground
+	_check("Space on foot jumps about 0.6 m", walker.jumps == jumps_before + 1 and rise > 0.45 and rise < 0.8, "%.2f m" % rise)
+	_check("the knees pull up in the air and bend on landing", tucked and landed, "")
+	walker.jump()
+	_check("a second jump has to wait a moment", not walker.jump(), "")
+	walker.global_position = _bike.global_position + Vector3.UP * 0.05
+	walker.velocity = Vector3.ZERO
+	_on_foot.get_on()
+	_check("back on the bike after the jump test", not _on_foot.on_foot, "")
+	_bike.global_transform = keep_bike
+	_bike.velocity = Vector3.ZERO
 
 # --- end of Session 75 (people) checks ---
 

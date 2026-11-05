@@ -353,6 +353,21 @@ func hit_speed_bump() -> void:
 	went_over_bump.emit(strength)
 
 
+## Session 75: riding over a low kerb (KerbBumps calls this): the wheels roll up over it,
+## a small shake and a little speed lost. Never a crash.
+func hit_kerb() -> void:
+	var ratio := clampf(absf(speed) * 3.6 / GameConfig.BIKE_MAX_SPEED_KMH, 0.0, 1.0)
+	speed *= GameConfig.KERB_SPEED_KEEP
+	if not _hop_active:
+		_hop_height = 0.0
+		_hop_active = true
+		_hop_dist = 0.0
+		_hop_time = 0.0
+		_hop_backwards = speed < 0.0
+	if ratio > 0.2:
+		bumped.emit(GameConfig.KERB_SHAKE * ratio)
+
+
 func _update_stamina_and_speed(delta: float) -> void:
 	var pedal := Input.get_action_strength("move_forward")
 	var brake := Input.get_action_strength("move_back")

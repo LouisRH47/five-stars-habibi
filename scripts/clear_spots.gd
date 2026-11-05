@@ -100,6 +100,9 @@ func is_free(spot: Vector2, radius: float, track_ok := false) -> bool:
 		var closest := Geometry2D.get_closest_point_to_segment(spot, road["from"], road["to"])
 		if closest.distance_to(spot) < half + radius + 0.4:
 			return false
+	# Session 76: not on (or right beside) the curved corner of a junction.
+	if RoadArea.current != null and RoadArea.current.fillet_at(spot, radius + 0.4) >= 0:
+		return false
 	for box: Rect2 in _boxes:
 		if box.grow(radius).has_point(spot):
 			return false

@@ -69,7 +69,9 @@ def rounded(name,pts,width=6.0,r=14.0,steps=4):
 RING_RADIUS=12.0
 rounded('Ring Road',[(0,-205),(425,-205),(425,205),(-425,205),(-425,-205),(0,-205)],10.,RING_RADIUS,6)
 put('RING_ROAD',{'half':v2(425,205),'radius':RING_RADIUS,'width':10.0})
-for z in [-190,190]: road('Gate Road',(-490,z),(-425,z),10.)
+# Session 76: the gate roads start at the highway's middle (a T junction with curved corners);
+# they used to poke 8 m out past it and stop.
+for z in [-190,190]: road('Gate Road',(-482,z),(-425,z),10.)
 road('Highway',(-482,-245),(-482,245),10.)
 # Session 60 road plan (docs/road_plan_2026-11-05.svg). The ring road is the only main road:
 # it meets the two gates, the bus loop and the stables car park, nothing else.
@@ -83,15 +85,28 @@ rounded('Spine Loop',[(-125.6,-55.6),(-113,-40),(398,-40),(398,35),(-142,35),(-1
 rounded('Institute Back Road',[(-141,-63),(-290,-63),(-290,0)],6.)
 rounded('Plaza Road',[(-132,-71),(-132,-126),(-152,-126)],6.,16.)
 roundabouts=[{'centre':v2(-132,-62),'radius':9.0,'island':5.6}]
-for i in range(24):  # the roundabout ring, 24 short pieces (Session 61: was 10, now a smooth circle)
-    a0=2*math.pi*i/24; a1=2*math.pi*(i+1)/24
+for i in range(72):  # the roundabout ring in short pieces (Session 76: 72, so its kerb is a true circle)
+    a0=2*math.pi*i/72; a1=2*math.pi*(i+1)/72
     road('Institute Roundabout',(round(-132+9*math.cos(a0),2),round(-62+9*math.sin(a0),2)),(round(-132+9*math.cos(a1),2),round(-62+9*math.sin(a1),2)),6.)
 put('ROUNDABOUTS',roundabouts)
 # Session 62: the Domes Path is gone; the spine road's north red track links the domes now.
 # Session 52 (looks pass): the C Institute faces the spine, so its path comes up from the
 # spine road along the front and turns in at the door.
-road('Institute Access',(-186,0),(-186,-33),5.)
-road('Institute Door',(-186,-33),(-197,-33),5.)
+# Session 76: the access road is one smooth curve from the spine road up to the door (it
+# leaves the spine heading north and arrives at the door heading west), not two straights.
+def bezier(p0,p1,p2,p3,steps):
+    return [tuple(round((1-t)**3*p0[c]+3*(1-t)**2*t*p1[c]+3*(1-t)*t*t*p2[c]+t**3*p3[c],2) for c in (0,1))
+            for t in [j/steps for j in range(steps+1)]]
+access=bezier((-186,0),(-186,-24),(-188,-33),(-197,-33),12)
+for a,b in zip(access,access[1:]): road('Institute Access',a,b,5.)
+# Session 76: where each cluster's front and back cross roads are. The south clusters' front
+# road is 1 m further from the spine loop than before, so both sides have the same 1 m kerbed
+# island between the front road and the spine loop (it used to touch the loop's edge).
+def cluster_front(cz): return cz+79 if cz<0 else cz-78
+def cluster_back(cz): return cz-63 if cz<0 else cz+69
+LANE_CORNER=6.0   # curved inside corner where a lane (or the spine road) meets a road
+ROAD_CORNER=10.0  # curved inside corner where two bigger roads meet
+LANE_LOOP_RADIUS=9.0  # middle line; the inside corner of the 6 m lane is then about 6 m round
 homes=[]; plazas=[]; paving=[]; bollards=[]; cats=[]; kids=[]; gardeners=[]; plays=[]; works=[]
 for n,cx,cz in clusters:
     cluster=f'C{n}'; number=1
@@ -108,13 +123,16 @@ for n,cx,cz in clusters:
                     'approach':v3(rx+side*12,0,z)})
                 number+=1
     assert number==101
-    for offset in [-60,-30,0,30,60]:
+    # Session 76: the two outer lanes and the front and back cross roads are one closed
+    # loop with rounded corners (inside corner radius about 6 m), starting and ending in the
+    # middle of the back road so it closes on a straight. The three middle lanes join it.
+    back=cluster_back(cz); front=cluster_front(cz)
+    rounded(cluster+' Lane',[(cx,back),(cx+60,back),(cx+60,front),(cx-60,front),(cx-60,back),(cx,back)],6.,LANE_LOOP_RADIUS,6)
+    for offset in [-30,0,30]:
         x=cx+offset
-        back=cz-63 if cz<0 else cz+69; front=cz+79 if cz<0 else cz-79
         road(cluster+' Lane',(x,back),(x,front),6.)
         for dx in [-2,2]: bollards.append(v2(x+dx,cz+(74 if cz<0 else -74)))
-    for z in [cz-63,cz+79] if cz<0 else [cz-79,cz+69]: road(cluster+' Lane',(cx-60,z),(cx+60,z),6.)
-    road(cluster+' Link',(cx,cz+(79 if cz<0 else -79)),(cx,-40 if cz<0 else 35),6.)
+    road(cluster+' Link',(cx,front),(cx,-40 if cz<0 else 35),6.)
     # A cross alley between the halves of each row, not through a home.
     z=cz+(68 if cz<0 else -68)
     road(cluster+' Alley',(cx-60,z),(cx+60,z),4.)
@@ -183,8 +201,12 @@ palms=[v3(x,0,z) for z in [-4,4] for x in range(-310,381,45)] +[v3(-210,-.45,-15
 # Session 62: the spine road's cross-section, both sides: asphalt, a planter (kerb, grass,
 # shrubs) and a raised red walking track. Gaps: where a road joins (side -1 north, 1 south,
 # 0 both) the planter and track stop; at a path the planter becomes a marked crossing.
-put('SPINE_TRACKS',{'from_x':-334.0,'to_x':390.0,'road_half':3.0,'planter':2.0,'track':2.5,
- 'road_gaps':[[-290.0,-1,6.0]],
+# Session 76: road gaps are [x, side, planter half gap, track half gap]: the planter stops
+# where the road's curved corner starts (3 m road half + the 6 m corner), and the red track
+# stops where it meets that curve. The tracks end where the east junction's corner starts.
+put('ROAD_CORNERS',{'lane':LANE_CORNER,'road':ROAD_CORNER,'lane_roads':['Lane','Link','Spine Road','Car Park','Stables']})
+put('SPINE_TRACKS',{'from_x':-334.0,'to_x':398.0-3.0-LANE_CORNER,'road_half':3.0,'planter':2.0,'track':2.5,
+ 'road_gaps':[[-290.0,-1,3.0+LANE_CORNER,3.0+LANE_CORNER-math.sqrt(LANE_CORNER**2-(LANE_CORNER-2.0)**2)+0.1]],
  'path_gaps':[[-186.0,-1,3.0]]+[[x,0,3.0] for x in [-240.0,-145.0,-60.0,20.0,115.0,200.0,290.0,345.0]]})
 # Session 63: no bare sand. Sand stays only where the horses ride (the stables, the jumping
 # arena and the horse track); GroundType uses these for the tyre dust.
@@ -214,10 +236,11 @@ for n,cx,cz in clusters:
     back=cz-63 if cz<0 else cz+69
     # Riders come in heading -out; villas 1-50 are west of the middle lane (x < cx).
     rows=[['Villa 1–50','فيلا ١–٥٠'],['Villa 51–100','فيلا ٥١–١٠٠']]
-    entrances.append({'cluster':f'C{n}','lane_x':float(cx),'out':out,'front_z':float(cz+79*out),
-        'sign':v3(cx+5.0*out,0,cz+73.4*out),'sign_facing':0. if out>0 else 180.,
-        'police':v3(cx-5.6*out,0,cz+71.6*out),'police_facing':0. if out>0 else 180.,
-        'stop':v3(cx-4.3*out,0,cz+75.2*out),'stop_facing':180. if out>0 else 0.,
+    front=cluster_front(cz)
+    entrances.append({'cluster':f'C{n}','lane_x':float(cx),'out':out,'front_z':float(front),
+        'sign':v3(cx+5.0*out,0,front-5.6*out),'sign_facing':0. if out>0 else 180.,
+        'police':v3(cx-5.6*out,0,front-7.4*out),'police_facing':0. if out>0 else 180.,
+        'stop':v3(cx-4.3*out,0,front-3.8*out),'stop_facing':180. if out>0 else 0.,
         'left':rows[0] if out>0 else rows[1],'right':rows[1] if out>0 else rows[0],
         'bins':v3(cx-8,0,back-4.6*out)})
 put('CLUSTER_ENTRANCES',entrances)
@@ -227,7 +250,7 @@ put('POLICE_SIGNS',[{'position':v3(x,0,z),'facing':0. if z<0 else 180.} for x,z 
 # before the next road (decoration, not addresses: all 500 homes stay as they are).
 end_houses=[]
 for n,cx,cz in clusters:
-    front=cz+79 if cz<0 else cz-79; back=cz-63 if cz<0 else cz+69; alley=cz+(68 if cz<0 else -68)
+    front=cluster_front(cz); back=cluster_back(cz); alley=cz+(68 if cz<0 else -68)
     edges=[(front,3.),(back,3.),(alley,2.)]
     for row,count in enumerate([13,12,13,12]):
         rx=cx-45+row*30
@@ -261,7 +284,7 @@ def smooth(ctrl,steps=6):
 mx,mz=-33.5,-117.0  # the fountain
 majlis_paths=[
  smooth([(-31,-43.5),(-29,-60),(-37,-78),(-31,-96),(mx,mz+5.5)]),          # south: from the spine loop road
- smooth([(mx,mz-5.5),(-38,-134),(-30,-152),(-36,-170),(-28,-183),(-14.5,-189)]),  # north: to the back road
+ smooth([(mx,mz-5.5),(-38,-134),(-30,-152),(-36,-170),(-27,-178),(-14.5,-177)]),  # north: to Cluster 1's west lane (Session 76: the lane's corner is round now)
  smooth([(mx+5.5,mz-1),(-23,-121),(-14.5,-126)]),                       # east: the C1 cross row alley
  smooth([(mx-5.5,mz),(-44,-114),(-50.5,-112)]),                          # west: the car park
 ]
@@ -278,15 +301,105 @@ put('MAJLIS_GARDENS',{'area':rect(-48,-186,29,138),'name':'Majlis Gardens','arab
  'benches':bench_ring+[{'position':v3(-25.5,0,-84),'facing':-90.},{'position':v3(-41.5,0,-140),'facing':90.}],
  'palms':[v3(round(mx+10*math.cos(math.radians(a)),2),0,round(mz+10*math.sin(math.radians(a)),2)) for a in [45,135,225,315]]+[v3(-43,0,-70),v3(-23,0,-100),v3(-44,0,-130),v3(-22,0,-165),v3(-42,0,-180)],
  'majlis':v3(-41,0,-92),'bed':rect(-45,-178,9,12),'sign':v3(-26.5,0,-51),'sign_facing':0.,
- 'walk':[v3(x,0,z) for x,z in [(-30.5,-50),(-31,-96),(mx,mz+7),(mx+7,mz),(mx,mz-7),(-30,-152),(-28,-180),(-30,-152),(mx,mz-7),(mx-7,mz),(mx,mz+7),(-31,-96)]]})
+ 'walk':[v3(x,0,z) for x,z in [(-30.5,-50),(-31,-96),(mx,mz+7),(mx+7,mz),(mx,mz-7),(-30,-152),(-27,-178),(-30,-152),(mx,mz-7),(mx-7,mz),(mx,mz+7),(-31,-96)]]})
+# Session 76: kerb gaps where paths that aren't in ROADS meet a road (RoadMesh reads this list;
+# car park entrances can go in CAR_PARK_ENTRANCES the same way).
+put('KERB_GAPS',[{'at':v2(-31,-43.5),'half':1.5,'kind':'path'},{'at':v2(-14.5,-177),'half':1.5,'kind':'path'}])
 # Session 66: the phase 3 building site south of the mosque, dressed like phase 2.
 put('PHASE3_SITE',{'area':rect(-413,-89,100,76),'crane':v3(-372,0,-55),'sign':{'name':'Phase 3 coming soon','arabic':'المرحلة الثالثة قريباً','position':v3(-363,0,-12.2),'facing':0.}})
 put('SPEED_BUMP_SIZE',v3(10,.12,.5))
-put('SPEED_BUMPS',[{'position':v3(x,0,z),'facing':90.} for z in [-205,205] for x in [-180,50,300]]+[{'position':v3(x,0,z),'facing':0.} for x in [-425,425] for z in [-80,80]]
- # Session 61: narrower bumps on the inside roads (spine loop north and south, spine road).
- +[{'position':v3(x,0,z),'facing':90.,'size':v3(6,.12,.5)} for x,z in [(-20,-40),(280,-40),(-60,35),(260,35),(-250,0),(150,0)]])
+# Session 75: speed bumps only on the ring road (the inside roads' bumps are gone).
+put('SPEED_BUMPS',[{'position':v3(x,0,z),'facing':90.} for z in [-205,205] for x in [-180,50,300]]+[{'position':v3(x,0,z),'facing':0.} for x in [-425,425] for z in [-80,80]])
 put('CATS',cats);put('SCOOTER_KIDS',kids)
-put('BUGGIES',[{'points':[v3(cx-60,0,cz),v3(cx+(30 if n==3 else 60),0,cz),v3(cx+(30 if n==3 else 60),0,-189 if cz<0 else 189)],'colour':colour(.85,.85,.76),'level':(n-1)%3} for n,cx,cz in clusters]+[{'points':[v3(-140,0,-1),v3(410,0,-1)],'colour':colour(.3,.5,.5),'level':1}])
+# Session 75: golf buggies only drive on the roads. Each route is found on the road network
+# (the asphalt ROADS pieces, joined where they meet) through a few waypoints, with its turns
+# rounded. 'points' is the road's middle line: the buggy keeps 'lane' metres to the right of
+# it (its side of the yellow line). It slows down near the 'slow' spots (junctions and the
+# roundabout).
+NO_BUGGY=['Ring Road','Gate Road','Highway','Bus Loop','Stables Car Park Road']
+ONE_WAY={'Institute Roundabout':-1}
+def road_graph():
+    pieces=[r for r in roads if r['width']>=6 and r['name'] not in NO_BUGGY]
+    pts=lambda r:(tuple(float(c) for c in str(r['from'])[8:-1].split(', ')),tuple(float(c) for c in str(r['to'])[8:-1].split(', ')))
+    segs=[(pts(r),r['name']) for r in pieces]
+    # Split a piece where another piece's end lands in its middle (a T junction).
+    ends={q for (a,b),_ in segs for q in (a,b)}
+    split=[]
+    for (a,b),name in segs:
+        cuts=[a,b]
+        for q in ends:
+            ab=(b[0]-a[0],b[1]-a[1]); L=math.hypot(*ab)
+            t=((q[0]-a[0])*ab[0]+(q[1]-a[1])*ab[1])/(L*L)
+            if 0.001<t<0.999 and math.dist(q,(a[0]+ab[0]*t,a[1]+ab[1]*t))<0.25: cuts.append(q)  # 0.25: the roundabout is short straight bits
+        cuts.sort(key=lambda q:math.dist(a,q))
+        split += [((c,d),name) for c,d in zip(cuts,cuts[1:]) if math.dist(c,d)>0.01]
+    key=lambda q:(round(q[0],1),round(q[1],1))
+    graph={}
+    for (a,b),name in split:
+        way=ONE_WAY.get(name,0)
+        if way>=0: graph.setdefault(key(a),[]).append((key(b),math.dist(a,b)))
+        if way<=0: graph.setdefault(key(b),[]).append((key(a),math.dist(a,b)))
+    return graph
+def shortest(graph,a,b):
+    import heapq
+    best={a:0.0}; came={}; todo=[(0.0,a)]
+    while todo:
+        d,q=heapq.heappop(todo)
+        if q==b: break
+        if d>best[q]: continue
+        for r,l in graph.get(q,[]):
+            if d+l<best.get(r,1e18): best[r]=d+l; came[r]=q; heapq.heappush(todo,(d+l,r))
+    path=[b]
+    while path[-1]!=a: path.append(came[path[-1]])
+    return path[::-1]
+def nearest_node(graph,q): return min(graph,key=lambda n:math.dist(n,q))
+def buggy_route(graph,via,turn=5.0):
+    """A loop through the waypoints along the roads, its sharp turns rounded."""
+    nodes=[nearest_node(graph,q) for q in via]
+    line=[]
+    for a,b in zip(nodes,nodes[1:]+nodes[:1]):
+        line += shortest(graph,a,b)[:-1]
+    out=[]
+    for i,p1 in enumerate(line):
+        p0=line[i-1]; p2=line[(i+1)%len(line)]
+        d1=(p1[0]-p0[0],p1[1]-p0[1]); d2=(p2[0]-p1[0],p2[1]-p1[1])
+        l1=math.hypot(*d1); l2=math.hypot(*d2)
+        cross=abs(d1[0]*d2[1]-d1[1]*d2[0])/max(l1*l2,1e-9)
+        if cross<0.5: out.append(p1); continue  # a gentle bend: keep the point
+        k=min(turn,l1/2,l2/2)
+        a=(p1[0]-d1[0]/l1*k,p1[1]-d1[1]/l1*k); b=(p1[0]+d2[0]/l2*k,p1[1]+d2[1]/l2*k)
+        for j in range(5):
+            t=j/4
+            out.append(((1-t)**2*a[0]+2*(1-t)*t*p1[0]+t*t*b[0],(1-t)**2*a[1]+2*(1-t)*t*p1[1]+t*t*b[1]))
+    clean=[out[0]]
+    for q in out[1:]:
+        if math.dist(q,clean[-1])>0.3: clean.append(q)
+    return [v3(round(x,2),0,round(z,2)) for x,z in clean]
+def junctions_on(graph,route_pts):
+    """Junctions (3 or more roads meet) the route passes, for slowing down."""
+    degree={}
+    for q,nexts in graph.items():
+        for r,_ in nexts:
+            degree.setdefault(q,set()).add(r); degree.setdefault(r,set()).add(q)
+    pts=[tuple(float(c) for c in str(p)[8:-1].split(', ')[::2]) for p in route_pts]
+    out=[]
+    for q,ns in degree.items():
+        if len(ns)>=3 and min(math.dist(q,p) for p in pts)<4.0 and not any(math.dist(q,o)<6 for o in out): out.append(q)
+    return out
+graph=road_graph()
+buggies=[]
+for n,cx,cz in clusters:
+    back=cluster_back(cz); front=cluster_front(cz)
+    route=buggy_route(graph,[(cx+60,back),(cx+60,front),(cx-60,front),(cx-60,back)])
+    slow=[{'at':v3(x,0,z),'radius':8.0} for x,z in junctions_on(graph,route)]
+    buggies.append({'points':route,'loop':True,'lane':1.5,'slow':slow,'colour':colour(.85,.85,.76),'level':(n-1)%3})
+# The teal buggy: east along the spine road, back west along the spine loop, round the
+# roundabout and home along the road behind the C Institute.
+route=buggy_route(graph,[(-290,0),(398,0),(203,-40),(-132,-71),(-141,-63),(-290,-63)])
+slow=[{'at':v3(x,0,z),'radius':8.0} for x,z in junctions_on(graph,route) if math.dist((x,z),(-132,-62))>15]
+slow.append({'at':v3(-132,0,-62),'radius':20.0})  # the roundabout
+buggies.append({'points':route,'loop':True,'lane':1.5,'slow':slow,'colour':colour(.3,.5,.5),'level':1})
+put('BUGGIES',buggies)
 put('HORSE_RIDERS',[{'points':[v3(x,0,z) for x,z in rounded_loop(450,230,37)],'loop':True,'colour':colour(.45,.28,.15),'level':0,'collection_id':'horse_sultan','collection_name':'Sultan'},{'points':[v3(x,0,z) for x,z in rounded_loop(450,230,37,reverse=True)],'loop':True,'colour':colour(.85,.82,.78),'level':1,'collection_id':'horse_noor','collection_name':'Noor'}])
 put('PEOPLE_ROUTES',[{'points':[v3(x,0,z) for x,z in rounded_loop(438,218,25)],'loop':True,'jog':True,'look':2,'level':0}]+[{'points':[v3(-326,0,z),v3(386,0,z)],'jog':jog,'look':i,'level':i%3} for i,(z,jog) in enumerate([(-6.6,True),(-5.9,False),(6.6,True),(5.9,False)])])
 put('GARDENERS',gardeners);put('PLAY_KIDS',plays)
