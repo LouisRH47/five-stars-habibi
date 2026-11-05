@@ -1166,7 +1166,7 @@ Done when:
 - [x] The C Institute's glass and seats face the spine, with windows on both sides
 - [x] The careless bot earns clearly less than the careful one and never gets stuck in a crash loop
 
-### Session 53: The free asset kits
+### Session 53: The free asset kits (built, needs testing)
 
 ```text
 Session 53. Read PRD.md "Looks pass", Interiors. Download the CC0 kits: KayKit
@@ -1184,7 +1184,7 @@ Done when:
 - [ ] The kits are in assets/kits with licences, and CREDITS.md lists them
 - [ ] A test scene shows a row of props from each kit
 
-### Session 54: The new restaurant room, and the first 5 restaurants
+### Session 54: The new restaurant room, and the first 5 restaurants (built, needs testing)
 
 ```text
 Session 54. Read PRD.md "Looks pass", Interiors and the table. Make one restaurant
@@ -1205,7 +1205,7 @@ Done when:
 - [ ] You can see inside from the Plaza, and the doors slide open
 - [ ] The queue is short and never annoying
 
-### Session 55: The other 5 (Tok Tok Thai, Sushi You, Mario Bonito, Burgerology, Grand Groceries)
+### Session 55: The other 5 (Tok Tok Thai, Sushi You, Mario Bonito, Burgerology, Grand Groceries) (built, needs testing)
 
 ```text
 Session 55. Read PRD.md "Looks pass", the table. Using the Session 54 template, build

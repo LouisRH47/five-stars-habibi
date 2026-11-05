@@ -1348,6 +1348,8 @@ func _finish() -> void:
 	_check_session32()
 	await _check_venue_handoffs()
 	await _check_world_polish()  # Sessions 67 to 69
+	# --- Looks pass (Sessions 54-55): walk into every restaurant room, queue, hold E, walk out ---
+	await preload("res://tests/smoke_rooms.gd").new().run(self)
 	_check_saving()
 	for action in ACTIONS:
 		Input.action_release(action)

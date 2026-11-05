@@ -72,3 +72,31 @@ Exact download URLs and SHA-256 checksums: assets/textures/sources.json.
 The riding wind loop (assets/audio/wind_loop.wav) is original generated CC0 audio; reproduce it with tools/make_wind.py.
 
 The PERFECT and tip jingles (assets/audio/perfect.wav and tip.wav) are original generated CC0 audio, reproduced by tools/make_sounds.py.
+
+## Interior kits (looks pass, Session 53)
+
+Downloaded on 5 November 2026 from the official KayKit GitHub repositories. Only the models
+the game uses are included (glTF + .bin, sharing one texture per kit).
+
+**KayKit Restaurant Bits** (version 1.0) by Kay Lousberg (www.kaylousberg.com)
+- Licence: CC0 1.0 (public domain), licence text: `assets/kits/kaykit_restaurant_bits/License.txt`
+- Files: `assets/kits/kaykit_restaurant_bits/` (counters, stoves, fridge, tables, chairs,
+  crates, plates, food and the shared `restaurantbits_texture.png`)
+- Source: https://github.com/KayKit-Game-Assets/KayKit-Restaurant-Bits-1.0
+  (also https://kaylousberg.itch.io/restaurant-bits)
+
+**KayKit Furniture Bits** (version 1.0) by Kay Lousberg (www.kaylousberg.com)
+- Licence: CC0 1.0 (public domain), licence text: `assets/kits/kaykit_furniture_bits/License.txt`
+- Files: `assets/kits/kaykit_furniture_bits/` (cactus pots, couch, wooden chairs and stools,
+  shelves, rugs, lamps, picture frames and the shared `furniturebits_texture.png`)
+- Source: https://github.com/KayKit-Game-Assets/KayKit-Furniture-Bits-1.0
+  (also https://kaylousberg.itch.io/furniture-bits)
+
+Not included: the Kenney Furniture Kit and Food Kit (kenney.nl can't be reached from the build
+machine and there is no official GitHub copy), the CC0 supermarket pack (itch.io) and the Poly
+Pizza gym models (both not reachable). The things those would have given (supermarket shelves,
+food, drinks fridges, lamps) are built from basic shapes in code instead
+(`scripts/room_props.gd`, `scripts/restaurant_recipes.gd`), made for this game (CC0).
+
+The background sound of each walk-in place (`assets/audio/room_*.wav`, looks pass) is original
+generated CC0 audio, made by tools/make_sounds.py.

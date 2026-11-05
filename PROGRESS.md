@@ -107,6 +107,117 @@ teal D at the home. Ride into the Plaza and look at the paving in front of the r
 far away: no flickering. Ride to the school pools: the shade roofs stand on posts. Press Esc,
 Settings: change Render scale to 50% (the world gets softer), then back to 100%. Try a Window
 size. Quit and start again: your choices are still there.
+## Session 55: The other 5 (Tok Tok Thai, Sushi You, Mario Bonito, Burgerology, Grand Groceries) — 5 November 2026
+
+What works (scripts/restaurant_recipes_more.gd and scripts/grocery_room.gd, same room template):
+- **Tok Tok Thai:** three woks over flickering flames on the kit stoves, an extractor hood,
+  nine red silk lanterns that swing a little, dark wood floor, gold trim and pictures.
+- **Sushi You:** a sushi bar on the right with a **moving conveyor belt** (14 coloured plates
+  going round, GameConfig SUSHI_BELT_SPEED), diners on stools eating off the belt, the bar chef
+  plus the kitchen chef (two chefs), a glass fish case on the pick-up counter (with a
+  bilingual "Pick-up" sign), a navy curtain over the kitchen door, a booth with a couch and two
+  people, white paper lanterns and bamboo.
+- **Mario Bonito:** a band of colourful painted tiles round the walls, three strings of paper
+  bunting, cactus pots (floor, tables, counter), the taco counter with trays of fillings, a
+  tortilla stack and tacos in a stand, and a painted sun.
+- **Burgerology:** white metro tiles, a flat grill with patties and buns under the hood, a
+  fryer with two baskets, a glowing pink neon "Burgerology" sign (Arabic too), ketchup and
+  mustard on every table, black-and-white floor.
+- **Grand Groceries is a real little supermarket:** a wall of 8 drinks fridges with a "Cold
+  drinks" sign, 3 shelf units full of products with yellow price strips and hanging bilingual
+  aisle signs (1 Snacks, 2 Rice and pasta, 3 Home), a fruit and veg stand made of kit crates,
+  a bread shelf, a sweets rack, 2 checkouts with belts (checkout 1 open with the cashier,
+  checkout 2 "Closed"), baskets and trolleys by the door, and shoppers: one pushing a trolley
+  up and down aisle 2, one with a basket, one at the fruit. You collect at checkout 1, and the
+  queue waits there too.
+- Every counter is far enough inside that you have to walk in (checked by a test).
+- People inside the shops are only drawn within 80 m, and the hidden queue people don't
+  animate, to keep Low graphics fast.
+- Smoke test: walks into all 10 places, waits in the queue, holds E and walks out. The
+  interiors test checks each place's own things and that Sushi You's belt moves.
+
+**Louis's turn:** press F5 and take orders from Sushi You and Grand Groceries (and any of the
+others). In Sushi You, watch the plates go round the bar. In Grand Groceries, walk in, look up
+at the aisle signs, then go to checkout 1 (the green "1"): if someone is in front of you, wait,
+then hold E. Check that no two restaurants look the same inside.
+
+Known bugs / to do:
+- No screenshots yet (headless Godot can't draw), so the exact look of each room still needs
+  Louis's eyes: sizes of props, lamp brightness and the indoor camera distance may need tuning
+  (all in game_config.gd or the recipe files).
+- The doors slide open for you and the queue people; they're only glass to look at, so a bike
+  could still be ridden in through the doorway, as before.
+
+## Session 54: The new restaurant room and the first 5 restaurants — 5 November 2026
+
+What works:
+- **One restaurant room template** (scripts/restaurant_room.gd). The building outside keeps its
+  size; inside is a cosy 12 x 10 m room with a 4.5 m ceiling, and the rest is a storeroom you
+  can't get into. Big glass front, sliding glass doors that open as you walk up (and close
+  behind you), the kitchen with a cook at the back, the menu board (Arabic + English title,
+  four dishes with Dh prices), the counter with the staff member, 4 tables with people eating,
+  a glass drinks fridge, a bin, plants, warm hanging lamps (one light with soft shadows) and a
+  tiled floor in the shop's own colours. Tables, chairs, counters and crates come from the
+  KayKit kits, joined into one mesh per room.
+- **The first 5 shops** (scripts/restaurant_styles.gd for colours, scripts/restaurant_recipes.gd
+  for their own things):
+  - 1000 Pizza: brick dome oven with flickering flames and a chimney, logs, a pizza peel,
+    stacked pizza boxes, black-and-white checker floor, red band and red-and-white cloths.
+  - Brain Freeze Gelato: glass freezer of 8 colourful tubs, cone jar, pink-and-white striped
+    walls, pastel floor.
+  - Spill the Tea: 4 tea taps, cup sealing machine, cups with pearls, a plant wall and a neon sign.
+  - Shawarma Supreme: two spinning shawarma grills with glowing heaters, stacks of bread,
+    Arabic star tiles on the floor and walls.
+  - Bread & Zaatar: steel bread oven with glowing doors, glass cake display (two shelves),
+    bread baskets, manakish trays.
+- **Short queue** (scripts/venue_queue.gd): half the time nobody's there; otherwise 1 (or
+  sometimes 2) people wait at the counter. When you reach the counter they're served and walk
+  out, 2 to 4 seconds, and the panel says "1 person ahead of you · just a moment". Holding E
+  only fills after that. Chances and times: GameConfig QUEUE_*.
+- **Indoor camera:** inside a walk-in room the camera comes closer (2.9 m) and a bit higher, and
+  goes back out when you leave (GameConfig CAMERA_INDOOR_*).
+- **Background sound per place** made by tools/make_sounds.py (room_*.wav, 5 s loops): oven
+  crackle, freezer hum and scooping, tea shaker and sealer, grill sizzle and chopping, bakery
+  clinks, plus quiet chatter. Heard only inside and at the door.
+- Smoke test: walks into each of the 5 rooms, waits in a queue of 1 or 2, holds E, walks out
+  (tests/smoke_rooms.gd). New focused test: tests/interiors_test.gd.
+- Tok Tok Thai, Sushi You, Mario Bonito, Burgerology and Grand Groceries still use the old room
+  until Session 55.
+- Headless Godot can't take screenshots, so there are no pictures of the rooms yet.
+
+**Louis's turn:** press F5 and take an order from 1000 Pizza (or any of the five). Park, press
+F and walk to the glass door: it should slide open. Inside, the camera comes closer. Look for
+the oven with flames, the menu board and people eating. If someone is at the counter, wait a
+couple of seconds until they walk out, then hold E. Walk out again: the door opens and the
+camera moves back. Also walk past the shops in the Plaza and look in through the glass.
+
+## Session 53: The free asset kits — 5 November 2026
+
+What works:
+- **Two free CC0 kits** from the official KayKit GitHub pages: KayKit Restaurant Bits (kitchen
+  counters, stoves, fridges, tables, chairs, crates of veg, plates, food) and KayKit Furniture
+  Bits (cactus pots, couch, wooden chairs and stools, shelves, rugs, picture frames). Both say
+  CC0 in their licence files. Only the 73 models the game uses are in assets/kits/ (about
+  2 MB, glTF), each kit with its License.txt, and both are listed in CREDITS.md.
+- **Prop library.** `Props.kit(name, parent, position, rotation, scale)` places a kit model by
+  name (e.g. `"restaurant/chair_A"`). `Props.bake_kits(room)` then joins every kit model in a
+  room into one mesh per kit, so a full restaurant is only a couple of draws (good for Low).
+  Kit models are hidden further than 90 m away.
+- **Props built in code** for things the kits don't have (scripts/room_props.gd): a glass drinks
+  fridge with bottles, a bin, a big plant, a warm hanging lamp, a menu board, glass panes and
+  tiled floors (checker, plain, Arabic star, wood planks, painted tiles, metro tiles).
+- **Kit gallery:** scenes/kit_gallery.tscn shows a row of every model from each kit, with names.
+- New test: tests/kit_props_test.gd (licences, credits, every model loads, place and join).
+
+Skipped (and why): kenney.nl is blocked from the build machine and there is no official GitHub
+copy of the Kenney Furniture Kit or Food Kit (only an unofficial mirror, which I didn't use).
+The CC0 supermarket pack (itch.io) and the Poly Pizza gym models can't be reached either. The
+food, drinks, shelves and supermarket bits are built from basic shapes in code instead.
+The gym models are for Session 56 (not this wave).
+
+**Louis's turn:** open scenes/kit_gallery.tscn and press F6. You should see two long rows of
+models (restaurant bits, then furniture bits) with their names floating above, and a third
+row with the fridge, bin, plant and lamp. Use the arrow keys to slide the camera along.
 
 ## Session 60: The road network from the approved plan — 5 November 2026
 

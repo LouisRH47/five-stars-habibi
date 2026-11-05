@@ -316,6 +316,165 @@ def tip():
     return track
 
 
+# ---------------- Room sounds (looks pass, Sessions 54 and 55) ----------------
+# Each walk-in place has its own quiet background loop, heard only inside and at the door.
+# They are 5 seconds long (small files) and made from the same noise and tone recipes.
+ROOM_SECONDS = 5.0
+room_random = random.Random(54)  # its own dice, so the older sounds above stay the same
+
+
+def r_noise(seconds, decay, smooth=0.0, volume=1.0):
+    out = array("f")
+    last = 0.0
+    for i in range(int(seconds * RATE)):
+        t = i / RATE
+        last = last * smooth + room_random.uniform(-1, 1) * (1 - smooth)
+        out.append(last * math.exp(-t * decay) * volume)
+    return out
+
+
+def chatter(seconds=ROOM_SECONDS, volume=0.35):
+    """Quiet people talking: soft murmur plus little voice-like hums that rise and fall."""
+    track = r_noise(seconds, 0, 0.97, volume * 0.8)
+    for _ in range(int(seconds * 3)):
+        start = room_random.uniform(0, seconds)
+        base = room_random.uniform(130, 260)
+        length = room_random.uniform(0.2, 0.6)
+        voice = array("f")
+        for i in range(int(length * RATE)):
+            t = i / RATE
+            env = math.sin(math.pi * t / length) ** 2
+            f = base * (1 + 0.08 * math.sin(2 * math.pi * 5 * t))
+            voice.append((math.sin(2 * math.pi * f * t) + 0.4 * math.sin(4 * math.pi * f * t)) * env * volume * 0.12)
+        mix_in(track, voice, start)
+    return track
+
+
+def hum(freq, seconds=ROOM_SECONDS, volume=0.3):
+    """A fridge or motor humming."""
+    out = array("f")
+    for i in range(int(seconds * RATE)):
+        t = i / RATE
+        out.append((math.sin(2 * math.pi * freq * t) + 0.5 * math.sin(4 * math.pi * freq * t)) * volume)
+    return out
+
+
+def sizzle(seconds=ROOM_SECONDS, volume=0.5):
+    """Hot food on a grill: bright hiss that swells, with tiny pops."""
+    out = r_noise(seconds, 0, 0.1, 1.0)
+    for i in range(len(out)):
+        t = i / RATE
+        out[i] *= volume * (0.55 + 0.45 * math.sin(2 * math.pi * 0.7 * t) ** 2)
+    for _ in range(int(seconds * 25)):
+        mix_in(out, r_noise(0.01, 300, 0.0, volume * 1.5), room_random.uniform(0, seconds))
+    return out
+
+
+def crackle(seconds=ROOM_SECONDS, volume=0.6):
+    """A wood fire: a low rumble and sharp little crackles."""
+    out = r_noise(seconds, 0, 0.99, volume)
+    for _ in range(int(seconds * 14)):
+        mix_in(out, r_noise(0.03, 120, 0.3, volume * room_random.uniform(0.6, 2.0)), room_random.uniform(0, seconds))
+    return out
+
+
+def clinks(track, count, low=2200, high=3600, volume=0.25):
+    """Plates, cups and trays touching now and then."""
+    for _ in range(count):
+        at = room_random.uniform(0, ROOM_SECONDS)
+        f = room_random.uniform(low, high)
+        mix_in(track, tone(f, 0.3, 22, volume), at)
+        mix_in(track, tone(f * 1.5, 0.2, 30, volume * 0.5), at)
+    return track
+
+
+def room(*parts):
+    return loop_fade(add(*parts), 0.5)
+
+
+def room_pizza():
+    return room(chatter(), crackle(), clinks(silence(ROOM_SECONDS), 3))
+
+
+def room_gelato():
+    scoops = silence(ROOM_SECONDS)
+    for k in range(3):  # the scoop scraping the tub
+        mix_in(scoops, r_noise(0.35, 6, 0.6, 0.35), 0.6 + k * 1.6)
+    return room(chatter(), hum(55, volume=0.12), scoops)
+
+
+def room_boba():
+    shaker = silence(ROOM_SECONDS)
+    for k in range(10):  # shaking a cup of tea with ice
+        mix_in(shaker, r_noise(0.06, 40, 0.2, 0.4), 0.3 + k * 0.12)
+    for at in (2.6, 4.0):  # the cup sealer: a clunk and a hiss
+        mix_in(shaker, tone(140, 0.2, 18, 0.6), at)
+        mix_in(shaker, r_noise(0.3, 8, 0.1, 0.25), at + 0.05)
+    return room(chatter(), shaker)
+
+
+def room_shawarma():
+    chops = silence(ROOM_SECONDS)
+    for k in range(6):  # slicing the meat off the grill
+        mix_in(chops, r_noise(0.05, 60, 0.4, 0.5), 1.0 + k * 0.28)
+    return room(chatter(), sizzle(volume=0.3), chops)
+
+
+def room_bakery():
+    return room(chatter(volume=0.4), hum(98, volume=0.08), r_noise(ROOM_SECONDS, 0, 0.9, 0.15),
+                clinks(silence(ROOM_SECONDS), 4, 1800, 2600, 0.3))
+
+
+def room_thai():
+    wok = silence(ROOM_SECONDS)
+    for at in (0.2, 2.4):  # food hits the hot wok: whoosh
+        mix_in(wok, sizzle(1.6, 0.7), at)
+    for at in (1.2, 1.5, 3.8, 4.1):  # the ladle on the wok
+        mix_in(wok, tone(620, 0.4, 14, 0.4), at)
+        mix_in(wok, tone(1530, 0.3, 20, 0.2), at)
+    return room(chatter(), wok)
+
+
+def room_sushi():
+    belt = hum(75, volume=0.1)
+    for i in range(len(belt)):  # the belt motor wobbles a little
+        belt[i] *= 0.8 + 0.2 * math.sin(2 * math.pi * 2 * i / RATE)
+    clacks = silence(ROOM_SECONDS)
+    for k in range(10):  # plates clicking over the belt joints
+        mix_in(clacks, tone(1900, 0.08, 60, 0.18), k * 0.5)
+    return room(chatter(volume=0.28), belt, clacks)
+
+
+def room_tacos():
+    guitar = silence(ROOM_SECONDS)
+    notes = [196.0, 246.9, 293.7, 246.9, 220.0, 261.6, 329.6, 261.6]
+    for k, f in enumerate(notes):  # a soft strummed guitar in the back
+        mix_in(guitar, pluck(f, 0.9, 0.5, 0.35), k * 0.6)
+    return room(chatter(), guitar)
+
+
+def room_burger():
+    fryer = silence(ROOM_SECONDS)
+    for _ in range(60):  # oil bubbling in the fryer
+        mix_in(fryer, tone(room_random.uniform(200, 500), 0.05, 50, 0.12), room_random.uniform(0, ROOM_SECONDS))
+    return room(chatter(), sizzle(volume=0.35), fryer)
+
+
+def room_market():
+    beeps = silence(ROOM_SECONDS)
+    for at in (0.4, 1.6, 2.1, 3.7):  # the till beeping at the checkout
+        mix_in(beeps, tone(1850, 0.09, 8, 0.35), at)
+    rattle = silence(ROOM_SECONDS)
+    for k in range(18):  # a trolley rolling past
+        mix_in(rattle, r_noise(0.04, 50, 0.3, 0.12), 2.6 + k * 0.07)
+    return room(chatter(volume=0.25), hum(60, volume=0.12), beeps, rattle)
+
+
+ROOM_SOUNDS = {"pizza": room_pizza, "gelato": room_gelato, "boba": room_boba, "shawarma": room_shawarma,
+               "bakery": room_bakery, "thai": room_thai, "sushi": room_sushi, "tacos": room_tacos,
+               "burger": room_burger, "market": room_market}
+
+
 if __name__ == "__main__":
     save("perfect.wav", perfect())
     save("tip.wav", tip())
@@ -331,3 +490,5 @@ if __name__ == "__main__":
     save("buzz.wav", buzz())    # Session 31: the phone buzz
     save("pop.wav", pop())      # Session 31: a star pops in
     save("coins.wav", coins())  # Session 31: the coins fly out
+    for kind, make in ROOM_SOUNDS.items():  # looks pass: each place's background sound
+        save("room_%s.wav" % kind, make(), 0.6)
