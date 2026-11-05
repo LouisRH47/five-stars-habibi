@@ -538,7 +538,7 @@ func _build() -> void:
 
 ## Session 71: the PERFECT! stamp, a tilted orange rubber stamp over the title.
 func _build_stamp() -> void:
-	_stamp = _label("PERFECT!", 50, UiPalette.ORANGE, "Heading")
+	_stamp = _label("PERFECT!", 46, UiPalette.ORANGE, "Heading")
 	var box := StyleBoxFlat.new()
 	box.bg_color = Color(UiPalette.ORANGE, 0.1)
 	box.border_color = UiPalette.ORANGE
@@ -550,7 +550,7 @@ func _build_stamp() -> void:
 	box.content_margin_bottom = 0
 	_stamp.add_theme_stylebox_override("normal", box)
 	_stamp.rotation = deg_to_rad(-8.0)
-	_stamp.position = Vector2(-8, 2)
+	_stamp.position = Vector2(-8, -8)
 	_stamp.visible = false
 	_stamp.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_title.add_child(_stamp)
@@ -603,7 +603,7 @@ func _add_depth_of_field(subject: Vector3) -> void:
 		return  # the Compatibility renderer has no depth of field
 	var blur := CameraAttributesPractical.new()
 	blur.dof_blur_far_enabled = true
-	blur.dof_blur_far_distance = _camera.global_position.distance_to(subject) + 1.5
+	blur.dof_blur_far_distance = _camera.global_position.distance_to(subject) + 3.0
 	blur.dof_blur_far_transition = GameConfig.CARD_DOF_TRANSITION
 	blur.dof_blur_amount = GameConfig.CARD_DOF_AMOUNT
 	_camera.attributes = blur

@@ -691,7 +691,7 @@ const CARD_COUNT_TIME := 0.6       # seconds "You earned" takes to count up
 const CARD_STAMP_TIME := 0.25      # seconds the PERFECT! stamp takes to slam in
 const CARD_STAR_PITCHES := [1.0, 1.06, 1.12, 1.19, 1.26]  # each star's ding a semitone higher
 const CARD_DOF := true             # the background goes soft behind the card (desktop only)
-const CARD_DOF_AMOUNT := 0.06      # how blurry
+const CARD_DOF_AMOUNT := 0.04      # how blurry
 const CARD_DOF_TRANSITION := 5.0   # metres from sharp to blurry
 ## true: the first E only skips the reveal and a second E closes the card (the smoke test
 ## expects one E to close it, so it stays false: one E jumps to the end AND closes).
