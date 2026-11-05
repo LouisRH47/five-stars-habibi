@@ -2719,3 +2719,13 @@ func _check_looks_venues() -> void:
 			and lobby.get_node_or_null("TalkScreen") != null and lobby.get_node_or_null("Balcony") != null, "")
 	_check("Session 56: both receptions are inside their rooms", RestaurantRoom.is_inside(lobby, places.villa_door(903))
 			and RestaurantRoom.is_inside(gym, places.villa_door(904)), "")
+	# Session 57: the shops, the two drop-off buildings and the farm stall are detailed.
+	var marks := _main.get_node_or_null("LandmarkBuilder")
+	var bikes := places.get_node_or_null("Shop_bikes")
+	var clothes := places.get_node_or_null("Shop_clothes")
+	_check("Session 57: the shops are rebuilt (hanging bikes, caps wall, sliding doors)", bikes != null and clothes != null
+			and bikes.get_node_or_null("HangingBikes") != null and clothes.get_node_or_null("CapsWall") != null
+			and bikes.get_node_or_null("SlidingDoor") != null, "")
+	_check("Session 57: the stable office, school booth and farm stall are detailed", marks != null
+			and marks.get_node_or_null("StableOffice/OfficeGroom") != null and marks.get_node_or_null("SchoolBooth/Guard") != null
+			and places.get_node_or_null("Restaurant_farm/Farmer") != null, "")

@@ -1241,7 +1241,7 @@ Done when:
 - [ ] The gym looks and feels like a gym
 - [ ] The C Institute lobby is tall and bright, and the talk screen changes
 
-### Session 57: Bike shop, clothes shop, stable office, farm stall and school booth
+### Session 57: Bike shop, clothes shop, stable office, farm stall and school booth (built, needs testing)
 
 ```text
 Session 57. Read PRD.md "Looks pass", the last 5 rows of the table. Rebuild Pedal

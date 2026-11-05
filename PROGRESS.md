@@ -1,5 +1,53 @@
 # Progress
 
+## Session 57: Bike shop, clothes shop, stable office, farm stall and school booth — 5 November 2026
+
+What works:
+- **Both shops are rebuilt like the restaurants** (scripts/shop_interior.gd for the room,
+  scripts/shop_recipes.gd for each shop's things): a glass front with sliding glass doors, a
+  5 m ceiling with hanging lamps and a light with soft shadows, a tiled floor, plants and a
+  bin. The indoor camera comes closer inside them too.
+  - **Pedal Point Bikes:** five bikes in different colours hanging by their front wheels on
+    the left wall, a tool pegboard full of spanners, screwdrivers and pliers over a workbench
+    with a vice, parts boxes and a wheel, a tyre rack of 16 tyres, a repair stand with a bike
+    clamped on it, two bikes on show by the window, a floor pump, a shelf of helmets, a
+    "Ride safe · قُد بأمان" poster, and the mechanic in overalls at the counter.
+  - **Dune Drip:** a caps and sunglasses wall ("Caps & shades · قبعات ونظارات"), two clothes
+    rails of shirts and hoodies, a table of folded hoodies, shelves of T-shirts behind the
+    till, a patterned rug and a big framed mirror where you try things on, two mannequins in
+    hoodies and caps in the window, and the cashier.
+  - The shop screens (side panel, cart, checkout, mirror) work as before: the counter, the
+    try-on spot and the shop camera didn't move.
+- **The stable office** (scripts/spot_buildings.gd) has plank walls, a wooden door standing
+  open under a little porch roof, a big front window so you can see in, and a back window
+  onto the stable block. Inside: the groom sitting at his desk (papers, ledger, mug), two
+  saddles on wooden stands with stirrups, four prize rosettes and three horse photos, three
+  riding helmets on hooks, a hay bale and a warm lamp.
+- **The school gate booth** is a glass security booth with white posts and a teal roof, the
+  guard (navy uniform and cap) at a desk with a glowing screen and a phone, and a red and white
+  barrier arm beside it, raised so the gate stays open.
+- **The Wahat Farm Stall** has a striped awning over the front, the farmer in a straw sun hat
+  behind the counter, a juice press with a jug and fruit, a glass cooler of juice, five crates
+  of veg from the kit in front, and a chalkboard menu ("Farm juice 12 Dh", "Salad box 18 Dh",
+  "Dates 10 Dh"). The Bee Farm stall keeps its own honey look.
+- Checked: smoke test PASS (new Session 57 checks; the school, stables, institute and gym
+  drop-offs still work). tests/shop_test.gd PASS (both shops still sell). The focused test
+  tests/venue_looks_test.gd now has 84 checks (every new thing in each place) and PASS.
+  Coplanar and detail world tests PASS. No screenshots (headless Godot can't draw).
+
+**Louis's turn:** press F5. Ride to Pedal Point Bikes, get off (F), walk in through the
+sliding doors: bikes hanging on the left, the pegboard and workbench behind the mechanic, the
+tyre rack on the right. Hold E at the counter: the shop screen opens like before; buy
+something to check it still works, then Esc. Do the same in Dune Drip and try a cap in the
+mirror. Then ride to the stables office (behind the stables) and look in through the window,
+to the school gate to see the glass booth and the guard, and to the farm stall by the domes.
+
+Known bugs / to do:
+- The horse you see from the stable office is in the stable block behind it; the paddock is
+  on the far side of the block (and horses are another session's job).
+- You can walk into the stable office but there's nothing to do inside (the drop-off is at
+  the door, as before).
+
 ## Session 56: The gym and the C Institute inside — 5 November 2026
 
 What works:

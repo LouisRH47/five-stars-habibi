@@ -172,13 +172,10 @@ func _build_site(site: Dictionary) -> void:
 func _build_spot(place: Dictionary) -> void:
 	var size: Vector3 = place["size"]
 	var booth: bool = place.get("look", "") == "booth"
-	var body := _solid_block(self, place["position"], size, RAIL if booth else WOOD.lightened(0.3))
-	body.name = "SchoolBooth" if booth else "StableOffice"
-	body.rotation_degrees.y = place["facing"]
+	# Looks pass Session 57: a glass security booth / a stable office you can see into.
+	var body := SpotBuildings.booth(place) if booth else SpotBuildings.office(place)
+	add_child(body)
 	var front := size.z * 0.5
-	LowPoly.box(body, Vector3(size.x + 0.6, 0.2, size.z + 0.6), TEAL if booth else WOOD, Vector3(0, size.y + 0.1, 0.2))
-	LowPoly.box(body, Vector3(0.9, 2.1, 0.1), DARK, Vector3(-size.x * 0.25, 1.05, front + 0.05))
-	LowPoly.box(body, Vector3(size.x * 0.35, 0.9, 0.1), GLASS, Vector3(size.x * 0.22, 1.5, front + 0.05))
 	var english := "Security" if booth else "Stable Office"
 	var arabic := "الأمن" if booth else "مكتب الإسطبل"
 	var board := Vector3(size.x - 0.2, 0.7, 0.12)

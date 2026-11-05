@@ -35,6 +35,7 @@ func _run() -> void:
 	await _check_gym(places)
 	_check_institute(places)
 	await _check_receptions(places)
+	_check_shops_and_spots(places)
 	world.queue_free()
 	await process_frame
 	SaveGame.delete(state.save_path)
@@ -153,3 +154,34 @@ func _check_receptions(places: PlaceBuilder) -> void:
 				blocked = true
 				print("  hit ", hit["collider"].name, " at ", hit["position"])
 		_expect(not blocked, "a clear walk from the door to reception %d" % number)
+
+
+## Session 57: the two shops, the stable office, the school booth and the farm stall.
+func _check_shops_and_spots(places: PlaceBuilder) -> void:
+	var bikes: Node3D = places.get_node("Shop_bikes")
+	var clothes: Node3D = places.get_node("Shop_clothes")
+	for room in [bikes, clothes]:
+		_expect(room.is_in_group("venue_room") and room.get_node_or_null("SlidingDoor") != null
+				and room.get_node_or_null("TiledFloor") != null and room.get_node_or_null("InteriorLight") != null
+				and room.find_children("Lamp*", "Node3D", false, false).size() >= 4,
+				room.name + " has a glass front, sliding doors, a tiled floor and hanging lamps")
+		_expect(RestaurantRoom.is_inside(room, room.to_global(ShopInterior.COUNTER + Vector3(0, 0, 1))), room.name + ": the counter is inside")
+	for part in ["HangingBikes", "ToolPegboard", "TyreRack", "RepairStand", "HelmetShelf", "Mechanic", "FloorPump"]:
+		_expect(bikes.get_node_or_null(part) != null, "Pedal Point Bikes has " + part)
+	_expect(bikes.get_node("HangingBikes").get_children().filter(func(n): return n.get_node_or_null("DeliveryBox") != null).size() >= 5,
+			"five bikes hang on the wall")
+	for part in ["CapsWall", "RailRight", "RailFront", "HoodieTable", "BigMirror", "Rug", "Mannequin0", "Mannequin1", "Cashier"]:
+		_expect(clothes.get_node_or_null(part) != null, "Dune Drip has " + part)
+	var marks := world.get_node("LandmarkBuilder")
+	var office: Node3D = marks.get_node("StableOffice")
+	for part in ["OfficeGroom", "SaddleStand0", "SaddleStand1", "Rosette0", "HorsePhoto0", "RidingHelmet0", "HayBale", "WoodenDoor", "PaddockWindow", "FrontWindow"]:
+		_expect(office.get_node_or_null(part) != null, "the stable office has " + part)
+	var booth: Node3D = marks.get_node("SchoolBooth")
+	_expect(booth.get_node_or_null("Guard") != null and booth.get_node_or_null("GateBarrier") != null
+			and booth.get_children().filter(func(n): return n is MeshInstance3D and n.material_override == RoomProps.glass()).size() >= 4,
+			"the school booth is glass with the guard and a barrier")
+	var stall: Node3D = places.get_node("Restaurant_farm")
+	for part in ["Awning", "Farmer", "JuicePress", "JuiceCooler", "ChalkboardMenu"]:
+		_expect(stall.get_node_or_null(part) != null, "the farm stall has " + part)
+	_expect(stall.get_meta("kit_props", 0) >= 5, "the farm stall has kit crates of veg", str(stall.get_meta("kit_props", 0)))
+	_expect(places.get_node("Restaurant_honey").get_node_or_null("Farmer") == null, "the bee farm keeps its own look")
