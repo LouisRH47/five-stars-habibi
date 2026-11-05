@@ -715,6 +715,7 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 6 Nov 2026 | Session 80: the C Institute front is grass with a 5-a-side pitch where people play by day; the basketball court gets full lines, hoops with nets, a fence, benches and players; seated people's feet always rest on the floor or step |
 | 6 Nov 2026 | Session 81: the stream ends in a stone-ringed pond before the gym and restarts from a spring pond after the lap pool; pools get tiled decks, coping, ladders and lane ropes; one water look for all water; swimmers swim laps with their heads up and some rest at the edge; lifeguards sit on tall chairs and whistle |
 | 6 Nov 2026 | Session 82: ground textures are real CC0 photos with their sizes in one table; lawns mix aerial grass with leafy grass; no grass clumps; bins are grey; sign text uses MSDF |
+| 6 Nov 2026 | Session 83: people near the rider breathe, look round, shift their weight and talk in pairs with hand gestures; faces have eyes and a smile; every outfit stays on the body (tested) |
 
 ## Sources
 

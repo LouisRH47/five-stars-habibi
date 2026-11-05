@@ -37,6 +37,21 @@ var stroke_start := 0.0
 var look := 0.0
 ## Seconds this pose has been running (the swim strokes and waving use it).
 var clock := 0.0
+## Session 83 (scripts/alive_pose.gd): standing and sitting people breathe, look round
+## and shift their weight when the rider is near. talking: in a pair, talking with the
+## hands in turns (talk_turn 0 or 1 says who starts). auto_look: false when something else
+## turns the head (the lifeguard).
+var alive := true
+var talking := false
+var talk_turn := 0.0
+var auto_look := true
+## Each person's own timing, so a crowd doesn't move in step.
+var own_time := randf() * 100.0
+## Where the head is turning to, and how long until it looks somewhere new.
+var look_to := 0.0
+var look_wait := 0.0
+var _near := false
+var _near_wait := randf() * 0.5
 
 var _bones := {}
 var _lengths := {}
@@ -58,6 +73,8 @@ func _process_modification_with_delta(delta: float) -> void:
 		PoolPoses.rest(self)
 	elif mode == "whistle":
 		PoolPoses.whistle(self)
+	if alive and (mode == "sit" or (mode == "" and person.action == "idle")) and _close(delta):
+		AlivePose.apply(self, delta)
 	if absf(look) > 0.5 and mode != "swim":
 		turn("Neck", Vector3.UP, deg_to_rad(look * 0.35))
 		turn("Head", Vector3.UP, deg_to_rad(look * 0.65))
@@ -97,9 +114,9 @@ func _sit() -> void:
 		var x := -0.2 if side == "Left" else 0.2
 		point(side + "UpLeg", side + "Leg", Vector3(0, -0.05, -1))
 		point(side + "Leg", side + "Foot", Vector3.DOWN)
-		# Would the foot go into the floor (a low seat or a step)? Then keep the thigh
-		# level and slope the shin forward until the foot rests on the floor (on a very
-		# low seat the legs stretch out in front, like sitting on a big step).
+		# Would the foot go into the floor (a low seat or a step)? Then put the foot down
+		# on the floor a little in front and let the knee come up, like a real person
+		# on a low seat or a big step.
 		var ankle := person.skeleton_to_me * _at(side + "Foot")
 		var ankle_floor := floor + GameConfig.SIT_ANKLE_HEIGHT
 		if ankle.y < ankle_floor:
@@ -107,11 +124,23 @@ func _sit() -> void:
 			var thigh := length(side + "UpLeg", side + "Leg")
 			var shin := length(side + "Leg", side + "Foot")
 			var drop := maxf(hip.y - ankle_floor, 0.0)
-			var forward := thigh + sqrt(maxf(shin * shin - drop * drop, 0.0))
+			var forward := thigh + sqrt(maxf(shin * shin - drop * drop, 0.0)) * 0.5  # knees up a little
 			reach(side + "UpLeg", side + "Leg", side + "Foot", Vector3(hip.x, ankle_floor, hip.z - forward),
 					Vector3(0, 1, -0.3))
 		reach(side + "Arm", side + "ForeArm", side + "Hand",
 				Vector3(x, hips.y - 0.1, -0.35), Vector3(x * 3, -0.3, 0.1))
+
+
+## True if the camera (so the rider) is near enough to bother looking alive. Checked
+## twice a second, not every frame.
+func _close(delta: float) -> bool:
+	_near_wait -= delta
+	if _near_wait <= 0.0:
+		_near_wait = 0.5
+		var camera := get_viewport().get_camera_3d() if is_inside_tree() else null
+		_near = camera != null and person.global_position.distance_squared_to(camera.global_position) \
+				< GameConfig.ALIVE_DISTANCE * GameConfig.ALIVE_DISTANCE
+	return _near
 
 
 ## Bends the knees: the hips go down by `squat` and the feet up by `tuck`.

@@ -3575,7 +3575,42 @@ func _s82_paved(map: Dictionary, at: Vector2) -> String:
 ## Session 83: people who look alive.
 ## (Session 83 checks go here.)
 func _check_session83() -> void:
-	await process_frame
+	var everyone := _main.find_children("*", "Person", true, false)
+	var faces := everyone.filter(func(person): return person.get_node_or_null("Face/Eyes") != null)
+	_check("every person has eyes and a smile", faces.size() == everyone.size() and everyone.size() > 50,
+			"%d of %d" % [faces.size(), everyone.size()])
+	var talkers := everyone.filter(func(person): return person.pose.talking)
+	_check("people in pairs talk to each other", talkers.size() >= 8, "%d talking" % talkers.size())
+	# One person near the camera and one far away: only the near one moves about.
+	var camera := _main.get_viewport().get_camera_3d()
+	var near := PeopleLooks.resident(2, 0)
+	var far := PeopleLooks.resident(3, 0)
+	root.add_child(near)
+	root.add_child(far)
+	near.global_position = camera.global_position + Vector3(2.0, -1.5, 2.0)
+	far.global_position = camera.global_position + Vector3(400.0, -1.5, 0.0)
+	near.pose.talking = true
+	near.pose.own_time = 0.0  # so it's this one's turn to talk straight away
+	near.pose.look_wait = 100.0
+	near.pose.look_to = 40.0  # and it's about to look to the side
+	var heads := {}  # the furthest each head turned from where it started (degrees)
+	var hands := {}  # the furthest each right hand moved (metres, on the person)
+	var starts := {}
+	for person: Person in [near, far]:
+		person.skeleton.skeleton_updated.connect(func():
+			var head := person.skeleton.get_bone_global_pose(person.skeleton.find_bone("Head")).basis.get_rotation_quaternion()
+			var hand := person.pose.now("RightHand")
+			if not starts.has(person):
+				starts[person] = [head, hand]
+			heads[person] = maxf(heads.get(person, 0.0), rad_to_deg(head.angle_to(starts[person][0])))
+			hands[person] = maxf(hands.get(person, 0.0), hand.distance_to(starts[person][1])))
+	for i in 90:
+		await process_frame
+	_check("people near the rider look round and talk with their hands", heads.get(near, 0.0) > 15.0
+			and hands.get(near, 0.0) > 0.15, "head turned %.0f degrees, hand moved %.2f m" % [heads.get(near, 0.0), hands.get(near, 0.0)])
+	_check("people far away don't (it keeps the game fast)", not far.pose.get("_near"), "")
+	near.queue_free()
+	far.queue_free()
 
 # --- end of Session 83 checks ---
 
@@ -3714,6 +3749,13 @@ func _check_session81_people() -> void:
 			and heads.get(watched[1], -INF) > water + 0.1, "lowest head %.2f / %.2f m" % [heads.get(watched[0], -INF), heads.get(watched[1], -INF)])
 	_check("the swimmer's arms stroke (nobody floats still)", watched[0].action == "swim" and moved.get(watched[0], 0.0) > 0.2, "hand moved %.2f m" % moved.get(watched[0], 0.0))
 	crowds.set("_check_left", 0.0)
+	var pool := Node3D.new()  # a pool that says how high its water is
+	pool.name = "TestPool"
+	pool.set_meta("water_y", 0.05)
+	root.add_child(pool)
+	_check("swimmers swim at the pool's own water height", is_equal_approx(PoolSwimmers.water_height(root, "TestPool"), 0.05)
+			and is_equal_approx(PoolSwimmers.water_height(root, "NoSuchPool"), GameConfig.SWIM_WATER_Y), "")
+	pool.free()
 	# The lifeguards sit on tall chairs, look around and now and then whistle.
 	var guards: Array = crowds.lifeguards
 	var seated := guards.size() >= 3

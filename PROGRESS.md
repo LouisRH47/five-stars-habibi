@@ -1,5 +1,32 @@
 # Progress
 
+## Session 83: people who look alive — 6 November 2026
+
+What works:
+- **Nobody stands frozen** (scripts/alive_pose.gd): people near the rider (within 30 m) breathe,
+  turn their heads to look around and shift their weight; pairs (neighbours, majlis guests, the
+  Plaza family, gym-goers, the rider and groom at the stables) take turns talking with hand
+  gestures while the other nods. Far away they hold still, so it stays cheap.
+- **Faces have simple eyes and a smile** (scripts/face.gd; one shared mesh, only drawn up close).
+- **Clothes stay on the body.** The cause of the crooked clothes: the model's resting skeleton is
+  turned about 43 degrees, so caps, scarves, vests and anything held sat at an angle. People are
+  now built standing straight: caps face forward, shorts are tubes round the legs, the waiter's
+  apron moves with the legs, boots follow the shin, bags and the rescue float hang from the hand,
+  the gym towel drapes over the shoulder. The new focused test tests/outfits_test.gd builds every
+  outfit (swimwear, gym kit, uniforms, jodhpurs, hi-vis, bee suit, waiters, commuters...) and
+  checks the clothes stay on the body (99 checks).
+- Fixed while merging: the rider and the groom chatting at the stables faced away from each other.
+- Checked: smoke test, outfits test and every focused suite PASS. Close-up screenshots on the
+  Mac: talking pairs, the majlis sofa, diners, the lifeguard, swimmers resting, the stables pair.
+
+Known bugs:
+- Standing people have a wide, mid-step stance (it's the model's own idle pose, the same as
+  before this session), so two people chatting can look a bit like they're squaring up.
+
+**Louis's turn:** press F5, get off the bike near a cluster's mini plaza or the majlis and walk
+up close: people breathe, look around, and pairs take turns talking with their hands. Look at
+the faces, and at the caps, aprons and bags.
+
 ## Session 82: textures — 6 November 2026
 
 What works:

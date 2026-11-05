@@ -633,6 +633,22 @@ const BIN_GREY := Color(0.5, 0.52, 0.53)          # street, bus stop and cluster
 # (Session 80 seats) the sitting pose keeps feet on top of the floor or step below them
 const SIT_FEET_CLEARANCE := 0.03      # m the soles stay above the floor (paving is a little raised)
 const SIT_ANKLE_HEIGHT := 0.08        # m from the sole up to the ankle
+# Faces: simple eyes and a smile (scripts/face.gd), measured on a grown-up's head
+const FACE_SHOW_DISTANCE := 25.0      # m, faces are only drawn this close
+const FACE_FRONT := 0.135             # m from the middle of the head to the face
+const FACE_EYE_HEIGHT := 0.014        # m above the middle of the head
+const FACE_EYE_GAP := 0.1             # m between the two eyes
+const FACE_MOUTH_HEIGHT := -0.075     # m, the smile below the middle of the head
+# Looking alive (scripts/alive_pose.gd), only for people near the rider
+const ALIVE_DISTANCE := 30.0          # m, people closer than this breathe, look round and talk
+const ALIVE_BREATH_SECONDS := 4.0     # s for one breath in and out
+const ALIVE_BREATH_DEG := 2.0         # degrees the chest lifts
+const ALIVE_LOOK_EVERY := Vector2(2.0, 6.0)  # s between looking somewhere new
+const ALIVE_LOOK_DEG := 50.0          # degrees the head turns at most
+const ALIVE_LOOK_SPEED := 60.0        # degrees per second the head turns
+const ALIVE_SWAY_SECONDS := 7.0       # s to shift the weight over and back
+const ALIVE_SWAY := 0.035             # m the hips move to the side
+const ALIVE_TALK_TURN_SECONDS := 4.0  # s one person in a pair talks before the other does
 
 
 # --- Fix pass Session 75 (people): jumping on foot ---

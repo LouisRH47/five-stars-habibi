@@ -27,6 +27,7 @@ func _init() -> void:
 	add_child(_chair())
 	person = PlaceLooks.lifeguard(false)
 	person.name = "Lifeguard"
+	person.pose.auto_look = false  # he looks round on his own (below)
 	add_child(person)
 	_sit_down()
 	_wait = randf_range(GameConfig.LIFEGUARD_STAND_EVERY.x * 0.3, GameConfig.LIFEGUARD_STAND_EVERY.y)

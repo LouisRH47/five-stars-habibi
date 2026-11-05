@@ -41,6 +41,11 @@ var player: AnimationPlayer
 var pose: PersonPose
 ## Turns a spot on the skeleton into a spot on the person (metres, facing -Z).
 var skeleton_to_me := Transform3D()
+## Session 83: the model's resting skeleton is turned about 43 degrees round. This turns
+## it back, so spots (spot()) and the clothes that follow a bone (follow()) are on a
+## person standing straight: left to right is +X and the front is -Z. Worked out once.
+static var _straight := Basis()
+static var _straight_known := false
 
 var _mesh: MeshInstance3D
 var _followers: Array = []  # the holders from follow()
@@ -67,12 +72,16 @@ func _init(height := GameConfig.PERSON_HEIGHT) -> void:
 	while node != self:
 		skeleton_to_me = (node as Node3D).transform * skeleton_to_me
 		node = node.get_parent()
+	if not _straight_known:
+		_straight = _find_straight()
+		_straight_known = true
 	pose = PersonPose.new()
 	pose.name = "Pose"
 	pose.person = self
 	skeleton.add_child(pose)
 	skeleton.skeleton_updated.connect(_move_followers)
 	paint({})
+	Face.add(self)  # Session 83: eyes and a smile
 	play("idle")
 
 
@@ -151,7 +160,18 @@ func follow(bone: String, parent: Node3D = null) -> Node3D:
 
 ## Where a bone is (in metres on the person) when they stand straight, arms out.
 func spot(bone: String) -> Vector3:
-	return skeleton_to_me * skeleton.get_bone_global_rest(skeleton.find_bone(bone)).origin
+	return _straight.inverse() * (skeleton_to_me * skeleton.get_bone_global_rest(skeleton.find_bone(bone)).origin)
+
+
+## How much the resting skeleton is turned: from the hips and shoulders, which should
+## run straight from left (-X) to right (+X).
+func _find_straight() -> Basis:
+	var across := Vector3.ZERO
+	for pair in [["LeftUpLeg", "RightUpLeg"], ["LeftArm", "RightArm"], ["LeftFoot", "RightFoot"]]:
+		var a := skeleton_to_me * skeleton.get_bone_global_rest(skeleton.find_bone(pair[0])).origin
+		var b := skeleton_to_me * skeleton.get_bone_global_rest(skeleton.find_bone(pair[1])).origin
+		across += Vector3(b.x - a.x, 0, b.z - a.z).normalized()
+	return Basis(Vector3.UP, -atan2(across.z, across.x))
 
 
 ## The middle of the head, standing straight.
@@ -169,4 +189,4 @@ func _move_followers() -> void:
 func _move_follower(holder: Node3D) -> void:
 	var bone: int = holder.get_meta("bone")
 	var moved := skeleton.get_bone_global_pose(bone) * skeleton.get_bone_global_rest(bone).affine_inverse()
-	holder.transform = skeleton_to_me * moved * skeleton_to_me.affine_inverse()
+	holder.transform = skeleton_to_me * moved * skeleton_to_me.affine_inverse() * Transform3D(_straight)

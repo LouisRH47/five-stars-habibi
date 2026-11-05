@@ -103,6 +103,7 @@ func _rester(spot: Vector2, facing: float) -> Person:
 	var hands: Array[Vector3] = [Vector3(-0.16, edge, -0.42), Vector3(0.16, edge, -0.42)]
 	person.pose.hands = hands
 	person.play("rest")
+	person.pose.auto_look = false  # they look round on their own (_bob_and_look)
 	resters.append({"person": person, "holder": holder, "bob": randf() * TAU, "water": _water,
 			"look_at": 0.0, "look_left": randf_range(1.0, 4.0)})
 	return person

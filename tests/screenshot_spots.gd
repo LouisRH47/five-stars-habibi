@@ -106,6 +106,9 @@ const SPOTS := {
 	"t_footpath_pavers": [Vector3(44, 1.8, -75), Vector3(60, 0.0, -95)],
 	"t_bin": [Vector3(55, 1.6, -42), Vector3(59, 0.5, -48)],
 	"t_lawn_top": [Vector3(20, 30, 0), Vector3(40, 0, 20)],
+	"p_chat_pair": [Vector3(32.6, 1.6, -58.6), Vector3(32.6, 1.3, -56.0)],
+	"p_chat_pair_side": [Vector3(30.2, 1.7, -57.8), Vector3(32.6, 1.2, -56.0)],
+	"p_stables_pair": [Vector3(-204.4, 1.6, 183.6), Vector3(-204.4, 1.3, 186.0)],
 }
 
 var _main: Node

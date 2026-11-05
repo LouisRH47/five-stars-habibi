@@ -49,9 +49,9 @@ static func lifeguard(with_float := true) -> Person:
 	PeopleLooks.cap(person, Color(0.88, 0.12, 0.12), person)
 	var hand := person.follow("RightHand")
 	if with_float:
-		LowPoly.box(hand, Vector3(0.12, 0.7, 0.08), Color(0.95, 0.2, 0.15), _past_hand(person, "Right", 0.3))
+		held(person, hand, "Right", Vector3(0.12, 0.7, 0.08), Color(0.95, 0.2, 0.15), 0.3)
 	else:  # a silver whistle in the hand
-		LowPoly.box(hand, Vector3(0.05, 0.035, 0.07), Color(0.82, 0.84, 0.86), _past_hand(person, "Right", 0.06))
+		held(person, hand, "Right", Vector3(0.05, 0.07, 0.035), Color(0.82, 0.84, 0.86), 0.06)
 	return _tag(person, "lifeguard")
 
 
@@ -60,11 +60,15 @@ static func gym_goer(i: int) -> Person:
 	var top: Color = BRIGHT[(i + 1) % BRIGHT.size()]
 	person.paint({"skin": SKINS[(i + 2) % SKINS.size()], "shirt": top, "pants": Color(0.12, 0.12, 0.15)})
 	PeopleLooks.shoes(person, WHITE)
+	# A towel over the right shoulder: across the top, hanging down the front and the back.
 	var chest := person.follow("Spine2")
-	var neck := person.spot("Neck")
-	LowPoly.box(chest, Vector3(0.1, 0.03, 0.42), WHITE, neck + Vector3(0.12, -0.03, 0))  # towel over a shoulder
+	var shoulder := Vector3(person.spot("RightArm").x * 0.5, person.spot("Neck").y - 0.02, 0)
+	LowPoly.box(chest, Vector3(0.11, 0.025, 0.24), WHITE, shoulder)
+	LowPoly.box(chest, Vector3(0.11, 0.24, 0.025), WHITE, shoulder + Vector3(0, -0.12, -0.115))
+	LowPoly.box(chest, Vector3(0.11, 0.2, 0.025), WHITE, shoulder + Vector3(0, -0.1, 0.115))
 	var hand := person.follow("LeftHand")
-	LowPoly.cylinder(hand, 0.035, 0.035, 0.2, Color(0.2, 0.7, 0.95), _past_hand(person, "Left", 0.08))  # water bottle
+	var bottle := LowPoly.cylinder(hand, 0.035, 0.035, 0.2, Color(0.2, 0.7, 0.95), _past_hand(person, "Left", 0.08))
+	bottle.basis = along_arm(person, "Left")  # the water bottle
 	return _tag(person, "gym")
 
 
@@ -88,7 +92,7 @@ static func shopper(i: int) -> Person:
 	var person := PeopleLooks.resident(i % PeopleLooks.RESIDENT_OUTFITS, i % SKINS.size())
 	PeopleLooks.shoes(person, Color(0.3, 0.22, 0.15))
 	var hand := person.follow("RightHand")
-	LowPoly.box(hand, Vector3(0.3, 0.32, 0.12), BRIGHT[i % BRIGHT.size()], _past_hand(person, "Right", 0.2))
+	held(person, hand, "Right", Vector3(0.3, 0.32, 0.12), BRIGHT[i % BRIGHT.size()], 0.2)
 	return _tag(person, "shopping bag")
 
 
@@ -96,10 +100,18 @@ static func waiter(i: int) -> Person:
 	var person := Person.new()
 	person.paint({"skin": SKINS[i % SKINS.size()], "shirt": WHITE, "pants": BLACK})
 	PeopleLooks.shoes(person, BLACK)
+	# The apron: a band round the front of the waist, and a panel on the front of each
+	# thigh that moves with the leg (one flat sheet had the legs poking through it).
+	var apron: Color = [Color(0.45, 0.12, 0.15), Color(0.15, 0.35, 0.3)][i % 2]
 	var hips := person.follow("Hips")
 	var at := person.spot("Hips")
-	LowPoly.box(hips, Vector3(0.36, 0.55, 0.03), [Color(0.45, 0.12, 0.15), Color(0.15, 0.35, 0.3)][i % 2],
-			at + Vector3(0, -0.2, -0.14))
+	LowPoly.box(hips, Vector3(0.36, 0.16, 0.03), apron, at + Vector3(0, -0.02, -0.13))
+	for side in ["Left", "Right"]:
+		var thigh := person.follow(side + "UpLeg")
+		var top := person.spot(side + "UpLeg")
+		var knee := person.spot(side + "Leg")
+		var panel := LowPoly.box(thigh, Vector3(0.19, 0.36, 0.025), apron, top.lerp(knee, 0.42) + Vector3(0, 0, -0.1))
+		panel.basis = Basis(Quaternion(Vector3.UP, (top - knee).normalized()))
 	return _tag(person, "apron")
 
 
@@ -164,15 +176,18 @@ static func neighbour(i: int) -> Person:
 
 # --- Parts ---
 
-## Swim or sports shorts: a short block on each thigh and one round the hips.
+## Swim or sports shorts: a short tube round each thigh (lined up with the leg, so the leg
+## never pokes out of the side) and a wider tube round the hips.
 static func shorts(person: Person, colour: Color) -> void:
 	for side in ["Left", "Right"]:
 		var thigh := person.follow(side + "UpLeg")
 		var top := person.spot(side + "UpLeg")
 		var knee := person.spot(side + "Leg")
-		LowPoly.box(thigh, Vector3(0.17, 0.24, 0.18), colour, top.lerp(knee, 0.28))
+		var leg := LowPoly.cylinder(thigh, 0.1, 0.088, top.distance_to(knee) * 0.5, colour, top.lerp(knee, 0.22))
+		leg.basis = Basis(Quaternion(Vector3.UP, (top - knee).normalized()))
 	var hips := person.follow("Hips")
-	LowPoly.box(hips, Vector3(0.34, 0.14, 0.22), colour, person.spot("Hips") + Vector3(0, -0.02, 0))
+	var waist := LowPoly.cylinder(hips, 0.17, 0.18, 0.17, colour, person.spot("Hips") + Vector3(0, -0.01, 0.0))
+	waist.scale = Vector3(1.0, 1.0, 0.72)  # flatter front to back, like hips
 
 
 static func swim_cap(person: Person, colour: Color) -> void:
@@ -207,6 +222,21 @@ static func sun_hat(person: Person) -> void:
 	LowPoly.cylinder(holder, r * 2.0, r * 2.0, 0.03, straw, head + Vector3(0, r * 0.75, 0))
 	LowPoly.cylinder(holder, r * 0.85, r * 1.0, r * 0.75, straw, head + Vector3(0, r * 1.1, 0))
 	LowPoly.cylinder(holder, r * 1.01, r * 1.01, r * 0.18, Color(0.35, 0.55, 0.3), head + Vector3(0, r * 0.85, 0))  # band
+
+
+## Session 83: something held in a hand (a bag, a float, a bottle), hanging from the hand
+## along the forearm. The model's resting arms stick straight out, so "along the forearm"
+## is what becomes "down" when the arm hangs by the side. reach: metres past the hand.
+static func held(person: Person, hand: Node3D, side: String, size: Vector3, colour: Color, reach: float) -> MeshInstance3D:
+	var thing := LowPoly.box(hand, size, colour, _past_hand(person, side, reach))
+	thing.basis = along_arm(person, side)
+	return thing
+
+
+## A turn that points a held thing's bottom along the resting forearm (see held()).
+static func along_arm(person: Person, side: String) -> Basis:
+	var arm := (person.spot(side + "Hand") - person.spot(side + "ForeArm")).normalized()
+	return Basis(Quaternion(Vector3.DOWN, arm))
 
 
 ## A spot a little way past the hand along the forearm (where a held thing hangs).

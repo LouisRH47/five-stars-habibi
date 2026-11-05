@@ -47,9 +47,9 @@ static func teacher() -> Person:
 	for side in [-1.0, 1.0]:  # the cord, from the neck down to the card
 		var cord := LowPoly.box(chest, Vector3(0.015, 0.26, 0.015), Color(0.15, 0.4, 0.8), neck + Vector3(0.05 * side, -0.12, -0.12))
 		cord.rotation.z = 0.25 * side
-	LowPoly.box(chest, Vector3(0.08, 0.1, 0.01), WHITE, neck + Vector3(0, -0.28, -0.14))  # the card
+	LowPoly.box(chest, Vector3(0.08, 0.1, 0.012), WHITE, neck + Vector3(0, -0.27, -0.155))  # the card
 	var hand := person.follow("LeftHand")
-	LowPoly.box(hand, Vector3(0.24, 0.03, 0.3), Color(0.9, 0.3, 0.25), person.spot("LeftHand") + Vector3(-0.05, -0.04, 0))
+	PlaceLooks.held(person, hand, "Left", Vector3(0.03, 0.3, 0.24), Color(0.9, 0.3, 0.25), 0.08)  # the folder
 	return person
 
 
@@ -140,13 +140,17 @@ static func backpack(person: Person, colour: Color, parent: Node3D, size := 1.0)
 	return holder
 
 
-## Boots up to the middle of the shin, on both feet.
+## Boots up to the middle of the shin, on both feet. Session 83: the boot's leg follows the
+## shin (not the foot), so it stays round the leg when the foot bends.
 static func boots(person: Person, colour: Color) -> void:
 	for side in ["Left", "Right"]:
-		var foot := shoes_on(person, side, colour)
+		shoes_on(person, side, colour)
+		var shin := person.follow(side + "Leg")
 		var ankle := person.spot(side + "Foot")
-		var tall := (person.spot(side + "Leg").y - ankle.y) * 0.55
-		LowPoly.box(foot, Vector3(0.13, tall, 0.14), colour, ankle + Vector3(0, tall * 0.5 - 0.03, 0.01))
+		var knee := person.spot(side + "Leg")
+		var tall := ankle.distance_to(knee) * 0.55
+		var shaft := LowPoly.cylinder(shin, 0.072, 0.068, tall, colour, ankle.lerp(knee, 0.55 * 0.5) + Vector3(0, -0.02, 0))
+		shaft.basis = Basis(Quaternion(Vector3.UP, (knee - ankle).normalized()))
 
 
 ## Shoes on both feet (the model has bare feet).

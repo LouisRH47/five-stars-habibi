@@ -86,6 +86,14 @@ func place(person: Person, at: Vector3, facing: float, level := 0, action := "id
 	return person
 
 
+## Session 83: two people chatting take turns to talk with their hands (scripts/alive_pose.gd).
+static func talk(a: Person, b: Person) -> void:
+	a.pose.talking = true
+	b.pose.talking = true
+	a.pose.talk_turn = 0.0
+	b.pose.talk_turn = 1.0
+
+
 ## Sits someone on a bench (Props.bench at `at`, facing `facing`).
 func sit_on_bench(person: Person, at: Vector3, facing: float, level := 0) -> Person:
 	place(person, at, facing, level, "sit")
@@ -144,8 +152,8 @@ func _gym() -> void:
 		return
 	var gym: Vector3 = _map["GYM"]["position"]
 	var front: float = gym.z - _map["GYM"]["size"].z * 0.5 - 2.5
-	place(PlaceLooks.gym_goer(0), Vector3(gym.x - 6.0, 0, front), 90.0)
-	place(PlaceLooks.gym_goer(1), Vector3(gym.x - 4.8, 0, front), -90.0, 1)
+	talk(place(PlaceLooks.gym_goer(0), Vector3(gym.x - 6.0, 0, front), 90.0),
+			place(PlaceLooks.gym_goer(1), Vector3(gym.x - 4.8, 0, front), -90.0, 1))
 
 
 ## Pupils in uniform running about the yard, and teachers with lanyards watching.
@@ -166,8 +174,9 @@ func _stables() -> void:
 	if not _map.has("STABLES"):
 		return
 	place(PlaceLooks.groom(), Vector3(-262.0, 0, 186.0), 0.0)
-	place(PlaceLooks.rider(), Vector3(-205.0, 0, 186.0), -90.0)
-	place(PlaceLooks.groom(), Vector3(-203.8, 0, 186.0), 90.0, 1)
+	# They face each other: the rider looks east (+X) at the groom, the groom looks west.
+	talk(place(PlaceLooks.rider(), Vector3(-205.0, 0, 186.0), 90.0),
+			place(PlaceLooks.groom(), Vector3(-203.8, 0, 186.0), -90.0, 1))
 
 
 ## Waiters outside the restaurants, shoppers with bags walking round, a family.
@@ -196,10 +205,10 @@ func _plaza() -> void:
 				Vector3(0.5, 1.8, 0.5), _builder._holder(shopper), shopper)
 		mover.start_at(i * 5, 0.3, i % 2 == 0)
 	# A family: a parent and a child by the steps.
-	place(PlaceLooks.shopper(3), Vector3(centre.x - 25.0, 0.02, centre.y + 2.0), 90.0)
+	var parent := place(PlaceLooks.shopper(3), Vector3(centre.x - 25.0, 0.02, centre.y + 2.0), 90.0)
 	var child := LifeLooks.kid()
 	child.set_meta("outfit", "family")
-	place(child, Vector3(centre.x - 25.0, 0.02, centre.y + 3.0), 90.0)
+	talk(parent, place(child, Vector3(centre.x - 25.0, 0.02, centre.y + 3.0), 90.0))
 
 
 func _bus_station() -> void:
@@ -238,8 +247,8 @@ func _clusters() -> void:
 		var mini: Dictionary = plazas[i]
 		var tower: Vector3 = mini["tower"]
 		var chat := Vector3(tower.x + 32.0, 0, tower.z)
-		place(PlaceLooks.neighbour(i * 2), chat, 90.0, 0)
-		place(PlaceLooks.neighbour(i * 2 + 1), chat + Vector3(1.2, 0, 0), -90.0, 1)
+		talk(place(PlaceLooks.neighbour(i * 2), chat, 90.0, 0),
+				place(PlaceLooks.neighbour(i * 2 + 1), chat + Vector3(1.2, 0, 0), -90.0, 1))
 		for bench in mini.get("benches", []):
 			var parent := PlaceLooks.neighbour(i + 2)
 			parent.set_meta("outfit", "parent on bench")
@@ -258,14 +267,17 @@ func _majlis_gardens() -> void:
 		sitter.set_meta("outfit", "parent on bench" if i == 1 else "casual")
 		sit_on_bench(sitter, benches[i]["position"], benches[i]["facing"], i % 2)
 	var majlis: Vector3 = park["majlis"]
+	var guests: Array[Person] = []
 	for k in 2:  # sitting on the low sofas (seat 0.4 m), chatting over coffee
 		var guest := sit_on_bench(PlaceLooks.neighbour(k + 8), majlis + Vector3(-2.2, 0, -0.6 + k * 1.4), 90.0, k)
 		guest.position.y -= 0.1
+		guests.append(guest)
+	talk(guests[0], guests[1])
 	var fountain: Vector3 = park["fountain"]
 	var child := LifeLooks.kid()
 	child.set_meta("outfit", "family")
-	place(child, fountain + Vector3(0, 0.05, 3.4), 180.0)
-	place(PlaceLooks.neighbour(11), fountain + Vector3(1.2, 0.05, 4.2), 200.0, 1)
+	talk(place(child, fountain + Vector3(0, 0.05, 3.4), 180.0),
+			place(PlaceLooks.neighbour(11), fountain + Vector3(1.2, 0.05, 4.2), 200.0, 1))
 	var walk: Array = park["walk"]
 	for i in 2:
 		var walker := PlaceLooks.neighbour(12 + i)
