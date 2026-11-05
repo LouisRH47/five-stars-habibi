@@ -20,7 +20,7 @@ func _run() -> void:
 	var bike := Node3D.new()
 	bike.name = "Bike"
 	bike.add_to_group("bike")
-	bike.position = Vector3(-335, 0, -172)
+	bike.position = Vector3(-332, 0, -176)  # on the bus loop, just past the bay
 	world.add_child(bike)
 	var traffic: Node3D = load("res://scripts/district_traffic.gd").new()
 	traffic.data = WahatAlShams

@@ -1,5 +1,38 @@
 # Progress
 
+## Session 60: The road network from the approved plan — 5 November 2026
+
+Built straight after looks pass Session 52, at Louis's request (the looks pass carries on
+with Session 53 next). The layout now follows docs/road_plan_2026-11-05.svg:
+- **Ring road is separate.** It only meets the two gates, the new bus loop and the stables
+  car park (plus the existing car park entrances). No cluster lane, school road or spine
+  road reaches it any more.
+- **Bus station loop.** Buses turn in off the north ring road, stop at the bay beside the
+  platform, go round and turn back out. The old bus road past the mosque is gone.
+- **Inside roads.** One connected network with rounded corners: the spine road, a loop round
+  the spine (cluster front road, south road, school road), the road behind the C Institute,
+  and a roundabout east of the C Institute whose north exit curves into the Plaza. Removed:
+  the Plaza Link, Western Link north part, Stables Road and the road beside the arena.
+- **Clusters.** Each has a front and a back cross road and one entrance link. Cluster 3
+  moved 10 m west and Clusters 4 and 5 moved 6 m north so nothing touches the ring road.
+  All 500 addresses keep their numbers.
+- **Car parks.** New stables car park with a roofed bay, and ten roofed school bays right at
+  the school entrance. The C2/C3 car park is 2 m narrower.
+- **Start spot** moved to beside the bus station, facing the Plaza.
+- The generator (tools/build_wahat_data.py) now also holds the looks pass Session 52 changes
+  that had only been typed into the data file (C Institute size, facing and access path).
+- Curves are made of short straight pieces for now; smooth curved road meshes, centre lines
+  and arrows come in Session 61.
+- Checked: smoke test PASS, all 17 focused test suites PASS (the bus recovery test now
+  blocks the new loop instead of the old road), play-test bot: 5 deliveries, 5.0 stars,
+  no crashes, never stuck.
+
+**Louis's turn:** open the project in Godot and press F5. You start next to the bus station
+facing the Plaza. Ride round: the ring road should only have exits at the gates, the bus loop
+and the stables car park. Watch a bus turn into the station loop and back out. Ride east
+behind the C Institute to the roundabout and take the north exit into the Plaza. Check the
+mini-map in the corner: every cluster's lanes should join up.
+
 ## Next: the Looks pass (Sessions 52 to 59), planned 4 November 2026
 
 Louis played the detail pass. Next is the Looks pass in BUILD_PLAN.md: sharper full-screen

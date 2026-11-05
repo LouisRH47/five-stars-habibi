@@ -22,6 +22,7 @@ var _map := {}
 var _ring := Rect2()
 var _bus_entry := Vector3.ZERO
 var _bus_bay := Vector3.ZERO
+var _bus_loop: Array[Vector3] = []  # the loop through the bus station, entry to exit
 var _next_arrival := 0.0
 var _last_elapsed := 0.0
 
@@ -163,14 +164,19 @@ func _solar_canopy(spot: Vector3, facing: float, roof_size: Vector3) -> void:
 
 
 func _setup_bus() -> void:
-	for road: Dictionary in _map.get("ROADS", []):
-		if road.get("name", "") == "Bus Access":
-			var from: Vector2 = road["from"]
-			var to: Vector2 = road["to"]
-			_bus_entry = Vector3(_ring.position.x, 0, from.y)
-			_bus_bay = Vector3(to.x, 0, to.y - 2.5)
-	if _bus_entry == _bus_bay:
+	# Session 60: the bus station is a loop off the north ring road. Buses turn in at the
+	# entry, stop at the bay beside the platform, go round and turn back out at the exit.
+	var loop: Dictionary = _map.get("BUS_LOOP", {})
+	if loop.is_empty():
 		return
+	_bus_loop.clear()
+	for point: Vector3 in loop["points"]:
+		_bus_loop.append(Vector3(point.x, 0, point.z))
+	var entry: Vector2 = loop["entry"]
+	_bus_entry = Vector3(entry.x, 0, _ring.position.y)
+	_bus_loop[0] = _bus_entry
+	_bus_loop[_bus_loop.size() - 1] = Vector3(_bus_loop[-1].x, 0, _ring.position.y)
+	_bus_bay = loop["bay"]
 	_next_arrival = GameConfig.BUS_INTERVAL_GAME_MINUTES
 	_spawn_bus(true)
 
@@ -180,7 +186,10 @@ func _spawn_bus(already_at_bay: bool) -> TrafficVehicle:
 	bus.name = "CommunityBus_%d" % bus_arrivals
 	add_child(bus)
 	var ring := _ring_points()
-	var route: Array[Vector3] = [_bus_entry, _bus_bay, _bus_entry, ring[0], ring[1], ring[2], ring[3], _bus_entry]
+	# In at the entry, the bay (index 1), round the loop, out at the exit, then once round the ring.
+	var route: Array[Vector3] = [_bus_entry, _bus_bay]
+	route.append_array(_bus_loop.slice(2))
+	route.append_array([ring[1], ring[2], ring[3], ring[0], _bus_entry])
 	bus.setup(route, "bus", _bus_look(), BUS_SIZE, GameConfig.TRAFFIC_BUS_SPEED)
 	bus.stop_index = 1
 	bus.dwell_time = GameConfig.BUS_DWELL_TIME

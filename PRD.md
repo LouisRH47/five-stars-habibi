@@ -605,6 +605,19 @@ Build it in milestones and play-test at the end of each one. Only move on when t
 - Upgrade prices and how much a shift pays at real size and 8 minutes: tune in the detail pass play-test
 - What goes on the building sites later (a sixth cluster, a hotel, something else)
 
+### Road network (World polish pass, from 5 Nov 2026)
+
+The approved top-down plan is docs/road_plan_2026-11-05.svg. The ring road is the only main
+road and connects to just four things: the two gate roads, the bus station loop and the
+stables car park. The car parks between the clusters keep their entrances from the ring road.
+Everything inside is one connected network with rounded corners and no dead ends: the spine
+road (the only road that gets red walking tracks, both sides), the loop round the spine (the
+cluster front road, the south road and the school road), the road behind the C Institute, and
+a roundabout east of the C Institute whose north exit curves into the Plaza. Each cluster has
+a front and a back cross road joining its five lanes; only the front one links out, and no
+cluster road touches the ring road. Buses only use the ring road and the bus loop. Each shift
+starts beside the bus station, facing the Plaza.
+
 ## Decisions log
 
 One line per decision, newest at the bottom. Add a line whenever the design changes.
@@ -677,6 +690,15 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 4 Nov 2026 | The game is released both on itch.io (Mac and Windows downloads) and in the browser at fivestarshabibi.middleleap.com. A crash "week" is 7 shifts, as the clinic screen already counts (CRASH_WEEK_SHIFTS) |
 | 4 Nov 2026 | Opening the game no longer counts as a new shift: a shift you quit halfway through is played again (same number, same kind of day); only a finished shift counts. Your last accept / skip choices are saved, so the acceptance rate survives a restart |
 | 4 Nov 2026 | Looks pass planned (Sessions 52 to 59) after Louis's play-test of the detail pass: anti-aliasing on every level, sharper shadows, auto-picked graphics level, no ground flicker, smaller and fuller interiors from free CC0 kits (KayKit, Kenney, Poly Pizza), a short queue of 1 or 2 people, glass shop fronts, sliding doors, indoor camera, sounds per place, a real gym, the C Institute turned to face the spine with glass on both sides and a changing talk screen, every walk-in place rebuilt from the approved designs, more detail in the Plaza, streets and spine (grass blades, sparser on Low), and fixes for the crash loop and crashes costing too little |
+| 5 Nov 2026 | Road plan approved (docs/road_plan_2026-11-05.svg): the ring road is the only main road and connects only to the two gates, the bus station loop and the stables car park (plus the car park entrances); the inside roads form one connected, rounded network with a roundabout east of the C Institute and no dead ends |
+| 5 Nov 2026 | Red walking tracks only along the spine road, both sides behind a planter; buggies can't use them |
+| 5 Nov 2026 | Cluster lanes are asphalt with a front and back cross road; only the front links out; Cluster 3 moves 10 m west and Clusters 4 and 5 move 6 m north to keep a margin from the ring road |
+| 5 Nov 2026 | All roads get a yellow dashed centre line and direction arrows (drive on the right); tyre marks removed |
+| 5 Nov 2026 | New: stables car park, school car park, Majlis Gardens, football pitch with floodlights replacing the tennis and basketball courts |
+| 5 Nov 2026 | Cluster signs copy the real green SIKKA signs ("Cluster N"); a made-up "5-Star Habibi Police" sign; people dressed for each place; customers walk home instead of vanishing |
+| 5 Nov 2026 | Beekeeper becomes a pickup (honey jars, candles); new horses and donkeys and rounded playgrounds made with Blender scripts; full map on M; resolution setting |
+| 5 Nov 2026 | World polish pass numbered Sessions 60 to 74; Session 60 (roads) built before looks Sessions 53 to 59 |
+| 5 Nov 2026 | Parked for later: a delivery robot upgrade, and whether the desktop download becomes the main version |
 
 ## Sources
 
