@@ -462,7 +462,7 @@ const BOLLARDS := [
 
 const PLOTS := [
 	{"name": "Fair Grade International School", "area": Rect2(-425, 35, 120, 160), "colour": Color(0.95, 0.85, 0.8, 1)},
-	{"name": "C Institute", "area": Rect2(-278, -58, 126, 48), "colour": Color(0.65, 0.82, 0.93, 1)},
+	{"name": "C Institute", "area": Rect2(-278, -58, 126, 48), "colour": Color(0.47, 0.66, 0.34, 1)},
 	{"name": "Mosque", "area": Rect2(-422, -203, 70, 105), "colour": Color(0.93, 0.92, 0.88, 1)},
 	{"name": "Stables", "area": Rect2(-282, 165, 115, 35), "colour": Color(0.86, 0.75, 0.55, 1)},
 	{"name": "Jumping Arena", "area": Rect2(-282, 65, 115, 88), "colour": Color(0.82, 0.7, 0.5, 1)},
@@ -520,6 +520,8 @@ const MOSQUE := {"name": "Wahat Al Shams Mosque", "arabic": "مسجد واحة �
 const BUS_STATION := {"position": Vector3(-310, 0, -174), "area": Rect2(-336, -202, 52, 52), "name": "Wahat Bus Station", "arabic": "محطة حافلات الواحة"}
 
 const INSTITUTE := {"position": Vector3(-215, 0, -33), "size": Vector3(46, 14, 36), "facing": 90.0, "name": "C Institute", "arabic": "معهد سي"}
+
+const INSTITUTE_PITCH := {"area": Rect2(-177, -49, 20, 32), "lines": Rect2(-175, -47, 16, 28)}
 
 const GYM := {"position": Vector3(115, 0, 22), "size": Vector3(36, 8, 22), "facing": 180.0, "name": "Wahat Gym", "arabic": "نادي الواحة الرياضي"}
 

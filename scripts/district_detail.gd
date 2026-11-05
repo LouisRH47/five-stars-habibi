@@ -228,8 +228,12 @@ func _institute_steps() -> void:
 		visitor.rotation.y = PI
 		steps.add_child(visitor)
 		visitor.play("sit")
+		visitor.pose.floor_y = 0.7  # Session 80: feet rest on the step below, not inside it
 	for x in [-10.0, 0.0, 10.0]:
 		LowPoly.box(steps, Vector3(7, 0.03, 4), GLASS.darkened(0.5), Vector3(x, 0.04, -front - 6.0))
+	# Session 80: a 5-a-side football pitch on the grass in front (scripts/institute_pitch.gd).
+	if _map.has("INSTITUTE_PITCH"):
+		InstitutePitch.build(self, _map["INSTITUTE_PITCH"])
 
 
 func _hill(spec: Dictionary) -> void:

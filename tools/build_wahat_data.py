@@ -153,7 +153,7 @@ for n,cx,cz in clusters:
 put('ROADS',roads);put('PAVED_AREAS',paving);put('BOLLARDS',bollards)
 # PARKING_AREAS (the car parks off the ring road) are made by fix_pass_car_parks() below (Session 79).
 put('PLOTS',[{'name':'Fair Grade International School','area':rect(-425,35,120,160),'colour':colour(.95,.85,.8)},
- {'name':'C Institute','area':rect(-278,-58,126,48),'colour':colour(.65,.82,.93)},
+ {'name':'C Institute','area':rect(-278,-58,126,48),'colour':colour(.47,.66,.34)},  # Session 80: grass (it was a pale blue that looked like a pool)
  {'name':'Mosque','area':rect(-422,-203,70,105),'colour':colour(.93,.92,.88)},
  {'name':'Stables','area':rect(-282,165,115,35),'colour':colour(.86,.75,.55)},
  {'name':'Jumping Arena','area':rect(-282,65,115,88),'colour':colour(.82,.7,.5)},
@@ -170,6 +170,9 @@ put('SCHOOL',{'name':'Fair Grade International School','arabic':'مدرسة في
 put('MOSQUE',{'name':'Wahat Al Shams Mosque','arabic':'مسجد واحة الشمس','position':v3(-387,0,-150),'facing':90.,'size':v3(54,15,60)})
 put('BUS_STATION',{'position':v3(-310,0,-174),'area':rect(-336,-202,52,52),'name':'Wahat Bus Station','arabic':'محطة حافلات الواحة'})
 put('INSTITUTE',{'position':v3(-215,0,-33),'size':v3(46,14,36),'facing':90.,'name':'C Institute','arabic':'معهد سي'})
+# Session 80: a small 5-a-side football pitch on the grass in front of the C Institute, east
+# of its access path. area: the turf (x, z, width, depth); lines: inside the white lines.
+put('INSTITUTE_PITCH',{'area':rect(-177,-49,20,32),'lines':rect(-175,-47,16,28)})
 put('GYM',{'position':v3(115,0,22),'size':v3(36,8,22),'facing':180.,'name':'Wahat Gym','arabic':'نادي الواحة الرياضي'})
 put('COMMUNITY_POOL',rect(190,-32,50,20));put('JUMPING_ARENA',rect(-282,65,115,88))  # Session 65: the pool is off the red track, inside its fence
 put('STABLES',{'name':'Wahat Stables','arabic':'إسطبلات الواحة','block':{'position':v3(-224,0,174),'size':v3(100,5,14)},'paddock':rect(-280,157,110,9),'horses':4})

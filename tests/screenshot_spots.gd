@@ -73,6 +73,21 @@ const SPOTS := {
 	"pedal_point_roof": [Vector3(-250, 22, -120), Vector3(-275, 6, -145)],
 	"plaza_row_ends": [Vector3(-275, 2.4, -165), Vector3(-258, 5.0, -192)],
 	"plaza_row_gap": [Vector3(-236, 2.0, -176), Vector3(-243, 3.0, -195)],
+	# lane W
+	"institute_pitch": [Vector3(-150, 6.0, -12), Vector3(-167, 0.5, -33)],
+	"institute_pitch_top": [Vector3(-150, 35, -10), Vector3(-170, 0, -36)],
+	"basketball_close": [Vector3(-125, 3.0, -16), Vector3(-137, 1.0, -28)],
+	"pool_deck": [Vector3(193, 2.2, -14), Vector3(212, 0.3, -30)],
+	"community_pool_top": [Vector3(215, 30, 5), Vector3(215, 0, -22)],
+	"pond_west": [Vector3(70, 3.0, 32), Vector3(83, 0, 21)],
+	"pond_east": [Vector3(200, 3.0, 33), Vector3(189, 0, 22)],
+	# lane P (people close-ups: seats, swimmers, the lifeguard, faces and outfits)
+	"p_institute_step_sitter": [Vector3(-190.0, 1.6, -20.0), Vector3(-193.9, 0.8, -23.0)],
+	"p_cafe_sitter": [Vector3(-204.6, 1.3, -104.4), Vector3(-206.8, 0.5, -106.4)],
+	"p_restaurant_diners": [Vector3(-149.0, 1.5, -100.5), Vector3(-151.2, 0.4, -101.7)],
+	"p_majlis_sofa": [Vector3(-40.6, 1.3, -89.6), Vector3(-43.3, 0.4, -91.9)],
+	"p_cluster_bench": [Vector3(-27.6, 1.2, -121.4), Vector3(-29.8, 0.5, -123.5)],
+	"p_institute_laptops": [Vector3(-211.5, 2.4, -14.5), Vector3(-216.3, 1.0, -17.6)],
 }
 
 var _main: Node

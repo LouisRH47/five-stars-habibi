@@ -596,6 +596,18 @@ const PARKED_CAR_DRAW_DISTANCE := 280.0   # metres: parked cars further away are
 
 # --- Fix pass Session 80: C Institute front, seats and the basketball court ---
 # (Session 80 numbers go here)
+# The 5-a-side pitch in front of the C Institute (scripts/institute_pitch.gd)
+const INSTITUTE_PITCH_PLAYERS := 10       # 5 a side, the two goalkeepers included
+const INSTITUTE_PITCH_PLAY_END_HOUR := 17.0  # people play football until 17:00
+const INSTITUTE_PITCH_BALL_SPEED := 4.5   # m/s
+const INSTITUTE_PITCH_RUN_SPEED := 2.8    # m/s
+# The basketball court in the spine (scripts/basketball_court.gd)
+const COURT_PLAYERS := 3                  # two play one-on-one, one practises shots
+const COURT_PLAY_END_HOUR := 17.5         # players go home at 17:30
+const COURT_RUN_SPEED := 2.2              # m/s
+const COURT_SHOT_EVERY := 4.0             # seconds of dribbling before a shot
+const COURT_SHOT_TIME := 1.1              # seconds the ball flies to the hoop
+const COURT_FENCE_HEIGHT := 3.0           # metres
 
 
 # --- Fix pass Session 81: gym, stream and pools ---
@@ -607,7 +619,9 @@ const PARKED_CAR_DRAW_DISTANCE := 280.0   # metres: parked cars further away are
 
 
 # --- Fix pass Session 83: people who look alive ---
-# (Session 83 numbers go here)
+# (Session 80 seats) the sitting pose keeps feet on top of the floor or step below them
+const SIT_FEET_CLEARANCE := 0.03      # m the soles stay above the floor (paving is a little raised)
+const SIT_ANKLE_HEIGHT := 0.08        # m from the sole up to the ankle
 
 
 # --- Fix pass Session 75 (people): jumping on foot ---

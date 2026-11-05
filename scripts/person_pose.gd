@@ -5,7 +5,9 @@ extends SkeletonModifier3D
 ##   "pedal": sitting on the bike, leaning forward, hands on the handlebars and feet on
 ##            the pedals. The bike tells us where the pedals and grips are each frame.
 ##   "lie":   straight legs and arms by the sides (the clinic bed)
-##   "sit":   thighs forward, feet down and hands on the lap (cafe/reception chairs)
+##   "sit":   thighs forward, feet down and hands on the lap (cafe/reception chairs).
+##            Session 80: the feet never go below the floor (floor_y). On a low seat the
+##            knees come up and the feet rest on the floor in front, like a real person.
 ## It works by pointing bones at spots (like a puppet on strings). Spots are in metres on
 ## the person (facing -Z, +X is their right).
 
@@ -23,9 +25,13 @@ var lean := 0.0
 ## tuck: metres the feet lift up towards the body (in the air).
 var squat := 0.0
 var tuck := 0.0
+## Session 80, for "sit": how high the floor under the feet is (world height in metres).
+## 0 is the ground; people sitting on steps get the height of the step their feet are on.
+var floor_y := 0.0
 
 var _time := 0.0
 var _bones := {}
+var _lengths := {}
 
 
 func _process_modification_with_delta(delta: float) -> void:
@@ -67,13 +73,28 @@ func _lie() -> void:
 
 
 func _sit() -> void:
-	var hip_height := person.spot("Hips").y
+	var hips := person.spot("Hips")
+	# The floor on the person (their own metres, standing on y = 0).
+	var floor := floor_y - person.global_position.y + GameConfig.SIT_FEET_CLEARANCE
 	for side in ["Left", "Right"]:
 		var x := -0.2 if side == "Left" else 0.2
 		_point(side + "UpLeg", side + "Leg", Vector3(0, -0.05, -1))
 		_point(side + "Leg", side + "Foot", Vector3.DOWN)
+		# Would the foot go into the floor (a low seat or a step)? Then keep the thigh
+		# level and slope the shin forward until the foot rests on the floor (on a very
+		# low seat the legs stretch out in front, like sitting on a big step).
+		var ankle := person.skeleton_to_me * _at(side + "Foot")
+		var ankle_floor := floor + GameConfig.SIT_ANKLE_HEIGHT
+		if ankle.y < ankle_floor:
+			var hip := person.skeleton_to_me * _at(side + "UpLeg")
+			var thigh := _length(side + "UpLeg", side + "Leg")
+			var shin := _length(side + "Leg", side + "Foot")
+			var drop := maxf(hip.y - ankle_floor, 0.0)
+			var forward := thigh + sqrt(maxf(shin * shin - drop * drop, 0.0))
+			_reach(side + "UpLeg", side + "Leg", side + "Foot", Vector3(hip.x, ankle_floor, hip.z - forward),
+					Vector3(0, 1, -0.3))
 		_reach(side + "Arm", side + "ForeArm", side + "Hand",
-				Vector3(x, hip_height - 0.1, -0.35), Vector3(x * 3, -0.3, 0.1))
+				Vector3(x, hips.y - 0.1, -0.35), Vector3(x * 3, -0.3, 0.1))
 
 
 ## Bends the knees: the hips go down by `squat` and the feet up by `tuck`.
@@ -146,6 +167,13 @@ func _set_global_rotation(i: int, rot: Quaternion) -> void:
 ## Where a bone is right now, in skeleton space.
 func _at(bone: String) -> Vector3:
 	return get_skeleton().get_bone_global_pose(_bone(bone)).origin
+
+
+## How long a bone is on the person standing straight (metres), worked out once.
+func _length(bone: String, child: String) -> float:
+	if not _lengths.has(bone):
+		_lengths[bone] = person.spot(bone).distance_to(person.spot(child))
+	return _lengths[bone]
 
 
 func _bone(bone: String) -> int:

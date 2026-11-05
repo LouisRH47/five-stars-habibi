@@ -3305,6 +3305,105 @@ func _session79_rows(lot: Dictionary) -> Dictionary:
 ## (Session 80 checks go here.)
 func _check_session80() -> void:
 	await process_frame
+	var data: Dictionary = _delivery.place_builder.data.get_script_constant_map()
+	# 1) No pale blue (pool-looking) ground in front of the C Institute: the institute plot is
+	# grass, and no flat blue slab covers the ground between its front and the plot's edge.
+	var plot_colour := Color.BLACK
+	for plot: Dictionary in data["PLOTS"]:
+		if plot["name"] == "C Institute":
+			plot_colour = plot["colour"]
+	var blue := _blue_ground_near(Vector2(-167, -33), 14.0)
+	_check("Session 80: no blue patch in front of the C Institute (its ground is grass)",
+			plot_colour.g > plot_colour.b and blue.is_empty(), "plot %s, blue slabs %s" % [plot_colour, blue])
+	# 2) The 5-a-side pitch: goals with nets, players playing in the day, off every road.
+	var pitch = _main.get_node_or_null("DistrictDetail/InstitutePitch")  # not typed: its class uses autoloads
+	var goals_ok: bool = pitch != null and pitch.goals.size() == 2
+	if goals_ok:
+		for goal: Node3D in pitch.goals:
+			var nets := 0
+			for part in goal.get_children():
+				var look := (part as MeshInstance3D).material_override as StandardMaterial3D if part is MeshInstance3D else null
+				nets += 1 if look != null and look.albedo_texture != null else 0
+			goals_ok = goals_ok and goal.get_node_or_null("GoalFrame") != null and nets >= 4
+	_check("Session 80: a 5-a-side pitch with lines and two goals with nets in front of the C Institute",
+			goals_ok and pitch.get_node_or_null("PitchLines") != null and _pitch_clear_of_roads(data, pitch.turf),
+			str(pitch.turf) if pitch != null else "no pitch")
+	var plays := false
+	if pitch != null:
+		pitch.update_play(11.0)
+		var before: Vector3 = pitch.ball.position
+		var spots: Array = pitch.players.map(func(p): return (p.get_parent() as Node3D).position)
+		for i in 20:
+			pitch.play(0.1)
+		var moved := 0
+		for i in pitch.players.size():
+			moved += 1 if (pitch.players[i].get_parent() as Node3D).position.distance_to(spots[i]) > 0.05 else 0
+		var by_day: bool = pitch.playing
+		pitch.update_play(17.5)
+		plays = by_day and not pitch.playing and pitch.ball.position.distance_to(before) > 0.3 and moved >= 3 \
+				and pitch.players.size() == GameConfig.INSTITUTE_PITCH_PLAYERS
+		pitch.update_play(_game_state.clock_hours())
+	_check("Session 80: people play football on it in the day and go home in the evening", plays,
+			"%d players" % (pitch.players.size() if pitch != null else 0))
+	# 3) The basketball court: hoops with backboards and nets, lines, a fence, benches, players.
+	var court = _main.get_node_or_null("SpineBuilder/BasketballCourt")
+	var hoops_ok: bool = court != null and court.hoops.size() == 2
+	if hoops_ok:
+		for side in ["West", "East"]:
+			var hoop: Node = court.get_node_or_null("Hoop_" + side)
+			hoops_ok = hoops_ok and hoop != null and hoop.get_node_or_null("Net") != null \
+					and hoop.get_node_or_null("HoopLook") != null
+	var fence: Node = court.get_node_or_null("CourtFence") if court != null else null
+	_check("Session 80: the basketball court has lines, two hoops with backboards and nets, a fence and benches",
+			hoops_ok and court.get_node_or_null("CourtLines") != null and fence != null
+			and fence.find_children("*", "CollisionShape3D", false, false).size() >= 4
+			and court.find_children("*", "StaticBody3D", false, false).size() >= 5, "")
+	var shoots := false
+	if court != null and not court.balls.is_empty():
+		court.update_play(11.0)
+		var start: Vector3 = court.balls[0].position
+		var highest := 0.0
+		for i in 60:
+			court.play(0.1)
+			highest = maxf(highest, court.balls[0].position.y)
+		shoots = court.playing and court.players.size() >= 2 and court.balls[0].position.distance_to(start) > 0.3 and highest > 1.0
+		court.update_play(_game_state.clock_hours())
+	_check("Session 80: a couple of players dribble and shoot at the hoops", shoots,
+			"%d players" % (court.players.size() if court != null else 0))
+
+
+## Session 80 helper: flat bluish slabs (not water) on the ground near this spot.
+func _blue_ground_near(spot: Vector2, radius: float) -> Array:
+	var found: Array = []
+	for builder in ["WahatBuilder", "DistrictDetail", "LandmarkBuilder"]:
+		var node := _main.get_node_or_null(builder)
+		if node == null:
+			continue
+		for view: MeshInstance3D in node.find_children("*", "MeshInstance3D", true, false):
+			if not view.mesh is BoxMesh or view.material_override is ShaderMaterial:
+				continue
+			var box := view.global_transform * view.mesh.get_aabb()
+			if box.size.y > 0.2 or box.end.y > 0.2 or box.size.x < 2.0 or box.size.z < 2.0:
+				continue
+			if not Rect2(box.position.x, box.position.z, box.size.x, box.size.z).intersects(Rect2(spot - Vector2.ONE * radius, Vector2.ONE * radius * 2.0)):
+				continue
+			var material := view.material_override as StandardMaterial3D
+			if material == null:
+				material = (view.mesh as BoxMesh).material as StandardMaterial3D
+			if material != null and material.albedo_texture == null and material.albedo_color.b > material.albedo_color.g + 0.05:
+				found.append(str(view.get_path()))
+	return found
+
+
+## Session 80 helper: true if no road (or path) runs across this area.
+func _pitch_clear_of_roads(data: Dictionary, area: Rect2) -> bool:
+	for road: Dictionary in data["ROADS"]:
+		var half: float = road.get("width", 6.0) * 0.5
+		for t in 21:
+			var at: Vector2 = (road["from"] as Vector2).lerp(road["to"], t / 20.0)
+			if area.grow(half).has_point(at):
+				return false
+	return true
 
 # --- end of Session 80 checks ---
 
@@ -3376,7 +3475,47 @@ func _check_session75_people() -> void:
 
 ## Session 80 (people): seated people's feet show above the seat.
 func _check_session80_people() -> void:
-	await process_frame
+	# Three test sitters: a normal chair, a very low seat, and a big step (feet on the step below).
+	var cases := [[0.5, 0.0], [0.3, 0.0], [1.05, 0.7]]  # [hips height, floor height]
+	var sitters: Array = []
+	for spec in cases:
+		var sitter := PeopleLooks.resident(2, 0)
+		sitter.position = Vector3(5000.0 + sitters.size() * 3.0, spec[0] - sitter.spot("Hips").y, 5000.0)
+		root.add_child(sitter)
+		sitter.play("sit")
+		sitter.pose.floor_y = spec[1]
+		sitters.append(sitter)
+	# The pose is only there while the bones update, so measure the feet right then.
+	var soles := {}
+	for sitter: Person in sitters:
+		sitter.skeleton.skeleton_updated.connect(func(): soles[sitter] = _lowest_foot(sitter))
+	for i in 6:
+		await process_frame
+	var lowest := []
+	var feet_ok := true
+	for i in sitters.size():
+		var low: float = soles.get(sitters[i], -INF)
+		lowest.append("%.2f" % low)
+		feet_ok = feet_ok and low >= cases[i][1] - 0.01
+		sitters[i].queue_free()
+	_check("seated people's feet stay on top of the floor or step", feet_ok, "lowest soles %s" % [lowest])
+	var steps_set := true
+	for person: Person in _main.find_children("*", "Person", true, false):
+		if person.name == "InstituteSitter" or str(person.name).begins_with("LaptopPerson"):
+			steps_set = steps_set and person.action == "sit" and person.pose.floor_y > 0.3
+	_check("people on the C Institute steps rest their feet on a step", steps_set, "")
+
+
+## The height of the lowest sole (toe or heel) of a person, on the map.
+func _lowest_foot(person: Person) -> float:
+	var low := INF
+	var skeleton := person.skeleton
+	for bone in ["LeftFoot", "RightFoot", "LeftToe_End", "RightToe_End"]:
+		var i := skeleton.find_bone(bone)
+		var at := person.global_transform * (person.skeleton_to_me * skeleton.get_bone_global_pose(i).origin)
+		# The ankle bone is SIT_ANKLE_HEIGHT above the sole; the toe end is at the sole.
+		low = minf(low, at.y - (GameConfig.SIT_ANKLE_HEIGHT if bone.ends_with("Foot") else 0.0))
+	return low
 
 # --- end of Session 80 (people) checks ---
 

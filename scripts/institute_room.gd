@@ -189,6 +189,7 @@ static func _laptop_person(body: StaticBody3D, seat: Vector3, i: int) -> void:
 	person.position = seat + Vector3(0, 0.07, 0) - person.basis * hips
 	body.add_child(person, true)
 	person.play("sit")
+	person.pose.floor_y = seat.y - 0.1  # Session 80: feet rest on this step, not inside it
 	var lap := person.transform * Vector3(0, hips.y + 0.1, hips.z - 0.32)
 	var base := LowPoly.box(body, Vector3(0.24, 0.02, 0.32), Color(0.75, 0.76, 0.78), lap)
 	base.name = "Laptop%d" % i

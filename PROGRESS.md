@@ -1,5 +1,25 @@
 # Progress
 
+## Session 80: the C Institute front, seats and the basketball court — 6 November 2026
+
+What works:
+- **No blue patch** in front of the C Institute (Louis's screenshots 01 and 08): it's grass now,
+  with a fenced 5-a-side football pitch (lines, two small goals with nets) and people playing
+  during the day (scripts/institute_pitch.gd).
+- **A finished basketball court** (scripts/basketball_court.gd): proper lines, hoops with nets and
+  backboards, a fence, benches and two players.
+- **Nobody's feet sink into a seat.** The sitting pose keeps the thighs level and slopes the shins
+  until the feet rest on the floor; people on the C Institute steps (outside and inside) rest
+  their feet on their step (scripts/person_pose.gd).
+- Smoke test checks: no blue patch, the pitch with goals, nets and players, the court's hoops,
+  fence, benches and players, and a chair, a low seat and a step sitter. Every suite PASS.
+- Screenshots on the Mac: the C Institute front and road, the pitch, the court, a step sitter,
+  a café sitter.
+
+**Louis's turn:** press F5 and ride to the C Institute (screenshots 01 and 08): grass and a
+football pitch with players instead of the blue patch. Look at the people sitting on the steps
+and at the café tables. Ride past the basketball court by the roundabout.
+
 ## Session 79: car parks laid out properly, and a mosque car park — 6 November 2026
 
 What works:
