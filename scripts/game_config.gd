@@ -676,7 +676,7 @@ const LOOK_LUT := "golden"       # Session 67: "golden", "fresh" or "neutral" (=
 const VIGNETTE_STRENGTH := 0.22  # Session 67: 0 = off
 const MARKER_V2 := true          # Session 68
 const WATER_V2 := true           # Session 68
-const ROAD_DECALS := true        # Session 68
+const ROAD_DECALS := false        # Session 68. Off 5 Nov 2026: Louis saw glitching, smeared road textures. true = sand, tyre marks, manholes again
 const VFX_AMBIENT := true        # Session 68
 const PHONE_V2 := true           # Session 70
 const MINIMAP_V2 := true         # Session 70

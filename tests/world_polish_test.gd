@@ -154,6 +154,9 @@ func _check_water() -> void:
 
 func _check_decals() -> void:
 	var wear: Node = _world.get_node_or_null("RoadDecals")
+	if not GameConfig.ROAD_DECALS:
+		_check(wear == null, "road wear decals are switched off (ROAD_DECALS = false)")
+		return
 	_check(wear != null and wear.decals.size() > 100, "road wear decals were laid (%d)" % (wear.decals.size() if wear else 0))
 	if wear == null:
 		return
