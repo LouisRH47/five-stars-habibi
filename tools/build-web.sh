@@ -117,7 +117,7 @@ with tempfile.TemporaryDirectory(prefix="habibi-focused-check-") as temporary:
         "reception_panel", "bus_recovery", "loading", "layout", "ragdoll", "grass",
         "kit_props", "plaza", "carpark",
         "pool", "venues", "spine", "buggy_route", "interior",
-        "polish_groundwork", "screens_polish", "hud_polish",
+        "polish_groundwork", "screens_polish", "hud_polish", "phone_polish",
     ):
         run(f"focused-{suite}", ["--fixed-fps", "60", "-s", f"tests/{suite}_test.gd"],
             timeout=300, require_pass=True, project=focused_project)

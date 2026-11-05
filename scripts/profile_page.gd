@@ -1,6 +1,8 @@
 class_name ProfilePage
 extends CanvasLayer
 ## Lifetime progress has its own page and save fields, so rating history can stay small.
+## Session 70 (GameConfig.PHONE_V2): styled like the phone: chips for your level, money and
+## stamps at the top, orange section titles, and stamps as little coloured tiles.
 var showing := false
 var _root: Control
 var _panel: PanelContainer
@@ -28,6 +30,14 @@ func _ready() -> void:
 	style.bg_color = Color(0.96, 0.94, 0.88)
 	style.set_corner_radius_all(22)
 	style.set_content_margin_all(24)
+	if GameConfig.PHONE_V2:
+		style.bg_color = Color(0.99, 0.97, 0.93)
+		style.border_color = UiPalette.INK
+		style.set_border_width_all(6)
+		style.set_corner_radius_all(30)
+		style.set_content_margin_all(32)
+		style.shadow_color = Color(0, 0, 0, 0.35)
+		style.shadow_size = 18
 	_panel.add_theme_stylebox_override("panel", style)
 	_root.add_child(_panel)
 	var rows := VBoxContainer.new()
@@ -42,6 +52,12 @@ func _ready() -> void:
 	close_button.text = "Back to riding  ·  P / Esc"
 	close_button.pressed.connect(close)
 	header.add_child(close_button)
+	if GameConfig.PHONE_V2:
+		title.text = "Snackaroo  ·  Rider profile"
+		title.theme_type_variation = &"Heading"
+		title.add_theme_font_size_override("font_size", 36)
+		title.add_theme_color_override("font_color", UiPalette.ORANGE)
+		close_button.add_theme_font_size_override("font_size", UiPalette.FONT_BODY)
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -84,9 +100,17 @@ func _rebuild() -> void:
 	for child in _content.get_children():
 		_content.remove_child(child)
 		child.queue_free()
-	_content.add_child(_label("%s  ·  Level %d  ·  %d Dh" % [GameState.rider_name if GameState.rider_name != "" else "Snackaroo rider", GameState.level(), GameState.money], 22))
-	_content.add_child(_label("Wahat Al Shams stamp card  ·  %d / %d homes  ·  %d / %d venues" % [GameState.visited_homes.size(), GameState.home_catalog.size(), GameState.visited_venues.size(), GameState.venue_catalog.size()], 22))
-	_content.add_child(_label("Every 25 different homes in a cluster earns 20 Dh. Fill a cluster to unlock its gold delivery box colour. A + marks a visited home.", 16))
+	var v2 := GameConfig.PHONE_V2
+	if v2:
+		_content.add_child(_chips([[GameState.rider_name if GameState.rider_name != "" else "Snackaroo rider", "RIDER"],
+				["Level %d" % GameState.level(), "LEVEL"], ["%d Dh" % GameState.money, "WALLET"],
+				["%d / %d" % [GameState.visited_homes.size(), GameState.home_catalog.size()], "HOMES"],
+				["%d / %d" % [GameState.visited_venues.size(), GameState.venue_catalog.size()], "VENUES"]]))
+		_content.add_child(_heading("Wahat Al Shams stamp card"))
+	else:
+		_content.add_child(_label("%s  ·  Level %d  ·  %d Dh" % [GameState.rider_name if GameState.rider_name != "" else "Snackaroo rider", GameState.level(), GameState.money], 22))
+		_content.add_child(_label("Wahat Al Shams stamp card  ·  %d / %d homes  ·  %d / %d venues" % [GameState.visited_homes.size(), GameState.home_catalog.size(), GameState.visited_venues.size(), GameState.venue_catalog.size()], 22))
+	_content.add_child(_label("Every 25 different homes in a cluster earns 20 Dh. Fill a cluster to unlock its gold delivery box colour. A + marks a visited home.", 18 if v2 else 16))
 	var clusters: Array[String] = []
 	for home in GameState.home_catalog.values():
 		if not str(home["cluster"]) in clusters:
@@ -112,17 +136,19 @@ func _rebuild() -> void:
 			stamp.tooltip_text = home["address"]
 			stamp.custom_minimum_size.x = 62
 			stamp.add_theme_color_override("font_color", Color(0.15, 0.53, 0.31) if stamped else Color(0.4, 0.44, 0.44))
+			if v2:
+				_tile(stamp, stamped)
 			grid.add_child(stamp)
 	for key in GameState.venue_catalog:
 		var status := "Visited" if GameState.visited_venues.has(key) else "Unvisited"
 		_content.add_child(_label("%s  ·  %s" % [GameState.venue_catalog[key], status], 18))
-	_content.add_child(_label("Neighbours who know you", 24))
+	_content.add_child(_title("Neighbours who know you"))
 	for id in ReplayCatalog.REGULAR_NAMES:
 		var stage: String = {"first": "Getting acquainted", "friendly": "Friendly", "best_friends": "Best friends"}[GameState.regular_stage(id)]
 		_content.add_child(_label("%s  ·  %d visits  ·  %s" % [ReplayCatalog.REGULAR_NAMES[id], GameState.regular_visits.get(id, 0), stage], 18))
-	_content.add_child(_label("Cats and horses you've met  ·  %d" % GameState.animals_met.size(), 24))
+	_content.add_child(_title("Cats and horses you've met  ·  %d" % GameState.animals_met.size()))
 	_content.add_child(_label(", ".join(GameState.animals_met.values()) if not GameState.animals_met.is_empty() else "Ride up close and say hello to meet an animal.", 18))
-	_content.add_child(_label("Personal bests", 24))
+	_content.add_child(_title("Personal bests"))
 	for row in [["Best shift earnings", "%d Dh" % GameState.personal_bests.get("earnings", 0)], ["Longest five-star streak", str(GameState.personal_bests.get("streak", 0))], ["Most deliveries in a shift", str(GameState.personal_bests.get("deliveries", 0))], ["Fastest routes recorded", str(GameState.personal_bests.get("routes", {}).size())]]:
 		_content.add_child(_label("%s  ·  %s" % row, 18))
 	var routes: Dictionary = GameState.personal_bests.get("routes", {})
@@ -142,7 +168,7 @@ func _rebuild() -> void:
 					var route_name: String = GameState.personal_bests.get("route_labels", {}).get(key, "A saved route")
 					var seconds := int(routes[key])
 					records.add_child(_label("%s  ·  %d:%02d" % [route_name, seconds / 60, seconds % 60], 16)))
-	_content.add_child(_label("Customer lines heard  ·  %d" % GameState.lines_heard.size(), 24))
+	_content.add_child(_title("Customer lines heard  ·  %d" % GameState.lines_heard.size()))
 	if GameState.lines_heard.is_empty():
 		_content.add_child(_label("Your neighbours' stories will appear here after a delivery.", 18))
 	for line in GameState.lines_heard:
@@ -156,3 +182,62 @@ func _label(text: String, font_size: int) -> Label:
 	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_color_override("font_color", Color(0.08, 0.25, 0.29))
 	return label
+
+
+# --- Session 70: the phone-style look ---
+
+## A section title: orange and bigger with the Session 70 look.
+func _title(text: String) -> Label:
+	return _heading(text) if GameConfig.PHONE_V2 else _label(text, 24)
+
+
+## An orange section title.
+func _heading(text: String) -> Label:
+	var label := _label(text, UiPalette.FONT_TITLE)
+	label.theme_type_variation = &"Heading"
+	label.add_theme_color_override("font_color", UiPalette.ORANGE)
+	return label
+
+
+## A row of dark chips: big value on top, a small caption under it.
+func _chips(items: Array) -> HFlowContainer:
+	var row := HFlowContainer.new()
+	row.add_theme_constant_override("h_separation", 10)
+	row.add_theme_constant_override("v_separation", 10)
+	for item: Array in items:
+		var chip := PanelContainer.new()
+		var style := StyleBoxFlat.new()
+		style.bg_color = UiPalette.TEAL
+		style.set_corner_radius_all(14)
+		style.content_margin_left = 16
+		style.content_margin_right = 16
+		style.content_margin_top = 6
+		style.content_margin_bottom = 8
+		chip.add_theme_stylebox_override("panel", style)
+		var inside := VBoxContainer.new()
+		inside.add_theme_constant_override("separation", -4)
+		chip.add_child(inside)
+		var caption := _label(item[1], UiPalette.FONT_SMALL)
+		caption.autowrap_mode = TextServer.AUTOWRAP_OFF
+		caption.add_theme_color_override("font_color", UiPalette.CYAN)
+		inside.add_child(caption)
+		var value := _label(item[0], UiPalette.FONT_LABEL + 4)
+		value.autowrap_mode = TextServer.AUTOWRAP_OFF
+		value.theme_type_variation = &"BigNumber"
+		value.add_theme_color_override("font_color", Color.WHITE)
+		inside.add_child(value)
+		row.add_child(chip)
+	return row
+
+
+## A stamp as a little tile: green with white text when visited, pale when not.
+func _tile(stamp: Label, stamped: bool) -> void:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.2, 0.6, 0.36) if stamped else Color(0.93, 0.89, 0.8)
+	style.set_corner_radius_all(8)
+	style.content_margin_top = 2
+	style.content_margin_bottom = 2
+	stamp.add_theme_stylebox_override("normal", style)
+	stamp.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	stamp.autowrap_mode = TextServer.AUTOWRAP_OFF
+	stamp.add_theme_color_override("font_color", Color.WHITE if stamped else Color(0.42, 0.45, 0.45))
