@@ -26,13 +26,16 @@ static func attach(world: Node) -> VfxBursts:
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	_level = GameState.level()
-	GameState.order_delivered.connect(_on_delivered)
-	GameState.stats_changed.connect(_on_stats_changed)
+	var state := _state()
+	if state == null:
+		return
+	_level = state.level()
+	state.order_delivered.connect(_on_delivered)
+	state.stats_changed.connect(_on_stats_changed)
 
 
-func _on_delivered(order: Order) -> void:
-	var result: Dictionary = GameState.last_result
+func _on_delivered(order) -> void:
+	var result: Dictionary = _state().last_result
 	var door := _door(order)
 	if door == Vector3.INF:
 		return
@@ -43,7 +46,7 @@ func _on_delivered(order: Order) -> void:
 
 
 func _on_stats_changed() -> void:
-	var now := GameState.level()
+	var now: int = _state().level()
 	if now > _level:
 		var rider := _rider()
 		if rider != null:
@@ -142,7 +145,7 @@ func _fire(p: GPUParticles3D, spot: Vector3, kind: String) -> GPUParticles3D:
 	return p
 
 
-func _door(order: Order) -> Vector3:
+func _door(order) -> Vector3:
 	var places := _world.get_node_or_null("PlaceBuilder") if _world != null else null
 	if places == null or order == null:
 		return Vector3.INF
@@ -155,6 +158,11 @@ func _rider() -> Node3D:
 	if _world == null:
 		return null
 	for node in _world.get_children():
-		if node is DeliveryManager and node.actor != null and is_instance_valid(node.actor):
+		if node.name == "DeliveryManager" and "actor" in node and node.actor != null and is_instance_valid(node.actor):
 			return node.actor
 	return _world.get_node_or_null("Bike") as Node3D
+
+
+## The GameState autoload, looked up (not named: see ArrivalMarker).
+func _state() -> Node:
+	return get_node_or_null("/root/GameState")

@@ -12,6 +12,10 @@ extends MeshInstance3D
 const BEAM_SHADER := preload("res://assets/shaders/beam.gdshader")
 const RING_SHADER := preload("res://assets/shaders/marker_ring.gdshader")
 const RING_SPOT := 0.8   # where the ring is drawn on its square (marker_ring.gdshader "ring")
+## GameState.Stage numbers. Copied, not read from GameState: a script with a class_name must
+## not name an autoload (test scripts compile it before the autoloads exist).
+const TO_RESTAURANT := 2
+const TO_VILLA := 3
 
 ## The stage it's showing (GameState.Stage). Tests read it.
 var step := -1
@@ -50,12 +54,12 @@ func _init() -> void:
 	add_child(ring_view)
 	sparkles = _make_sparkles()
 	add_child(sparkles)
-	set_step(GameState.Stage.TO_RESTAURANT)
+	set_step(TO_RESTAURANT)
 
 
 ## Orange for the pick-up, teal for the drop-off. Moving on from a stop makes it burst there.
 func set_step(stage: int) -> void:
-	var was_target := step == GameState.Stage.TO_RESTAURANT or step == GameState.Stage.TO_VILLA
+	var was_target := step == TO_RESTAURANT or step == TO_VILLA
 	if was_target and stage != step and visible and is_inside_tree():
 		burst()
 	step = stage
@@ -66,7 +70,7 @@ func set_step(stage: int) -> void:
 
 
 static func colour_for(stage: int) -> Color:
-	if stage == GameState.Stage.TO_VILLA:
+	if stage == TO_VILLA:
 		var teal := UiPalette.TEAL   # the phone's teal, made bright enough to glow
 		return Color.from_hsv(teal.h, GameConfig.BEAM_DROP_SATURATION, GameConfig.BEAM_DROP_VALUE)
 	return UiPalette.ORANGE

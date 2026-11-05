@@ -33,7 +33,9 @@ static func attach(world: Node) -> VfxAmbient:
 
 func _ready() -> void:
 	add_to_group("graphics")   # Settings.apply() calls apply_graphics() on this group
-	GameState.order_stage_changed.connect(_on_stage_changed)
+	var state := _state()
+	if state != null:
+		state.order_stage_changed.connect(_on_stage_changed)
 
 
 func build() -> void:
@@ -231,9 +233,10 @@ func _sand_wisps() -> void:
 
 ## A wisp of steam from the bag when you pick up hot food (it follows you for a few seconds).
 func _on_stage_changed(stage: int) -> void:
-	if stage != GameState.Stage.TO_VILLA or GameState.current_order == null:
+	var state := _state()
+	if stage != ArrivalMarker.TO_VILLA or state == null or state.current_order == null:
 		return
-	if not GameState.current_order.food in GameConfig.HOT_FOODS:
+	if not state.current_order.food in GameConfig.HOT_FOODS:
 		return
 	var rider := _rider()
 	if rider == null:
@@ -260,8 +263,13 @@ func _rider() -> Node3D:
 	if _world == null:
 		return null
 	for node in _world.get_children():
-		if node is DeliveryManager:
+		if node.name == "DeliveryManager" and "actor" in node:
 			var who: Node3D = node.actor
 			if who != null and is_instance_valid(who):
 				return who
 	return _world.get_node_or_null("Bike") as Node3D
+
+
+## The GameState autoload, looked up (not named: see ArrivalMarker).
+func _state() -> Node:
+	return get_node_or_null("/root/GameState")
