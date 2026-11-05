@@ -273,21 +273,29 @@ func _check_layout() -> void:
 	_gs.streak = 12
 	_gs.stats_changed.emit()
 	_world.get_node("DeliveryManager")._hold = 1.0
-	for size in [Vector2i(1280, 720), Vector2i(1920, 1080), Vector2i(1024, 768), Vector2i(2732, 2048)]:
-		for scale in [1.0, 1.3]:
-			root.size = size
-			root.content_scale_factor = scale
-			for tip_on in [false, true]:
-				tutorial._panel.visible = tip_on
-				for i in 4:
-					await process_frame
-				_world.get_node("HUD").chips.last_float = null
-				var rects := _hud_rects(tip_on)
-				var clash := _first_overlap(rects)
-				var outside := _first_outside(rects, root.get_visible_rect())
-				_expect(clash == "" and outside == "", "%dx%d at %d%%%s: no HUD panels overlap or leave the screen (%s, meters %s) %s%s" % [
-						size.x, size.y, roundi(scale * 100), " with a tutorial tip" if tip_on else "", root.get_visible_rect().size,
-						_world.get_node("MetersPanel").layout_mode_name, clash, outside])
+	# The phone's height depends on the (random) order: long names wrap. So check the order we
+	# got, and again with the phone stretched as tall as a long order makes it (700 px).
+	var phone: Control = _world.get_node("Phone/Panel")
+	var phone_min := phone.custom_minimum_size.y
+	for tall_phone in [false, true]:
+		phone.custom_minimum_size.y = 700.0 if tall_phone else phone_min
+		for size in [Vector2i(1280, 720), Vector2i(1920, 1080), Vector2i(1024, 768), Vector2i(2732, 2048)]:
+			for scale in [1.0, 1.3]:
+				root.size = size
+				root.content_scale_factor = scale
+				for tip_on in [false, true]:
+					tutorial._panel.visible = tip_on
+					for i in 4:
+						await process_frame
+					_world.get_node("HUD").chips.last_float = null
+					var rects := _hud_rects(tip_on)
+					var clash := _first_overlap(rects)
+					var outside := _first_outside(rects, root.get_visible_rect())
+					_expect(clash == "" and outside == "", "%dx%d at %d%%%s%s: no HUD panels overlap or leave the screen (%s, meters %s) %s%s" % [
+							size.x, size.y, roundi(scale * 100), " with a tutorial tip" if tip_on else "",
+							" and a tall phone" if tall_phone else "", root.get_visible_rect().size,
+							_world.get_node("MetersPanel").layout_mode_name, clash, outside])
+	phone.custom_minimum_size.y = phone_min
 	root.content_scale_factor = 1.0
 	_world.get_node("DeliveryManager")._hold = 0.0
 
