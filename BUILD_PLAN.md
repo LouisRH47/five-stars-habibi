@@ -1501,7 +1501,7 @@ Done when:
 - [ ] M shows the whole map and closes again
 - [ ] Changing resolution works and is remembered
 
-### Session 68: People who live here
+### Session 68: People who live here (built, needs testing)
 
 ```text
 Session 68. 1) Customers who walk out of a restaurant keep walking along the paths to a

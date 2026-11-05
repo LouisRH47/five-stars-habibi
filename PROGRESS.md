@@ -1,5 +1,51 @@
 # Progress
 
+## Session 68: People who live here — 5 November 2026
+
+What works:
+- **People walk home.** Every 9 seconds or so, if you're near the Plaza, someone with a
+  shopping bag walks out of a restaurant, along the lanes and paths (the same map scan the
+  GPS uses) to a home in one of the clusters, up to the front door and in through it. Only
+  once they're inside the house are they gone. Up to 4 at a time. (scripts/home_walkers.gd,
+  scripts/home_walker.gd, made by CustomerSpawner.) Near you they stand on the real ground
+  (down the Plaza steps too).
+- **Only people near you are fully animated.** Closer than 45 m: full animation. Further:
+  they keep moving along but hold their pose. Past the life view distance: hidden. This now
+  covers the route walkers too (LifeBuilder), not just the new people.
+- **Each place has its own people** (scripts/place_looks.gd for the clothes,
+  scripts/place_crowds.gd for where they stand):
+  - all three pools: swimmers in swim shorts or rash guards (some with swim caps) and a
+    lifeguard in red and yellow with a rescue float
+  - gym: gym clothes, a towel and a water bottle (also the gym's customers at the door)
+  - school: pupils in uniform running about the yard, teachers with lanyards
+  - stables: a rider in jodhpurs and a helmet, grooms
+  - Plaza: waiters in aprons outside four restaurants, shoppers with bags walking round,
+    a parent and child
+  - bus station: commuters with backpacks and suitcases
+  - spine paths: joggers in sports kit, dog walkers (with a dog on a lead), a parent pushing
+    a buggy
+  - cluster plazas and playgrounds: neighbours chatting, a parent on each bench
+  - beekeeper: white suit, wide hat and a dark veil, gloves
+  - building sites: workers in hi-vis vests and hard hats
+  - farm beds and planters: gardeners in straw sun hats
+- Checked: smoke test PASS (new checks: every kind of person is there, all 9 swimmers wear
+  swimwear, the near/mid/far animation rule, someone walks from 1000 Pizza to C1 Villa 1,
+  253 m, and goes in the door), coplanar, detail world and static batch tests PASS.
+
+Known bugs / to do:
+- Majlis Gardens isn't built yet (Session 66), so its kids and benches aren't there; the
+  cluster playgrounds have them.
+- People walking home aren't solid (like customers), so the bike rides through them.
+- People walking home use the lanes, not only the pavements.
+
+**Louis's turn:** press F5 and ride into the Plaza. Wait by a restaurant: someone with a bag
+walks out. Follow them (slowly): they walk all the way to a cluster and go in their front door.
+Then ride round: swimmers in swimwear and a lifeguard at the community pool, the lap pool by
+the gym and the school pools; gym clothes outside the gym; pupils and teachers in the school
+yard; waiters outside the restaurants; commuters with suitcases at the bus station; a dog
+walker and a buggy on the spine; the beekeeper in white by the hives; hard hats at the
+building sites; gardeners in sun hats at the farm beds.
+
 ## Session 67: Glitch fixes, full map and resolution setting — 5 November 2026
 
 What works:

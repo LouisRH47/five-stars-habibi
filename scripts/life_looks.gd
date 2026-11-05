@@ -81,13 +81,14 @@ static func duck(brown: bool) -> Node3D:
 	return model
 
 
-## A gardener with a cap and a green hose, and a small flower bed `bed` metres in front.
+## A gardener with a straw sun hat and a green hose, and a small flower bed `bed` metres in front.
 ## Returns [model, person].
 static func gardener(bed: float) -> Array:
 	var model := Node3D.new()
 	var person := Person.new()
 	person.paint({"skin": PeopleLooks.SKINS.pick_random(), "shirt": Color(0.3, 0.5, 0.3), "pants": Color(0.35, 0.3, 0.25)})
-	PeopleLooks.cap(person, Color(0.9, 0.85, 0.7), person)
+	PlaceLooks.sun_hat(person)  # Session 68: gardeners wear a straw sun hat
+	person.set_meta("outfit", "sun hat")
 	PeopleLooks.shoes(person, Color(0.3, 0.22, 0.15))
 	model.add_child(person)
 	# Standing, both hands out in front holding the hose (the sitting pose with straight legs).
@@ -125,6 +126,44 @@ static func gardener(bed: float) -> Array:
 	drops.mesh = drop
 	person.add_child(drops)
 	return [model, person]
+
+
+## Session 68: a holder with the person and a small dog on a lead beside them.
+static func with_dog(person: Person) -> Node3D:
+	var holder := Node3D.new()
+	holder.add_child(person)
+	var dog := Node3D.new()
+	dog.name = "Dog"
+	dog.position = Vector3(0.55, 0, -0.6)
+	holder.add_child(dog)
+	var fur := [Color(0.85, 0.7, 0.45), Color(0.25, 0.2, 0.18)].pick_random() as Color
+	LowPoly.box(dog, Vector3(0.22, 0.2, 0.5), fur, Vector3(0, 0.32, 0))
+	LowPoly.box(dog, Vector3(0.18, 0.18, 0.2), fur, Vector3(0, 0.45, -0.3))
+	for x in [-0.08, 0.08]:
+		for z in [-0.18, 0.18]:
+			LowPoly.box(dog, Vector3(0.06, 0.24, 0.06), fur, Vector3(x, 0.12, z))
+	_tube(holder, Vector3(0.3, 0.95, -0.2), Vector3(0.55, 0.42, -0.85), 0.01, Color(0.8, 0.15, 0.15))  # the lead
+	return holder
+
+
+## Session 68: a holder with the person pushing a baby buggy in front of them.
+static func with_buggy(person: Person) -> Node3D:
+	var holder := Node3D.new()
+	holder.add_child(person)
+	var buggy := Node3D.new()
+	buggy.name = "Pram"
+	buggy.position = Vector3(0, 0, -0.85)
+	holder.add_child(buggy)
+	var colour := [Color(0.2, 0.3, 0.5), Color(0.55, 0.2, 0.3), Color(0.2, 0.2, 0.22)].pick_random() as Color
+	LowPoly.box(buggy, Vector3(0.45, 0.35, 0.7), colour, Vector3(0, 0.6, 0))
+	LowPoly.sphere(buggy, 0.3, 0.4, colour.darkened(0.2), Vector3(0, 0.8, 0.15))  # the hood
+	_tube(buggy, Vector3(-0.2, 0.75, 0.35), Vector3(-0.2, 1.0, 0.6), 0.015, Color(0.15, 0.15, 0.15))
+	_tube(buggy, Vector3(0.2, 0.75, 0.35), Vector3(0.2, 1.0, 0.6), 0.015, Color(0.15, 0.15, 0.15))
+	for x in [-0.22, 0.22]:
+		for z in [-0.28, 0.28]:
+			var wheel := LowPoly.cylinder(buggy, 0.12, 0.12, 0.04, Color(0.1, 0.1, 0.1), Vector3(x, 0.12, z))
+			wheel.rotation.z = PI * 0.5
+	return holder
 
 
 ## A kid in play clothes (smaller than a grown-up).

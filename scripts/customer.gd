@@ -47,6 +47,8 @@ static func make_person(who: String, look := -1) -> Person:
 			return PeopleLooks.horse_rider()
 		"groom":
 			return PeopleLooks.groom()
+		"gym_goer":  # Session 68: the gym's customers come out in gym clothes
+			return PlaceLooks.gym_goer(randi() % 5)
 	return PeopleLooks.resident(look if look >= 0 else randi() % PeopleLooks.RESIDENT_OUTFITS)
 
 

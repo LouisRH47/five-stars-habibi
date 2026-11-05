@@ -2470,7 +2470,8 @@ func _goal_done(id: String) -> bool:
 # --- World polish pass, Sessions 67 to 69 (people wave) ---
 
 func _check_world_polish() -> void:
-	_check_session67()
+	await _check_session67()
+	_check_session68()
 
 
 ## Session 67: the full map on M, the resolution settings and the school pool shade posts.
@@ -2512,3 +2513,52 @@ func _check_session67() -> void:
 	for shade in shades:
 		posts += shade.find_children("*ShadePost*", "", true, false).size()
 	_check("the school pool shades stand on posts", shades.size() == 2 and posts >= 8, "%d shades, %d posts" % [shades.size(), posts])
+
+
+## Session 68: people dressed for each place, and people who walk home from a restaurant.
+func _check_session68() -> void:
+	var life := _main.get_node_or_null("LifeBuilder")
+	var crowds: Node = life.get("crowds") if life != null else null
+	_check("there are people for every place", crowds != null, "")
+	if crowds != null:
+		var have: Dictionary = crowds.outfits()
+		var wanted := ["swimwear", "lifeguard", "gym", "uniform", "lanyard", "jodhpurs", "groom", "shopping bag",
+				"apron", "luggage", "sports", "bee suit", "hi-vis", "sun hat", "casual", "dog walker", "buggy",
+				"parent on bench", "family"]
+		var missing := wanted.filter(func(kind): return not have.has(kind))
+		_check("each place has its own kind of people", missing.is_empty(), "missing %s" % [missing])
+		_check("all the pool swimmers wear swimwear", have.get("swimwear", 0) >= 9, "%d swimmers" % have.get("swimwear", 0))
+		var someone: Person = crowds.people[0][0]
+		var far: float = GameConfig.LIFE_VIEW_DISTANCE[1]
+		crowds.apply_detail(someone, 10.0, far)
+		var near_ok: bool = someone.visible and someone.process_mode == Node.PROCESS_MODE_INHERIT
+		crowds.apply_detail(someone, GameConfig.PEOPLE_ANIMATE_DISTANCE + 5.0, far)
+		var mid_ok: bool = someone.visible and someone.process_mode == Node.PROCESS_MODE_DISABLED
+		crowds.apply_detail(someone, far + 5.0, far)
+		var far_ok: bool = not someone.visible
+		_check("only people near you are fully animated", near_ok and mid_ok and far_ok, "")
+	var spawner := _main.get_node_or_null("CustomerSpawner")
+	var walkers: Node = spawner.get("home_walkers") if spawner != null else null
+	_check("people can walk home from the restaurants", walkers != null and _grid != null, "")
+	if walkers == null or _grid == null:
+		return
+	walkers.grid = _grid
+	var places: PlaceBuilder = _delivery.place_builder
+	var home := 101
+	var walker: Node = walkers.spawn_from("pizza", home)
+	_check("someone walks out of 1000 Pizza", walker != null and walker.points.size() > 4
+			and walker.points[0].distance_to(places.restaurant_approach("pizza")) < 12.0, "")
+	if walker == null:
+		return
+	var door: Vector3 = walker.door
+	var steps := 0
+	while walker.advance(0.25) and steps < 8000:
+		steps += 1
+	var villa: Dictionary = {}
+	for v in places.villas:
+		if v["number"] == home:
+			villa = v
+	var end: Vector3 = walker.position
+	var into_house: bool = Vector2(end.x, end.z).distance_to(Vector2(villa["position"].x, villa["position"].z)) < villa["size"].z * 0.5
+	_check("they walk home along the paths and go in the front door", walker.inside and into_house
+			and door.distance_to(places.villa_door(home)) > 0.1, "%d steps, %.0f m walked" % [steps, steps * 0.25 * walker.speed])

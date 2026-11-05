@@ -331,6 +331,12 @@ const LIFE_GIVE_UP_TIME := 5.0        # seconds one waits for you to move before
 const LIFE_TURN_SPEED := 4.0          # how quickly they turn to face where they're going
 ## Low / Medium / High: further away than this, people stop animating and are hidden (faster).
 const LIFE_VIEW_DISTANCE := [70.0, 100.0, 140.0]
+# --- Session 68: people who live here ---
+const PEOPLE_ANIMATE_DISTANCE := 45.0  # m: closer people are fully animated, further hold their pose
+const HOME_WALKER_EVERY := 9.0         # s between people leaving a restaurant to walk home
+const HOME_WALKER_MAX := 4             # at most this many walking home at once
+const HOME_WALKER_NEAR := 160.0        # m: only restaurants this close to you send people home
+const HOME_WALKER_DOOR_FADE := 0.8     # m they walk in through the door before they're gone
 const BIRD_SPEED := 8.0               # m/s, birds circling over the community
 const PALM_SWAY_DEG := 2.5            # how far the palm tops sway in the breeze
 const PALM_SWAY_SPEED := 0.9          # how fast they sway
