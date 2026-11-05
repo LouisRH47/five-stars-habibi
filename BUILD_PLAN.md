@@ -1355,7 +1355,7 @@ Done when:
 - [ ] All 500 addresses still work and a full delivery works from the new start
 - [ ] Smoke test, navigation test and bus recovery test pass
 
-### Session 61: Road surfaces, markings and junctions
+### Session 61: Road surfaces, markings and junctions (built, needs testing)
 
 ```text
 Session 61. Make the roads look real.

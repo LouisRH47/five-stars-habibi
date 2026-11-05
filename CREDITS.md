@@ -69,6 +69,13 @@ Shared albedo textures tile in world metres. License: https://polyhaven.com/lice
 
 Exact download URLs and SHA-256 checksums: assets/textures/sources.json.
 
+**World polish pass road and track textures** (Sessions 61 to 63), made by
+`tools/make_road_textures.py`:
+- `assets/textures/asphalt_road_1k.jpg`: cut from Poly Haven's Asphalt 02 (CC0 1.0, above),
+  keeping the part without long cracks and mirroring it so it tiles.
+- `assets/textures/red_track_1k.jpg` and `assets/textures/bike_track_1k.jpg`: made for this
+  game from random noise, CC0 (public domain).
+
 The riding wind loop (assets/audio/wind_loop.wav) is original generated CC0 audio; reproduce it with tools/make_wind.py.
 
 The PERFECT and tip jingles (assets/audio/perfect.wav and tip.wav) are original generated CC0 audio, reproduced by tools/make_sounds.py.

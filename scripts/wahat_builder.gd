@@ -47,8 +47,8 @@ func _ready() -> void:
 	_build_stream(stream)
 	for area: Rect2 in _map["PAVED_AREAS"]:
 		_flat(area.get_center(), area.size, 0.02, PAVING, 0.03)
-	for road in _map["ROADS"]:
-		_build_road(road)
+	# Session 61: smooth road strips with markings, kerbs and curved corners.
+	RoadMesh.build(self, _map)
 	for spot: Vector2 in _map["BOLLARDS"]:
 		var post := StaticBody3D.new()
 		post.position = Vector3(spot.x, 0, spot.y)
@@ -85,19 +85,6 @@ func _flat(middle: Vector2, size: Vector2, height: float, colour: Color, top: fl
 	LowPoly.box(body, Vector3(size.x, height, size.y), colour, Vector3.ZERO)
 	LowPoly.solid_box(body, Vector3(size.x, height, size.y), Vector3.ZERO)
 	return body
-
-
-## A road is a strip from one end of its middle line to the other, one width longer so
-## corners are filled in. Lanes (narrower) are light paving, roads are asphalt.
-func _build_road(road: Dictionary) -> void:
-	var width: float = road.get("width", _map["ROAD_WIDTH"])
-	var from: Vector2 = road["from"]
-	var to: Vector2 = road["to"]
-	var length := from.distance_to(to) + width
-	var strip := LowPoly.box(self, Vector3(width, 0.04, length), ROAD if width >= 6.0 else LANE,
-			Vector3((from.x + to.x) * 0.5, 0.02 if width >= 6.0 else 0.025, (from.y + to.y) * 0.5))
-	var way := to - from
-	strip.rotation.y = atan2(way.x, way.y)
 
 
 ## The horse track and the bike track: rings of sand and red paving inside the tree belt.

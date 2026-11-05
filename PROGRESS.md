@@ -1,5 +1,40 @@
 # Progress
 
+## Session 61: Road surfaces, markings and junctions — 5 November 2026
+
+- **Smooth roads.** A new script, scripts/road_mesh.gd, joins the short road pieces from the
+  map data into one smooth strip per road, so rounded corners, the bus loop and the
+  roundabout are real curves (the roundabout now has 24 pieces, not 10). The ring road's four
+  corners are rounded too (12 m radius, in the generator).
+- **Asphalt.** A new asphalt texture (assets/textures/asphalt_road_1k.jpg, cut from the CC0
+  Poly Haven photo without its long cracks: those repeating cracks and the old white dashes on
+  the ring road were the "tyre marks"). The middle of each road is a little darker, with light
+  wear along it. Low graphics uses plain grey.
+- **Markings.** A yellow dashed centre line on every two-way asphalt road, and white arrows on
+  each side every 40 m (ring road every 60 m) showing which way to drive (on the right). The
+  roundabout (anticlockwise) and the bus loop are one-way, with arrows in the middle.
+- **Kerbs and junctions.** Low kerbs on both sides, with gaps where roads and paths join. Where
+  a road meets another it stops at the other road's edge and a curved corner piece fills the
+  gap. Roads that meet are a couple of millimetres apart in height, and pavers sit lower than
+  asphalt, so no two surfaces share a height (no flicker). Car park access roads are part of
+  the road mesh now.
+- **Traffic follows the curves.** Ring-road cars, car-park cars and buses drive the rounded ring.
+- **Skid marks.** A hard brake leaves a faint, short dark mark behind the back tyre; it fades
+  away after about 10 seconds (scripts/skid_marks.gd, numbers in game_config.gd).
+- **Speed bumps and road works** checked on the new roads, plus six narrower bumps on the
+  inside roads (spine loop and spine road).
+- Checked: smoke test PASS (new Session 61 checks), new tests/road_mesh_test.gd PASS, district
+  traffic, bus recovery, coplanar, navigation and detail world tests PASS. Screenshots and the
+  Medium frame-time check can't be done on the cloud machine (no graphics card); the roads add
+  about 170 merged meshes and replace about 155 road boxes.
+
+**Louis's turn:** open the project in Godot and press F5, start a shift. Ride onto the ring
+road: yellow dashes down the middle, white arrows on your side pointing the way you're going,
+grey kerbs at the edges. Ride round a corner of the ring road: it's a smooth curve now, and the
+cars go round it too. Ride to the roundabout east of the C Institute: it's round, with arrows
+going anticlockwise. Look at where a cluster lane meets the cross road: a curved corner, no
+flickering. Ride fast and brake hard (S): a short faint skid mark appears and fades away.
+
 ## Session 60: The road network from the approved plan — 5 November 2026
 
 Built straight after looks pass Session 52, at Louis's request (the looks pass carries on

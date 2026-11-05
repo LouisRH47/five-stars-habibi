@@ -39,9 +39,16 @@ func _run() -> void:
 					in_park = true
 			if not on_ring and not in_park:
 				safe = false
+		# Session 61: the ring has rounded corners, so pieces can be slanted. Check that
+		# every piece's middle is still on the ring road or a car park access road too.
 		for i in car.points.size() - 1:
-			var gap: Vector3 = car.points[i + 1] - car.points[i]
-			if absf(gap.x) > 0.01 and absf(gap.z) > 0.01:
+			var middle: Vector3 = (car.points[i + 1] + car.points[i]) * 0.5
+			var middle_ok := _ring_distance(middle) <= 3.0
+			for area: Rect2 in WahatAlShams.PARKING_AREAS:
+				var to_road := area.expand(Vector2(area.position.x, -205 if area.get_center().y < 0 else 205))
+				if to_road.grow(0.2).has_point(Vector2(middle.x, middle.z)):
+					middle_ok = true
+			if not middle_ok:
 				safe = false
 		_check("%s uses only ring road and its parking access" % car.name, safe)
 	var blocked_routes: Array[String] = []
@@ -77,6 +84,13 @@ func _run() -> void:
 				if _intersects_box(Vector2(a.x, a.z), Vector2(b.x, b.z), area):
 					clear = false
 		_check("buggy route clears every joined home", clear)
+	# Session 61: cars and buses follow the ring road's rounded corners.
+	var ring_car: TrafficVehicle = traffic.cars[0]
+	var corner_points := 0
+	for point: Vector3 in ring_car.points:
+		if absf(point.x) > 400 and absf(point.z) > 185 and absf(point.x) < 424 and absf(point.z) < 204:
+			corner_points += 1
+	_check("ring cars drive round the rounded corners", corner_points >= 12)
 	_check("the first bus waits at the station", traffic.bus_arrivals == 1 and traffic.buses[0]._wait_left > 0)
 	# This narrow schedule check advances the clock directly. Move departures
 	# onto the ring too; the full physics recovery test covers blocked access.
@@ -142,7 +156,7 @@ func _route_clears_restaurants(vehicle: TrafficVehicle) -> bool:
 		var from := Vector2(vehicle.points[i].x, vehicle.points[i].z)
 		var next := vehicle.points[(i + 1) % vehicle.points.size()]
 		var to := Vector2(next.x, next.z)
-		var body_half := vehicle_half if is_equal_approx(from.x, to.x) else Vector2(vehicle_half.y, vehicle_half.x)
+		var body_half := vehicle_half if is_equal_approx(from.x, to.x) else (Vector2(vehicle_half.y, vehicle_half.x) if is_equal_approx(from.y, to.y) else Vector2.ONE * vehicle_half.y)
 		for place: Dictionary in WahatAlShams.RESTAURANTS:
 			if not place.get("interior", false):
 				continue

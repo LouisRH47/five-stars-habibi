@@ -116,7 +116,7 @@ func _build_bumps() -> void:
 		var bump: Node3D = BUMP_SCENE.instantiate()
 		bump.name = "SpeedBump_%d" % i
 		_place(bump, place)
-		bump.setup(size)
+		bump.setup(place.get("size", size))
 		add_child(bump)
 
 

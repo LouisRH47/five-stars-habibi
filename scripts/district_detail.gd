@@ -318,10 +318,7 @@ func _street_details() -> void:
 		var b: Vector2 = road["to"]
 		var direction := (b - a).normalized()
 		var side := Vector2(-direction.y, direction.x)
-		for i in int(a.distance_to(b) / 12):
-			var p := a + direction * (i * 12 + 4)
-			var line := LowPoly.box(props, Vector3(0.14, 0.02, 4), WHITE, Vector3(p.x, 0.055, p.y))
-			line.rotation.y = atan2(direction.x, direction.y)
+		# Session 61: the old white dashes (they looked like tyre marks) are gone; RoadMesh paints the lines.
 		for i in int(a.distance_to(b) / 45):
 			var p := a + direction * (i * 45 + 15) + side * 7
 			LowPoly.cylinder(props, 0.07, 0.13, 5.5, Color.DIM_GRAY, Vector3(p.x, 2.75, p.y))

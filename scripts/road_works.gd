@@ -43,7 +43,7 @@ static func build(parent: Node3D, works: Dictionary) -> StaticBody3D:
 
 ## One traffic cone: orange with a white band. spot: where it stands.
 static func cone(parent: Node3D, spot: Vector3) -> void:
-	LowPoly.box(parent, Vector3(0.42, 0.05, 0.42), CONE, spot + Vector3(0, 0.025, 0))
+	LowPoly.box(parent, Vector3(0.42, 0.07, 0.42), CONE, spot + Vector3(0, 0.035, 0))  # Session 61: above the 0.05 m asphalt
 	LowPoly.cylinder(parent, 0.03, 0.17, 0.62, CONE, spot + Vector3(0, 0.34, 0))
 	LowPoly.cylinder(parent, 0.085, 0.11, 0.12, WHITE, spot + Vector3(0, 0.4, 0))
 

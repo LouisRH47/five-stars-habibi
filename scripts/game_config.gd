@@ -302,6 +302,14 @@ const DUST_LIFETIME := 0.7            # seconds one puff lasts
 const DUST_MIN_KMH := 6.0             # slower than this on sand: no dust
 const DUST_BRAKE_TIME := 0.45         # seconds of extra dust after you brake hard
 const DUST_PUFF_SIZE := 0.22          # metres across a puff when it starts (it grows)
+
+# Session 61: skid marks after a hard brake (scripts/skid_marks.gd).
+const SKID_MARK_TIME := 0.45          # seconds of braking that leave a mark (so they stay short)
+const SKID_MARK_HOLD := 5.0           # seconds a mark stays before it starts to fade
+const SKID_MARK_FADE := 5.0           # seconds it takes to fade away
+const SKID_MARK_ALPHA := 0.32         # how dark a fresh mark is (0 to 1): faint
+const SKID_MARK_WIDTH := 0.06         # metres
+const SKID_MARK_MAX := 6              # older marks go first
 # Sprinting: a slightly wider camera and speed lines at the screen edges.
 const SPRINT_FOV_EXTRA := 12.0         # degrees wider while sprinting
 const SPRINT_FOV_SPEED := 4.0         # how quickly the camera widens and comes back

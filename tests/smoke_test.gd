@@ -1346,6 +1346,7 @@ func _finish() -> void:
 	await _check_session33()
 	await _check_life_meets_events()
 	_check_session32()
+	_check_world_polish()  # Sessions 61 to 63 (roads, spine tracks, greenery)
 	await _check_venue_handoffs()
 	_check_saving()
 	for action in ACTIONS:
@@ -2464,3 +2465,51 @@ func _check_goals() -> void:
 func _goal_done(id: String) -> bool:
 	var goals: Script = load("res://scripts/shift_goals.gd")
 	return goals.is_done(id, _game_state.history.slice(_game_state.shift_start_index), _game_state.shift_crashes)
+
+
+# --- World polish pass (Sessions 61 to 63) -------------------------------------------
+
+func _on_any_road(data: Dictionary, spot: Vector2, slack := 0.0) -> bool:
+	for road: Dictionary in data["ROADS"]:
+		var width: float = road.get("width", data["ROAD_WIDTH"])
+		if Geometry2D.get_closest_point_to_segment(spot, road["from"], road["to"]).distance_to(spot) <= width * 0.5 + slack:
+			return true
+	return false
+
+
+func _check_world_polish() -> void:
+	var data: Dictionary = (_main.get_node("WahatBuilder").data as Script).get_script_constant_map()
+	# Session 61: road surfaces, markings and junctions.
+	var roads: RoadMesh = _main.get_node_or_null("WahatBuilder/Roads")
+	_check("Session 61: roads are smooth strips with centre lines, arrows, kerbs and curved corners",
+			roads != null and roads.stats["dashes"] > 1000 and roads.stats["arrows"] > 200
+			and roads.stats["fillets"] >= 60 and roads.stats["kerb_pieces"] > 3000, "%s" % [roads.stats if roads else {}])
+	_check("Session 61: no two road surfaces meet at the same height", roads != null and roads.stats["same_height_overlaps"] == 0, "")
+	var ring_pieces: Array = data["ROADS"].filter(func(r): return r["name"] == "Ring Road")
+	_check("Session 61: the ring road has rounded corners", ring_pieces.size() > 20 and data.has("RING_ROAD"), "%d pieces" % ring_pieces.size())
+	var old_dashes := 0
+	for part: Node in _main.get_node("DistrictDetail/StreetFurniture").get_children():
+		if part is MeshInstance3D and part.mesh is BoxMesh and (part.mesh as BoxMesh).size.is_equal_approx(Vector3(0.14, 0.02, 4)):
+			old_dashes += 1
+	_check("Session 61: the old white ring-road dashes (tyre marks) are gone", old_dashes == 0, "%d left" % old_dashes)
+	var off_road: Array = []
+	for bump: Dictionary in data["SPEED_BUMPS"]:
+		if not _on_any_road(data, Vector2(bump["position"].x, bump["position"].z)):
+			off_road.append(bump["position"])
+	for works: Dictionary in data["ROAD_WORKS"]:
+		if not _on_any_road(data, works["centre"]):
+			off_road.append(works["name"])
+	_check("Session 61: speed bumps and road works sit on the new roads", off_road.is_empty(), "%s" % [off_road])
+	var traffic: Node = _main.get_node("DistrictTraffic")
+	_check("Session 61: ring-road cars follow the rounded ring", traffic.cars.size() > 0 and traffic.cars[0].points.size() > 20, "")
+	var skid: Node = _bike.get_node_or_null("SkidMarks")
+	_check("Session 61: the bike can leave skid marks", skid != null, "")
+	if skid != null:
+		skid.start_mark()
+		skid.add_point(_bike.global_position + Vector3(0, 0.06, 2))
+		var made: bool = skid.marks.size() > 0 and skid.marks.back()["view"].mesh != null
+		var fresh: float = skid.marks.back()["material"].albedo_color.a
+		skid._physics_process(GameConfig.SKID_MARK_HOLD + GameConfig.SKID_MARK_FADE + 0.5)
+		_check("Session 61: a hard brake leaves a faint, short skid mark that fades away",
+				made and fresh <= 0.4 and skid.marks.is_empty(), "%d marks" % skid.marks.size())
+
