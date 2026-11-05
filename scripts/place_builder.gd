@@ -129,11 +129,21 @@ func _setup_shops() -> void:
 	counters.set_script(load("res://scripts/counter_panel.gd"))
 	counters.name = "CounterPanel"
 	world.add_child(counters)
+	# Looks pass: the short queue at restaurant counters, and doors that slide open for you.
+	var queue: Node = load("res://scripts/venue_queue.gd").new()
+	queue.name = "VenueQueue"
+	queue.places = self
+	queue.walker = world.get_node_or_null("Walker")
+	world.add_child(queue)
+	if queue.walker != null:
+		queue.walker.add_to_group("opens_doors")
 
 
 ## A restaurant, the mini market or the farm stall, depending on the shop's "style".
 func _make_shop(place: Dictionary) -> Node3D:
 	var size := restaurant_size_of(place)
+	if place.get("interior", false) and RestaurantStyles.has_room(place.get("venue_type", "")):
+		return RestaurantRoom.build(place, size)  # looks pass: the cosy restaurant room
 	if place.get("interior", false):
 		return VenueBuilder.build(place, size)
 	var style: String = place.get("style", "")
@@ -189,6 +199,8 @@ func restaurant_entrance(id: String) -> Vector3:
 func restaurant_counter(id: String) -> Vector3:
 	for place in restaurants:
 		if place["id"] == id:
+			if place.get("interior", false) and RestaurantStyles.has_room(place.get("venue_type", "")):
+				return VenueBuilder.world_point(place, RestaurantRoom.counter_spot(place.get("venue_type", "")))
 			if place.get("interior", false):
 				return VenueBuilder.world_point(place, VenueBuilder.counter_local(restaurant_size_of(place)))
 			return restaurant_approach(id)

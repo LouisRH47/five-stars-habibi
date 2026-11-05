@@ -167,6 +167,11 @@ func _update_hold(delta: float) -> void:
 	if _need_release or not is_near_target() or not _slow_enough() or (needs_walking and not on_foot):
 		_hold = 0.0
 		return
+	# Looks pass: wait your turn while someone in the queue is being served (venue_queue.gd).
+	var queue := get_parent().get_node_or_null("VenueQueue")
+	if queue != null and queue.waiting():
+		_hold = 0.0
+		return
 	_hold += delta
 	if hold_progress() >= 1.0:
 		_hold = 0.0

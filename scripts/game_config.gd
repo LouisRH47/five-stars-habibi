@@ -471,3 +471,16 @@ const WIND_SMOOTHING := 6.0
 const GPS_GROUND_SAMPLE_METRES := 2.0
 const COMFY_TYRES_CAMERA_VERTICAL_SHARE := 0.5
 const COMFY_TYRES_SHAKE_SHARE := 0.65
+
+# --- Looks pass interiors (Sessions 54 and 55) ---
+const QUEUE_NONE_CHANCE := 0.5        # half the time nobody is in front of you
+const QUEUE_TWO_CHANCE := 0.15        # sometimes two people (otherwise one)
+const QUEUE_WAIT_MIN := 2.0           # seconds you wait for them to be served
+const QUEUE_WAIT_MAX := 4.0           # never longer than this
+const CAMERA_INDOOR_DISTANCE := 2.9   # metres behind you inside a walk-in place (outside: CAMERA_DISTANCE)
+const CAMERA_INDOOR_HEIGHT := 2.7     # metres up inside (a little higher, under the 4.5 m ceiling)
+const CAMERA_INDOOR_BLEND := 3.0      # how fast the camera moves in and out (higher = faster)
+const ROOM_SOUND_DB := -8.0           # each place's background sound
+const ROOM_SOUND_UNIT_SIZE := 4.0     # metres at full volume
+const ROOM_SOUND_MAX_DISTANCE := 13.0 # silent further away than this
+const SUSHI_BELT_SPEED := 0.35        # metres per second the sushi plates travel

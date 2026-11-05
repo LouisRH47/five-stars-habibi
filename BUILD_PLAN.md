@@ -1184,7 +1184,7 @@ Done when:
 - [ ] The kits are in assets/kits with licences, and CREDITS.md lists them
 - [ ] A test scene shows a row of props from each kit
 
-### Session 54: The new restaurant room, and the first 5 restaurants
+### Session 54: The new restaurant room, and the first 5 restaurants (built, needs testing)
 
 ```text
 Session 54. Read PRD.md "Looks pass", Interiors and the table. Make one restaurant

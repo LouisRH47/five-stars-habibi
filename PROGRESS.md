@@ -1,5 +1,48 @@
 # Progress
 
+## Session 54: The new restaurant room and the first 5 restaurants — 5 November 2026
+
+What works:
+- **One restaurant room template** (scripts/restaurant_room.gd). The building outside keeps its
+  size; inside is a cosy 12 x 10 m room with a 4.5 m ceiling, and the rest is a storeroom you
+  can't get into. Big glass front, sliding glass doors that open as you walk up (and close
+  behind you), the kitchen with a cook at the back, the menu board (Arabic + English title,
+  four dishes with Dh prices), the counter with the staff member, 4 tables with people eating,
+  a glass drinks fridge, a bin, plants, warm hanging lamps (one light with soft shadows) and a
+  tiled floor in the shop's own colours. Tables, chairs, counters and crates come from the
+  KayKit kits, joined into one mesh per room.
+- **The first 5 shops** (scripts/restaurant_styles.gd for colours, scripts/restaurant_recipes.gd
+  for their own things):
+  - 1000 Pizza: brick dome oven with flickering flames and a chimney, logs, a pizza peel,
+    stacked pizza boxes, black-and-white checker floor, red band and red-and-white cloths.
+  - Brain Freeze Gelato: glass freezer of 8 colourful tubs, cone jar, pink-and-white striped
+    walls, pastel floor.
+  - Spill the Tea: 4 tea taps, cup sealing machine, cups with pearls, a plant wall and a neon sign.
+  - Shawarma Supreme: two spinning shawarma grills with glowing heaters, stacks of bread,
+    Arabic star tiles on the floor and walls.
+  - Bread & Zaatar: steel bread oven with glowing doors, glass cake display (two shelves),
+    bread baskets, manakish trays.
+- **Short queue** (scripts/venue_queue.gd): half the time nobody's there; otherwise 1 (or
+  sometimes 2) people wait at the counter. When you reach the counter they're served and walk
+  out, 2 to 4 seconds, and the panel says "1 person ahead of you · just a moment". Holding E
+  only fills after that. Chances and times: GameConfig QUEUE_*.
+- **Indoor camera:** inside a walk-in room the camera comes closer (2.9 m) and a bit higher, and
+  goes back out when you leave (GameConfig CAMERA_INDOOR_*).
+- **Background sound per place** made by tools/make_sounds.py (room_*.wav, 5 s loops): oven
+  crackle, freezer hum and scooping, tea shaker and sealer, grill sizzle and chopping, bakery
+  clinks, plus quiet chatter. Heard only inside and at the door.
+- Smoke test: walks into each of the 5 rooms, waits in a queue of 1 or 2, holds E, walks out
+  (tests/smoke_rooms.gd). New focused test: tests/interiors_test.gd.
+- Tok Tok Thai, Sushi You, Mario Bonito, Burgerology and Grand Groceries still use the old room
+  until Session 55.
+- Headless Godot can't take screenshots, so there are no pictures of the rooms yet.
+
+**Louis's turn:** press F5 and take an order from 1000 Pizza (or any of the five). Park, press
+F and walk to the glass door: it should slide open. Inside, the camera comes closer. Look for
+the oven with flames, the menu board and people eating. If someone is at the counter, wait a
+couple of seconds until they walk out, then hold E. Walk out again: the door opens and the
+camera moves back. Also walk past the shops in the Plaza and look in through the glass.
+
 ## Session 53: The free asset kits — 5 November 2026
 
 What works:
