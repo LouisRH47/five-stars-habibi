@@ -1562,7 +1562,7 @@ Done when:
 - [ ] The tracks and pavers use the new textures
 - [ ] The Blender scripts rebuild every model and texture
 
-### Session 71: New playgrounds
+### Session 71: New playgrounds (built, needs testing)
 
 ```text
 Session 71. Design new playgrounds in Blender: rounded slides, a climbing frame, swings,

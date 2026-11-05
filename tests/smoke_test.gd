@@ -2475,6 +2475,7 @@ func _check_world_polish() -> void:
 	_check_session68()
 	_check_session69()
 	_check_session70()  # Sessions 70 to 73: the Blender models (see the block at the end)
+	_check_session71()
 
 
 ## Session 67: the full map on M, the resolution settings and the school pool shade posts.
@@ -2638,3 +2639,33 @@ func _height(node: Node3D) -> float:
 		top = maxf(top, box.end.y)
 		bottom = minf(bottom, box.position.y)
 	return top - bottom if top > bottom else 0.0
+
+
+## Session 71: every playground is the rounded Blender kit, with kids playing on it.
+func _check_session71() -> void:
+	var kits: Array = []
+	for builder in ["SpineBuilder", "DistrictDetail"]:
+		var node := _main.get_node_or_null(builder)
+		if node != null:
+			kits.append_array(node.find_children("PlaygroundKit", "", true, false))
+	var data: Dictionary = _delivery.place_builder.data.get_script_constant_map()
+	var wanted: int = 1 + data["MINI_PLAZAS"].size() + 2  # the spine, every cluster, the school's two
+	var floors := 0
+	var kids := 0
+	var pieces := 0
+	for kit: Node in kits:
+		var floor := kit.get_parent().get_node_or_null("PlayFloor") as MeshInstance3D
+		floors += 1 if floor != null and floor.material_override == SurfaceTextures.make("play_surface") else 0
+		kids += kit.kids.size()
+		pieces += kit.parts.size()
+	_check("every playground is the new rounded one on soft rubber", kits.size() == wanted and floors == wanted,
+			"%d of %d, %d floors" % [kits.size(), wanted, floors])
+	_check("kids play on the swings, roundabouts and spring riders", kids >= wanted * 2, "%d kids" % kids)
+	var kit: Node = kits[0] if not kits.is_empty() else null
+	var part: Node3D = kit.parts[0][0] if kit != null and not kit.parts.is_empty() else null
+	var before: Basis = part.basis if part != null else Basis()
+	if kit != null:
+		kit._near = true
+		kit._check_left = 1.0
+		kit._process(0.4)
+	_check("the swings, roundabouts and spring riders move", part != null and not part.basis.is_equal_approx(before), "%d moving parts" % pieces)

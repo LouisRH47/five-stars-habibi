@@ -193,8 +193,8 @@ func _school_details() -> void:
 		if court_index == 1:
 			LowPoly.box(school, Vector3(0.05, 1.0, 13.5), Color(0.58, 0.62, 0.61), Vector3(rect.get_center().x, 0.55, rect.get_center().y))
 		court_index += 1
-	Props.playground(school, Vector3(-411, 0, 72), Vector2(12, 10))
-	Props.playground(school, Vector3(-321, 0, 121), Vector2(12, 10))
+	PlaygroundKit.build(school, Vector3(-411, 0, 72), Vector2(12, 10))  # Session 71
+	PlaygroundKit.build(school, Vector3(-321, 0, 121), Vector2(12, 10))
 	for at: Vector3 in [Vector3(-411, 4.5, 72), Vector3(-321, 4.5, 121)]:
 		_shade_roof(school, at, Vector2(14, 12), "PlaygroundShade_%d" % int(-at.x), Color(0.9, 0.75, 0.4))
 	for x in range(-412, -316, 6):

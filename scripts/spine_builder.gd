@@ -34,10 +34,10 @@ func _ready() -> void:
 	_build_pen(_map["DONKEY_PEN"])
 	_build_court(_map["BASKETBALL_COURT"])
 	var play: Rect2 = _map["PLAYGROUND"]
-	Props.playground(self, _ground(play.get_center()), play.size)
+	PlaygroundKit.build(self, _ground(play.get_center()), play.size)  # Session 71: the rounded Blender playground
 	for mini in _map["MINI_PLAZAS"]:
 		Props.cooling_tower(self, mini["tower"])
-		Props.playground(self, mini["playground"], Vector2(6, 4.5))
+		PlaygroundKit.build(self, mini["playground"], Vector2(6, 4.5))
 		for bench in mini["benches"]:
 			Props.bench(self, bench["position"], bench["facing"])
 

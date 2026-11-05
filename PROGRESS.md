@@ -1,5 +1,35 @@
 # Progress
 
+## Session 71: New rounded playgrounds — 5 November 2026
+
+What works:
+- **Playground pieces made in Blender** (tools/blender/make_playground.py, assets/models/play_*.glb):
+  a slide tower with round posts, a cone roof, a ladder and a curved half-pipe slide; an
+  arched swing frame with two seats on chains; a climbing dome of curved bars; a little
+  roundabout with hoop handles; and a spring rider shaped like a small camel. Soft coral,
+  sunny yellow, mint, sky blue and lilac. Each piece is one draw (the colours are painted on
+  the mesh), 500 to 1,250 triangles.
+- **scripts/playground_kit.gd** builds every playground now: a soft rubber floor with rounded
+  corners (the new play_surface.png texture) and a mint edge, then the pieces that fit:
+  - the 5 cluster plazas (small): a small slide, the roundabout and a spring rider, kept to
+    the far side so the running kids (PLAY_KIDS) still have room
+  - the 2 school playgrounds (in DistrictDetail): slide, swings, roundabout, climbing dome and
+    a spring rider
+  - the big one in the green spine: all of them, with two spring riders
+- **Kids play on them**: one on a swing (swinging), one on the roundabout (turning) and one on
+  a spring rider (rocking). They only move while you're near, and the far ones are hidden,
+  like the other people. The kids running beside the cluster playgrounds are still there.
+- Only the call sites changed in spine_builder.gd and district_detail.gd; the old
+  Props.playground is left in props.gd (not used any more).
+- Checked: smoke test PASS (new checks: all 8 playgrounds are the new kit on the rubber floor,
+  19 kids on them, the swings/roundabouts/spring riders move), navigation, static batch,
+  coplanar and detail world tests PASS. No screenshots (headless).
+
+**Louis's turn:** press F5 and ride to the playground at the middle of the green spine (west
+of the gym), then to the little one at any cluster plaza. You should see the rounded slide,
+the swings going, the roundabout turning with a kid on it, and the soft coral rubber floor.
+The school has two more inside its fence.
+
 ## Session 70: Blender horses, donkeys and textures — 5 November 2026
 
 What works:

@@ -94,6 +94,42 @@ def material(name, rgb=(0.8, 0.8, 0.8), image=None, rough=0.85):
     return mat
 
 
+def vertex_colour_material(name, rough=0.6):
+    """One material for a whole model that takes its colours from the mesh (paint()), so
+    a model with many colours is still one draw in Godot."""
+    mat = bpy.data.materials.new(name)
+    mat.use_nodes = True
+    mat.use_backface_culling = True
+    nodes = mat.node_tree.nodes
+    bsdf = nodes.get("Principled BSDF")
+    bsdf.inputs["Roughness"].default_value = rough
+    attr = nodes.new("ShaderNodeVertexColor")
+    attr.layer_name = "Col"
+    mat.node_tree.links.new(attr.outputs["Color"], bsdf.inputs["Base Color"])
+    return mat
+
+
+def paint(obj, rgb):
+    """Colours every corner of obj (sRGB like Godot's Color) into its "Col" colour layer."""
+    lin = [c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in rgb[:3]]
+    mesh = obj.data
+    layer = mesh.color_attributes.get("Col") or mesh.color_attributes.new("Col", "FLOAT_COLOR", "CORNER")
+    for item in layer.data:
+        item.color = (lin[0], lin[1], lin[2], 1.0)
+    return obj
+
+
+def sphere(name, radius, mat, centre=(0, 0, 0), sides=8, rings=5, squash=1.0, parent=None):
+    """A low-poly ball (Godot coords); squash < 1 flattens it."""
+    c = np.array(centre, dtype=float)
+    out = []
+    for i in range(rings + 1):
+        a = math.pi * i / rings
+        out.append((c + np.array([0.0, -math.cos(a) * radius * squash, 0.0]), max(math.sin(a) * radius, 0.001),
+                    max(math.sin(a) * radius, 0.001)))
+    return loft(name, out, mat, sides=sides, origin=centre, side_hint=(1.0, 0.0, 0.0), parent=parent)
+
+
 # ---------------------------------------------------------------- meshes
 
 def _frame(direction, side_hint=(1.0, 0.0, 0.0)):
@@ -310,7 +346,7 @@ def triangles():
 def export(file_name):
     os.makedirs(MODELS, exist_ok=True)
     path = os.path.join(MODELS, file_name)
-    bpy.ops.export_scene.gltf(filepath=path, export_format="GLB", export_apply=True,
+    bpy.ops.export_scene.gltf(filepath=path, export_format="GLB", export_apply=True, export_vertex_color="ACTIVE",
                               export_yup=True, export_image_format="AUTO", export_texcoords=True,
                               export_normals=True, export_materials="EXPORT", use_selection=False)
     print("wrote %s (%d triangles)" % (path, triangles()))
