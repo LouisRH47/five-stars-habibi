@@ -43,9 +43,15 @@ func centre() -> Vector2:
 	var world := get_parent().get_parent() if get_parent() != null else null
 	var meters := world.get_node_or_null("MetersPanel/Panel") as Control if world != null else null
 	if meters != null and meters.is_visible_in_tree():
-		var top := meters.get_global_rect().position.y - 16.0 - r
+		var box := meters.get_global_rect()
+		var top := box.position.y - 16.0 - r
 		if top < at.y and top > size.y * 0.5 - r:  # only lift it a little, never into the top HUD
 			at.y = top
+		elif box.grow(16.0).intersects(Rect2(at - Vector2(r, r), Vector2(r, r) * 2.0)):
+			# Tall (stacked) meters it can't get above: sit beside them, on the side nearer the middle.
+			var left := box.position.x - 16.0 - r
+			var right := box.end.x + 16.0 + r
+			at.x = left if left - r >= 0.0 and (at.x - left <= right - at.x or right + r > size.x) else right
 	return at
 
 

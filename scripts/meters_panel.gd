@@ -125,11 +125,14 @@ func _pulse(key: String) -> void:
 	for i in 2:
 		t.tween_property(column, "modulate", Color(1.8, 1.8, 1.8), flash)
 		t.tween_property(column, "modulate", Color.WHITE, flash)
-	UiJuice.shake(column, 4.0, 0.25)
+	# The shake puts the column back where it started; if the meters changed shape (wide or
+	# stacked) meanwhile, that spot is old, so let the grid lay the columns out again after.
+	UiJuice.shake(column, 4.0, 0.25).finished.connect(_grid.queue_sort)
 
 
 ## Bottom middle, between the mini-map and the speed panel. If three meters side by side
-## don't fit there, they stack; above the tutorial tip and the touch buttons when those show.
+## don't fit there (or left of a tall phone), they stack; above the tutorial tip and the
+## touch buttons when those show.
 func place() -> void:
 	var screen := _panel.get_viewport_rect().size
 	var world := get_parent()
@@ -142,9 +145,6 @@ func place() -> void:
 		left_edge = maxf(left_edge, minimap.end.x + GAP)
 	if speed.size.x > 0.0:
 		right_edge = minf(right_edge, speed.position.x - GAP)
-	var half := minf(screen.x * 0.5 - left_edge, right_edge - screen.x * 0.5)
-	var wide := half * 2.0 >= _wide_width()
-	_set_columns(3 if wide else 1)
 	var hud_panel := world.get_node_or_null("HUD/Panel") if world != null else null
 	if hud_panel != null and hud_panel.has_meta("touch_raised"):
 		bottom -= 300.0  # the touch buttons fill the bottom of the screen
@@ -153,18 +153,27 @@ func place() -> void:
 		var tip := tutorial.get_child(0) as Control
 		if tip != null and tip.visible:
 			bottom = minf(bottom, tip.get_global_rect().position.y - 12.0)
-	var width := _wide_width() if wide else 0.0
-	width = maxf(width, _panel.get_combined_minimum_size().x)
-	var height := _panel.get_combined_minimum_size().y
-	# A tall phone on a narrow screen: stay left of it.
 	var phone := _rect_of(world, "Phone/Panel")
-	if phone.size.x > 0.0 and phone.end.y > bottom - height and phone.position.x < screen.x * 0.5 + width * 0.5 + GAP:
-		var room := phone.position.x - GAP - left_edge
-		if room >= width:
-			var x := clampf(roundf((screen.x - width) * 0.5), left_edge, phone.position.x - GAP - width)
-			_apply(Rect2(Vector2(x, roundf(bottom - height)), Vector2(width, height)))
+	# Try three side by side first, then one under the other. Each shape must fit centred
+	# between the mini-map and the speed panel, and, if the phone reaches down to where the
+	# meters would be (a tall phone with an order, big text, the tutorial tip pushing the
+	# meters up), it slides left to stay clear of the phone. The phone's height changes with
+	# the order (longer names wrap), so this is worked out every frame. Stacked meters beside
+	# a phone sit right next to it, so they don't cover the rider in the middle of the screen.
+	for count in [3, 1]:
+		var want := _size_for(count)
+		var right := right_edge
+		var by_phone := phone.size.x > 0.0 and phone.end.y + GAP > bottom - want.y and phone.position.y < bottom \
+				and phone.position.x - GAP < right_edge
+		if by_phone:
+			right = phone.position.x - GAP
+		var centred := roundf((screen.x - want.x) * 0.5)
+		var fits := centred >= left_edge and centred + want.x <= right_edge and right - left_edge >= want.x
+		if fits or count == 1:
+			_set_columns(count)
+			var x := right - want.x if by_phone and count == 1 else minf(centred, right - want.x)
+			_apply(Rect2(Vector2(maxf(left_edge, x), roundf(bottom - want.y)), want))
 			return
-	_apply(Rect2(Vector2(roundf((screen.x - width) * 0.5), roundf(bottom - height)), Vector2(width, height)))
 
 
 func _apply(want: Rect2) -> void:
@@ -181,6 +190,24 @@ func _wide_width() -> float:
 	var margin: MarginContainer = $Panel/Margin
 	var sides: float = margin.get_theme_constant("margin_left") + margin.get_theme_constant("margin_right")
 	return maxf(WIDE_WIDTH, column * 3.0 + _grid.get_theme_constant("h_separation") * 2.0 + sides)
+
+
+## How big the panel is with this many columns (3 = side by side, 1 = stacked), without
+## changing it: the biggest meter times the grid, plus the panel's own edges.
+func _size_for(count: int) -> Vector2:
+	var now := _panel.get_combined_minimum_size()
+	var size := now
+	if _grid.columns != count:
+		var column := Vector2.ZERO
+		for key in _columns:
+			column = column.max(_columns[key].get_combined_minimum_size())
+		var rows := ceili(float(_columns.size()) / count)
+		var grid := Vector2(column.x * count + _grid.get_theme_constant("h_separation") * (count - 1),
+				column.y * rows + _grid.get_theme_constant("v_separation") * (rows - 1))
+		size = grid + (now - _grid.get_combined_minimum_size())
+	if count == 3:
+		size.x = maxf(size.x, _wide_width())
+	return size
 
 
 func _rect_of(world: Node, path: String) -> Rect2:
