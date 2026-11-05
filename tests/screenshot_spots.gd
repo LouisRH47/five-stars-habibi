@@ -45,6 +45,8 @@ var _names: Array = []
 var _index := -1
 var _wait := 0
 var _camera: Camera3D
+var _last_hash := 0
+var _retries := 0
 
 
 func _initialize() -> void:
@@ -75,6 +77,11 @@ func _initialize() -> void:
 	_camera.far = 1500.0
 	root.add_child(_camera)
 	_wait = 120  # let the world build and the shaders compile
+	# macOS stops drawing a window that's hidden behind others, which froze the pictures.
+	# Keep the game window on top and in front while it takes them.
+	DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_ALWAYS_ON_TOP, true)
+	DisplayServer.window_move_to_foreground()
+	OS.low_processor_usage_mode = false
 
 
 func _process(_delta: float) -> bool:
@@ -96,6 +103,17 @@ func _process(_delta: float) -> bool:
 		return false
 	if _index >= 0:
 		var image := root.get_viewport().get_texture().get_image()
+		# The same picture as last time means the window didn't draw: wait and try again.
+		var picture_hash := hash(image.get_data())
+		if picture_hash == _last_hash and _retries < 5:
+			_retries += 1
+			DisplayServer.window_move_to_foreground()
+			_wait = 30
+			return false
+		if picture_hash == _last_hash:
+			print("WARNING: the picture didn't change (is the window hidden?)")
+		_last_hash = picture_hash
+		_retries = 0
 		var name: String = _names[_index]
 		var path := _out.path_join("%s_g%d.png" % [name, _graphics])
 		image.save_png(path)
