@@ -2477,6 +2477,10 @@ func _check_world_polish() -> void:
 	await _check_session67()
 	_check_session68()
 	_check_session69()
+	_check_session70()  # Sessions 70 to 73: the Blender models (see the block at the end)
+	_check_session71()
+	_check_session72()
+	_check_session73()
 
 
 ## Session 67: the full map on M, the resolution settings and the school pool shade posts.
@@ -2702,3 +2706,179 @@ func _check_roads_polish() -> void:
 	_check("Session 63: no bare sand except where the horses ride", sandy.is_empty() and GroundType.is_sand(data, arena.get_center())
 			and GroundType.is_sand(data, Vector2(0, -230)), "%s" % [sandy.slice(0, 5)])
 
+
+
+# --- Sessions 70 to 73 (Blender models, playgrounds, school pitch, stables) -----------
+
+## Session 70: horses and donkeys are the Blender models; the new textures are there.
+func _check_session70() -> void:
+	var life := _main.get_node_or_null("LifeBuilder")
+	var rider: Node3D = life.get_node_or_null("Horse_0") if life != null else null
+	var model: Node3D = rider.get("model") if rider != null else null
+	var tack := model.get_node_or_null("Tack") as Node3D if model != null else null
+	_check("the riders' horses are the Blender horse with a saddle", model != null and model.has_meta("coat")
+			and (model.get_meta("legs") as Array).size() == 4 and tack != null and tack.visible, "")
+	var stables := _main.get_node_or_null("LandmarkBuilder/Stables")
+	var horses := 0
+	var standing: Node3D = null
+	for node in stables.find_children("*", "Node3D", true, false) if stables != null else []:
+		if node.get_meta("animal", "") == "horse":
+			horses += 1
+			standing = node
+	_check("the stable and paddock horses are Blender horses", horses >= 7, "%d" % horses)
+	var ambient: Node = life.get("ambient") if life != null else null
+	var donkey: Node3D = ambient._donkeys[0]["node"] if ambient != null and not ambient._donkeys.is_empty() else null
+	_check("the donkeys are Blender donkeys, smaller than a horse", donkey != null
+			and donkey.get_meta("animal", "") == "donkey" and _height(donkey) < _height(standing) * 0.85,
+			"%.2f vs %.2f" % [_height(donkey), _height(standing)])
+	var missing := []
+	for texture in ["blue_track", "red_track", "horse_sand", "pavers", "play_surface"]:
+		if not ResourceLoader.exists("res://assets/textures/%s.png" % texture):
+			missing.append(texture)
+	_check("the new track, sand, paver and playground textures are there", missing.is_empty(), str(missing))
+
+
+## How tall the meshes under a node are (metres).
+func _height(node: Node3D) -> float:
+	if node == null:
+		return 0.0
+	var top := -INF
+	var bottom := INF
+	for view: MeshInstance3D in node.find_children("*", "MeshInstance3D", true, false):
+		if view.get_parent().name == "Tack" or view.name == "Tack":
+			continue
+		var box: AABB = view.global_transform * view.get_aabb()
+		top = maxf(top, box.end.y)
+		bottom = minf(bottom, box.position.y)
+	return top - bottom if top > bottom else 0.0
+
+
+## Session 71: every playground is the rounded Blender kit, with kids playing on it.
+func _check_session71() -> void:
+	var kits: Array = []
+	for builder in ["SpineBuilder", "DistrictDetail"]:
+		var node := _main.get_node_or_null(builder)
+		if node != null:
+			kits.append_array(node.find_children("PlaygroundKit", "", true, false))
+	var data: Dictionary = _delivery.place_builder.data.get_script_constant_map()
+	var wanted: int = 1 + data["MINI_PLAZAS"].size() + 2  # the spine, every cluster, the school's two
+	var floors := 0
+	var kids := 0
+	var pieces := 0
+	for kit: Node in kits:
+		var floor := kit.get_parent().get_node_or_null("PlayFloor") as MeshInstance3D
+		floors += 1 if floor != null and floor.material_override == SurfaceTextures.make("play_surface") else 0
+		kids += kit.kids.size()
+		pieces += kit.parts.size()
+	_check("every playground is the new rounded one on soft rubber", kits.size() == wanted and floors == wanted,
+			"%d of %d, %d floors" % [kits.size(), wanted, floors])
+	_check("kids play on the swings, roundabouts and spring riders", kids >= wanted * 2, "%d kids" % kids)
+	var kit: Node = kits[0] if not kits.is_empty() else null
+	var part: Node3D = kit.parts[0][0] if kit != null and not kit.parts.is_empty() else null
+	var before: Basis = part.basis if part != null else Basis()
+	if kit != null:
+		kit._near = true
+		kit._check_left = 1.0
+		kit._process(0.4)
+	_check("the swings, roundabouts and spring riders move", part != null and not part.basis.is_equal_approx(before), "%d moving parts" % pieces)
+
+
+## Session 72: the school football pitch, its floodlights and the courts gone.
+func _check_session72() -> void:
+	var pitch: Node = _main.get_node_or_null("LandmarkBuilder/School/SchoolPitch")
+	_check("the school has a full football pitch", pitch != null, "")
+	if pitch == null:
+		return
+	var turf: Rect2 = pitch.pitch
+	_check("the pitch has two goals, a running track and markings", pitch.goals.size() == 2
+			and pitch.get_node_or_null("TrackLines") != null and pitch.get_node_or_null("PitchLines") != null
+			and pitch.track.size.x > 60.0 and turf.size.x > 70.0, "%s" % turf)
+	_check("the fence posts are tall (taller than the old 1.3 m fence)", pitch.FENCE_HEIGHT >= 5.0, "")
+	var school: Dictionary = _delivery.place_builder.data.get_script_constant_map()["SCHOOL"]
+	var gate := Vector2(school["gate_x"], school["area"].position.y)
+	_check("the gate and the booth stay clear of the pitch", not pitch.fence.grow(1.0).has_point(gate)
+			and not pitch.fence.has_point(Vector2(-365, 32)), "%s" % pitch.fence)
+	var hour: float = _game_state.clock_hours()
+	pitch.update_lights(12.0)
+	var day_off: bool = not pitch.lights_on and not pitch.lights[0].visible
+	pitch.update_lights(GameConfig.FLOODLIGHT_ON_HOUR + 0.25)
+	var on: bool = pitch.lights_on and pitch.lights.size() == 4
+	var aimed := 0
+	for light: SpotLight3D in pitch.lights:
+		on = on and light.visible
+		var from := light.global_position
+		var way := -light.global_basis.z
+		var ground := from + way * (-from.y / way.y) if way.y < -0.01 else from
+		aimed += 1 if turf.has_point(Vector2(ground.x, ground.z)) else 0
+	_check("the floodlights are off in the day and come on at dusk", day_off and on, "")
+	_check("all four floodlights aim at the pitch", aimed == 4, "%d" % aimed)
+	pitch.update_lights(hour)
+	var playing := 0
+	for pupil: Person in pupil_list(pitch):
+		playing += 1 if turf.grow(2.0).has_point(Vector2(pupil.global_position.x, pupil.global_position.z)) else 0
+	var ball_from: Vector3 = pitch.ball.position
+	for i in 30:
+		pitch.play(0.1)
+	_check("pupils play football on the pitch in the day", playing == GameConfig.PITCH_PUPILS
+			and pitch.ball.position.distance_to(ball_from) > 1.0, "%d pupils" % playing)
+	var courts := 0
+	var detail := _main.get_node_or_null("DistrictDetail/FairGradeCampus")
+	for view: MeshInstance3D in detail.find_children("*", "MeshInstance3D", true, false) if detail != null else []:
+		var at := view.global_position
+		if view.mesh is BoxMesh and (view.mesh as BoxMesh).size.y < 0.05 and Rect2(-418, 80, 89, 15).has_point(Vector2(at.x, at.z)):
+			courts += 1
+	_check("the tennis and basketball courts are gone", courts == 0, "%d court pieces" % courts)
+
+
+func pupil_list(pitch: Node) -> Array:
+	return pitch.pupils
+
+
+## Session 73: more jumps, riders taking turns over them, grooms walking horses.
+func _check_session73() -> void:
+	var life: Node = _main.get_node_or_null("DistrictTraffic/StableLife")
+	_check("the stables have their own life (jumps, riders, grooms)", life != null, "")
+	if life == null:
+		return
+	var waiting := 0
+	for rider: Node in life.riders:
+		waiting += 1 if rider.holding else 0
+	_check("the arena has six jumps and five riders, some waiting their turn", life.jumps.size() >= 6
+			and life.riders.size() >= 5 and waiting >= 2 and waiting < life.riders.size(), "%d waiting" % waiting)
+	var cleared := {}  # rider -> {jump index: true}
+	var max_out := 0
+	# Stepping by hand doesn't move the physics shapes, so the riders' "is someone ahead"
+	# check would see stale spots: switch their solid bodies off while we fast-forward.
+	var layers := []
+	for rider: Node in life.riders:
+		layers.append(rider.collision_layer)
+		rider.collision_layer = 0
+	for step in 640:  # 160 seconds of arena time
+		life._physics_process(0.25)
+		var out := 0
+		for rider: Node in life.riders:
+			rider._physics_process(0.25)
+			out += 0 if rider.holding else 1
+			if rider.jump_height > 0.7:
+				for j in life.jumps.size():
+					if Vector2(rider.position.x - life.jumps[j].x, rider.position.z - life.jumps[j].z).length() < 2.0:
+						if not cleared.has(rider.name):
+							cleared[rider.name] = {}
+						cleared[rider.name][j] = true
+		max_out = maxi(max_out, out)
+	for i in life.riders.size():
+		life.riders[i].collision_layer = layers[i]
+	var good := 0
+	var rounds := 0
+	for rider: Node in life.riders:
+		rounds += rider.rounds
+		good += 1 if cleared.has(rider.name) and cleared[rider.name].size() >= 4 else 0
+	_check("several riders take turns over several jumps", good >= 2 and rounds >= 1
+			and max_out <= GameConfig.ARENA_RIDERS_OUT, "%d riders cleared 4+ jumps, %d rounds, at most %d out" % [good, rounds, max_out])
+	var groom: Node3D = life.grooms[0] if not life.grooms.is_empty() else null
+	var from := groom.position if groom != null else Vector3.ZERO
+	for step in 8:
+		if groom != null:
+			groom._physics_process(0.5)
+	_check("grooms walk horses by the stables", life.grooms.size() >= 2 and groom.position.distance_to(from) > 1.0
+			and groom.model.get_node_or_null("Horse") != null, "")

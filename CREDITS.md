@@ -107,3 +107,4 @@ food, drinks fridges, lamps) are built from basic shapes in code instead
 
 The background sound of each walk-in place (`assets/audio/room_*.wav`, looks pass) is original
 generated CC0 audio, made by tools/make_sounds.py.
+- Horses, donkeys and playground models (assets/models/horse_*, donkey_*, play_*) and the textures blue_track, red_track, horse_sand, pavers and play_surface (assets/textures/): original work, made by the scripts in tools/blender/ (Sessions 70 and 71).

@@ -1,5 +1,130 @@
 # Progress
 
+## Session 73: More life at the stables — 5 November 2026
+
+What works:
+- **Six jumps** in the jumping arena (was two), one on each short side and two on each long
+  side, in different kinds: striped poles in red, blue, green and yellow, wide doubles
+  (oxers) and a low painted wall, with flower boxes by the wings. The arena floor uses the
+  new horse_sand.png texture (sand with hoof prints).
+- **Five riders take turns** on the new horses (chestnut, grey, black, palomino, bay). Each
+  waits at its own spot by the arena gate, facing the course, then rides one round over
+  all six jumps and comes back to wait again. Two are out at once at most, the next one
+  setting off once the one before is on the far straight, so three are always waiting.
+  (scripts/stable_life.gd; ArenaHorse now knows how to wait its turn.)
+- **Grooms walk horses** up and down the stable yard on a red lead rope (two of them), the
+  horse's legs stepping as they go. Riding into them is a small bump, like the other horses.
+- The arena and its life are built by scripts/stable_life.gd; district_traffic.gd only
+  builds the arena rails now and hands over to it (a small change in _build_arena).
+- New numbers in scripts/game_config.gd (Session 73 block): ARENA_RIDERS_OUT, GROOM_WALK_SPEED.
+- Checked: smoke test PASS (new checks: six jumps and five riders with some waiting, 160
+  seconds of arena time: 3 riders cleared 4+ jumps, 4 rounds finished, never more than 2 out;
+  grooms walk horses), district traffic test PASS (the first rider still clears a jump),
+  bus recovery, static batch and lifecycle tests PASS. A 200-second real-physics run showed
+  the riders going round in turns with nobody turning back. No screenshots (headless).
+
+**Louis's turn:** press F5 and ride to the jumping arena (south-west, next to the school).
+Watch from the rail: a rider or two trot round and jump the six jumps while the others wait
+by the gate; when one comes back, the next one goes. Then ride round to the stable yard
+south of the stable block: grooms are walking horses up and down.
+
+## Session 72: The school football pitch — 5 November 2026
+
+What works:
+- **A full football pitch** in front of the school (scripts/school_pitch.gd, built by
+  LandmarkBuilder instead of the old small green pitch): striped turf, all the white lines
+  (touchlines, halfway line, centre circle and spot, penalty and goal areas, penalty spots and
+  arcs, corner arcs) and two goals with white posts and see-through nets.
+- **A red 4-lane running track** along the north side (the new red_track.png texture) with
+  lane lines and start/finish lines.
+- **A tall fence**: green posts 6.5 m high every 5 m with see-through netting (new
+  net.png texture, made by make_textures.py) and a low kick board. It's solid. There's a gap
+  in the north side by the school gate so the pupils can get in.
+- **Four floodlights** (16 m masts at the turf corners). Each beam aims at its own quarter
+  of the pitch, with a narrow cone, so they light only the pitch. They come on by themselves
+  at 17:15 on the shift clock (GameConfig.FLOODLIGHT_ON_HOUR) and their lamps glow.
+- **Pupils play football** in the day: 8 pupils in uniform chase a ball round the pitch (the
+  two nearest run for it, the rest keep their spots). They go home at 16:30. They only move
+  while you're near.
+- **The tennis and basketball courts are gone** (only that block in district_detail.gd).
+  The gate, the booth (villa 901) and the school car park bays are clear of the pitch.
+- New tuning numbers in scripts/game_config.gd (the Session 72 block at the end).
+- PRD.md: the school description now says football pitch with floodlights, no courts.
+- Checked: smoke test PASS (new checks: the pitch, two goals, track and markings, tall fence,
+  gate and booth clear, floodlights off in the day and on at dusk, all four aim at the pitch,
+  8 pupils playing and the ball moving, the courts are gone), navigation, coplanar and detail
+  world tests PASS. No screenshots (headless).
+
+**Louis's turn:** press F5 and ride to the school gate (west side). Look through the gate:
+the pitch with its goals and the red running track, behind the tall green netting. Pupils
+are playing football. To see the floodlights, keep playing until after 17:15 on the clock
+(or ride there near the end of a shift): the four lights come on and light just the pitch.
+
+## Session 71: New rounded playgrounds — 5 November 2026
+
+What works:
+- **Playground pieces made in Blender** (tools/blender/make_playground.py, assets/models/play_*.glb):
+  a slide tower with round posts, a cone roof, a ladder and a curved half-pipe slide; an
+  arched swing frame with two seats on chains; a climbing dome of curved bars; a little
+  roundabout with hoop handles; and a spring rider shaped like a small camel. Soft coral,
+  sunny yellow, mint, sky blue and lilac. Each piece is one draw (the colours are painted on
+  the mesh), 500 to 1,250 triangles.
+- **scripts/playground_kit.gd** builds every playground now: a soft rubber floor with rounded
+  corners (the new play_surface.png texture) and a mint edge, then the pieces that fit:
+  - the 5 cluster plazas (small): a small slide, the roundabout and a spring rider, kept to
+    the far side so the running kids (PLAY_KIDS) still have room
+  - the 2 school playgrounds (in DistrictDetail): slide, swings, roundabout, climbing dome and
+    a spring rider
+  - the big one in the green spine: all of them, with two spring riders
+- **Kids play on them**: one on a swing (swinging), one on the roundabout (turning) and one on
+  a spring rider (rocking). They only move while you're near, and the far ones are hidden,
+  like the other people. The kids running beside the cluster playgrounds are still there.
+- Only the call sites changed in spine_builder.gd and district_detail.gd; the old
+  Props.playground is left in props.gd (not used any more).
+- Checked: smoke test PASS (new checks: all 8 playgrounds are the new kit on the rubber floor,
+  19 kids on them, the swings/roundabouts/spring riders move), navigation, static batch,
+  coplanar and detail world tests PASS. No screenshots (headless).
+
+**Louis's turn:** press F5 and ride to the playground at the middle of the green spine (west
+of the gym), then to the little one at any cluster plaza. You should see the rounded slide,
+the swings going, the roundabout turning with a kid on it, and the soft coral rubber floor.
+The school has two more inside its fence.
+
+## Session 70: Blender horses, donkeys and textures — 5 November 2026
+
+What works:
+- **Blender scripts** in tools/blender/ build every new model and texture from code (see
+  tools/blender/README.md). They run with `blender --background --python tools/blender/<script>.py`
+  on the Mac, or plain `python3 tools/blender/<script>.py` with the Blender module installed.
+- **New horses** (make_horse.py): a proper horse shape (deep chest, arched neck, long head,
+  slim legs with hooves), a mane and a long tail, in five coats: bay, chestnut, grey (dappled),
+  black and palomino. About 1,300 triangles each. The saddle, saddle cloth, stirrups and reins
+  are a separate part that only shows when someone rides. The legs still swing when they walk
+  and trot, and the rider sits in the same seat as before. Used by the two horses on the track,
+  the jumping arena horse, the horses in the stable doors and the paddock, and the horses
+  crossing the road (their legs now walk too).
+- **New donkeys** (make_donkey.py): shorter, long ears, grey-brown or brown with a pale muzzle
+  and belly, a dark stripe down the back, a short upright mane and a tufted tail. The two
+  donkeys in the pen walk with their legs moving.
+- **New textures** (make_textures.py, assets/textures/): blue_track.png (blue cycle track),
+  red_track.png (red walking track), horse_sand.png (sand with hoof prints), pavers.png
+  (20 x 10 cm blocks) and play_surface.png (soft rubber playground floor). They all tile with
+  no seams. scripts/surface_textures.gd makes a material from any of them. The tracks and
+  pavers are being rebuilt by the roads work right now, so they're **not applied here** — the
+  road/track builder just needs `SurfaceTextures.make("blue_track")` etc. (sizes in
+  tools/blender/README.md). The playground floor is applied in Session 71.
+- Checked: smoke test PASS (new checks: the riders' horses are the Blender horse with a saddle,
+  the 7 stable/paddock horses are Blender horses, the donkeys are Blender donkeys and smaller,
+  the five textures are there), district traffic test PASS (the arena horse still clears its
+  jump), static batch test PASS. Headless Godot can't take screenshots, so I checked the models
+  with test renders in Blender instead.
+
+**Louis's turn:** press F5, ride to the stables in the south-west and look at the horses in
+the stable doors and the paddock, and the riders on the edge track. They should look like
+horses (long neck and head, mane, tail), not donkeys. Then ride to the donkey pen in the
+middle of the green spine: the donkeys are smaller with long ears.
+Rebuild a model on your Mac: `blender --background --python tools/blender/make_horse.py`.
+
 ## Session 69: The beekeeper as a pickup — 5 November 2026
 
 What works:

@@ -1542,7 +1542,7 @@ Done when:
 
 - [ ] A honey order can be picked up at the beekeeper and delivered
 
-### Session 70: Blender models and textures
+### Session 70: Blender models and textures (built, needs testing)
 
 ```text
 Session 70. Blender is installed on Louis's Mac. Run it from the command line (headless)
@@ -1562,7 +1562,7 @@ Done when:
 - [ ] The tracks and pavers use the new textures
 - [ ] The Blender scripts rebuild every model and texture
 
-### Session 71: New playgrounds
+### Session 71: New playgrounds (built, needs testing)
 
 ```text
 Session 71. Design new playgrounds in Blender: rounded slides, a climbing frame, swings,
@@ -1574,7 +1574,7 @@ Done when:
 
 - [ ] Every playground uses the new rounded designs and kids play on them
 
-### Session 72: School football pitch
+### Session 72: School football pitch (built, needs testing)
 
 ```text
 Session 72. Replace the green area in front of the school with a full football pitch:
@@ -1589,7 +1589,7 @@ Done when:
 - [ ] There's a full pitch with goals and a running track, fenced with tall posts
 - [ ] The floodlights come on at dusk and light only the pitch
 
-### Session 73: More life at the stables
+### Session 73: More life at the stables (built, needs testing)
 
 ```text
 Session 73. Add more jumps to the arena and more riders doing them. Use the new horses,

@@ -505,3 +505,16 @@ const ROOM_SOUND_UNIT_SIZE := 4.0     # metres at full volume
 const ROOM_SOUND_MAX_DISTANCE := 13.0 # silent further away than this
 const SUSHI_BELT_SPEED := 0.35        # metres per second the sushi plates travel
 const ROOM_PEOPLE_DRAW_DISTANCE := 80.0  # people inside the shops are hidden further away (metres)
+# --- Session 72: the school football pitch (scripts/school_pitch.gd) ---
+const FLOODLIGHT_ON_HOUR := 17.25      # the floodlights come on at 17:15, as the light goes
+const FLOODLIGHT_ENERGY := 6.0
+const FLOODLIGHT_RANGE := 48.0         # metres: each beam only reaches its quarter of the pitch
+const FLOODLIGHT_ANGLE := 32.0         # degrees: half the width of each beam
+const PITCH_PLAY_END_HOUR := 16.5      # pupils play football until 16:30
+const PITCH_PUPILS := 8
+const PITCH_BALL_SPEED := 5.0          # m/s
+const PITCH_PUPIL_SPEED := 3.0         # m/s
+
+# --- Session 73: more life at the stables (scripts/stable_life.gd) ---
+const ARENA_RIDERS_OUT := 2            # riders on the jumping course at once (the rest wait their turn)
+const GROOM_WALK_SPEED := 1.1          # m/s, a groom leading a horse round the yard

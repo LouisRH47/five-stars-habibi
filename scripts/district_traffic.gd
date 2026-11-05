@@ -369,8 +369,6 @@ func _build_arena() -> void:
 	var area: Rect2 = _map.get("JUMPING_ARENA", Rect2())
 	if area.size == Vector2.ZERO:
 		return
-	LowPoly.box(self, Vector3(area.size.x, 0.03, area.size.y), Color(0.83, 0.7, 0.49),
-			Vector3(area.get_center().x, 0.04, area.get_center().y))
 	var a := Vector3(area.position.x, 0, area.position.y)
 	var b := Vector3(area.end.x, 0, area.position.y)
 	var c := Vector3(area.end.x, 0, area.end.y)
@@ -381,29 +379,12 @@ func _build_arena() -> void:
 	var gate := Vector3(area.get_center().x, 0, area.end.y)
 	_rail_line(c, gate + Vector3.RIGHT * 4.0)
 	_rail_line(gate + Vector3.LEFT * 4.0, d)
-	var course := area.grow(-12.0)
-	var points: Array[Vector3] = [Vector3(course.position.x, 0, course.position.y), Vector3(course.end.x, 0, course.position.y),
-			Vector3(course.end.x, 0, course.end.y), Vector3(course.position.x, 0, course.end.y)]
-	var jumps: Array[Vector3] = []
-	for z in [course.position.y, course.end.y]:
-		var jump := Vector3(course.get_center().x, 0, z)
-		_build_jump(jump)
-		jumps.append(jump)
-	var look := LifeLooks.horse(Color(0.56, 0.33, 0.19))
-	arena_horse = ArenaHorse.new()
-	arena_horse.name = "ArenaHorse"
-	add_child(arena_horse)
-	arena_horse.setup("horse", points, true, GameConfig.HORSE_TROT_SPEED, Vector3(0.9, 2.4, 3.0), look[0], look[1])
-	arena_horse.jumps = jumps
-	arena_horse.set_meta("gait_left", 999999.0) # This horse keeps trotting on its jumping course.
-	_watch(arena_horse)
-
-
-func _build_jump(spot: Vector3) -> void:
-	var kit := MeshKit.new()
-	for side in [-1.0, 1.0]:
-		kit.box(Vector3(0.7, 1.5, 0.15), WHITE, spot + Vector3(0, 0.75, side * 2.3))
-		kit.box(Vector3(1.3, 0.12, 0.7), WHITE, spot + Vector3(0, 0.06, side * 2.3))
-	for height in [0.5, 0.95]:
-		kit.box(Vector3(0.13, 0.13, 4.6), Color(0.76, 0.23, 0.22), spot + Vector3.UP * height)
-	add_child(kit.finish("HorseJump"))
+	# Session 73: the sand, six jumps, riders taking turns and grooms walking horses by the
+	# stables are built by scripts/stable_life.gd. arena_horse is the first rider.
+	var life := StableLife.new()
+	life.name = "StableLife"
+	add_child(life)
+	life.build(area, _map)
+	for rider in life.riders + life.grooms:
+		_watch(rider)
+	arena_horse = life.riders[0]

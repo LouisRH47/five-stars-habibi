@@ -47,7 +47,8 @@ func build(life: Node3D, map: Dictionary) -> void:
 		_pen = (map["DONKEY_PEN"]["area"] as Rect2).grow(-1.3)
 		for i in map["DONKEY_PEN"]["donkeys"]:
 			var spot := Vector3(_pen.get_center().x - 3.0 + i * 6.0, 0, _pen.get_center().y)
-			var donkey := Props.animal(self, spot, 90.0, DONKEY.darkened(i * 0.15), false)
+			# Session 70: the Blender donkey, grey and brown in turn (scripts/horse_models.gd).
+			var donkey := HorseModels.standing(self, spot, 90.0, HorseModels.DONKEY_COATS.values()[i % 2], false)
 			donkey.name = "Donkey_%d" % i
 			_donkeys.append({"node": donkey, "target": spot, "pause": randf_range(0.5, 3.0)})
 
@@ -90,6 +91,7 @@ func _stroll(donkey: Dictionary, delta: float) -> void:
 	if donkey["pause"] > 0.0:
 		donkey["pause"] -= delta
 		node.position.y = 0.0
+		_swing_legs(node, 0.0)
 		return
 	var gap: Vector3 = donkey["target"] - node.position
 	gap.y = 0.0
@@ -100,7 +102,15 @@ func _stroll(donkey: Dictionary, delta: float) -> void:
 		return
 	node.position += gap.normalized() * step
 	node.rotation.y = lerp_angle(node.rotation.y, atan2(gap.x, gap.z), minf(1.0, delta * 3.0))  # its head is +Z
-	node.position.y = absf(sin(_clock * 6.0)) * 0.04
+	node.position.y = absf(sin(_clock * 6.0)) * 0.02
+	_swing_legs(node, sin(_clock * 6.0) * 0.3)
+
+
+## Session 70: a walking donkey swings its legs in diagonal pairs (0 = standing).
+func _swing_legs(node: Node3D, swing: float) -> void:
+	var legs: Array = node.get_meta("legs", [])
+	for i in legs.size():
+		(legs[i] as Node3D).rotation.x = swing * (1.0 if i == 0 or i == 3 else -1.0)
 
 
 func _add_flock(flock: Dictionary, life: Node3D) -> void:
