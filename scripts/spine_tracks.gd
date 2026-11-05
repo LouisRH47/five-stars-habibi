@@ -12,7 +12,6 @@ extends Node3D
 ## other kerb and a kerb across each end of a planter, so every planter is closed.
 
 const KERB := RoadMesh.KERB
-const GRASS := Color(0.36, 0.58, 0.25)
 const HEDGE := Color(0.18, 0.4, 0.17)
 const BUSH := Color(0.22, 0.45, 0.2)
 const BOUGAINVILLEA := Color(0.86, 0.16, 0.55)
@@ -139,7 +138,8 @@ func _planter(a: float, b: float, z0: float, z1: float, side: int) -> void:
 	_kerb_line([Vector2(a, outer), Vector2(b, outer)])
 	for x in [a + w * 0.5, b - w * 0.5]:
 		_kerb_line([Vector2(x, z0 + w * side), Vector2(x, z1 - w * side)])
-	kit.box(Vector3(length - w * 2.0, GRASS_TOP, inside), GRASS, Vector3(mid, GRASS_TOP * 0.5, (z0 + z1) * 0.5))
+	# Session 84: the planter grass uses the lawn photo, like the rest of the grass (not flat green).
+	SurfaceTextures.slab(self, "grass", Vector2(length - w * 2.0, inside), Vector3(mid, GRASS_TOP, (z0 + z1) * 0.5), GRASS_TOP)
 	# Plants: a repeating pattern every 15 m (hedge, bougainvillea, purple flowers).
 	var green := _kit("plants", mid)
 	var centre := (z0 + z1) * 0.5

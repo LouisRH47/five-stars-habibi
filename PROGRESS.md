@@ -1,5 +1,38 @@
 # Progress
 
+## Session 84: play-test of the fix pass — 6 November 2026
+
+Sessions 75 to 83 were built by six helpers in parallel (roads, Plaza and car parks, buildings,
+places and water, people, textures), then merged into `world-roads` one session at a time, with
+the checks and screenshots after each one.
+
+- **All checks pass:** headless import and quit, the smoke test and all 25 focused test suites
+  (new this pass: ride_edges, buggy_roads, outfits). One command runs them all on a temporary
+  copy, so your saves are never touched: `tools/run_checks.sh` (add `--bots` for the play-test bot).
+- **Play-test bot:** careful 4 to 6 deliveries, 4.5 to 5 stars, no crashes; careless 3 to 5
+  deliveries with small crashes. The bot itself got four fixes: it got stuck on foot (parked in
+  the gym's doorway, flipped between walking and riding at the C Institute, planned routes through
+  glass, couldn't get out of restaurant doorways). It got stuck in the same places before the fix
+  pass too, so these were bot problems, not game problems.
+- **Screenshots in a real window on the Mac (Forward+):** every spot from Louis's screenshots
+  01 to 09, plus the Plaza, shops, car parks, roundabout, cluster entrances, pools, gym and
+  stream, C Institute front, tracks, signs and people close up. Fixed from the screenshots:
+  bigger and warmer Plaza tiles, the planter strip by the spine road uses the grass photo,
+  the car parks use the asphalt photo, the cluster recycling bins are grey, the rider and groom
+  at the stables face each other.
+- New tool: `tests/screenshot_spots.gd` opens the game in a window and saves pictures of named
+  spots (see the top of the file for how to run it).
+
+Known bugs:
+- The play-test bot can still get stuck now and then when it comes out of a restaurant next to
+  the doorway (it walks into the glass beside the 2.6 m door). A player walks out fine.
+- Standing people have a wide, mid-step stance (the model's own idle pose).
+- The red walking track looks fairly plain up close.
+- Not checked yet: the frame rate on Low, Medium and High during real play on the Mac.
+
+**Louis's turn:** play a full shift (see "How to test the fix pass" in the pull request or the
+list below) and write down anything that looks wrong or feels off.
+
 ## Session 83: people who look alive — 6 November 2026
 
 What works:

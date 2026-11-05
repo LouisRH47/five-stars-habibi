@@ -54,6 +54,7 @@ var _door_when_parked := Vector2.ZERO  # where the door was when we got off (did
 var _walk_best := INF    # closest we've got to where we're walking on this walk (metres)
 var _walk_no_gain := 0.0  # seconds without getting closer
 var _repark_left := 0.0  # seconds of rolling back after parking in our own way
+var _walk_goal := Vector2.INF  # what _walk_best is measured to
 var _trail: Array[Vector2] = []  # the way we walked to the door (to walk back out the same way)
 var _crashes := {"small": 0, "big": 0}
 var _frames := 0
@@ -182,6 +183,10 @@ func _walk(delta: float) -> void:
 	_this_walk += delta
 	if going_to_door and (_trail.is_empty() or _trail[_trail.size() - 1].distance_to(here) > 0.5):
 		_trail.append(here)
+	if goal.distance_to(_walk_goal) > 0.5:  # a new goal (the door, then the bike): start counting again
+		_walk_goal = goal
+		_walk_best = INF
+		_walk_no_gain = 0.0
 	if here.distance_to(goal) < _walk_best - 0.3:
 		_walk_best = here.distance_to(goal)
 		_walk_no_gain = 0.0
@@ -195,6 +200,14 @@ func _walk(delta: float) -> void:
 		_repark_left = 1.5
 		_on_foot.toggle()
 		return
+	if not going_to_door and _walk_no_gain > 6.0 and _trail.size() > 1:
+		# Not getting any closer to the bike (stuck inside a doorway): walk back out the way
+		# we came in.
+		_walk_no_gain = 0.0
+		_walk_route = _trail.duplicate()
+		_walk_route.reverse()
+		_walk_route.append(goal)
+		_trail.clear()
 	if int(_this_walk / 20.0) != int((_this_walk - delta) / 20.0):
 		_say_walk_trouble(here, goal, going_to_door)
 	# Walk round things too: a route from the grid, found again if we stop moving.

@@ -1645,7 +1645,7 @@ Same rules as always: one session at a time, headless checks, smoke test, focuse
 play-test bot careful and careless, a check for every new thing, PROGRESS.md, commit. Before
 handing over, open the game on Louis's Mac (Forward+) and take screenshots of what changed.
 
-### Session 75: Ride freely, jump on foot, buggies on roads
+### Session 75: Ride freely, jump on foot, buggies on roads (built, needs testing)
 
 ```text
 Session 75. 1) Remove every invisible wall that isn't a real object: the solid spine kerbs
@@ -1669,7 +1669,7 @@ Done when:
 - [ ] Space jumps when walking and still brakes on the bike
 - [ ] Every buggy stays on asphalt for a whole shift (test checks this)
 
-### Session 76: Kerbs that join up and curved corners
+### Session 76: Kerbs that join up and curved corners (built, needs testing)
 
 Louis's screenshots from 5 Nov are in docs/fix_pass_screens/ (01 to 09). What they show:
 01 C Institute front: paving runs into the blue pool-like patch. 02 Spine road: the kerb is
@@ -1700,7 +1700,7 @@ Done when:
 - [ ] The roundabout kerbs join all the way round
 - [ ] Every road corner is curved, including the C Institute road
 
-### Session 77: A square Plaza floor and the Dune Drip buggy park
+### Session 77: A square Plaza floor and the Dune Drip buggy park (built, needs testing)
 
 ```text
 Session 77. 1) Replace the round Plaza paving with one square paved floor using the
@@ -1718,7 +1718,7 @@ Done when:
 - [ ] The Plaza floor is one square of paving touching every door
 - [ ] The Plaza road ends in a small buggy park behind Dune Drip
 
-### Session 78: Bike shop and Dune Drip look like real buildings
+### Session 78: Bike shop and Dune Drip look like real buildings (built, needs testing)
 
 ```text
 Session 78. Keep their fronts and insides. Change the box shape: a stepped roofline with a
@@ -1733,7 +1733,7 @@ Done when:
 
 - [ ] Neither shop looks like a plain box from any side
 
-### Session 79: Car parks laid out properly, and a mosque car park
+### Session 79: Car parks laid out properly, and a mosque car park (built, needs testing)
 
 ```text
 Session 79. Every car park (between the clusters, beside C3 and C5, the stables and the
@@ -1749,7 +1749,7 @@ Done when:
 - [ ] Every car park has the side row, two middle rows and an end row, mostly full, with roofs
 - [ ] The mosque has its own car park off the ring road
 
-### Session 80: The C Institute front, seats and the basketball court
+### Session 80: The C Institute front, seats and the basketball court (built, needs testing)
 
 ```text
 Session 80. 1) Remove the blue (pool-looking) patch in front of the C Institute; make it
@@ -1766,7 +1766,7 @@ Done when:
 - [ ] Nobody's feet disappear into a seat
 - [ ] The basketball court looks finished
 
-### Session 81: Gym, stream and pools
+### Session 81: Gym, stream and pools (built, needs testing)
 
 ```text
 Session 81. 1) Flatten the ground around the gym and the community pool so no hill dips into
@@ -1785,7 +1785,7 @@ Done when:
 - [ ] Nothing glitches into the water or the gym
 - [ ] Swimmers swim and the lifeguard sits on his chair and watches
 
-### Session 82: Textures
+### Session 82: Textures (built, needs testing)
 
 ```text
 Session 82. Use the textures chosen above (copy them from tools/texture_sources/ into assets/textures/,
@@ -1806,7 +1806,7 @@ Done when:
 - [ ] No rectangle grass clumps
 - [ ] Signs don't shimmer, bins are grey, no grass gaps by the playgrounds
 
-### Session 83: People who look alive
+### Session 83: People who look alive (built, needs testing)
 
 ```text
 Session 83. 1) Every NPC that stands or sits moves a little: breathing, turning the head to
@@ -1822,7 +1822,7 @@ Done when:
 - [ ] No NPC stands frozen, and faces have eyes
 - [ ] No glitched clothes on any outfit
 
-### Session 84: Play-test the fix pass on Louis's Mac
+### Session 84: Play-test the fix pass on Louis's Mac (automatic checks done, needs Louis's play)
 
 ```text
 Session 84. Run the smoke test, every focused suite and the play-test bot careful and
