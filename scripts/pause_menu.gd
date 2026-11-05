@@ -4,7 +4,7 @@ extends CanvasLayer
 ## This node keeps running while the game is paused (process_mode = Always).
 
 const MENU_SCENE := "res://scenes/main_menu.tscn"
-const KEYS := "W / Up: pedal     S / Down: brake     A / D: steer\nShift: sprint     Space: handbrake     R: back to the start\nE: accept, pick up, drop off     Q: skip order     I: insurance on/off"
+const KEYS := "W / Up: pedal     S / Down: brake     A / D: steer\nShift: sprint     Space: handbrake     R: back to the start\nE: accept, pick up, drop off     Q: skip order     I: insurance on/off     M: full map"
 
 var settings_panel: SettingsPanel
 

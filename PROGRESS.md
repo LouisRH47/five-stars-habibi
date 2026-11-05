@@ -1,5 +1,41 @@
 # Progress
 
+## Session 67: Glitch fixes, full map and resolution setting — 5 November 2026
+
+What works:
+- **No flicker on the Plaza walkways.** The Plaza paving sat only 5 mm under the Plaza Road
+  and the bench bases, so it flickered from far away. Its top is now 2 cm up (PlazaBuilder
+  PAVING_TOP), a clear 2 cm under the roads. The fountain water and the teal floor ring also
+  got a real 2.5 cm step. tests/coplanar_test.gd now also checks for surfaces only a few
+  millimetres apart around the Plaza restaurants (0 left).
+- **School pool shades stand up.** Both school pool shades (and the two school playground
+  shades, which floated too) have white posts with foot plates, beams, a trim round the edge
+  and a raised middle. The posts are solid.
+- **Full map on M.** Press M: the whole community fills the screen with roads, parks, homes,
+  shops and names (clusters, Plaza, school, gym, pools, gates, beekeeper and more), a white
+  arrow where you are (also when walking), the pickup (orange P) and drop-off (teal D) of
+  your order and a legend. M or Esc closes it. The game is paused while it's open.
+  (scripts/full_map.gd, made by scripts/hud.gd, drawn with the mini-map's own drawing.)
+- **Resolution.** Settings has two new rows under Graphics: Window (Auto, 1280 x 720,
+  1600 x 900, 1920 x 1080, 2560 x 1440; desktop only) and Render scale (50, 75, 100%,
+  everywhere; the browser starts at 75%). Both are saved with the other settings.
+- Checked: smoke test PASS (new checks: full map opens, pauses, has names, closes; render
+  scale is used and saved; the pool shades have posts), coplanar test PASS. Headless Godot
+  can't take screenshots, so the screenshot step was skipped.
+
+Known bugs / to do:
+- The north restaurant row's back 3 m sits over the ring road (hidden under the shop floor).
+  That's road layout, left for the roads sessions.
+- On phones there's no M key yet, so the full map can't be opened there.
+
+**Louis's turn:** open the project in Godot and press F5, start a shift. Press M: you should
+see the whole map with names, your white arrow and a legend; everything stops moving. Press M
+again (or Esc) to close it. Accept an order and press M: an orange P at the restaurant and a
+teal D at the home. Ride into the Plaza and look at the paving in front of the restaurants from
+far away: no flickering. Ride to the school pools: the shade roofs stand on posts. Press Esc,
+Settings: change Render scale to 50% (the world gets softer), then back to 100%. Try a Window
+size. Quit and start again: your choices are still there.
+
 ## Session 60: The road network from the approved plan — 5 November 2026
 
 Built straight after looks pass Session 52, at Louis's request (the looks pass carries on

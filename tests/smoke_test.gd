@@ -1347,6 +1347,7 @@ func _finish() -> void:
 	await _check_life_meets_events()
 	_check_session32()
 	await _check_venue_handoffs()
+	await _check_world_polish()  # Sessions 67 to 69
 	_check_saving()
 	for action in ACTIONS:
 		Input.action_release(action)
@@ -2464,3 +2465,50 @@ func _check_goals() -> void:
 func _goal_done(id: String) -> bool:
 	var goals: Script = load("res://scripts/shift_goals.gd")
 	return goals.is_done(id, _game_state.history.slice(_game_state.shift_start_index), _game_state.shift_crashes)
+
+
+# --- World polish pass, Sessions 67 to 69 (people wave) ---
+
+func _check_world_polish() -> void:
+	_check_session67()
+
+
+## Session 67: the full map on M, the resolution settings and the school pool shade posts.
+func _check_session67() -> void:
+	var hud := _main.get_node_or_null("HUD")
+	var full_map: Node = hud.get("full_map") if hud != null else null
+	_check("there is a full map (M)", full_map != null and InputMap.has_action("full_map"), "")
+	if full_map != null:
+		var key := InputEventAction.new()
+		key.action = "full_map"
+		key.pressed = true
+		full_map._input(key)
+		var names: Array = full_map.place_names().map(func(n): return n[0])
+		var start: Vector3 = _delivery.place_builder.data.get_script_constant_map()["START"]["position"]
+		var spot: Vector2 = full_map.world_to_screen(start)
+		var screen := Rect2(Vector2.ZERO, full_map._view.size)
+		_check("M opens the full map and pauses the game", full_map.is_open() and paused, "")
+		_check("the full map has names and your spot is on it", names.has("The Plaza") and names.has("Cluster 3")
+				and screen.has_point(spot), "%s at %s" % [names.size(), spot])
+		await process_frame  # it draws while paused
+		key = InputEventAction.new()
+		key.action = "pause"
+		key.pressed = true
+		full_map._input(key)
+		_check("Esc closes the full map and the game goes on", not full_map.is_open() and not paused, "")
+	var settings: Script = load("res://scripts/settings.gd")
+	var old_scale: int = settings.render_scale
+	settings.render_scale = 50
+	settings.save()
+	var file := ConfigFile.new()
+	file.load(settings.PATH)
+	_check("render scale 50% is used and saved", is_equal_approx(root.scaling_3d_scale, 0.5)
+			and file.get_value("video", "render_scale", 0) == 50 and file.has_section_key("video", "window_size"), "")
+	settings.render_scale = old_scale
+	settings.save()
+	var detail := _main.get_node_or_null("DistrictDetail")
+	var shades := detail.find_children("*SchoolPoolShade*", "", true, false) if detail != null else []
+	var posts := 0
+	for shade in shades:
+		posts += shade.find_children("*ShadePost*", "", true, false).size()
+	_check("the school pool shades stand on posts", shades.size() == 2 and posts >= 8, "%d shades, %d posts" % [shades.size(), posts])

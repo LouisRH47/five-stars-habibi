@@ -27,6 +27,9 @@ var rows: VBoxContainer
 var fullscreen_box: CheckButton
 ## Low / Medium / High (Session 28).
 var graphics_option: OptionButton
+## Session 67: window size (desktop only, null elsewhere) and render scale 50/75/100%.
+var window_option: OptionButton
+var scale_option: OptionButton
 ## One slider per sound bus (Master, Music, Effects, Ambience), 0 to 100.
 var volume_sliders: Dictionary = {}
 
@@ -56,6 +59,12 @@ func _ready() -> void:
 	fullscreen_box.toggled.connect(_on_fullscreen)
 	rows.add_child(fullscreen_box)
 	rows.add_child(_make_graphics_row())
+	if Settings.can_pick_window_size():
+		window_option = _add_choice_row("Window", Settings.window_size_names(), Settings.window_size, _on_window_size)
+	var scale_names: Array = []
+	for percent in Settings.RENDER_SCALES:
+		scale_names.append("%d%%" % percent)
+	scale_option = _add_choice_row("Render scale", scale_names, Settings.RENDER_SCALES.find(Settings.render_scale), _on_render_scale)
 	for bus in Settings.BUSES:
 		var row := HBoxContainer.new()
 		var name_label := Label.new()
@@ -101,6 +110,37 @@ func _make_graphics_row() -> HBoxContainer:
 	graphics_option.item_selected.connect(_on_graphics)
 	row.add_child(graphics_option)
 	return row
+
+
+## Session 67: one "name: list" row (used for Window and Render scale).
+func _add_choice_row(label: String, choices: Array, selected: int, action: Callable) -> OptionButton:
+	var row := HBoxContainer.new()
+	var name_label := Label.new()
+	name_label.text = label
+	name_label.custom_minimum_size = Vector2(130, 0)
+	name_label.add_theme_font_size_override("font_size", 20)
+	name_label.add_theme_color_override("font_color", TEXT)
+	row.add_child(name_label)
+	var option := OptionButton.new()
+	option.add_theme_font_size_override("font_size", 20)
+	option.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	for choice in choices:
+		option.add_item(str(choice))
+	option.selected = maxi(selected, 0)
+	option.item_selected.connect(action)
+	row.add_child(option)
+	rows.add_child(row)
+	return option
+
+
+func _on_window_size(index: int) -> void:
+	Settings.window_size = index
+	Settings.save()
+
+
+func _on_render_scale(index: int) -> void:
+	Settings.render_scale = Settings.RENDER_SCALES[index]
+	Settings.save()
 
 
 func _on_graphics(level: int) -> void:

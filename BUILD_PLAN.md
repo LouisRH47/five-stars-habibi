@@ -1482,7 +1482,7 @@ Done when:
 - [ ] The blank space by Cluster 1 is a park people use
 - [ ] The phase 3 site looks like phase 2
 
-### Session 67: Glitch fixes, full map and resolution setting
+### Session 67: Glitch fixes, full map and resolution setting (built, needs testing)
 
 ```text
 Session 67. 1) Fix the flickering textures on the restaurant walkways and any other
