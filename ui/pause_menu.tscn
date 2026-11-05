@@ -1,6 +1,14 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scripts/pause_menu.gd" id="1_pause"]
+[ext_resource type="Shader" path="res://assets/shaders/pause_blur.gdshader" id="2_blur"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_blur"]
+shader = ExtResource("2_blur")
+shader_parameter/lod = 2.5
+shader_parameter/spread = 3.0
+shader_parameter/tint = Color(0.105882354, 0.11372549, 0.13333334, 1)
+shader_parameter/tint_amount = 0.35
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dim"]
 bg_color = Color(0.05882353, 0.1254902, 0.14901961, 0.55)
@@ -16,6 +24,16 @@ corner_radius_bottom_left = 24
 process_mode = 3
 layer = 10
 script = ExtResource("1_pause")
+
+[node name="Blur" type="ColorRect" parent="." unique_id=1507244811]
+visible = false
+material = SubResource("ShaderMaterial_blur")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
 [node name="Dim" type="Panel" parent="." unique_id=1507244802]
 anchors_preset = 15

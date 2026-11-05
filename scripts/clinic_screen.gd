@@ -10,6 +10,10 @@ extends CanvasLayer
 ## "Turn on insurance" (only when it's off) and "Shift summary"). The first big crash
 ## shows the boss-covered version. The game is paused while this shows. The money is done
 ## by GameState.big_crash(); this only shows it. Closing it ends the shift (ShiftManager).
+## Session 71 (GameConfig.SCREENS_V2): the bills card pops in and the money counts up like
+## the Delivered card (the "You pay" total in red), with soft ticks and a thunk at the end.
+
+const EXTRAS := preload("res://scripts/polish/screen_extras.gd")
 
 ## Sent when you close the clinic screen (the ShiftManager then ends the shift).
 signal closed
@@ -45,6 +49,9 @@ var _insure_button: Button
 var _transition: Tween
 var _patient: Person
 var _room_view: SubViewport
+## Session 71: the money labels that count up ([label, amount, format]), and the count's tween.
+var _money: Array = []
+var _count: Tween
 
 
 func _ready() -> void:
@@ -86,12 +93,15 @@ func open(bills: Dictionary, instantly := false) -> void:
 	_fill(bills)
 	if instantly:
 		_set_visible(true)
+		_reveal()
 		return
 	if _transition != null:
 		_transition.kill()
 	_transition = create_tween()
 	_transition.tween_property(_fade, "color:a", 1.0, GameConfig.CRASH_FADE_TIME)
-	_transition.tween_callback(func(): _set_visible(true))
+	_transition.tween_callback(func():
+		_set_visible(true)
+		_reveal())
 	_transition.tween_property(_fade, "color:a", 0.0, GameConfig.CRASH_FADE_TIME * 0.6)
 
 
@@ -102,6 +112,7 @@ func close() -> void:
 	showing = false
 	if _transition != null:
 		_transition.kill()
+	_stop_count()
 	_fade.color.a = 0.0
 	_set_visible(false)
 	if bike != null:
@@ -152,18 +163,21 @@ func _fill(bills: Dictionary) -> void:
 	_tag.visible = bills["lost_order"]
 	for child in _rows.get_children():
 		child.queue_free()
+	_stop_count()
+	_money.clear()
 	var full: int = bills["hospital"] + bills["repair"]
 	_row("Impact severity", str(bills.get("severity", hit.get("severity", "severe"))).capitalize(), INK)
-	_row("Clinic bill", "%d Dh" % bills["hospital"], INK)
-	_row("Bike repair (Snackaroo)", "%d Dh" % bills["repair"], INK)
+	_row("Clinic bill", "%d Dh" % bills["hospital"], INK, bills["hospital"], "%d Dh")
+	_row("Bike repair (Snackaroo)", "%d Dh" % bills["repair"], INK, bills["repair"], "%d Dh")
 	if bills["boss"]:
-		_row("Your boss covered it", "-%d Dh" % full, TEAL)
+		_row("Your boss covered it", "-%d Dh" % full, TEAL, full, "-%d Dh")
 	elif bills["insured"]:
-		_row("Insurance", "-%d Dh" % (full - bills["paid"]), TEAL)
+		_row("Insurance", "-%d Dh" % (full - bills["paid"]), TEAL, full - bills["paid"], "-%d Dh")
 		_row("Your insured cap", "%d Dh" % bills.get("insured_cap", bills["paid"]), TEAL)
 	else:
 		_row("Insurance", "off", RED)
 	_total.text = "%d Dh" % bills["paid"]
+	_money.append([_total, int(bills["paid"]), "%d Dh"])
 	_tip_box.visible = not bills["insured"] and not bills["boss"]
 	_insure_button.visible = not GameState.insurance_on
 	var week := GameState.crashes_this_week()
@@ -172,13 +186,63 @@ func _fill(bills: Dictionary) -> void:
 	_week_text.text = "%d of %d" % [week, GameConfig.CRASH_WEEK_WARNING]
 
 
-func _row(name_text: String, value: String, colour: Color) -> void:
+func _row(name_text: String, value: String, colour: Color, amount := -1, fmt := "") -> void:
 	var left := _label(name_text, 19, INK)
 	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_rows.add_child(left)
 	var right := _label(value, 19, colour, "BigNumber")
 	right.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_rows.add_child(right)
+	if amount >= 0:
+		_money.append([right, amount, fmt])
+
+
+## Session 71: the card pops in, then each bill counts up from 0 in turn, the total last.
+## The final numbers are already on the labels, so skipping the count changes nothing.
+func _reveal() -> void:
+	if not GameConfig.SCREENS_V2 or _money.is_empty():
+		return
+	_stop_count()
+	var quick := 0.5 if Settings.reduce_motion else 1.0
+	EXTRAS.sound("ui_open")
+	_card.modulate.a = 0.0
+	_count = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS).set_parallel(true)
+	_count.tween_callback(func(): UiJuice.pop_in(_card))  # next frame: the card has its size
+	_count.tween_property(_card, "modulate:a", 1.0, 0.15)
+	var at := 0.25 * quick
+	for item in _money:
+		var label: Label = item[0]
+		var last: bool = item == _money.back()
+		var time := GameConfig.CLINIC_COUNT_TIME * quick * (1.0 if last else 0.5)
+		label.text = item[2] % 0
+		_count.tween_method(_count_step.bind(label, item[2], int(item[1])), 0.0, float(item[1]), time).set_delay(at) \
+				.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		at += time + 0.08
+	var total := _total
+	_count.tween_callback(func(): EXTRAS.sound("stamp", 1.1)).set_delay(at)
+	_count.tween_property(total, "scale", Vector2.ONE * 1.15, 0.08).set_delay(at)
+	_count.tween_property(total, "scale", Vector2.ONE, 0.18).set_delay(at + 0.08).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	total.pivot_offset = total.size * 0.5
+
+
+func _count_step(value: float, label: Label, fmt: String, target: int) -> void:
+	var before := label.text
+	label.text = fmt % roundi(value)
+	if before != label.text and roundi(value) % maxi(1, target / 6) == 0:
+		EXTRAS.sound("tick", 0.9 + 0.3 * value / maxf(1.0, float(target)))
+
+
+## Ends the count at once: every label shows its final number.
+func _stop_count() -> void:
+	if _count != null:
+		_count.kill()
+		_count = null
+	for item in _money:
+		(item[0] as Label).text = item[2] % item[1]
+		(item[0] as Label).scale = Vector2.ONE
+	if _card != null:
+		_card.modulate.a = 1.0
+		_card.scale = Vector2.ONE
 
 
 # --- The 3D clinic room behind everything ---

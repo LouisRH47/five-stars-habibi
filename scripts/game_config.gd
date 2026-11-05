@@ -712,3 +712,26 @@ const INDOOR_CAMERA_ON := true        # PRD "Interiors": inside a restaurant or 
 const INDOOR_CAMERA_DISTANCE := 3.0   # metres behind you indoors (outside: CAMERA_DISTANCE, 4.5)
 const INDOOR_CAMERA_HEIGHT := 2.7     # metres above your feet indoors (outside: CAMERA_HEIGHT, 2.2)
 const INDOOR_CAMERA_BLEND := 1.5      # how fast it changes when you walk in or out (1.5 = about 2/3 of a second)
+
+# --- Session 71: screens, menus, sounds and accessibility ---
+# CARD_V2 and START_DIORAMA (above, Session 66) switch the new Delivered card and start screen.
+const SCREENS_V2 := true           # pause blur, clinic count-up, sliding side panel, loading rider, button feel
+const CARD_TILE_GAP := 0.15        # seconds between the three tiles flipping in
+const CARD_COUNT_TIME := 0.6       # seconds "You earned" takes to count up
+const CARD_STAMP_TIME := 0.25      # seconds the PERFECT! stamp takes to slam in
+const CARD_STAR_PITCHES := [1.0, 1.06, 1.12, 1.19, 1.26]  # each star's ding a semitone higher
+const CARD_DOF := true             # the background goes soft behind the card (desktop only)
+const CARD_DOF_AMOUNT := 0.04      # how blurry
+const CARD_DOF_TRANSITION := 5.0   # metres from sharp to blurry
+## true: the first E only skips the reveal and a second E closes the card (the smoke test
+## expects one E to close it, so it stays false: one E jumps to the end AND closes).
+const CARD_E_SKIPS_FIRST := false
+const BUTTON_HOVER_SCALE := 1.03   # buttons grow 3% when the mouse is over them
+const PAUSE_BLUR_LOD := 2.5        # how blurry the game is behind the pause menu
+const PAUSE_TINT := 0.35           # how dark the tint over the blurred game is
+const SIDE_PANEL_SLIDE := 40.0     # pixels the shop / counter panel slides in from
+const SIDE_PANEL_TIME := 0.25      # seconds it takes
+const CLINIC_COUNT_TIME := 0.6     # seconds the clinic bills take to count up
+const DIORAMA_ORBIT_DEG := 8.0     # the start-screen camera swings this far each way
+const DIORAMA_ORBIT_TIME := 20.0   # seconds for one full swing there and back
+const DIORAMA_WEB_SCALE := 0.75    # the start-screen 3D scene renders smaller in the browser
