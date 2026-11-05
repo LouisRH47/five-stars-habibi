@@ -35,6 +35,9 @@ Everything in the game that was made by someone else, and the licence that lets 
 - `assets/audio/ring.wav`: the bike bell you ring with B (Session 29)
 - `assets/audio/buzz.wav`, `pop.wav`, `coins.wav`: the phone buzz and the Delivered card's
   star and coin pops (Session 31)
+- `assets/audio/ui_hover.wav`, `ui_click.wav`, `ui_open.wav`, `ui_close.wav`, `tick.wav`,
+  `meter_warn.wav`, `level_up.wav`, `stamp.wav`, `whoosh.wav`: the menu and HUD sounds
+  (Session 71, original generated CC0 audio; remake only these with `python3 tools/make_sounds.py ui`)
 
 To remake them: `python3 tools/make_sounds.py`.
 

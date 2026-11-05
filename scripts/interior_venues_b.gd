@@ -121,8 +121,11 @@ static func _thai(p: InteriorParts) -> void:
 	p.bin(Vector3(1.75, 0, 4.35))
 	p.plant(Vector3(-5.45, 0, -1.6))
 	p.plant(Vector3(-2.4, 0, 3.75))
+	# Review fix: the middle lamp's shade hung inside a red lantern (0.45 m apart); moved over
+	# the left end of its table.
+	var middle := Vector3(-2.5, 0, 0.0) if GameConfig.INTERIOR_REVIEW_FIXES else Vector3(-1.95, 0, -0.35)
 	for i in 3:
-		p.lamp([Vector3(2.6, 0, 1.2), Vector3(-1.95, 0, -0.35), Vector3(4.9, 0, 1.2)][i], red, i == 0)
+		p.lamp([Vector3(2.6, 0, 1.2), middle, Vector3(4.9, 0, 1.2)][i], red, i == 0)
 
 
 # ---------------------------------------------------------------- Sushi You

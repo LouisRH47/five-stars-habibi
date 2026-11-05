@@ -1309,7 +1309,7 @@ Done when:
 - [x] Every shop has its own logo and front, Grand Groceries looks like a supermarket
 - [x] The bike shop and clothes shop are in the rows and still work
 
-### Session 58: The first 6 insides (pizza, gelato, coffee, shawarma, bakery, groceries)
+### Session 58: The first 6 insides (pizza, gelato, coffee, shawarma, bakery, groceries) (built)
 
 ```text
 Session 58. Read PRD.md "Looks pass", Interiors, the table and Layouts. Make one room
@@ -1335,11 +1335,11 @@ Keep old saves working. Smoke test: walk into each, queue, hold E, walk out.
 
 Done when:
 
-- [ ] Each of the 6 looks like its real-life kind of shop, cosy and full, with a proper menu board
-- [ ] The coffee shop sells coffee and cakes, the bakery sells bread, and orders, specials and regulars still work
-- [ ] Nothing floats; the doors slide; the queue is short
+- [x] Each of the 6 looks like its real-life kind of shop, cosy and full, with a proper menu board
+- [x] The coffee shop sells coffee and cakes, the bakery sells bread, and orders, specials and regulars still work
+- [x] Nothing floats; the doors slide; the queue is short
 
-### Session 59: The other insides (Thai, sushi, tacos, burgers, bikes, clothes)
+### Session 59: The other insides (Thai, sushi, tacos, burgers, bikes, clothes) (built)
 
 ```text
 Session 59. Read PRD.md "Looks pass", the table and Layouts. Using the Session 58
@@ -1354,8 +1354,8 @@ shops still sell.
 
 Done when:
 
-- [ ] No two insides look alike, and Sushi You's belt moves
-- [ ] Both shops still sell, in their new places
+- [x] No two insides look alike, and Sushi You's belt moves
+- [x] Both shops still sell, in their new places
 
 ### Session 60: Gym and pools (built)
 
@@ -1485,7 +1485,7 @@ a new test per session, screenshots, session notes, commit. Nothing old is delet
 has a GameConfig switch.
 ```
 
-### Session 66: Polish groundwork
+### Session 66: Polish groundwork (built)
 
 ```text
 Session 66. Read docs/polish_plan.md sections 4 and Appendix C. Add exactly
@@ -1500,9 +1500,9 @@ Smoke test, then commit, before Sessions 67 to 71 start.
 
 Done when:
 
-- [ ] The game looks and plays exactly as before
-- [ ] polish_groundwork_test and the smoke test pass
-- [ ] Settings saved with the new values load again after a restart
+- [x] The game looks and plays exactly as before
+- [x] polish_groundwork_test and the smoke test pass
+- [x] Settings saved with the new values load again after a restart
 
 ### Session 67: Sky, light and colour
 

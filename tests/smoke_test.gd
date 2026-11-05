@@ -1352,6 +1352,7 @@ func _finish() -> void:
 	_check_saving()
 	_check_polish_hooks()
 	_check_world_polish()
+	_check_screens_polish()
 	for action in ACTIONS:
 		Input.action_release(action)
 	_phase = "done"
@@ -2623,3 +2624,19 @@ func _check_world_polish() -> void:
 	_check("the water, road wear and particles were added (Session 68)", not hooked or (
 			_main.has_node("WaterLook") and _main.has_node("RoadDecals") == GameConfig.ROAD_DECALS
 			and _main.has_node("VfxAmbient") == GameConfig.VFX_AMBIENT and _main.has_node("VfxBursts") == GameConfig.WORLD_BURSTS), "")
+
+
+## Session 71: the screens polish is in the game world: screen_extras ran (buttons get their
+## hover and click), the pause menu has its blur (hidden while you ride), the Delivered card
+## has its PERFECT! stamp and XP bar, and every UI sound has its file.
+func _check_screens_polish() -> void:
+	if not GameConfig.SCREENS_V2 or not is_instance_valid(_main):
+		return
+	var extras := _main.get_node_or_null("ScreenExtras")
+	var blur: CanvasItem = _main.get_node("PauseMenu").get_node_or_null("Blur")
+	var card: Node = _main.get_node("DeliveredCard")
+	var ui := root.get_node("UiSounds")
+	var files: bool = ui.KEYS.all(func(key): return ResourceLoader.exists("res://assets/audio/%s.wav" % key))
+	_check("Session 71: screen extras, pause blur, card stamp and UI sounds are in the game",
+			(extras != null or not GameConfig.POLISH_HOOKS_ON) and blur != null and not blur.is_visible_in_tree()
+			and (card._stamp != null or not GameConfig.CARD_V2) and files, "")

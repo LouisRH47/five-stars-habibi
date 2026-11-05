@@ -52,6 +52,9 @@ func _run() -> void:
 		var room: Node3D = _rooms[id]
 		if room.get_meta("interior_looks", false):
 			_check_room(id, room)
+	_check_neighbour_walls()
+	_check_bakery_peel()
+	await _check_indoor_camera()
 	_check_food_changes()
 	_check_kitchens()
 	await _check_queue()
@@ -102,6 +105,7 @@ func _check_room(id: String, room: Node3D) -> void:
 		if not _on_surface(box, tops) or absf(base.x) > half.x or absf(base.z) > half.z:
 			bad.append(str(machine[0]))
 	_expect(bad.is_empty(), "%s: machines (%d) stand on the floor or a counter, never in the air %s" % [id, machines.size(), bad])
+	_check_review(id, room)
 	if id in ["bikes", "clothes"]:
 		_check_shop(id, room, half)
 		return
@@ -127,6 +131,80 @@ func _check_room(id: String, room: Node3D) -> void:
 	var sound := room.get_node_or_null("RoomSound") as AudioStreamPlayer3D
 	_expect(sound != null and sound.stream != null, "%s: its own room sound" % id)
 	_check_walk(id, room, half)
+
+
+## Overnight review: things a person would notice that the checks above missed.
+func _check_review(id: String, room: Node3D) -> void:
+	# Menu boards you can read from the door: big enough text, and no name runs into its price.
+	for board: Node3D in room.find_children("MenuBoard", "Node3D", true, false):
+		var size: int = board.get_meta("font_size", 0)
+		if not board.has_meta("columns"):   # the shawarma picture menu
+			_expect(not GameConfig.MENU_TEXT_FIT or size >= 32, "%s: the picture menu's names are big enough to read (%d)" % [id, size])
+			continue
+		var labels := board.get_children().filter(func(c): return c is Label3D)
+		var clashes: Array[String] = []
+		var half_w: float = board.get_meta("width", 4.0) * 0.5
+		for k in range(0, labels.size() - 1, 2):
+			var name_label: Label3D = labels[k]
+			var price: Label3D = labels[k + 1]
+			var name_right := name_label.position.x + name_label.get_aabb().end.x
+			var price_left := price.position.x + price.get_aabb().position.x
+			var price_right := price.position.x + price.get_aabb().end.x
+			if name_right + 0.05 > price_left or price_right > half_w + 0.01:
+				clashes.append(name_label.text)
+		_expect(clashes.is_empty() and (not GameConfig.MENU_TEXT_FIT or size >= 26),
+				"%s: the menu board text is big enough (%d) and no name runs into its price %s" % [id, size, clashes])
+	# Nothing standing (plants, bins, cactus pots) in a seat, and no two people in one spot.
+	var seats: Array = room.find_children("Seat*", "Marker3D", true, false).map(func(m): return room.to_local(m.global_position))
+	var in_seats: Array[String] = []
+	for prop: Node3D in room.find_children("*", "Node3D", true, false):
+		var kit: String = prop.get_meta("kit_id", "")
+		if not prop.is_in_group("kit_prop") or not ("plant" in kit.to_lower() or "trashcan" in kit or "cactus" in kit):
+			continue
+		for box: AABB in _instance_boxes(prop, room):
+			var foot := Rect2(box.position.x, box.position.z, box.size.x, box.size.z)
+			for seat: Vector3 in seats:
+				var near := Vector2(clampf(seat.x, foot.position.x, foot.end.x), clampf(seat.z, foot.position.y, foot.end.y))
+				if near.distance_to(Vector2(seat.x, seat.z)) < 0.25:
+					in_seats.append("%s at (%.1f, %.1f)" % [kit.get_file(), seat.x, seat.z])
+	_expect(in_seats.is_empty(), "%s: no plant or bin stands in a seat %s" % [id, in_seats])
+	var staff: Array = room.find_children("*", "Node3D", true, false).filter(func(n): return n is Person and n.is_in_group("interior_staff"))
+	var crowded: Array[String] = []
+	for i in staff.size():
+		var a := room.to_local((staff[i] as Node3D).global_position)
+		for k in range(i + 1, staff.size()):
+			if Vector2(a.x, a.z).distance_to(Vector2(room.to_local(staff[k].global_position).x, room.to_local(staff[k].global_position).z)) < 0.45:
+				crowded.append("%s+%s" % [staff[i].name, staff[k].name])
+		for seat: Vector3 in seats:
+			if Vector2(a.x, a.z).distance_to(Vector2(seat.x, seat.z)) < 0.45:
+				crowded.append("%s in a seat" % staff[i].name)
+	# Shoppers' trolley routes keep clear of the staff.
+	var motion := room.get_node_or_null("VenueMotion") as VenueMotion
+	if motion != null:
+		for walker: Dictionary in motion.walkers:
+			var points: Array = walker["points"]
+			for k in points.size():
+				var from: Vector3 = points[k]
+				var to: Vector3 = points[(k + 1) % points.size()]
+				for person: Node3D in staff:
+					var at := room.to_local(person.global_position)
+					var closest := Geometry3D.get_closest_point_to_segment(Vector3(at.x, 0, at.z), Vector3(from.x, 0, from.z), Vector3(to.x, 0, to.z))
+					if closest.distance_to(Vector3(at.x, 0, at.z)) < 0.6:
+						crowded.append("a shopper walks through %s" % person.name)
+	_expect(crowded.is_empty(), "%s: staff don't stand in each other, in a seat or in a shopper's way %s" % [id, crowded])
+	if id == "gelato" and GameConfig.INTERIOR_REVIEW_FIXES:
+		# The back row's flavour tags show over the front row's gelato from the door.
+		var eye := Vector3(0, 1.7, 4.5)
+		var hidden: Array[String] = []
+		for tag: Label3D in room.find_children("*", "Label3D", true, false).filter(func(l): return l.is_in_group("flavour_tag")):
+			var at := room.to_local(tag.global_position)
+			if at.z > 2.6:
+				continue   # a front-row tag
+			var front_tubs := 2.5 + 0.18   # the front row's middle (case at z 2.5), where its gelato is highest
+			var y_there := at.y + (eye.y - at.y) * (front_tubs - at.z) / (eye.z - at.z)
+			if y_there < 1.1:
+				hidden.append(tag.text)
+		_expect(hidden.is_empty(), "gelato: you can read every back-row flavour tag from the door %s" % [hidden])
 
 
 ## Session 59: the two shops (Pedal Point Bikes, Dune Drip) in their new 12 x 10 m rooms.
@@ -295,6 +373,89 @@ func _under(node: Node, name: String) -> bool:
 			return true
 		at = at.get_parent()
 	return false
+
+
+## Overnight review: two shops side by side must not both build a wall in the same space
+## (their faces fight and the wall flickers with pale stripes).
+func _check_neighbour_walls() -> void:
+	var walls := {}   # room id -> [AABB]
+	for id in _rooms:
+		var room: Node3D = _rooms[id]
+		walls[id] = []
+		for shape: CollisionShape3D in room.find_children("*", "CollisionShape3D", false, false):
+			var box := shape.shape as BoxShape3D
+			if box == null or box.size.y < 4.4 or box.size.z < 9.0 or box.size.x > 0.35:
+				continue
+			var aabb := shape.global_transform * AABB(-box.size * 0.5, box.size)
+			walls[id].append(aabb.abs())
+	var clashes: Array[String] = []
+	var ids := walls.keys()
+	for i in ids.size():
+		for k in range(i + 1, ids.size()):
+			for a: AABB in walls[ids[i]]:
+				for b: AABB in walls[ids[k]]:
+					var both := a.intersection(b)
+					if both.has_volume() and both.get_volume() > 0.001:
+						clashes.append("%s+%s" % [ids[i], ids[k]])
+	_expect(not GameConfig.INTERIOR_REVIEW_FIXES or clashes.is_empty(), "no two shops side by side build their walls in the same space %s" % [clashes])
+
+
+## Overnight review (PRD "Interiors"): inside a restaurant or shop the follow camera comes
+## closer and a little higher, and goes back to normal outside.
+func _check_indoor_camera() -> void:
+	var walker := Node3D.new()
+	walker.name = "CameraTarget"
+	root.add_child(walker)
+	var room: Node3D = _rooms["pizza"]
+	walker.global_position = room.to_global(Vector3(-3.0, 0, -1.45))
+	var cam := Camera3D.new()
+	cam.set_script(load("res://scripts/follow_camera.gd"))
+	cam.set("target", walker)
+	root.add_child(cam)
+	var inside: bool = cam.call("target_indoors")
+	for i in 30:
+		cam.call("_process", 0.1)
+	var arm: Vector3 = cam.call("_wanted_position") - walker.global_position
+	var close_in := Vector2(arm.x, arm.z).length()
+	walker.global_position = room.to_global(Vector3(0, 0, 9.0))   # out on the Plaza
+	var outside: bool = not cam.call("target_indoors")
+	for i in 30:
+		cam.call("_process", 0.1)
+	arm = cam.call("_wanted_position") - walker.global_position
+	var shop_inside := false
+	walker.global_position = _rooms["clothes"].to_global(Vector3(0, 0, 0))
+	shop_inside = cam.call("target_indoors")
+	_expect(not GameConfig.INDOOR_CAMERA_ON or (inside and outside and shop_inside and absf(close_in - GameConfig.INDOOR_CAMERA_DISTANCE) < 0.05
+			and absf(Vector2(arm.x, arm.z).length() - GameConfig.CAMERA_DISTANCE) < 0.05),
+			"the camera comes closer indoors (%.1f m) and goes back outside (%.1f m)" % [close_in, Vector2(arm.x, arm.z).length()])
+	cam.free()
+	walker.free()
+	await process_frame
+
+
+## Overnight review: the baker's peel goes bread-first into the oven's mouth, and its handle
+## stays behind the counter (it used to point the wrong way, through the baker).
+func _check_bakery_peel() -> void:
+	if not GameConfig.INTERIOR_REVIEW_FIXES:
+		return
+	var motion: VenueMotion = _rooms["bakery"].get_node("VenueMotion")
+	var ok := motion.peels.size() == 1
+	for peel: Dictionary in motion.peels:
+		var node: Node3D = peel["node"]
+		var handle: MeshInstance3D = null
+		for child in node.get_children():
+			if child is MeshInstance3D and (child as MeshInstance3D).mesh is CylinderMesh and ((child as MeshInstance3D).mesh as CylinderMesh).height > 0.5:
+				handle = child
+		if handle == null:
+			ok = false
+			continue
+		var length := (handle.mesh as CylinderMesh).height
+		var far_end: Vector3 = handle.position + handle.basis.y.normalized() * length * 0.5   # the end you hold
+		for spot: Vector3 in [peel["from"], peel["to"]]:
+			ok = ok and spot.z + far_end.z <= InteriorVenues.COUNTER_FRONT - GameConfig.INTERIOR_COUNTER_DEPTH + 0.02   # behind the counter
+			ok = ok and spot.z < -3.8                                                                           # the bread end at the oven
+		ok = ok and (peel["to"] as Vector3).z < -3.875 and absf((peel["to"] as Vector3).y - 1.23) < 0.15     # into the mouth (1.08 to 1.38 m)
+	_expect(ok, "bakery: the peel goes bread-first into the oven and its handle stays behind the counter")
 
 
 ## Appendix F: what each shop sells, the regulars, the fragile cake.

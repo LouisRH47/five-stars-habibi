@@ -19,6 +19,34 @@ next to the clusters, a red walking track and buggy road on the spine, buggies e
 except the ring road, and half-built buildings on the building sites. Render:
 docs/plaza_carpark_spine.svg. Step-by-step detail for every session: docs/looks_pass_detailed_plan.md.
 
+## Overnight 4–5 November 2026: Sessions 58–59, two fresh-eyes reviews, and the Polish pass started
+
+- **58–59 All 12 insides** (s58.md, s59.md): every restaurant, Grand Groceries, Pedal Point Bikes
+  and Dune Drip rebuilt as 12×10 m rooms, 4.5 m high, full of seats and people eating: a dome
+  pizza oven, the gelato case at the front with flavour tags, Spill the Brew as a real coffee shop
+  (coffee + pastries + cakes, espresso machine on the counter), a smaller shawarma with a picture
+  menu, a bread oven (Bread & Zaatar sells bread and manakish only), supermarket aisles and
+  checkouts, Thai woks and a tuk-tuk, a sushi belt, a taco counter, a burger grill with neon, a
+  bike workshop with a display stand, a streetwear shop. Food changes: Auntie Mariam orders an
+  iced latte, Ms Dana's cake comes from Spill the Brew. Smoke test buys one thing in each shop.
+- **Buggy fix** (s64.md): buggies meeting head on in a dead-end car park lane: the one going in
+  turns round, the other waits; the "stuck" test now looks at the whole minute.
+- **Outdoor review** (review_outdoor.md): 10 fixes found with fresh eyes (floating flowers, lanes
+  drawn over roads and flicker where links met the buggy road, kerb gaps, farm stall paving, the
+  Institute lawn, site sign boards, paved pool decks, the Stables sign, the bot stuck at doors).
+- **Interiors review** (review_interiors.md): 16 fixes (menu boards readable from the door,
+  names no longer run into prices, gelato tags visible, no flicker on shared shop walls, signs
+  on cords, the bakery peel the right way round, Thai/sushi/stable/institute/gym fixes, and the
+  camera comes closer and higher inside shops).
+- **Polish pass planned** (docs/polish_plan.md; PRD "Polish pass"; BUILD_PLAN Sessions 66–72)
+  and **Session 66 groundwork built** (s66.md). Sessions 67–71 are being built on their own
+  branches (looks-s67 … looks-s71) and are NOT in looks-build yet: they get merged only when
+  they're finished and tested, in the order 67, 68, 69, 70, 71 (70 needs 69's top-left chips).
+
+All tests (smoke + 30 focused suites) passed on looks-build after the outdoor review merge; the
+interiors review passed smoke, interior, shop, plaza, coplanar, reception_panel,
+lifecycle_regression and venues on its branch, which was then merged unchanged.
+
 ## Sessions 56, 57 and 60 to 64 — built in parallel (4 November 2026)
 
 Louis asked for the rest to be built by several agents at once. Each session was built on its

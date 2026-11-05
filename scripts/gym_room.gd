@@ -157,6 +157,11 @@ static func _reception(body: StaticBody3D, counter: Vector3) -> void:
 					cooler + Vector3(-0.22 + i * 0.15, 0.55 + row * 0.5, 0.25))
 	var label := SignText.make_face("عصائر", "Smoothies", 28, Color.WHITE, TEAL, 3)
 	label.position = cooler + Vector3(0, 2.15, 0.36)
+	if GameConfig.INTERIOR_REVIEW_FIXES:
+		# Review fix: the words floated in the air over the cooler; now they're on a teal
+		# board standing on its top.
+		LowPoly.box(body, Vector3(0.8, 0.42, 0.04), TEAL, cooler + Vector3(0, 2.21, 0.32))
+		label.position = cooler + Vector3(0, 2.21, 0.35)
 	body.add_child(label, true)
 
 

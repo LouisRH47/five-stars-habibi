@@ -135,6 +135,8 @@ func _deck_round(holes: Array) -> void:
 				var slab := LowPoly.box(self, Vector3(xs[i] - run_start, y, zs[j + 1] - zs[j]), DECK,
 						Vector3((run_start + xs[i]) * 0.5, y * 0.5, (zs[j] + zs[j + 1]) * 0.5))
 				slab.name = "Deck"
+				if GameConfig.POOL_DECK_PAVED:   # Review (outdoor): pavers, not a plain grey slab
+					slab.material_override = TerrainMaterials.make("paving")
 				run_start = NAN
 	for hole: Rect2 in holes:
 		_coping(hole)

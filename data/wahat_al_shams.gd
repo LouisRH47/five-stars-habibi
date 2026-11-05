@@ -171,6 +171,8 @@ const PAVED_AREAS := [
 	Rect2(-230, -104, 4, 14),
 	Rect2(-202, -104, 4, 14),
 	Rect2(-174, -104, 4, 14),
+	Rect2(-2, 10.5, 13, 11),
+	Rect2(1, 3, 2.4, 7.6),
 ]
 
 const BOLLARDS := [
@@ -434,7 +436,7 @@ const CARPARK_GARDENS := [
 
 const PLOTS := [
 	{"name": "Fair Grade International School", "area": Rect2(-425, 35, 120, 160), "colour": Color(0.95, 0.85, 0.8, 1)},
-	{"name": "C Institute", "area": Rect2(-278, -58, 126, 48), "colour": Color(0.65, 0.82, 0.93, 1)},
+	{"name": "C Institute", "area": Rect2(-278, -58, 126, 48), "colour": Color(0.47, 0.66, 0.34, 1)},
 	{"name": "Mosque", "area": Rect2(-422, -203, 70, 105), "colour": Color(0.93, 0.92, 0.88, 1)},
 	{"name": "Stables", "area": Rect2(-282, 165, 115, 35), "colour": Color(0.86, 0.75, 0.55, 1)},
 	{"name": "Jumping Arena", "area": Rect2(-282, 65, 115, 88), "colour": Color(0.82, 0.7, 0.5, 1)},

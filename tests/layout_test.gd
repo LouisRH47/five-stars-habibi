@@ -6,6 +6,7 @@ extends SceneTree
 ## Run it on its own:  Godot --path . --headless -s tests/layout_test.gd
 ## The smoke test runs the quick part (check_map) too.
 const WahatBuilder := preload("res://scripts/wahat_builder.gd")
+const DistrictDetailScript := preload("res://scripts/district_detail.gd")
 var _failed := false
 
 
@@ -156,7 +157,59 @@ static func check_map(map: Dictionary, world: Node3D) -> Array:
 			if spot.distance_to(near) < float(road.get("width", 6.0)) * 0.5:
 				palm_hits.append("%s in %s" % [spot, road["name"]])
 	results.append([palm_hits.is_empty(), "no palm stands in a road or path %s" % [palm_hits]])
+	# Review (outdoor): a path that ends on a road that wins (the buggy road, or a wider road)
+	# stops at its edge: the C1-C5 links used to be drawn over the buggy road (they flickered),
+	# and the light car park buggy lanes and alleys lay on the dark roads to their middle line.
+	var onto: Array[String] = []
+	for road: Dictionary in roads:
+		if (road["to"] - road["from"]).length() > 0.01:
+			var ends: Array[Vector2] = WahatBuilder.drawn_ends(map, road) if GameConfig.ROAD_ENDS_GIVE_WAY else _old_ends(map, road)
+			var inward: Vector2 = (ends[1] - ends[0]).normalized()
+			for e in 2:
+				var tip: Vector2 = ends[e]
+				var step: Vector2 = inward if e == 0 else -inward
+				for other: Dictionary in roads:
+					if not WahatBuilder.gives_way_to(road, other) or not WahatBuilder.on_road(map, other, tip) \
+							or (WahatBuilder.is_black_road(other) and _shares_end(road, other)):
+						continue
+					var depth := 0.0   # how far the strip runs on before it leaves the other road
+					while depth < 20.0 and WahatBuilder.on_road(map, other, tip + step * depth):
+						depth += 0.05
+					if depth > 0.1 and depth < (ends[1] - ends[0]).length() * 0.5:
+						onto.append("%s onto %s by %.1f m" % [road["name"], other["name"], depth])
+	results.append([onto.is_empty(), "no path end is drawn onto a road that wins (buggy road, wider roads) %s" % [onto]])
+	# Review (outdoor): the spine's flower balls sit on the ground, never on a road or path.
+	var bad_flowers: Array[String] = []
+	var flowers := world.find_child("SpineFlowers", true, false) as MultiMeshInstance3D
+	if GameConfig.SPINE_FLOWERS_GROUNDED and flowers != null:
+		var bloom_spots: Array = flowers.get_meta("spots", [])
+		for bloom: Vector3 in bloom_spots:
+			var at := flowers.global_transform * bloom
+			var ground := 0.0
+			for hill: Dictionary in map["HILLS"]:
+				ground += DistrictDetailScript.hill_height(hill, at.x, at.z)
+			var bottom := at.y - 0.06
+			if bottom > ground + 0.05 or not DistrictDetailScript.flower_clear(map, at.x, at.z):
+				bad_flowers.append("(%.0f, %.0f) %.2f m up" % [at.x, at.z, bottom - ground])
+		results.append([bad_flowers.is_empty() and bloom_spots.size() > 50,
+				"%d spine flowers sit on the ground, none on a path %s" % [bloom_spots.size(), bad_flowers.slice(0, 5)]])
+	# Review (outdoor): the farm stall stands on paving, not on the lawn.
+	var paved := 0.0
+	for area: Rect2 in map["PAVED_AREAS"]:
+		paved += area.intersection(stall_rect).get_area()
+	results.append([paved >= stall_rect.get_area() - 0.01, "the farm stall stands on paving (%.0f of %.0f m2)" % [paved, stall_rect.get_area()]])
 	return results
+
+
+## How roads were drawn before the review (ends stretched half a width, except onto black roads).
+static func _old_ends(map: Dictionary, road: Dictionary) -> Array[Vector2]:
+	var w: float = road.get("width", map["ROAD_WIDTH"])
+	var a: Vector2 = road["from"]
+	var b: Vector2 = road["to"]
+	var dir := (b - a).normalized()
+	var stops := not WahatBuilder.is_black_road(road)
+	return [a - dir * (0.0 if stops and WahatBuilder.ends_on_black_road(map, a) else w * 0.5),
+			b + dir * (0.0 if stops and WahatBuilder.ends_on_black_road(map, b) else w * 0.5)]
 
 
 static func _footprint(position: Vector3, size: Vector3, facing: float) -> Rect2:

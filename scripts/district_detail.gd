@@ -106,15 +106,81 @@ func _planting() -> void:
 	material.vertex_color_use_as_albedo = true
 	bloom.material = material
 	flowers.mesh = bloom
-	flowers.instance_count = int(spots.size() / 6)
-	for i in flowers.instance_count:
-		flowers.set_instance_transform(i, Transform3D(Basis(), spots[i * 6] + Vector3.UP * 0.15))
-		flowers.set_instance_color(i, [Color(1,0.8,0.2), Color(0.94,0.55,0.7), Color.WHITE][i%3])
+	var blooms_at: Array[Vector3] = []
+	if GameConfig.SPINE_FLOWERS_GROUNDED:
+		# Review (outdoor): the flower balls floated 30 cm up and some lay on roads and paths.
+		# Now every one sits on the ground (or the hill) and keeps off paths, paving and water.
+		for i in int(spots.size() / 6):
+			var spot := spots[i * 6]
+			if flower_clear(_map, spot.x, spot.z):
+				var ground := 0.0
+				for hill: Dictionary in _map["HILLS"]:
+					ground += hill_height(hill, spot.x, spot.z)
+				blooms_at.append(Vector3(spot.x, ground + 0.04, spot.z))
+		flowers.instance_count = blooms_at.size()
+		for i in blooms_at.size():
+			flowers.set_instance_transform(i, Transform3D(Basis(), blooms_at[i]))
+			flowers.set_instance_color(i, [Color(1,0.8,0.2), Color(0.94,0.55,0.7), Color.WHITE][i%3])
+	else:
+		flowers.instance_count = int(spots.size() / 6)
+		for i in flowers.instance_count:
+			flowers.set_instance_transform(i, Transform3D(Basis(), spots[i * 6] + Vector3.UP * 0.15))
+			flowers.set_instance_color(i, [Color(1,0.8,0.2), Color(0.94,0.55,0.7), Color.WHITE][i%3])
 	var blooms := MultiMeshInstance3D.new()
 	blooms.name = "SpineFlowers"
 	blooms.multimesh = flowers
+	if GameConfig.SPINE_FLOWERS_GROUNDED:
+		blooms.set_meta("spots", blooms_at)   # for the layout check (headless can't read a MultiMesh back)
 	blooms.visibility_range_end = 90
 	add_child(blooms)
+
+
+## Review (outdoor): may a spine flower go at (x, z)? Not on a road or path (with 0.4 m to
+## spare), paving, a car park, a building site, the stream, the bee yard, the donkey pen, the
+## gym, the farm stall, a dome's flower bed or a door/gate apron.
+static func flower_clear(map: Dictionary, x: float, z: float) -> bool:
+	var p := Vector2(x, z)
+	for road: Dictionary in map["ROADS"]:
+		var a: Vector2 = road["from"]
+		var b: Vector2 = road["to"]
+		var w := float(road.get("width", 6.0))
+		var along := (b - a).normalized() * w * 0.5
+		if p.distance_to(Geometry2D.get_closest_point_to_segment(p, a - along, b + along)) < w * 0.5 + 0.4:
+			return false
+	var areas: Array = []
+	for area: Rect2 in map["PAVED_AREAS"]:
+		areas.append(area.grow(0.4))
+	for area: Rect2 in map["PARKING_AREAS"] + map["BUILDING_SITES"]:
+		areas.append(area.grow(1.0))
+	areas.append((map["BEEHIVES"] as Rect2).grow(2.5))
+	areas.append((map["DONKEY_PEN"]["area"] as Rect2).grow(1.0))
+	var gym: Dictionary = map["GYM"]
+	var turned := absf(sin(deg_to_rad(float(gym["facing"])))) > 0.5
+	var g := Vector2(gym["size"].z, gym["size"].x) if turned else Vector2(gym["size"].x, gym["size"].z)
+	areas.append(Rect2(Vector2(gym["position"].x, gym["position"].z) - g * 0.5, g).grow(1.0))
+	for shop: Dictionary in map["RESTAURANTS"]:
+		if shop.get("style", "") == "stall":
+			var s: Vector3 = shop["size"]
+			areas.append(Rect2(shop["position"].x - s.x * 0.5, shop["position"].z - s.z * 0.5, s.x, s.z).grow(1.5))
+	for dome: Vector3 in map["SPINE_DOMES"]:   # the door apron down to the track
+		var door := dome.z + float(map["DOME_RADIUS"])
+		areas.append(Rect2(dome.x - 1.8, door - 0.5, 3.6, -9.0 - door + 1.0).abs())
+	for key in ["LAP_POOL_DETAIL", "COMMUNITY_POOL_DETAIL"]:
+		if not map.get(key, {}).has("gate"):
+			continue
+		var gate: Vector2 = map[key]["gate"]
+		areas.append(Rect2(gate.x - 1.8, gate.y - 0.5, 3.6, -9.0 - gate.y + 1.0).abs())
+	for area: Rect2 in areas:
+		if area.has_point(p):
+			return false
+	for dome: Vector3 in map["SPINE_DOMES"]:
+		if p.distance_to(Vector2(dome.x, dome.z)) < float(map["DOME_RADIUS"]) + 2.6:
+			return false
+	var stream: Dictionary = map["STREAM"]
+	if x > float(stream["from_x"]) - 1.0 and x < float(stream["to_x"]) + 1.0 \
+			and absf(z - StreamBanks.centre_z(stream, x)) < float(stream["width"]) * 0.5 + 1.0:
+		return false
+	return true
 
 
 ## Session 55: real grass blades on the lawns (scripts/grass_field.gd). Made before the
@@ -362,6 +428,8 @@ func _site(area: Rect2, index := -1) -> void:
 			Props.fence(holder, pair[0], pair[1], 2, TEAL)
 		BuildingSite.build(holder, area, false, index)
 		_sign(holder, "قريباً", "Coming soon", c2 + Vector3(0, 2.6, -area.size.y * 0.5 - 0.1), 180, 52)
+		if GameConfig.SITE_SIGN_BOARD:
+			_sign_board(holder, "قريباً", "Coming soon", c2 + Vector3(0, 2.6, -area.size.y * 0.5 - 0.1), 52)
 		return
 	var c := Vector3(area.get_center().x, 0, area.get_center().y)
 	LowPoly.box(holder, Vector3(area.size.x, 0.03, area.size.y), Color(0.8, 0.75, 0.66), c + Vector3.UP * 0.04)
@@ -447,6 +515,24 @@ func _clear_of_aisles(p: Vector2, direction: Vector2) -> Vector2:
 func _solid(body: StaticBody3D, size: Vector3, tint: Color, at: Vector3) -> void:
 	LowPoly.box(body, size, tint, at)
 	LowPoly.solid_box(body, size, at)
+
+
+## Review (outdoor): the "Coming soon" words at the building sites hung in the air with nothing
+## behind them. This puts a dark board behind the words (on the side away from the reader, who
+## stands north of the site) on two posts down to the ground.
+func _sign_board(parent: Node3D, arabic: String, english: String, at: Vector3, font_size: int) -> void:
+	var line := font_size * SignText.PIXEL_SIZE
+	var wide := maxf(SignText.text_width(arabic, roundi(font_size * SignText.ARABIC_SCALE)),
+			SignText.text_width(english, font_size)) + 0.6
+	var tall := line * 2.6
+	var board := StaticBody3D.new()
+	board.name = "SiteSignBoard"
+	board.position = Vector3(at.x, 0, at.z + 0.035)
+	parent.add_child(board)
+	LowPoly.box(board, Vector3(wide, tall, 0.04), Color(0.1, 0.2, 0.2), Vector3(0, at.y, 0))
+	var bottom := at.y - tall * 0.5
+	for side in [-1.0, 1.0]:
+		_solid(board, Vector3(0.1, bottom, 0.1), Color(0.35, 0.36, 0.38), Vector3(side * (wide * 0.5 - 0.25), bottom * 0.5, 0))
 
 
 func _sign(parent: Node3D, arabic: String, english: String, at: Vector3, facing: float, font_size: int) -> void:

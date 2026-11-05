@@ -94,7 +94,8 @@ func _paths(map: Dictionary, world: Node3D, spine: Node3D) -> void:
 	_expect(strip_ok, "%d planted strip pieces, 1.4 m wide, raised just under the kerbs" % strips.size())
 	# Every path that crosses has a gap in the kerbs (a dropped kerb).
 	var blocked: Array = []
-	for cut: Array in SpinePaths.crossings(map, -20.0, 20.0):
+	var cuts: Array = SpinePaths.strip_gaps(map) if GameConfig.SPINE_GAPS_ONLY_REAL else SpinePaths.crossings(map, -20.0, 20.0)
+	for cut: Array in cuts:
 		var x := (float(cut[0]) + float(cut[1])) * 0.5
 		for kerb: MeshInstance3D in kerbs:
 			var half := (kerb.mesh as BoxMesh).size.x * 0.5
@@ -102,6 +103,17 @@ func _paths(map: Dictionary, world: Node3D, spine: Node3D) -> void:
 				blocked.append(x)
 	_expect(blocked.is_empty() and SpinePaths.crossings(map, -20.0, 20.0).size() >= 3,
 			"kerbs stop where paths cross, so the bike can ride across %s" % [blocked])
+	if GameConfig.SPINE_GAPS_ONLY_REAL:
+		# Review (outdoor): ...and only there. The C4 and C5 links end at the buggy road from the
+		# south, so the kerb runs on past them (there used to be a grassy gap leading nowhere).
+		var open: Array = []
+		for x: float in [75.5, 303.0]:
+			var covered := false
+			for kerb: MeshInstance3D in kerbs:
+				covered = covered or absf(kerb.global_position.x - x) < (kerb.mesh as BoxMesh).size.x * 0.5
+			if not covered:
+				open.append(x)
+		_expect(open.is_empty(), "no kerb gap where no path crosses (C4 and C5 links) %s" % [open])
 	var dashes := 0
 	for line: MeshInstance3D in spine.find_children("LaneLine*", "MeshInstance3D", true, false):
 		dashes += line.mesh.get_faces().size() / 36

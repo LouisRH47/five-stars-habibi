@@ -49,6 +49,10 @@ var _walked_for := ""  # the stage the last walk to a door was for (done once it
 var _walk_route: Array[Vector2] = []
 var _walk_last := Vector2.ZERO
 var _walk_stuck := 0.0
+var _frozen_at := Vector2.ZERO    # Review (interiors): where the walker last moved from...
+var _frozen_for := 0.0            # ...and for how long it has stood still since
+var _walk_rescues := 0            # times a frozen walk was ended with R
+var _doorway_trip := ""   # Review (outdoor): the order whose shop doorway we have reached
 var _this_walk := 0.0   # seconds this walk has taken (to say when one takes too long)
 var _crashes := {"small": 0, "big": 0}
 var _frames := 0
@@ -173,9 +177,16 @@ func _walk(delta: float) -> void:
 			_on_foot.toggle()
 			return
 		goal = _flat(_bike.global_position)
+	# Review (outdoor): a Plaza shop's pickup spot (Session 58) is inside, off to one side of
+	# the sliding door. The map scan saw the door shut, so a straight walk hit the glass beside
+	# the door, out of the door's 3.2 m reach, and the bot pushed there for the rest of the shift
+	# (in and out). Like a player, it now goes through the doorway first.
+	goal = _via_doorway(here, goal)
 	_this_walk += delta
 	if int(_this_walk / 20.0) != int((_this_walk - delta) / 20.0):
 		_say_walk_trouble(here, goal, going_to_door)
+	if _frozen_check(delta, here, goal, going_to_door):
+		return
 	# Walk round things too: a route from the grid, found again if we stop moving.
 	_walk_stuck = _walk_stuck + delta if here.distance_to(_walk_last) < 0.01 else 0.0
 	_walk_last = here
@@ -209,6 +220,40 @@ func _walk(delta: float) -> void:
 
 ## Receptions are deliberately a longer walk from the parked bike. A neighbour's
 ## doorstep still uses the bike when it moves away; an indoor counter stays on foot.
+## Review (outdoor): if the walker and where it's going are on different sides of the glass
+## of the order's shop (a walk-in Plaza shop), first go to the doorway on this side: just
+## outside the door, or 1 m inside it. Once there, carry on to the real goal.
+func _via_doorway(here: Vector2, goal: Vector2) -> Vector2:
+	var order: Order = _gs.current_order
+	if order == null:
+		return goal
+	var places: Node = _dm.place_builder
+	var place := {}
+	for entry: Dictionary in places.restaurants:
+		if entry.get("id", "") == order.restaurant_id:
+			place = entry
+	if place.is_empty() or not place.get("interior", false):
+		return goal
+	var centre := _flat(place["position"])
+	var entrance := _flat(places.restaurant_entrance(order.restaurant_id))
+	var out := (entrance - centre).normalized()
+	var glass := entrance.distance_to(centre) - 0.7
+	var half_width: float = places.restaurant_size_of(place).x * 0.5
+	var inside := func(p: Vector2) -> bool:
+		return (p - centre).dot(out) <= glass and absf((p - centre).dot(out.orthogonal())) < half_width
+	var here_in: bool = inside.call(here)
+	if here_in == inside.call(goal):
+		return goal
+	var trip := "%d %s" % [order.get_instance_id(), here_in]
+	if _doorway_trip == trip:
+		return goal
+	var stop := centre + out * (glass - 1.0) if here_in else entrance
+	if here.distance_to(stop) < 0.8:
+		_doorway_trip = trip   # at the doorway: on through it now
+		return goal
+	return stop
+
+
 func _inside_delivery() -> bool:
 	if _gs.current_order == null:
 		return false
@@ -540,6 +585,8 @@ func _on_shift_ended(summary: Dictionary) -> void:
 			summary["pay"], summary["tips"], summary.get("goal_bonus", 0), summary["insurance"], summary["bills"], summary["earned"], summary["xp"], _gs.level()])
 	print("Crashes: %d small, %d big. Times backed up: %d. Times stuck and reset: %d. Time spent walking: %.0f s" % [
 			_crashes["small"], _crashes["big"], _backed_up, _resets, _walk_time])
+	if _walk_rescues > 0:
+		print("Walks frozen and ended with R: %d (see WALK FROZEN lines)" % _walk_rescues)
 	_completed_shifts += 1
 	_balance.append({"shift":_completed_shifts,"day":_gs.day_kind,"deliveries":summary["deliveries"],
 		"earned":summary["earned"],"stars":summary["stars"],"wallet":_gs.money,"xp":_gs.xp,"level":_gs.level(),
@@ -592,6 +639,38 @@ func _start_next_bot_shift() -> void:
 
 
 ## A walk is taking long (every 20 s of it): say where we are, where to, and what's close by.
+## Review (interiors): twice in careless runs the rider stood still inside Burgerology for the
+## rest of the shift (never reproduced since). If the walker hasn't moved 5 cm in 8 s, say
+## everything about it once; after 30 s do what a player would (R: back on the bike at the
+## start) so the shift goes on, and count it.
+func _frozen_check(delta: float, here: Vector2, goal: Vector2, to_door: bool) -> bool:
+	if here.distance_to(_frozen_at) > 0.05:
+		_frozen_at = here
+		_frozen_for = 0.0
+		return false
+	_frozen_for += delta
+	var walker := _on_foot.walker as CharacterBody3D
+	if _frozen_for >= 8.0 and _frozen_for - delta < 8.0:
+		var blocked := []
+		for way: Vector3 in [Vector3.FORWARD, Vector3.BACK, Vector3.LEFT, Vector3.RIGHT]:
+			blocked.append(walker.test_move(walker.global_transform, way * 0.3))
+		print("  WALK FROZEN 8 s at %s (y %.2f, on floor %s, velocity %s): paused %s, walker active %s, process %s, stage %s, walked_for %s, to door %s, goal %s, route %s, blocked fwd/back/left/right %s, keys fwd %s left %s right %s, near target %s, queue wait %.1f" % [
+				here, walker.global_position.y, walker.is_on_floor(), walker.velocity, paused, walker.get("active"),
+				walker.can_process(), _gs.stage_name(), _walked_for, to_door, goal, _walk_route.slice(0, 3), blocked,
+				Input.is_action_pressed("move_forward"), Input.is_action_pressed("steer_left"),
+				Input.is_action_pressed("steer_right"), _dm.is_near_target(), CounterQueue.wait_left])
+	if _frozen_for < 30.0:
+		return false
+	_walk_rescues += 1
+	print("  WALK FROZEN 30 s: pressing R (back on the bike at the start), like a player would")
+	_let_go()
+	_frozen_for = 0.0
+	_on_foot.get_on(true)
+	_bike.recover_nearby()
+	_route_for = ""
+	return true
+
+
 func _say_walk_trouble(here: Vector2, goal: Vector2, to_door: bool) -> void:
 	var near := []
 	for node in get_nodes_in_group("critter"):
@@ -600,4 +679,9 @@ func _say_walk_trouble(here: Vector2, goal: Vector2, to_door: bool) -> void:
 			near.append("%s %.1f m" % [n.name, _flat(n.global_position).distance_to(here)])
 	print("  walk taking long: %.0f s at %s, going to %s (%s, %.1f m away), near: %s" % [_this_walk, here,
 			"the door" if to_door else "the bike", goal, here.distance_to(goal), ", ".join(near)])
+	if int(_this_walk) % 100 < 20:   # Review (outdoor): now and then, say why it might not move
+		var walker: Node3D = _on_foot.walker
+		print("    paused %s, walker active %s, stage %s, order %s, facing %.0f deg, route %s" % [paused,
+				walker.get("active"), _gs.stage_name(), _gs.current_order != null,
+				rad_to_deg(walker.rotation.y), _walk_route.slice(0, 3)])
 
