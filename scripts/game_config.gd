@@ -275,8 +275,6 @@ const HOUSE_FRONT_STRIP := 0.8        # pot plants may stand this far in front o
 const SIGNATURE_EXTRA_DEPTH := 3.0    # signature villas are this much deeper (at the back)...
 const SIGNATURE_EXTRA_WIDTH := 2.0    # ...and this much wider on the courtyard side
 const HOUSE_NUMBER_FONT := 130        # size of the house number by the door
-const CLUSTER_SIGN_INSET := 5.0       # cluster signs stand this far in from the lane's end...
-const CLUSTER_SIGN_SIDE := 3.4        # ...and this far to the side of the lane's middle line
 # How likely each extra is (0 = never, 1 = always). Picked from the home's number, so the
 # same home always looks the same.
 const HOUSE_BUGGY_CHANCE := 0.45      # a golf buggy beside the house

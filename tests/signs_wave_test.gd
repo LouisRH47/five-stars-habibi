@@ -14,7 +14,12 @@ func _init() -> void:
 	root.add_child(_main)
 	for i in 30:
 		await process_frame
-	load("res://tests/smoke_signs.gd").new().run(self)
+	var checks: Script = load("res://tests/smoke_signs.gd")
+	if checks == null or not checks.can_instantiate():
+		print("RESULT: FAIL (tests/smoke_signs.gd has an error)")
+		quit(1)
+		return
+	checks.new().run(self)
 	print("RESULT: ", "FAIL" if _failed else "PASS")
 	quit(1 if _failed else 0)
 

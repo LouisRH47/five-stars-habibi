@@ -17,6 +17,7 @@ func run(t: SceneTree) -> void:
 		return
 	_data = (builder.data as Script).get_script_constant_map()
 	_session64()
+	_session65()
 
 
 func _check(label: String, ok: bool, detail := "") -> void:
@@ -68,3 +69,148 @@ func _session64() -> void:
 	_check("Session 64: the stables car park has parked cars, bay lines and solar roofs", cars >= 4 and roofs >= 5, "%d cars, %d roofs" % [cars, roofs])
 	var pad := _main.get_node_or_null("DistrictDetail/SchoolCarParkPad")
 	_check("Session 64: the school car park has an asphalt pad, cars and solar roofs", pad != null and school_roofs >= 8, "%d roofs" % school_roofs)
+
+
+## Session 65: the cluster entrance signs, police and STOP signs, bins, pool gate, end houses.
+func _session65() -> void:
+	var signs := _main.get_node_or_null("WahatBuilder/ClusterSigns")
+	var entrances: Array = _data["CLUSTER_ENTRANCES"]
+	var complete := 0
+	var ranges_ok := true
+	var on_road: Array = []
+	for entrance: Dictionary in entrances:
+		var id: String = entrance["cluster"]
+		var green: Node3D = signs.get_node_or_null("ClusterSign_" + id) if signs else null
+		var police: Node3D = signs.get_node_or_null("PoliceSign_" + id) if signs else null
+		var stop: Node3D = signs.get_node_or_null("StopSign_" + id) if signs else null
+		if green == null or police == null or stop == null:
+			continue
+		var texts := _texts(green)
+		if texts.has("Cluster " + id.substr(1)) and texts.has(_data["CLUSTER_NAMES"][id]) and texts.has("EXIT") \
+				and texts.has("خروج") and texts.filter(func(w): return w.begins_with("Villa ")).size() == 2 \
+				and _texts(police).has("5-Star Habibi Police") and _texts(police).has("Attention") \
+				and _texts(police).has("Habibi Smart Home Security") and _texts(police).has("شرطة حبيبي الخمس نجوم") \
+				and _texts(stop).has("STOP") and _texts(stop).has("قف"):
+			complete += 1
+		# Each arrow points at its villas, for a rider coming in (heading away from the spine).
+		var heading := Vector2(0, -entrance["out"])
+		var left := Vector2(heading.y, -heading.x)
+		for side in [["left", 1.0], ["right", -1.0]]:
+			var words: String = entrance[side[0]][0]
+			var first := int(words.get_slice(" ", 1).get_slice("–", 0))
+			var last := int(words.get_slice("–", 1))
+			for villa: Dictionary in _data["VILLAS"]:
+				if villa["cluster"] == id and villa["house"] >= first and villa["house"] <= last:
+					if (villa["position"].x - entrance["lane_x"]) * left.x * side[1] <= 0.0:
+						ranges_ok = false
+		for board: Node3D in [green, police, stop]:
+			for dx in [-0.9, 0.0, 0.9]:  # the pole and both ends of the board
+				var spot: Vector3 = board.global_position + board.global_basis.x * dx
+				if _on_road(Vector2(spot.x, spot.z), 0.2):
+					on_road.append(board.name)
+	_check("Session 65: every cluster has its green sign, police sign and STOP sign, in English and Arabic",
+			complete == entrances.size(), "%d of %d" % [complete, entrances.size()])
+	_check("Session 65: the house ranges on each sign match the villas on that side", ranges_ok)
+	var track_police := 0
+	if signs:
+		for board in signs.get_children():
+			if String(board.name).begins_with("PoliceSign_Track"):
+				track_police += 1
+				var spot: Vector3 = board.global_position
+				if _on_road(Vector2(spot.x, spot.z), 0.2) or absf(spot.z) < 7.8:
+					on_road.append(board.name)
+	_check("Session 65: police signs along the spine's red tracks", track_police >= 3, "%d" % track_police)
+	_check("Session 65: no sign stands in the road or on the track", on_road.is_empty(), "%s" % [on_road])
+	_check("Session 65: the Arabic on the signs is joined up and runs right to left",
+			_arabic_ok(_data["CLUSTER_NAMES"]["C1"]) and _arabic_ok("شرطة حبيبي الخمس نجوم") and _arabic_ok("خروج"))
+	# Bins at the back of each cluster beside the back cross road.
+	var bins_ok := 0
+	for entrance: Dictionary in entrances:
+		var bins := _main.get_node_or_null("DistrictDetail/StreetFurniture/ClusterBins_" + entrance["cluster"])
+		if bins == null:
+			continue
+		var cluster: Dictionary = _data["CLUSTERS"].filter(func(c): return c["id"] == entrance["cluster"])[0]
+		var back_z: float = cluster["centre"].y - entrance["out"] * (63.0 if entrance["out"] > 0 else 69.0)
+		var gap: float = absf(bins.global_position.z - back_z)
+		if gap > 3.2 and gap < 6.0 and not _on_road(Vector2(bins.global_position.x, bins.global_position.z), 0.4):
+			bins_ok += 1
+	_check("Session 65: the bins are at the back of each cluster, beside the back road", bins_ok == entrances.size(), "%d" % bins_ok)
+	var pool := _main.get_node_or_null("DistrictDetail/CommunityPool")
+	var gate: Node3D = pool.get_node_or_null("PoolGate") if pool else null
+	var pool_sign: Node3D = pool.get_node_or_null("PoolSign") if pool else null
+	var fence: Rect2 = _data["POOL_GATE"]["fence"]
+	_check("Session 65: the pool sign stands in front of the pool gate (outside the fence)",
+			gate != null and pool_sign != null and not fence.has_point(Vector2(pool_sign.global_position.x, pool_sign.global_position.z))
+			and pool_sign.global_position.distance_to(gate.global_position) < 5.0 and _texts(pool_sign).has("Community Pool"))
+	# Big end houses: same kit, bigger, off the roads; all 500 homes still there.
+	var ends := _main.get_node_or_null("DistrictDetail/EndHouses")
+	var count: int = ends.count if ends else 0
+	var clear := true
+	var bigger := true
+	if ends:
+		var space := (ends as Node3D).get_world_3d().direct_space_state
+		for body in ends.get_children():
+			if not body is StaticBody3D:
+				continue
+			for shape_node in body.get_children():
+				if shape_node is CollisionShape3D:
+					var query := PhysicsShapeQueryParameters3D.new()
+					query.shape = shape_node.shape
+					query.transform = shape_node.global_transform
+					for hit in space.intersect_shape(query, 8):
+						if String((hit["collider"] as Node).name).begins_with("Villa"):
+							clear = false
+		for place: Dictionary in _data["END_HOUSES"]:
+			if place["size"].x <= _data["VILLA_SIZE"].x or place["size"].z <= _data["VILLA_SIZE"].z:
+				bigger = false
+			var p: Vector3 = place["position"]
+			var half: Vector3 = place["size"] * 0.5
+			var dx := half.z if absf(place["facing"]) == 90.0 else half.x
+			var dz := half.x if absf(place["facing"]) == 90.0 else half.z
+			for corner in [Vector2(-dx, -dz), Vector2(dx, -dz), Vector2(-dx, dz), Vector2(dx, dz), Vector2.ZERO]:
+				if _on_road(Vector2(p.x, p.z) + corner * 0.98, 0.0):
+					clear = false
+	var homes: Array = _data["VILLAS"].filter(func(v): return v["kind"] != "spot")
+	_check("Session 65: big end houses at the row ends, bigger than the others, clear of roads and homes",
+			count >= 20 and bigger and clear and homes.size() == 500, "%d end houses" % count)
+
+
+func _texts(node: Node) -> Array:
+	var out: Array = []
+	for label in node.find_children("*", "Label3D", true, false):
+		out.append(label.text)
+	return out
+
+
+func _on_road(spot: Vector2, slack: float) -> bool:
+	for road: Dictionary in _data["ROADS"]:
+		var width: float = road.get("width", _data["ROAD_WIDTH"])
+		if Geometry2D.get_closest_point_to_segment(spot, road["from"], road["to"]).distance_to(spot) <= width * 0.5 + slack:
+			return true
+	return false
+
+
+## True when the sign font joins these Arabic letters (they don't all keep their lone
+## shapes) and lays them out right to left.
+func _arabic_ok(words: String) -> bool:
+	var ts := TextServerManager.get_primary_interface()
+	var font := SignText.font()
+	var shaped := ts.create_shaped_text()
+	ts.shaped_text_add_string(shaped, words, font.get_rids(), 32)
+	var glyphs := ts.shaped_text_get_glyphs(shaped)
+	var rtl := ts.shaped_text_get_inferred_direction(shaped) == TextServer.DIRECTION_RTL
+	var alone := {}
+	for i in words.length():
+		var one := ts.create_shaped_text()
+		ts.shaped_text_add_string(one, words[i], font.get_rids(), 32)
+		for g in ts.shaped_text_get_glyphs(one):
+			alone[g["index"]] = true
+		ts.free_rid(one)
+	var joined := false
+	for g in glyphs:
+		if not alone.has(g["index"]):
+			joined = true
+	# Right to left: the first glyph drawn (leftmost) belongs to the last letter.
+	var last_first: bool = glyphs.size() > 0 and int(glyphs[0]["start"]) > int(glyphs[glyphs.size() - 1]["start"])
+	ts.free_rid(shaped)
+	return rtl and joined and last_first

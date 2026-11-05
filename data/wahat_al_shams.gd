@@ -363,7 +363,7 @@ const INSTITUTE := {"position": Vector3(-215, 0, -33), "size": Vector3(46, 14, 3
 
 const GYM := {"position": Vector3(115, 0, 22), "size": Vector3(36, 8, 22), "facing": 180.0, "name": "Wahat Gym", "arabic": "نادي الواحة الرياضي"}
 
-const COMMUNITY_POOL := Rect2(190, -30, 50, 24)
+const COMMUNITY_POOL := Rect2(190, -32, 50, 20)
 
 const JUMPING_ARENA := Rect2(-282, 65, 115, 88)
 
@@ -1039,6 +1039,63 @@ const PARKED_CARS := [
 	{"position": Vector3(-162, 0, 172), "facing": 90.0, "bay": true},
 	{"position": Vector3(-162, 0, 181), "facing": 90.0, "bay": true},
 ]
+
+const CLUSTER_ENTRANCES := [
+	{"cluster": "C1", "lane_x": 48.0, "out": 1, "front_z": -47.0, "sign": Vector3(53, 0, -52.6), "sign_facing": 0.0, "police": Vector3(42.4, 0, -54.4), "police_facing": 0.0, "stop": Vector3(43.7, 0, -50.8), "stop_facing": 180.0, "left": ["Villa 1–50", "فيلا ١–٥٠"], "right": ["Villa 51–100", "فيلا ٥١–١٠٠"], "bins": Vector3(40, 0, -193.6)},
+	{"cluster": "C2", "lane_x": 203.0, "out": 1, "front_z": -47.0, "sign": Vector3(208, 0, -52.6), "sign_facing": 0.0, "police": Vector3(197.4, 0, -54.4), "police_facing": 0.0, "stop": Vector3(198.7, 0, -50.8), "stop_facing": 180.0, "left": ["Villa 1–50", "فيلا ١–٥٠"], "right": ["Villa 51–100", "فيلا ٥١–١٠٠"], "bins": Vector3(195, 0, -193.6)},
+	{"cluster": "C3", "lane_x": 348.0, "out": 1, "front_z": -47.0, "sign": Vector3(353, 0, -52.6), "sign_facing": 0.0, "police": Vector3(342.4, 0, -54.4), "police_facing": 0.0, "stop": Vector3(343.7, 0, -50.8), "stop_facing": 180.0, "left": ["Villa 1–50", "فيلا ١–٥٠"], "right": ["Villa 51–100", "فيلا ٥١–١٠٠"], "bins": Vector3(340, 0, -193.6)},
+	{"cluster": "C4", "lane_x": 73.0, "out": -1, "front_z": 41.0, "sign": Vector3(68, 0, 46.6), "sign_facing": 180.0, "police": Vector3(78.6, 0, 48.4), "police_facing": 180.0, "stop": Vector3(77.3, 0, 44.8), "stop_facing": 0.0, "left": ["Villa 51–100", "فيلا ٥١–١٠٠"], "right": ["Villa 1–50", "فيلا ١–٥٠"], "bins": Vector3(65, 0, 193.6)},
+	{"cluster": "C5", "lane_x": 303.0, "out": -1, "front_z": 41.0, "sign": Vector3(298, 0, 46.6), "sign_facing": 180.0, "police": Vector3(308.6, 0, 48.4), "police_facing": 180.0, "stop": Vector3(307.3, 0, 44.8), "stop_facing": 0.0, "left": ["Villa 51–100", "فيلا ٥١–١٠٠"], "right": ["Villa 1–50", "فيلا ١–٥٠"], "bins": Vector3(295, 0, 193.6)},
+]
+
+const POLICE_SIGNS := [
+	{"position": Vector3(-100, 0, -8.8), "facing": 0.0},
+	{"position": Vector3(150, 0, -8.8), "facing": 0.0},
+	{"position": Vector3(-200, 0, 8.8), "facing": 180.0},
+	{"position": Vector3(60, 0, 8.8), "facing": 180.0},
+	{"position": Vector3(320, 0, 8.8), "facing": 180.0},
+]
+
+const END_HOUSES := [
+	{"cluster": "C1", "number": 9100, "position": Vector3(28.3, 0, -65.1), "facing": -90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C1", "number": 9101, "position": Vector3(37.7, 0, -65.1), "facing": 90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C1", "number": 9102, "position": Vector3(88.3, 0, -65.1), "facing": -90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C1", "number": 9103, "position": Vector3(97.7, 0, -65.1), "facing": 90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C2", "number": 9204, "position": Vector3(183.3, 0, -65.1), "facing": -90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C2", "number": 9205, "position": Vector3(192.7, 0, -65.1), "facing": 90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C2", "number": 9206, "position": Vector3(243.3, 0, -65.1), "facing": -90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C2", "number": 9207, "position": Vector3(252.7, 0, -65.1), "facing": 90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C3", "number": 9308, "position": Vector3(328.3, 0, -65.1), "facing": -90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C3", "number": 9309, "position": Vector3(337.7, 0, -65.1), "facing": 90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C3", "number": 9310, "position": Vector3(388.3, 0, -65.1), "facing": -90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C3", "number": 9311, "position": Vector3(397.7, 0, -65.1), "facing": 90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C4", "number": 9412, "position": Vector3(23.3, 0, 59.1), "facing": -90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C4", "number": 9413, "position": Vector3(32.7, 0, 59.1), "facing": 90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C4", "number": 9414, "position": Vector3(53.3, 0, 59.1), "facing": -90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C4", "number": 9415, "position": Vector3(62.7, 0, 59.1), "facing": 90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C4", "number": 9416, "position": Vector3(53.3, 0, 180.9), "facing": -90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C4", "number": 9417, "position": Vector3(62.7, 0, 180.9), "facing": 90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C4", "number": 9418, "position": Vector3(83.3, 0, 59.1), "facing": -90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C4", "number": 9419, "position": Vector3(92.7, 0, 59.1), "facing": 90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C4", "number": 9420, "position": Vector3(113.3, 0, 59.1), "facing": -90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C4", "number": 9421, "position": Vector3(122.7, 0, 59.1), "facing": 90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C4", "number": 9422, "position": Vector3(113.3, 0, 180.9), "facing": -90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C4", "number": 9423, "position": Vector3(122.7, 0, 180.9), "facing": 90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C5", "number": 9524, "position": Vector3(253.3, 0, 59.1), "facing": -90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C5", "number": 9525, "position": Vector3(262.7, 0, 59.1), "facing": 90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C5", "number": 9526, "position": Vector3(283.3, 0, 59.1), "facing": -90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C5", "number": 9527, "position": Vector3(292.7, 0, 59.1), "facing": 90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C5", "number": 9528, "position": Vector3(283.3, 0, 180.9), "facing": -90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C5", "number": 9529, "position": Vector3(292.7, 0, 180.9), "facing": 90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C5", "number": 9530, "position": Vector3(313.3, 0, 59.1), "facing": -90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C5", "number": 9531, "position": Vector3(322.7, 0, 59.1), "facing": 90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C5", "number": 9532, "position": Vector3(343.3, 0, 59.1), "facing": -90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C5", "number": 9533, "position": Vector3(352.7, 0, 59.1), "facing": 90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C5", "number": 9534, "position": Vector3(343.3, 0, 180.9), "facing": -90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+	{"cluster": "C5", "number": 9535, "position": Vector3(352.7, 0, 180.9), "facing": 90.0, "size": Vector3(9.6, 8.5, 9.4), "kind": "courtyard", "row_mode": true, "house": 0},
+]
+
+const POOL_GATE := {"fence": Rect2(187.6, -35.4, 54.8, 25.2), "gate_x": 200.0, "gate_width": 3.0, "sign": Vector3(203.6, 0, -9.3), "facing": 0.0}
 
 const SPEED_BUMP_SIZE := Vector3(10, 0.12, 0.5)
 

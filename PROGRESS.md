@@ -1,5 +1,49 @@
 # Progress
 
+## Session 65: Cluster entrances and signs — 5 November 2026
+
+What works (scripts/cluster_signs.gd, scripts/police_sign.gd, scripts/end_houses.gd; layout in
+CLUSTER_ENTRANCES, POLICE_SIGNS, END_HOUSES and POOL_GATE in the data):
+- **The real-style cluster sign** at each cluster's entrance (where the middle lane meets the
+  front road), on the verge beside the lane: a dark green board with a white border on a pale
+  blue metal frame and pole. "Cluster 3" with المجموعة ٣ under it, then two lines with arrows
+  ("Villa 1–50 ←", "Villa 51–100 →", with the Arabic under each) pointing the way to those
+  houses for a rider coming in, and an "EXIT خروج" line with a down arrow. The back shows the
+  cluster name. The 50 old teal lane-end signs are gone.
+- **Police sign** (made up, no real badge): white board on a grey pole, red "Attention / تنبيه"
+  header with a camera icon, an emblem (gold star over a little dhow on a navy disc), and
+  "5-Star Habibi Police: Area is monitored by Habibi Smart Home Security" in English and Arabic.
+  One at each cluster entrance and five beside the spine's red tracks.
+- **STOP signs:** a small red octagon with قف above STOP where each cluster entrance meets the road.
+- **Bins** moved to the back of each cluster, beside the back cross road.
+- **Community pool:** it now has a white fence with a gate on the red-track side (where the
+  crossing from the spine road comes in), and the "Community Pool / المسبح المجتمعي" sign stands
+  outside the fence beside the gate. The pool moved 2 m north and is a little shorter so it's
+  off the red track, and the sunbeds (umbrellas now on poles) are along the north side.
+- **Big end houses:** 36 bigger homes from the same house kit (9.6 x 9.4 m instead of 9 x 8,
+  a bit taller) where a row stops 10 m short of a road (12 in each of Clusters 4 and 5, 4 in each
+  of Clusters 1 to 3). They're scenery: no number, no address. All 500 homes keep their numbers.
+  Each cluster's end houses are one joined mesh (cheap on Low).
+- The Arabic on the signs is checked by a test: the letters join up and run right to left.
+- Checked: smoke test PASS (the cluster sign check now expects one sign per cluster; new Session
+  65 checks in tests/smoke_signs.gd: all three signs at every entrance in both languages, the
+  arrows point at the right villas, no sign in the road or on the track, police signs on the
+  tracks, joined right-to-left Arabic, bins at the back, pool sign outside the gate, end houses
+  bigger and clear of roads and homes), tests/signs_wave_test.gd, coplanar, navigation, housing
+  camera and static batch tests PASS. No screenshots (headless).
+
+Known bugs / to do:
+- The end houses don't show on the mini-map or full map (they aren't addresses).
+
+**Louis's turn:** press F5 and ride along the spine loop road to a cluster entrance (e.g.
+Cluster 1, north of the spine). On the right, beside the lane: the green sign with "Cluster 1",
+the Arabic, "Villa 1–50 ←" and "Villa 51–100 →" and EXIT. Ride left: the houses there are 1 to 50.
+On the other side: the police sign with the red Attention header, the camera and the star and
+dhow emblem. Ride out again: a little STOP sign where the lane meets the road. Ride along the red
+tracks: a few more police signs. Look at the end of the house rows next to the little plaza:
+a bigger house. Ride round the back road: the bins are there now. Go to the community pool from
+the spine road: the gate and the pool sign next to it.
+
 ## Session 64: Bus stop and car parks — 5 November 2026
 
 What works:

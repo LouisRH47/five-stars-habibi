@@ -149,7 +149,7 @@ put('MOSQUE',{'name':'Wahat Al Shams Mosque','arabic':'مسجد واحة الش�
 put('BUS_STATION',{'position':v3(-310,0,-174),'area':rect(-336,-202,52,52),'name':'Wahat Bus Station','arabic':'محطة حافلات الواحة'})
 put('INSTITUTE',{'position':v3(-215,0,-33),'size':v3(46,14,36),'facing':90.,'name':'C Institute','arabic':'معهد سي'})
 put('GYM',{'position':v3(115,0,22),'size':v3(36,8,22),'facing':180.,'name':'Wahat Gym','arabic':'نادي الواحة الرياضي'})
-put('COMMUNITY_POOL',rect(190,-30,50,24));put('JUMPING_ARENA',rect(-282,65,115,88))
+put('COMMUNITY_POOL',rect(190,-32,50,20));put('JUMPING_ARENA',rect(-282,65,115,88))  # Session 65: the pool is off the red track, inside its fence
 put('STABLES',{'name':'Wahat Stables','arabic':'إسطبلات الواحة','block':{'position':v3(-224,0,174),'size':v3(100,5,14)},'paddock':rect(-280,157,110,9),'horses':4})
 put('BUILDING_SITE',{'area':rect(-135,55,110,135),'crane':v3(-80,0,120),'sign':{'name':'Phase 2 coming soon','arabic':'المرحلة الثانية قريباً','position':v3(-140,0,110),'facing':-90.}})
 put('BUILDING_SITES',[rect(-135,55,110,135),rect(217,56,16,132),rect(-275,-86,105,18),rect(-301,50,15,125),rect(-413,-89,100,76)])  # Session 62: the last one ends 13 m north of the spine road
@@ -204,6 +204,46 @@ put('BUS_PLATFORM',{'area':rect(-328.1,-199.6,22.2,28.4),'shelters':[v3(-325.4,0
  'facing':-90.,'door':v3(-328.7,0,-183.4),'arrive':v3(-316,0,-198.5),
  'waiting':[v3(-327.4,0,z) for z in [-194.2,-190.4,-186.9,-178.6,-176.2]]})
 put('PARKED_CARS',PARKED_CARS+PARKED_EXTRA)
+# Session 65: cluster entrances. One green cluster sign, one police sign and one STOP sign
+# where each cluster's middle lane meets its front road (beside the lane, never in it).
+# out: +1 when the spine is to the south (+z) of the cluster. Facing: 0 = the board's front
+# points +z. The bins stand at the back, on the far side of the back cross road.
+entrances=[]
+for n,cx,cz in clusters:
+    out=1 if cz<0 else -1
+    back=cz-63 if cz<0 else cz+69
+    # Riders come in heading -out; villas 1-50 are west of the middle lane (x < cx).
+    rows=[['Villa 1–50','فيلا ١–٥٠'],['Villa 51–100','فيلا ٥١–١٠٠']]
+    entrances.append({'cluster':f'C{n}','lane_x':float(cx),'out':out,'front_z':float(cz+79*out),
+        'sign':v3(cx+5.0*out,0,cz+73.4*out),'sign_facing':0. if out>0 else 180.,
+        'police':v3(cx-5.6*out,0,cz+71.6*out),'police_facing':0. if out>0 else 180.,
+        'stop':v3(cx-4.3*out,0,cz+75.2*out),'stop_facing':180. if out>0 else 0.,
+        'left':rows[0] if out>0 else rows[1],'right':rows[1] if out>0 else rows[0],
+        'bins':v3(cx-8,0,back-4.6*out)})
+put('CLUSTER_ENTRANCES',entrances)
+# A few police signs beside the spine's red tracks, just off the park side of the track.
+put('POLICE_SIGNS',[{'position':v3(x,0,z),'facing':0. if z<0 else 180.} for x,z in [(-100,-8.8),(150,-8.8),(-200,8.8),(60,8.8),(320,8.8)]])
+# Big end houses: a larger house (same kit) at a row end where 10 m of ground is free
+# before the next road (decoration, not addresses: all 500 homes stay as they are).
+end_houses=[]
+for n,cx,cz in clusters:
+    front=cz+79 if cz<0 else cz-79; back=cz-63 if cz<0 else cz+69; alley=cz+(68 if cz<0 else -68)
+    edges=[(front,3.),(back,3.),(alley,2.)]
+    for row,count in enumerate([13,12,13,12]):
+        rx=cx-45+row*30
+        ends={-1:cz-56.,1:cz+6.5+(count-count//2-1)*9+4.5}
+        for d,edge in ends.items():
+            beyond=[z-d*w for z,w in edges if (z-edge)*d>0]
+            free=min(abs(b-edge) for b in beyond)
+            if free<9.8: continue
+            for side in [-1,1]:
+                end_houses.append({'cluster':f'C{n}','number':9000+n*100+len(end_houses),'position':v3(rx+side*4.7,0,edge+d*4.9),
+                    'facing':side*90.,'size':v3(9.6,8.5,9.4),'kind':'courtyard','row_mode':True,'house':0})
+put('END_HOUSES',end_houses)
+# Session 65: the community pool is fenced. Its gate is on the south side, where the
+# crossing from the spine road's red track comes in (x 200), and the pool sign stands
+# outside the fence beside the gate, facing the track. The sunbeds are along the north side.
+put('POOL_GATE',{'fence':rect(187.6,-35.4,54.8,25.2),'gate_x':200.,'gate_width':3.,'sign':v3(203.6,0,-9.3),'facing':0.})
 put('SPEED_BUMP_SIZE',v3(10,.12,.5))
 put('SPEED_BUMPS',[{'position':v3(x,0,z),'facing':90.} for z in [-205,205] for x in [-180,50,300]]+[{'position':v3(x,0,z),'facing':0.} for x in [-425,425] for z in [-80,80]]
  # Session 61: narrower bumps on the inside roads (spine loop north and south, spine road).

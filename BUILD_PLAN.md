@@ -1439,7 +1439,7 @@ Done when:
 - [ ] Buses loop through the station and people get on
 - [ ] Both new car parks look like the existing ones
 
-### Session 65: Cluster entrances and signs
+### Session 65: Cluster entrances and signs (built, needs testing)
 
 ```text
 Session 65. Louis's photos are of the real signs.

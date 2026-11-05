@@ -1555,8 +1555,9 @@ func _check_session26() -> void:
 			if _has_arabic_label(board) and _has_label_text(board, data["CLUSTER_NAMES"].get(id, "?")) \
 					and _has_label_text(board, "Cluster " + id.substr(1)):
 				signed[id] = signed.get(id, 0) + 1
-	_check("bilingual cluster signs at the lane ends of every cluster",
-			signed.size() == data["CLUSTER_NAMES"].size() and signed.values().all(func(n): return n >= 2), "%s" % [signed])
+	# Session 65: one green cluster sign per cluster, at its entrance (tests/smoke_signs.gd checks the rest).
+	_check("a bilingual cluster sign at the entrance of every cluster",
+			signed.size() == data["CLUSTER_NAMES"].size() and signed.values().all(func(n): return n == 1), "%s" % [signed])
 
 
 ## How many house parts (bodies called Villa...) a shape at this spot touches.
