@@ -124,3 +124,10 @@ uses a different licence for some new packs; none of those are here).
 - Universal Animation Library 1, free Standard part (`quaternius_ual/`):
   https://quaternius.com/packs/universalanimationlibrary.html
   (glTF from the mirror https://github.com/J-Ponzo/gltf-universal-animation-library)
+
+## Road wear and particle pictures (Session 68)
+
+**Made for this game** (CC0) by our own scripts, no downloads: the road wear decals in
+`assets/textures/decals/` (tools/make_decals.py; the Arabic "ببطء" uses Noto Sans Arabic, above)
+and the particle pictures in `assets/textures/vfx/` (tools/make_vfx_textures.py). The water,
+beam and ring shaders in `assets/shaders/` were written for this game too.

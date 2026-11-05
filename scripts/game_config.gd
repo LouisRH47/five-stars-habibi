@@ -683,6 +683,55 @@ const MINIMAP_V2 := true         # Session 70
 const CARD_V2 := true            # Session 71
 const START_DIORAMA := true      # Session 71
 
+# --- Session 68: water, beam, road wear and particles ---
+# The switches MARKER_V2, WATER_V2, ROAD_DECALS and VFX_AMBIENT are in the Session 66 section.
+const WORLD_BURSTS := true             # W5: confetti, coins and a level-up ring in the world
+const SKID_MARKS := true               # W6: skid marks when you brake hard
+const DUST_SOFT := true                # W6: soft, sun-lit dust puffs (false = the old little balls)
+# W1 the delivery beam (scripts/arrival_marker.gd). Colours: UiPalette orange / teal.
+const BEAM_RADIUS := 0.9               # the light column (the old cylinder was 1.2 m)
+const BEAM_DROP_SATURATION := 0.8      # the phone's teal made bright enough to glow
+const BEAM_DROP_VALUE := 0.85
+const BEAM_RING_RADIUS := 1.6          # the ring on the ground...
+const BEAM_RING_NEAR_RADIUS := 1.1     # ...shrinks to this when you're close
+const BEAM_RING_NEAR_DISTANCE := 8.0   # metres: "close"
+const BEAM_RING_PULSE := 0.1           # the ring grows and shrinks 10%...
+const BEAM_RING_PULSE_HZ := 1.0        # ...once a second
+const BEAM_RING_LIFT := 0.12           # metres above the ground under the door
+const BEAM_SPARKLES := 16
+const BEAM_BURST_SPARKLES := 24
+const BEAM_BURST_TIME := 0.6           # seconds the ring takes to fly out and fade
+const BEAM_BURST_RADIUS := 4.0         # metres the ring flies out to
+# W3 road wear (scripts/road_decals.gd)
+const DECAL_SEED := 6801
+const DECAL_THICKNESS := 0.3           # metres: the decal box is thin, so it only paints the ground
+const DECAL_FADE_BEGIN := [20.0, 35.0, 35.0]   # Low, Medium, High: start fading out at...
+const DECAL_FADE_LENGTH := 10.0                # ...and gone this much further
+const DECAL_MAX_NEAR := [64, 400, 400]         # most decals in view at once (the browser: 64)
+const DECAL_LOW_PER_CELL := 8          # Low: at most 8 on one 48 m piece of ground
+const DECAL_SAND_SPACING := Vector2(12, 20)    # metres between sand drifts on the car roads
+const DECAL_MANHOLE_SPACING := 40.0    # metres between manholes on the ring road
+const DECAL_OIL_BAY_CHANCE := 0.4      # 2 in 5 empty bays has an oil spot
+const DECAL_CAR_GAP := 1.0             # metres to keep from cars
+# W4 particles in the air (scripts/vfx_ambient.gd)
+const VFX_MAX_PARTICLES := [150, 600, 1200]    # Low, Medium, High: particles at once
+const VFX_RANGE := 50.0                # metres: further from the camera, an effect stops
+const VFX_WIND := Vector3(1.0, 0.0, 0.35)      # the way sand blows across the ring road
+const VFX_VENT_KITCHENS := ["pizza", "shawarma"]   # Plaza roofs with steaming kitchen vents
+const VFX_STEAM_TIME := 3.0            # seconds the bag steams after a hot pick-up
+const HOT_FOODS := ["pizza", "shawarma", "manakish", "flat white", "coffee", "pad thai", "burgers", "tacos", "fatayer"]
+# W5 bursts (scripts/vfx_bursts.gd)
+const CONFETTI_COUNT := 40
+const CONFETTI_TIME := 0.9             # seconds
+const TIP_COINS := 8
+# W6 skid marks and dust (scripts/tyre_dust.gd)
+const SKID_MAX := [10, 30, 30]         # marks at once for Low, Medium, High
+const SKID_LIFETIME := 20.0            # seconds before a mark has faded away
+const SKID_SPACING := 0.3              # metres between marks
+const SKID_WIDTH := 0.09               # metres (a bike tyre)
+const SKID_DARKNESS := 0.75
+const DUST_SOFT_SIZE := 0.3            # metres across a soft puff (it grows to about 0.6)
+
 # --- Review (outdoor), 4 Nov 2026: fixes found by the overnight check of Sessions 53-64 ---
 ## A path that ends on a road that "wins" (the spine buggy road, or any wider road) now stops at
 ## that road's edge instead of being drawn on top of it to its middle line. Before, the C1-C5
