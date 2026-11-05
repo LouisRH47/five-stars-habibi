@@ -8,6 +8,10 @@ extends Control
 ## Submit application, then "Reviewing..." and "Congrats, you're hired!" and Start riding.
 ## Used by scenes/main_menu.tscn (opens on the menu) and scenes/application.tscn (opens
 ## straight on the form). The choices are in data/application.gd.
+## Session 71 (GameConfig.START_DIORAMA): instead of the desert, a small 3D scene at golden
+## hour (scripts/menu_diorama.gd: a villa corner, palms, your rider by the Snackaroo bike).
+## The title drops in with a bounce, then "Rider to Driver", then the phone slides up.
+## Buttons tick on hover and click when pressed (scripts/polish/screen_extras.gd).
 
 ## Which phone page to open on: "menu" or "form".
 @export var start_page := "menu"
@@ -15,6 +19,8 @@ extends Control
 const LIST := preload("res://data/application.gd")
 const PALM_SCENE := preload("res://scenes/palm_tree.tscn")
 const GAME_SCENE := "res://scenes/wahat_al_shams.tscn"
+const DIORAMA := preload("res://scripts/menu_diorama.gd")
+const EXTRAS := preload("res://scripts/polish/screen_extras.gd")
 
 const TEAL := Color(0.05882353, 0.29803923, 0.36078432, 1)
 const ORANGE := Color(0.9490196, 0.54901963, 0.15686275, 1)
@@ -42,19 +48,82 @@ var _hired_text: Label
 var _spinner: Control
 var _desert_camera: Camera3D
 var _time := 0.0
+## Session 71: the 3D scene behind the title (null with START_DIORAMA off), and the parts
+## the intro animates.
+var diorama: SubViewportContainer
+## Starts as GameConfig.START_DIORAMA (a test can switch it before the screen is added).
+var use_diorama := GameConfig.START_DIORAMA
+var _title_column: Control
+var _tagline: Label
+var _phone: Control
 
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(_build_desert())
-	add_child(_build_title())
+	if use_diorama:
+		diorama = DIORAMA.new()
+		add_child(diorama)
+		add_child(_build_scrim())
+	else:
+		add_child(_build_desert())
+	_title_column = _build_title()
+	add_child(_title_column)
 	var phone := _build_phone()
+	_phone = phone
 	add_child(phone)
 	settings_panel = SettingsPanel.add_centered(self)
 	settings_panel.closed.connect(func(): phone.visible = true)
 	settings_panel.set_meta("phone", phone)
 	_show_page(start_page)
 	_pick_look(GameState.rider_look)
+	EXTRAS.wire_buttons(self)
+	if use_diorama:
+		_intro()
+
+
+## Session 71: the title drops in with a bounce (y -40 to 0), "Rider to Driver" fades in,
+## then the phone slides up. Starts a moment later, once everything has its real place.
+func _intro() -> void:
+	var quick := 0.5 if Settings.reduce_motion else 1.0
+	var move := 0.0 if Settings.reduce_motion else 1.0
+	_title_column.modulate.a = 0.0
+	_tagline.modulate.a = 0.0
+	_phone.modulate.a = 0.0
+	var t := create_tween().set_parallel(true)
+	t.tween_callback(func():
+		var title_end := _title_column.position
+		_title_column.position.y -= 40.0 * move
+		var phone_end := _phone.position
+		_phone.position.y += 80.0 * move
+		var inner := create_tween().set_parallel(true)
+		inner.tween_property(_title_column, "position", title_end, 0.45 * quick).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		inner.tween_property(_title_column, "modulate:a", 1.0, 0.25 * quick)
+		inner.tween_property(_tagline, "modulate:a", 1.0, 0.35 * quick).set_delay(0.3 * quick)
+		inner.tween_property(_phone, "position", phone_end, 0.45 * quick).set_delay(0.45 * quick) \
+				.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		inner.tween_property(_phone, "modulate:a", 1.0, 0.25 * quick).set_delay(0.45 * quick)
+		inner.tween_callback(func(): EXTRAS.sound("whoosh", 1.1)).set_delay(0.45 * quick)).set_delay(0.05)
+
+
+## Session 71: a soft sand-coloured shade on the left, so the title and the line under it
+## stay easy to read over the 3D scene.
+func _build_scrim() -> Control:
+	var gradient := Gradient.new()
+	gradient.set_color(0, Color(UiPalette.SAND, 0.82))
+	gradient.set_color(1, Color(UiPalette.SAND, 0.0))
+	gradient.add_point(0.55, Color(UiPalette.SAND, 0.55))
+	var texture := GradientTexture2D.new()
+	texture.gradient = gradient
+	texture.fill_from = Vector2(0, 0)
+	texture.fill_to = Vector2(1, 0)
+	var scrim := TextureRect.new()
+	scrim.texture = texture
+	scrim.set_anchors_preset(Control.PRESET_LEFT_WIDE)
+	scrim.offset_right = 980
+	scrim.stretch_mode = TextureRect.STRETCH_SCALE
+	scrim.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	scrim.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return scrim
 
 
 func _process(delta: float) -> void:
@@ -136,6 +205,9 @@ func _open_game(first_shift: bool) -> void:
 
 func _pick_look(number: int) -> void:
 	look = number
+	if diorama != null and number != diorama.get_meta("look", -1):
+		diorama.set_look(number)  # Session 71: your rider in the 3D scene wears it too
+		diorama.set_meta("look", number)
 	for i in _look_cards.size():
 		_look_cards[i].button_pressed = i == number
 
@@ -234,7 +306,8 @@ func _build_title() -> Control:
 		line_label.add_theme_constant_override("outline_size", 18)
 		title.add_child(line_label)
 	column.add_child(title)
-	column.add_child(_label("Rider to Driver", 44, ORANGE, "Heading"))
+	_tagline = _label("Rider to Driver", 44, ORANGE, "Heading")
+	column.add_child(_tagline)
 	var line := _label("Deliver food by bike in a sunny desert city, earn your stars, and work your way up to luxury chauffeur.", 24, INK)
 	line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	line.custom_minimum_size = Vector2(620, 0)

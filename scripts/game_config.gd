@@ -683,6 +683,7 @@ const MINIMAP_V2 := true         # Session 70
 const CARD_V2 := true            # Session 71
 const START_DIORAMA := true      # Session 71
 
+<<<<<<< HEAD
 # --- Session 67: Sky, light and colour ---
 # (The on/off switches SKY_STYLIZED, LOOK_LUT and VIGNETTE_STRENGTH are in the Session 66
 # section above.) scripts/sun_cycle.gd, sky_look.gd, light_shafts.gd and
@@ -730,3 +731,102 @@ const OUTLINE_COLOUR := Color(0.106, 0.227, 0.251)  # #1B3A40, dark teal
 const OUTLINE_ALPHA := 0.4
 const OUTLINE_DEPTH_JUMP := 0.03    # a line where the distance jumps by more than 3%
 const OUTLINE_FADE := Vector2(40.0, 80.0)  # metres: lines fade out between these distances
+=======
+# --- Review (outdoor), 4 Nov 2026: fixes found by the overnight check of Sessions 53-64 ---
+## A path that ends on a road that "wins" (the spine buggy road, or any wider road) now stops at
+## that road's edge instead of being drawn on top of it to its middle line. Before, the C1-C5
+## links flickered on the buggy road (two road slabs at the same height) and the light car park
+## buggy lanes and alleys lay over the dark roads. false = the old way.
+const ROAD_ENDS_GIVE_WAY := true
+const ROAD_END_OVERLAP := 0.02        # metres a path still reaches into the road it meets (no seam)
+## The spine's old floating flower balls (Session 26) sat 30 cm up in the air and also on roads
+## and paths. Now they sit on the ground and keep off every road, path, paving and building.
+const SPINE_FLOWERS_GROUNDED := true
+## The kerbs and planted strip between the red track and the buggy road only stop where a path
+## really crosses them (the C4 and C5 links end at the buggy road, they don't cross it).
+const SPINE_GAPS_ONLY_REAL := true
+## The "Coming soon" words at the building sites get a dark board on two posts (they floated).
+const SITE_SIGN_BOARD := true
+## Both pool decks use the paving texture (PRD: "a paved deck"); they were a plain light slab.
+const POOL_DECK_PAVED := true
+## Metres the big "Wahat Stables" sign sits east of the block's middle, so the stable office's
+## roof doesn't hide it from Stables Road (0.0 = the old spot, right behind the office).
+const STABLES_SIGN_SHIFT := 13.0
+
+# --- Review: interiors (overnight check of Sessions 58-61) ---
+const MENU_TEXT_FIT := true           # menu boards use the biggest text that fits (false: the old small 19)
+const MENU_TEXT_MAX := 34             # the biggest menu text size
+const INTERIOR_REVIEW_FIXES := true   # the small fixes from the overnight check (things inside each other, hidden tags...); false: as Sessions 58-61 built them
+const INDOOR_CAMERA_ON := true        # PRD "Interiors": inside a restaurant or shop the camera comes closer and a little higher (false: the same as outside)
+const INDOOR_CAMERA_DISTANCE := 3.0   # metres behind you indoors (outside: CAMERA_DISTANCE, 4.5)
+const INDOOR_CAMERA_HEIGHT := 2.7     # metres above your feet indoors (outside: CAMERA_HEIGHT, 2.2)
+const INDOOR_CAMERA_BLEND := 1.5      # how fast it changes when you walk in or out (1.5 = about 2/3 of a second)
+
+# --- Session 71: screens, menus, sounds and accessibility ---
+# CARD_V2 and START_DIORAMA (above, Session 66) switch the new Delivered card and start screen.
+const SCREENS_V2 := true           # pause blur, clinic count-up, sliding side panel, loading rider, button feel
+const CARD_TILE_GAP := 0.15        # seconds between the three tiles flipping in
+const CARD_COUNT_TIME := 0.6       # seconds "You earned" takes to count up
+const CARD_STAMP_TIME := 0.25      # seconds the PERFECT! stamp takes to slam in
+const CARD_STAR_PITCHES := [1.0, 1.06, 1.12, 1.19, 1.26]  # each star's ding a semitone higher
+const CARD_DOF := true             # the background goes soft behind the card (desktop only)
+const CARD_DOF_AMOUNT := 0.04      # how blurry
+const CARD_DOF_TRANSITION := 5.0   # metres from sharp to blurry
+## true: the first E only skips the reveal and a second E closes the card (the smoke test
+## expects one E to close it, so it stays false: one E jumps to the end AND closes).
+const CARD_E_SKIPS_FIRST := false
+const BUTTON_HOVER_SCALE := 1.03   # buttons grow 3% when the mouse is over them
+const PAUSE_BLUR_LOD := 2.5        # how blurry the game is behind the pause menu
+const PAUSE_TINT := 0.35           # how dark the tint over the blurred game is
+const SIDE_PANEL_SLIDE := 40.0     # pixels the shop / counter panel slides in from
+const SIDE_PANEL_TIME := 0.25      # seconds it takes
+const CLINIC_COUNT_TIME := 0.6     # seconds the clinic bills take to count up
+const DIORAMA_ORBIT_DEG := 8.0     # the start-screen camera swings this far each way
+const DIORAMA_ORBIT_TIME := 20.0   # seconds for one full swing there and back
+const DIORAMA_WEB_SCALE := 0.75    # the start-screen 3D scene renders smaller in the browser
+
+# --- Session 69: HUD, meters, clock and shift summary ---
+# Switches (false = the old look; HUD_TOP_CHIPS is in the Session 66 section above).
+const HUD_CLOCK_V2 := true        # clock with temperature, today's special and a shift progress bar
+const METERS_V2 := true           # meters at the bottom middle with icons, words and tick marks
+const SPEED_PANEL_V2 := true      # speed number and unit on one line, stamina in segments
+const HOLD_RING := true           # a round "hold E" ring in the middle of the screen
+const SUMMARY_V2 := true          # the shift summary counts up row by row with stamps
+# Temperature on the clock (°C) at these hours; in between it slides smoothly. Hot Noon adds more.
+const SHIFT_TEMPERATURE := {8.0: 31, 13.0: 42, 15.0: 43, 18.0: 37}
+const HOT_NOON_EXTRA_DEGREES := 4
+const CLOCK_LAST_HOUR_PULSE := 1.06   # how much the clock grows when it pulses in the last hour
+# Wallet chip: how long the money counts up, and how far and how long "+15" floats.
+const CHIP_COUNT_TIME := 0.6
+const CHIP_FLOAT_PIXELS := 36.0
+const CHIP_FLOAT_TIME := 0.8
+# Meters: how long a meter flashes when it drops into a worse colour.
+const METER_FLASH_TIME := 0.45
+const STAMINA_SEGMENTS := 5
+const HOLD_RING_SIZE := 96.0          # pixels across at the 1920x1080 base
+const HOLD_RING_BELOW_MIDDLE := 90.0  # pixels under the middle of the screen
+# Shift summary: one row every SUMMARY_ROW_GAP seconds, each counting up for SUMMARY_COUNT_TIME.
+const SUMMARY_ROW_GAP := 0.22
+const SUMMARY_COUNT_TIME := 0.45
+const SUMMARY_STAMP_TIME := 0.25
+
+# --- Session 70: phone app and mini-map ---
+# The phone (scripts/phone.gd, on when PHONE_V2 is true).
+const PHONE_V2_WIDTH := 380.0          # the phone card's width at the 1920 x 1080 base (old: 330)
+const PHONE_V2_CHOICE_WIDTH := 700.0   # width while you choose between two orders (old: 640)
+const PHONE_OFFER_SLIDE_PX := 320.0    # a new order slides the phone in from this far right
+const PHONE_DISTANCE_EVERY := 0.25     # seconds between updates of the live "180 m" line
+const OFFER_PACE_KMH := 20.0           # "about 3 min" on the offer card: the PRD's normal riding pace
+const OFFER_RING_SIZE := 64.0          # pixels across the countdown ring round the E key
+const OFFER_RING_WIDTH := 6.0          # the ring's thickness
+const OFFER_RING_WARN_SECONDS := 5     # the ring turns red for the last 5 seconds
+# The mini-map (scripts/minimap.gd, on when MINIMAP_V2 is true).
+const MINIMAP_RADIUS_SLOW := 60.0      # metres from the middle to the edge when you stand still
+const MINIMAP_RADIUS_FAST := 90.0      # ...and at full sprint speed (it zooms out as you go faster)
+const MINIMAP_ZOOM_TIME := 0.5         # seconds the zoom takes to catch up with your speed
+const MINIMAP_RING_WIDTH := 20.0       # the dark compass ring round the map, in pixels
+const MINIMAP_LOGO_SIZE := 22.0        # restaurant logo pins, pixels across
+# The GPS route (scripts/gps_route.gd): moving arrows on the ground line.
+const GPS_ROUTE_V2 := true             # false = the old flat see-through line
+const GPS_ARROW_SPEED := 3.0           # metres per second the arrows slide along the route
+>>>>>>> looks-build

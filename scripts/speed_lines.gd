@@ -25,7 +25,8 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	var camera := get_parent() as Camera3D
-	visible = strength > 0.01 and not get_tree().paused and (camera == null or camera.current)
+	# Session 69: never with "Less motion" on.
+	visible = strength > 0.01 and not get_tree().paused and (camera == null or camera.current) and not Settings.reduce_motion
 	if not visible:
 		return
 	for streak in _streaks:

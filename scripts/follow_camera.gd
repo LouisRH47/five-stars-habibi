@@ -18,6 +18,9 @@ var obstructed := false
 var base_fov := 70.0
 ## The speed lines at the screen edges (scripts/speed_lines.gd).
 var speed_lines: CanvasLayer
+## Review fix (PRD "Interiors"): 0 outdoors, 1 inside a walk-in room, where the camera comes
+## closer and a little higher so diners and walls don't hide you. It eases between the two.
+var indoor := 0.0
 
 
 func _ready() -> void:
@@ -48,6 +51,7 @@ func _process(delta: float) -> void:
 	if target == null:
 		return
 	var catch_up := 1.0 - exp(-GameConfig.CAMERA_FOLLOW_SMOOTHING * delta)
+	indoor = move_toward(indoor, 1.0 if target_indoors() else 0.0, GameConfig.INDOOR_CAMERA_BLEND * delta)
 	var wanted := _wanted_position()
 	var previous_height := _ideal_position.y
 	_ideal_position = _ideal_position.lerp(wanted, catch_up)
@@ -75,19 +79,24 @@ func _process(delta: float) -> void:
 
 
 ## Sprinting: widen the view a little and show the speed lines; ease back afterwards.
+## Session 69: "Less motion" (Settings.reduce_motion) turns both off.
 func _sprint_feel(delta: float) -> void:
-	var sprint := 1.0 if target.get("sprinting") == true else 0.0
+	var sprint := 1.0 if target.get("sprinting") == true and not Settings.reduce_motion else 0.0
 	var follow := 1.0 - exp(-GameConfig.SPRINT_FOV_SPEED * delta)
 	fov = lerpf(fov, base_fov + GameConfig.SPRINT_FOV_EXTRA * sprint, follow)
 	speed_lines.strength = lerpf(speed_lines.strength, sprint, follow)
 
 
 func _on_bumped(strength: float) -> void:
+	if Settings.reduce_motion:
+		return  # Session 69: no camera shake with "Less motion"
 	_shake = maxf(_shake, strength)
 
 
 ## strength: 0 (crawling over the bump) to 1 (full speed).
 func _on_speed_bump(strength: float) -> void:
+	if Settings.reduce_motion:
+		return
 	var motion := lerpf(GameConfig.SPEED_BUMP_SHAKE_MIN, GameConfig.SPEED_BUMP_SHAKE_MAX, strength)
 	if _comfy_tyres():
 		motion *= GameConfig.COMFY_TYRES_SHAKE_SHARE
@@ -111,7 +120,22 @@ func _wanted_position() -> Vector3:
 	var behind := t.basis.z  # +Z points out the back of the bike
 	behind.y = 0.0
 	behind = behind.normalized()
-	return t.origin + behind * GameConfig.CAMERA_DISTANCE + Vector3.UP * GameConfig.CAMERA_HEIGHT
+	var distance := lerpf(GameConfig.CAMERA_DISTANCE, GameConfig.INDOOR_CAMERA_DISTANCE, indoor)
+	var height := lerpf(GameConfig.CAMERA_HEIGHT, GameConfig.INDOOR_CAMERA_HEIGHT, indoor)
+	return t.origin + behind * distance + Vector3.UP * height
+
+
+## True when the one you follow is inside a walk-in room (a restaurant or one of the shops).
+func target_indoors() -> bool:
+	if not GameConfig.INDOOR_CAMERA_ON or target == null or not is_inside_tree():
+		return false
+	var spot := target.global_position
+	for room: Node3D in get_tree().get_nodes_in_group("interior_room"):
+		var size: Vector3 = room.get_meta("room_size", Vector3.ZERO)
+		var local := room.to_local(spot)
+		if absf(local.x) < size.x * 0.5 and absf(local.z) < size.z * 0.5 and local.y > -0.5 and local.y < size.y:
+			return true
+	return false
 
 
 ## Sweep a sphere rather than only a ray, so the near plane also clears corners.

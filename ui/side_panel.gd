@@ -1,6 +1,8 @@
 class_name SidePanel
 extends CanvasLayer
 ## Reusable left-side shop/reception panel, leaving the 3D room visible.
+## Session 71 (GameConfig.SCREENS_V2): it slides in from the left with a soft whoosh, and the
+## progress bar and labels use the game's palette (UiPalette).
 
 var rows: VBoxContainer
 var heading: Label
@@ -10,6 +12,8 @@ var progress: ProgressBar
 var _panel: PanelContainer
 var _scroll: ScrollContainer
 var _counter_mode := false
+var _slide: Tween
+const HOME := Vector2(28, 28)
 
 
 func _ready() -> void:
@@ -17,11 +21,14 @@ func _ready() -> void:
 	layer = 35
 	_build()
 	hide_panel()
+	if GameConfig.SCREENS_V2:
+		_restyle()
+		visibility_changed.connect(_on_visibility_changed)
 
 
 func _build() -> void:
 	_panel = PanelContainer.new()
-	_panel.position = Vector2(28, 28)
+	_panel.position = HOME
 	_panel.size = Vector2(500, 720)
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.055, 0.12, 0.15, 0.95)
@@ -119,6 +126,54 @@ func show_counter(title: String, copy: String, amount := 0.0) -> void:
 
 func hide_panel() -> void:
 	visible = false
+
+
+## Session 71: slides in from the left (x -40 to 0) and fades in, each time it opens.
+func _on_visibility_changed() -> void:
+	if _slide != null:
+		_slide.kill()
+	_panel.position = HOME
+	_panel.modulate.a = 1.0
+	if not visible:
+		return
+	var ui := get_tree().root.get_node_or_null("UiSounds")
+	if ui != null:
+		ui.play("whoosh", 1.15)
+	if Settings.reduce_motion:
+		return
+	_panel.position = HOME - Vector2(GameConfig.SIDE_PANEL_SLIDE, 0)
+	_panel.modulate.a = 0.0
+	_slide = create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS).set_parallel(true)
+	_slide.tween_property(_panel, "position", HOME, GameConfig.SIDE_PANEL_TIME).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_slide.tween_property(_panel, "modulate:a", 1.0, GameConfig.SIDE_PANEL_TIME * 0.7)
+
+
+## Session 71: the palette's panel colour, a rounded orange bar and softer detail text.
+func _restyle() -> void:
+	var style := _panel.get_theme_stylebox("panel") as StyleBoxFlat
+	style.bg_color = Color(UiPalette.PANEL, 0.93)
+	style.border_color = Color(UiPalette.CYAN, 0.25)
+	style.border_width_left = 2
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+	style.set_corner_radius_all(22)
+	style.shadow_color = Color(0, 0, 0, 0.3)
+	style.shadow_size = 14
+	style.shadow_offset = Vector2(0, 6)
+	detail.add_theme_color_override("font_color", UiPalette.SOFT_TEXT)
+	detail.add_theme_font_size_override("font_size", UiPalette.FONT_LABEL)
+	footer.add_theme_color_override("font_color", UiPalette.SUN)
+	footer.add_theme_font_size_override("font_size", UiPalette.FONT_BODY)
+	progress.custom_minimum_size.y = 14
+	var back := StyleBoxFlat.new()
+	back.bg_color = Color(1, 1, 1, 0.12)
+	back.set_corner_radius_all(7)
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = UiPalette.ORANGE
+	fill.set_corner_radius_all(7)
+	progress.add_theme_stylebox_override("background", back)
+	progress.add_theme_stylebox_override("fill", fill)
 
 
 func _process(_delta: float) -> void:

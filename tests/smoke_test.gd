@@ -1352,6 +1352,10 @@ func _finish() -> void:
 	_check_saving()
 	_check_polish_hooks()
 	_check_look_polish()
+	_check_screens_polish()
+	_check_hud_polish()
+
+	_check_phone_minimap_polish()
 	for action in ACTIONS:
 		Input.action_release(action)
 	_phase = "done"
@@ -2607,6 +2611,51 @@ func _check_polish_hooks() -> void:
 				expected.append(path)
 	_check("the polish hooks ran for the world", ok and hooks.attached == expected,
 			"%d parts: %s" % [expected.size(), expected])
+
+
+## Session 71: the screens polish is in the game world: screen_extras ran (buttons get their
+## hover and click), the pause menu has its blur (hidden while you ride), the Delivered card
+## has its PERFECT! stamp and XP bar, and every UI sound has its file.
+func _check_screens_polish() -> void:
+	if not GameConfig.SCREENS_V2 or not is_instance_valid(_main):
+		return
+	var extras := _main.get_node_or_null("ScreenExtras")
+	var blur: CanvasItem = _main.get_node("PauseMenu").get_node_or_null("Blur")
+	var card: Node = _main.get_node("DeliveredCard")
+	var ui := root.get_node("UiSounds")
+	var files: bool = ui.KEYS.all(func(key): return ResourceLoader.exists("res://assets/audio/%s.wav" % key))
+	_check("Session 71: screen extras, pause blur, card stamp and UI sounds are in the game",
+			(extras != null or not GameConfig.POLISH_HOOKS_ON) and blur != null and not blur.is_visible_in_tree()
+			and (card._stamp != null or not GameConfig.CARD_V2) and files, "")
+
+
+## Session 69: the HUD like the mockup on the real map: chips at the top left, the clock with
+## temperature and a shift bar, the meters at the bottom middle, and the hold ring linked up.
+func _check_hud_polish() -> void:
+	var hud: Node = _main.get_node_or_null("HUD")
+	var screen: Node = _main.get_node_or_null("ShiftScreen")
+	if hud == null or screen == null:
+		return
+	var view: Vector2 = hud.get_viewport().get_visible_rect().size
+	var chips_ok: bool = not GameConfig.HUD_TOP_CHIPS or (hud.chips != null
+			and hud.chips.get_global_rect().position.x < view.x * 0.25 and hud.chips.get_global_rect().position.y < 60.0)
+	var clock_ok: bool = not GameConfig.HUD_CLOCK_V2 or ("°C" in screen.info_line() and screen.progress_bar != null)
+	var ring_ok: bool = not GameConfig.HOLD_RING or hud.hold_ring.delivery_manager == _main.get_node_or_null("DeliveryManager")
+	var meters: Control = _main.get_node("MetersPanel/Panel")
+	var meters_ok: bool = not GameConfig.METERS_V2 or meters.get_parent().layout_mode_name in ["wide", "stacked"]
+	_check("the HUD has chips top left, a temperature clock, bottom meters and the hold ring",
+			chips_ok and clock_ok and ring_ok and meters_ok, screen.info_line() if GameConfig.HUD_CLOCK_V2 else "")
+
+## Session 70: the clearer phone and the nicer mini-map are on in the real world.
+func _check_phone_minimap_polish() -> void:
+	var phone := _main.get_node("Phone")
+	phone._process(0.0)
+	var ring: Node = phone.find_child("Ring", true, false)
+	_check("the Session 70 phone has the offer card and its countdown ring",
+			not GameConfig.PHONE_V2 or (phone._v2 != null and ring is CountdownRing), phone.mode)
+	_check("the Session 70 mini-map has its compass ring and zoom",
+			not GameConfig.MINIMAP_V2 or (_minimap.look != null and _minimap.radius >= GameConfig.MINIMAP_RADIUS_SLOW - 0.5
+			and _minimap.radius <= GameConfig.MINIMAP_RADIUS_FAST + 0.5), "%.0f m" % _minimap.radius)
 
 
 ## Session 67: the sky, light and colour extras are on in the real game world (the cartoon
