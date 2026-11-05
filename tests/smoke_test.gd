@@ -1598,7 +1598,8 @@ func _check_session27() -> void:
 	var gs: Node = _game_state
 	var foods := {"shawarma": ["shawarma"], "bakery": ["cake", "manakish"], "market": ["groceries"],
 			"farm": ["farm juice", "salad box"], "thai": ["pad thai"], "sushi": ["sushi"],
-			"tacos": ["tacos"], "burger": ["burgers"]}
+			"tacos": ["tacos"], "burger": ["burgers"],
+			"honey": ["honey jars", "wax candles"]}  # Session 69: the beekeeper
 	var start: Vector3 = data["START"]["position"]
 	for id in foods:
 		gs.reset()
@@ -2472,6 +2473,7 @@ func _goal_done(id: String) -> bool:
 func _check_world_polish() -> void:
 	await _check_session67()
 	_check_session68()
+	_check_session69()
 
 
 ## Session 67: the full map on M, the resolution settings and the school pool shade posts.
@@ -2562,3 +2564,31 @@ func _check_session68() -> void:
 	var into_house: bool = Vector2(end.x, end.z).distance_to(Vector2(villa["position"].x, villa["position"].z)) < villa["size"].z * 0.5
 	_check("they walk home along the paths and go in the front door", walker.inside and into_house
 			and door.distance_to(places.villa_door(home)) > 0.1, "%d steps, %.0f m walked" % [steps, steps * 0.25 * walker.speed])
+
+
+## Session 69: the beekeeper's stall is a pickup: phone, mini-map and full map show it.
+func _check_session69() -> void:
+	var places: PlaceBuilder = _delivery.place_builder
+	var stall := places.get_node_or_null("Restaurant_honey")
+	_check("the beekeeper has a honey stall by the hives", stall != null and stall.get("goods") == "honey", "")
+	if stall == null:
+		return
+	var hives: Rect2 = places.data.get_script_constant_map()["BEEHIVES"]
+	var door := places.restaurant_door("honey")
+	_check("the stall is beside the hives", Vector2(door.x, door.z).distance_to(hives.get_center()) < 25.0, "%s" % door)
+	var gs: Node = _game_state
+	gs.reset()
+	var order: Order = _delivery.make_order("honey", 305)
+	var accepted: bool = gs.offer_order(order) and gs.accept_offer()
+	var phone := _main.get_node("Phone")
+	phone._process(0.0)
+	var hud := _main.get_node_or_null("HUD")
+	var full_map: Node = hud.get("full_map") if hud != null else null
+	_check("a honey order shows on the phone and the mini-map", accepted and phone._pick_up.text.contains("Wahat Bee Farm")
+			and _minimap.target_label() == "Wahat Bee Farm", phone._pick_up.text)
+	_check("the full map shows the beekeeper", full_map != null and full_map.place_names().any(func(n): return n[0] == "Beekeeper"), "")
+	var money: int = gs.money
+	var done: bool = gs.pick_up() and gs.deliver()
+	_close_card()
+	_check("a honey order can be picked up at the beekeeper and delivered", done and gs.money > money
+			and order.food in ["honey jars", "wax candles"], order.describe())

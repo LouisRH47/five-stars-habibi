@@ -1,5 +1,31 @@
 # Progress
 
+## Session 69: The beekeeper as a pickup — 5 November 2026
+
+What works:
+- **Wahat Bee Farm (مزرعة نحل الواحة).** A small wooden stall beside the beehives in the
+  spine (one new RESTAURANTS entry in tools/build_wahat_data.py, like the farm stall), with an
+  amber and white striped roof, a bilingual sign, two rows of honey jars and wax candles on
+  the counter. The beekeeper in the white suit stands between the stall and the hives.
+- Orders for **honey jars** or **wax candles** come from it like any restaurant, are picked up
+  at the stall and delivered to homes. Honey jars keep well but are glass (bumps hurt a bit);
+  wax candles go soft in the sun (they lose freshness faster). Their numbers are in the
+  freshness and damage tables in scripts/game_config.gd.
+- It shows on the phone ("Pick up · Wahat Bee Farm"), on the mini-map pin and name strip,
+  and on the full map (its building, its name and the "Beekeeper" label, with the orange P
+  when it's your pickup).
+- Checked: smoke test PASS (the "an order from Wahat Bee Farm works" check, plus new checks:
+  the stall is by the hives, the phone and mini-map show it, the full map shows the beekeeper,
+  a honey order is picked up and delivered). All focused tests PASS (minimap cache, navigation,
+  coplanar, phone refresh, lifecycle, static batch, detail world, touch controls, reception,
+  housing camera, bus recovery, district traffic). Play-test bot: 6 deliveries, 4.83 stars,
+  0 crashes, never stuck.
+
+**Louis's turn:** press F5 and do a few deliveries until you get a honey jars or wax candles
+order (or ride to the beehives east along the spine). The phone says Pick up · Wahat Bee Farm,
+the mini-map pin points there and M shows an orange P by the hives. Hold E at the stall, then
+ride to the home and hold E again. Watch out on the speed bumps with honey jars.
+
 ## Session 68: People who live here — 5 November 2026
 
 What works:

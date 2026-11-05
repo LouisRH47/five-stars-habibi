@@ -144,6 +144,7 @@ func _make_shop(place: Dictionary) -> Node3D:
 	if style == "stall":
 		var stall := StaticBody3D.new()
 		stall.set_script(STALL_SCRIPT)
+		stall.goods = place.get("goods", "farm")  # Session 69: "honey" for the beekeeper
 		stall.setup(place["name"], place["arabic"], place["colour"], size)
 		return stall
 	var restaurant: Node3D = RESTAURANT_SCENE.instantiate()

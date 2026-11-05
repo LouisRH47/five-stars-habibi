@@ -1530,7 +1530,7 @@ Done when:
 - [ ] Follow someone out of a restaurant: they walk home and go inside
 - [ ] Each place has its own kind of people and swimmers wear swimwear
 
-### Session 69: The beekeeper as a pickup
+### Session 69: The beekeeper as a pickup (built, needs testing)
 
 ```text
 Session 69. The beekeeper works like a restaurant: orders for honey jars and wax
