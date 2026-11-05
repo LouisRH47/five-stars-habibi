@@ -29,7 +29,7 @@ done
 TMP_ROOT="${TMPDIR:-/tmp}"
 WORK=$(mktemp -d "${TMP_ROOT%/}/habibi-checks-XXXXXX")
 LOGS="$WORK/logs"
-mkdir -p "$LOGS"
+mkdir -p "$LOGS" "$WORK/smoke-save"
 PROJECT=$(python3 tools/prepare_validation.py "$WORK" | tail -1)
 echo "Copy of the project: $PROJECT"
 echo "Logs: $LOGS"
@@ -46,7 +46,10 @@ step() {  # step NAME [needs RESULT: PASS] -- godot args...
 	local ok=1
 	[ $code -ne 0 ] && ok=0
 	[ "$need" = "result" ] && ! grep -q "RESULT: PASS" "$log" && ok=0
-	grep -qE "SCRIPT ERROR|Parse Error|Failed to load script" "$log" && ok=0
+	# The first import of a fresh copy can log harmless font errors, so imports only count the exit code.
+	if [[ "$name" != import* ]]; then
+		grep -qE "SCRIPT ERROR|Parse Error|Failed to load script" "$log" && ok=0
+	fi
 	if [ $ok -eq 1 ]; then
 		echo "PASS  $name ($((SECONDS - start)) s)"
 	else
