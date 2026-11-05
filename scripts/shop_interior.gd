@@ -5,7 +5,8 @@ extends RefCounted
 ## lamps, a tiled floor, plants and a bin, like the restaurants. Each shop's own things
 ## (hanging bikes, pegboard, tyre rack, repair stand / caps wall, rails, hoodies, mirror)
 ## are in scripts/shop_recipes.gd. COUNTER and PREVIEW stay where the shop screens
-## (scripts/shop_controller.gd) expect them.
+## (scripts/shop_controller.gd) expect them. Session 78: the outside (arcade, stepped roof,
+## wind tower, window bays, bike rack or planters) is in scripts/shop_exterior.gd.
 
 const COUNTER := Vector3(5, 0, -4)
 const PREVIEW := Vector3(-1, 0, -1)
@@ -84,6 +85,7 @@ static func build(place: Dictionary) -> StaticBody3D:
 	var hint := SignText.make_label("Hold E to shop", 32, Color(1, 0.85, 0.5), Color(0, 0, 0, 0), 0)
 	hint.position = COUNTER + Vector3(0, 2.4, 0.1)
 	room.add_child(hint)
+	ShopExterior.dress(room, place, size, tint)  # Session 78: arcade, stepped roof, wind tower...
 	Props.bake_kits(room)
 	RestaurantRoom.draw_people_near(room)
 	return room

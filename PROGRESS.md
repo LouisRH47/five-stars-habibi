@@ -1,5 +1,27 @@
 # Progress
 
+## Session 78: the bike shop and Dune Drip look like real buildings — 5 November 2026
+
+What works:
+- **Both shops keep their glass fronts and insides** but aren't boxes any more
+  (scripts/shop_exterior.gd, shop_roof.gd, shop_arcade.gd, shop_yard.gd):
+  - a shaded arcade with pointed arches along the Plaza side (6 solid columns; the gaps and
+    both ends are open to walk or ride through)
+  - a stepped parapet with a crown over the sign
+  - a raised back storey with battlements and a wind tower; solar panels and AC units on the roof
+  - window bays, awnings, mashrabiya screens, a shop-colour band and a back door on the side
+    and back walls
+  - Pedal Point: a bike rack with bikes and a pump stand. Dune Drip: planters and two benches.
+- **The restaurants' walls that face the Plaza** have the same trim (scripts/wall_trim.gd,
+  plaza_walls.gd).
+- Plaza tables, lamps and planters keep out of the arcades (scripts/clear_spots.gd).
+- Smoke test checks the parts, solid columns, open gaps, the shop doors reachable on foot,
+  and 28 dressed walls. Smoke test and every focused suite PASS.
+- Screenshots on the Mac: both shops from the front, back and sides, and from above.
+
+**Louis's turn:** press F5, ride to Pedal Point Bikes (Louis's screenshot 09) and Dune Drip and
+ride all the way round each one, then ride through the arcade.
+
 ## Session 77: a square Plaza floor and the Dune Drip buggy park — 5 November 2026
 
 What works:

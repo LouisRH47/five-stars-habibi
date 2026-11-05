@@ -140,12 +140,13 @@ func _plaza_floors() -> void:
 	var blocks := Node3D.new()
 	blocks.name = "PlazaUpperFloors"
 	add_child(blocks)
-	# Four shopfronts per pair of upper blocks, plus the east-facing fifth block.
+	# Four shopfronts per pair of upper blocks. (Session 78: Dune Drip's block is gone; the
+	# shop has its own stepped roof now, scripts/shop_exterior.gd.)
 	for row in [-1.0, 1.0]:
 		for col in [-1.0, 1.0]:
 			var centre := Vector3(-200 + col * 32, 0, -145 + row * 50)
 			_upper(blocks, centre, Vector3(60, 6, 16), -row)
-	_upper(blocks, Vector3(-125, 0, -145), Vector3(20, 6, 18), 1.0)
+	PlazaWalls.build(blocks, _map)  # Session 78: dress the blank walls facing the Plaza
 
 
 func _upper(parent: Node3D, at: Vector3, size: Vector3, front: float) -> void:

@@ -35,6 +35,18 @@ func _init(map: Dictionary) -> void:
 		var front := Vector3(sin(deg_to_rad(shop.get("facing", 0.0))), 0, cos(deg_to_rad(shop.get("facing", 0.0))))
 		var door := p + front * ((size.x if turned else size.z) * 0.5 + 2.5)
 		_points.append([Vector2(door.x, door.z), 2.6])
+	# Session 78: the two shops have a shaded arcade (about 3 m deep) along their front.
+	# Keep tables, lamps and planters out of it.
+	for shop: Dictionary in map.get("SHOPS", []):
+		var p: Vector3 = shop["position"]
+		var size: Vector3 = shop["size"]
+		var turned := absf(sin(deg_to_rad(shop.get("facing", 0.0)))) > 0.5
+		var front := Vector3(sin(deg_to_rad(shop.get("facing", 0.0))), 0, cos(deg_to_rad(shop.get("facing", 0.0))))
+		var depth := (size.x if turned else size.z) * 0.5
+		var width := (size.z if turned else size.x) * 0.5 + 1.0
+		var middle := p + front * (depth + 2.0)  # the arcade's middle line
+		var half := Vector2(2.5, width) if turned else Vector2(width, 2.5)
+		_boxes.append(Rect2(middle.x - half.x, middle.z - half.y, half.x * 2, half.y * 2))
 	for key in ["INSTITUTE", "GYM", "MOSQUE"]:
 		if map.has(key):
 			var p: Vector3 = map[key]["position"]

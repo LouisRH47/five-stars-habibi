@@ -710,6 +710,7 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 5 Nov 2026 | Textures: real CC0 photo textures from Poly Haven (running track blue and red, brick pavers, square concrete pavers), old grass, sand and water looks restored, new asphalt kept |
 | 5 Nov 2026 | Session 75: kerbs have no invisible walls; riding over one is a small bump (you keep 90% of your speed, never a crash). Speed bumps only on the ring road. Buggies drive only on roads, keep right of the yellow line and slow at junctions. Space jumps on foot (about 0.6 m) |
 | 5 Nov 2026 | Session 76: kerbs are raised (12 cm) and continuous, with gaps only at paths, crossings and car parks. Road corners are curved (about 6 m for lanes, 10 m for bigger roads); each cluster's lanes form a rounded loop; the C Institute road is one smooth curve |
+| 5 Nov 2026 | Session 78: Pedal Point Bikes and Dune Drip get an arcade on the Plaza side, a stepped parapet, a wind tower and outdoor details (bike rack and pump; planters and benches); Plaza-facing restaurant walls get the same trim |
 
 ## Sources
 

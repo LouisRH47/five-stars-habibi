@@ -61,6 +61,18 @@ const SPOTS := {
 	"r2_school_park_top": [Vector3(-365, 60, -5), Vector3(-365, 0, 32)],
 	"r2_car_park_ground": [Vector3(195, 2.4, 196), Vector3(190, 0.5, 150)],
 	"r2_parked_cars_close": [Vector3(193, 1.7, 176), Vector3(187.8, 0.5, 168)],
+	# lane B (Session 78): every side of both shops, the arcade and the Plaza walls
+	"pedal_point_front": [Vector3(-250, 3.0, -145), Vector3(-275, 4.0, -145)],
+	"pedal_point_north": [Vector3(-275, 3.0, -175), Vector3(-275, 3.5, -145)],
+	"pedal_point_south": [Vector3(-262, 3.0, -118), Vector3(-278, 3.5, -145)],
+	"pedal_point_arcade": [Vector3(-264.6, 1.7, -153), Vector3(-264.6, 1.9, -138)],
+	"dune_drip_front": [Vector3(-150, 3.0, -145), Vector3(-125, 4.0, -145)],
+	"dune_drip_north": [Vector3(-138, 3.0, -172), Vector3(-123, 3.5, -145)],
+	"dune_drip_south": [Vector3(-125, 3.0, -115), Vector3(-125, 3.5, -145)],
+	"shops_top": [Vector3(-200, 45, -100), Vector3(-200, 0, -145)],
+	"pedal_point_roof": [Vector3(-250, 22, -120), Vector3(-275, 6, -145)],
+	"plaza_row_ends": [Vector3(-275, 2.4, -165), Vector3(-258, 5.0, -192)],
+	"plaza_row_gap": [Vector3(-236, 2.0, -176), Vector3(-243, 3.0, -195)],
 }
 
 var _main: Node

@@ -3115,9 +3115,74 @@ func _session77_lot(map: Dictionary, kind: String) -> Dictionary:
 
 
 ## Session 78: bike shop and Dune Drip buildings.
-## (Session 78 checks go here.)
+## Both shops have an arcade with solid columns (open between them), a stepped roof with a
+## parapet, a wind tower, window bays and a colour band, and their own things outside; the
+## doors are still reachable on foot through the arcade; the walls facing the Plaza are dressed.
 func _check_session78() -> void:
 	await process_frame
+	var places: Node = _main.get_node_or_null("PlaceBuilder")
+	if places == null or places.get_node_or_null("Shop_bikes") == null:
+		print("      no shops on this map, Session 78 checks skipped")
+		return
+	var common := ["arcade", "parapet", "stepped_roof", "raised_back", "wind_tower", "window_bays", "colour_band", "back_door"]
+	var own := {"bikes": ["bike_rack", "pump_stand", "planters"], "clothes": ["planters", "bench"]}
+	for id: String in own:
+		var shop: Node3D = places.get_node("Shop_" + id)
+		var has: PackedStringArray = shop.get_meta("exterior", PackedStringArray())
+		var missing: Array = (common + own[id]).filter(func(part): return not has.has(part))
+		var count: int = shop.get_meta("exterior_parts", 0)
+		_check("Session 78: %s has an arcade, stepped roof, wind tower, window bays and its own things outside" % shop.name,
+				missing.is_empty() and count > 300 and shop.get_meta("arcade_columns", 0) >= 6, "missing %s, %d parts" % [missing, count])
+		_s78_check_arcade(shop)
+		_s78_check_reach(shop)
+	var floors := _main.get_node_or_null("DistrictDetail/PlazaUpperFloors")
+	if floors != null:
+		var on_top := floors.get_children().filter(func(n): return n is Node3D and (n as Node3D).position.distance_to(Vector3(-125, 0, -145)) < 5.0)
+		_check("Session 78: Dune Drip has its own stepped roof (no box hanging over it)", on_top.is_empty(), "%d" % on_top.size())
+		var walls := floors.get_node_or_null("PlazaWalls")
+		_check("Session 78: the restaurant side walls and upper floor ends facing the Plaza are dressed",
+				walls != null and walls.get_meta("walls", 0) >= 24, "%d walls" % (walls.get_meta("walls", 0) if walls else 0))
+
+
+## Real collision where you see something, and none where you don't: columns and piers are
+## solid, the gaps between the columns and the open ends of the arcade are free.
+func _s78_check_arcade(shop: Node3D) -> void:
+	var fz: float = 9.15
+	var cz: float = fz + GameConfig.SHOP_ARCADE_DEPTH - 0.35
+	var solid := []
+	for x: float in GameConfig.SHOP_COLUMN_XS:
+		for spot in [Vector3(x, 1.0, cz), Vector3(-x, 1.0, cz)]:
+			if not _s78_blocked(shop, spot):
+				solid.append(spot)
+	var open := []
+	for spot in [Vector3(0, 1.0, fz + 1.5), Vector3(4.65, 1.0, cz), Vector3(-4.65, 1.0, cz),
+			Vector3(9.85, 1.0, fz + 1.2), Vector3(-9.85, 1.0, fz + 1.2), Vector3(0, 1.0, fz + 0.5)]:
+		if _s78_blocked(shop, spot):
+			open.append(spot)
+	_check("Session 78: %s's columns are solid and the arcade is open to walk and ride through" % shop.name,
+			solid.is_empty() and open.is_empty(), "not solid %s, blocked %s" % [solid, open])
+
+
+func _s78_blocked(shop: Node3D, local: Vector3) -> bool:
+	var query := PhysicsPointQueryParameters3D.new()
+	query.position = shop.to_global(local)
+	for hit in shop.get_world_3d().direct_space_state.intersect_point(query, 8):
+		if hit["collider"] == shop or shop.is_ancestor_of(hit["collider"]):
+			return true
+	return false
+
+
+## The shop door can be reached on foot from the start: in front, under the arcade, inside.
+func _s78_check_reach(shop: Node3D) -> void:
+	if _grid == null:
+		return
+	var start: Vector3 = _main.get_node("PlaceBuilder").data.get_script_constant_map()["START"]["position"]
+	var stuck := []
+	for local in [Vector3(0, 0, 9.15 + GameConfig.SHOP_ARCADE_DEPTH + 2.5), Vector3(0, 0, 10.4), Vector3(0, 0, 5.0)]:
+		var spot := shop.to_global(local)
+		if not _grid.can_reach(Vector2(start.x, start.z), Vector2(spot.x, spot.z)):
+			stuck.append(local)
+	_check("Session 78: %s's door can be reached through the arcade" % shop.name, stuck.is_empty(), "stuck at %s" % [stuck])
 
 # --- end of Session 78 checks ---
 

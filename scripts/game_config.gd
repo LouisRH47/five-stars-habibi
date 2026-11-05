@@ -570,7 +570,17 @@ const PARKED_BUGGY_COLOUR := Color(0.92, 0.91, 0.84)  # the buggies parked behin
 
 
 # --- Fix pass Session 78: bike shop and Dune Drip buildings ---
-# (Session 78 numbers go here)
+# The outside of the two shops (scripts/shop_exterior.gd) and the dressed walls round the
+# Plaza (scripts/plaza_walls.gd). All in metres.
+const SHOP_ARCADE_DEPTH := 3.0      # how far the shaded arcade sticks out in front of a shop
+const SHOP_ARCADE_TOP := 4.0        # top of the arcade roof (it stays under the shop sign)
+const SHOP_ARCH_SPRING := 2.6       # where the arches start to curve, on top of the columns
+const SHOP_ARCH_TOP := 3.3          # the top of each arch (under the arcade beam)
+const SHOP_COLUMN_XS := [2.9, 6.4, 9.85]  # columns each side of the door, from the middle
+const SHOP_PARAPET := 1.0           # the low wall round the edge of the roof
+const SHOP_CROWN_STEPS := [0.8, 1.6]  # how much higher each step over the sign goes
+const SHOP_UPPER_HEIGHT := 3.2      # the raised back part of the roof (the step up)
+const SHOP_TOWER_HEIGHT := 3.6      # the wind tower on top of that
 
 
 # --- Fix pass Session 79: car parks and the mosque car park ---
