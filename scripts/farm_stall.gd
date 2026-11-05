@@ -3,6 +3,7 @@ extends StaticBody3D
 ## with a counter, crates of fruit and veg, juice bottles, a green and white striped roof
 ## and a bilingual sign board. The front is the +Z side. PlaceBuilder makes one for a shop
 ## with "style": "stall" and calls setup(). The whole stall is solid.
+## Session 69: the beekeeper's stall ("goods": "honey") has honey jars and wax candles instead.
 
 const WOOD := Color(0.62, 0.43, 0.26, 1)
 const DARK_WOOD := Color(0.45, 0.3, 0.18, 1)
@@ -13,6 +14,11 @@ const FRUIT := [Color(0.95, 0.55, 0.1, 1), Color(0.85, 0.15, 0.15, 1), Color(0.4
 const ROOF_STRIPES := 6
 const BOARD_HEIGHT := 0.9
 const BOARD_FONT_SIZE := 64
+const HONEY := Color(0.92, 0.6, 0.1, 1)
+const WAX := Color(0.98, 0.9, 0.62, 1)
+
+## What's on the counter: "farm" (fruit, veg and juice) or "honey" (jars and candles).
+var goods := "farm"
 
 
 ## Builds the stall. size: width, height, depth. colour: the farm green.
@@ -27,7 +33,15 @@ func setup(english: String, arabic: String, colour: Color, size: Vector3) -> voi
 	for x in [-size.x * 0.5 + 0.15, size.x * 0.5 - 0.15]:
 		for z in [-front + 0.15, front - 0.15]:
 			LowPoly.box(self, Vector3(0.15, size.y - 0.3, 0.15), DARK_WOOD, Vector3(x, (size.y - 0.3) * 0.5, z))
-	# Crates of fruit and veg on the counter, and juice bottles.
+	if goods == "honey":
+		_honey_counter(size, front)
+	else:
+		_farm_counter(size, front)
+	_roof_and_sign(english, arabic, colour, size)
+
+
+## Crates of fruit and veg on the counter, and juice bottles.
+func _farm_counter(size: Vector3, front: float) -> void:
 	for i in 4:
 		var x := -size.x * 0.5 + 0.8 + i * (size.x - 1.6) / 3.0
 		LowPoly.box(self, Vector3(0.9, 0.3, 0.6), DARK_WOOD, Vector3(x, 1.23, front - 0.4))
@@ -36,7 +50,23 @@ func setup(english: String, arabic: String, colour: Color, size: Vector3) -> voi
 	for i in 5:
 		LowPoly.cylinder(self, 0.06, 0.07, 0.3, Color(0.98, 0.6, 0.15, 1),
 				Vector3(-0.6 + i * 0.3, 1.2, front - 0.15))
-	# A striped roof, tilted down to the front.
+
+
+## Session 69: two rows of honey jars with wooden lids, and wax candles at the front.
+func _honey_counter(size: Vector3, front: float) -> void:
+	for i in 7:
+		var x := -size.x * 0.5 + 0.7 + i * (size.x - 1.4) / 6.0
+		for row in 2:
+			var z := front - 0.6 + row * 0.35
+			LowPoly.cylinder(self, 0.1, 0.1, 0.22, HONEY, Vector3(x, 1.19, z))
+			LowPoly.cylinder(self, 0.105, 0.105, 0.04, DARK_WOOD, Vector3(x, 1.32, z))  # lid
+	for i in 6:
+		var x := -1.0 + i * 0.4
+		LowPoly.cylinder(self, 0.06, 0.06, 0.3 + (i % 3) * 0.08, WAX, Vector3(x, 1.25 + (i % 3) * 0.04, front - 0.12))
+
+
+## A striped roof, tilted down to the front, and the sign board on top.
+func _roof_and_sign(english: String, arabic: String, colour: Color, size: Vector3) -> void:
 	var stripe := size.x / ROOF_STRIPES
 	for i in ROOF_STRIPES:
 		var part := LowPoly.box(self, Vector3(stripe, 0.1, size.z + 0.8), colour if i % 2 == 0 else WHITE,

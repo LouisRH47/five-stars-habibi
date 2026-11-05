@@ -1,5 +1,113 @@
 # Progress
 
+## Session 69: The beekeeper as a pickup — 5 November 2026
+
+What works:
+- **Wahat Bee Farm (مزرعة نحل الواحة).** A small wooden stall beside the beehives in the
+  spine (one new RESTAURANTS entry in tools/build_wahat_data.py, like the farm stall), with an
+  amber and white striped roof, a bilingual sign, two rows of honey jars and wax candles on
+  the counter. The beekeeper in the white suit stands between the stall and the hives.
+- Orders for **honey jars** or **wax candles** come from it like any restaurant, are picked up
+  at the stall and delivered to homes. Honey jars keep well but are glass (bumps hurt a bit);
+  wax candles go soft in the sun (they lose freshness faster). Their numbers are in the
+  freshness and damage tables in scripts/game_config.gd.
+- It shows on the phone ("Pick up · Wahat Bee Farm"), on the mini-map pin and name strip,
+  and on the full map (its building, its name and the "Beekeeper" label, with the orange P
+  when it's your pickup).
+- Checked: smoke test PASS (the "an order from Wahat Bee Farm works" check, plus new checks:
+  the stall is by the hives, the phone and mini-map show it, the full map shows the beekeeper,
+  a honey order is picked up and delivered). All focused tests PASS (minimap cache, navigation,
+  coplanar, phone refresh, lifecycle, static batch, detail world, touch controls, reception,
+  housing camera, bus recovery, district traffic). Play-test bot: 6 deliveries, 4.83 stars,
+  0 crashes, never stuck.
+
+**Louis's turn:** press F5 and do a few deliveries until you get a honey jars or wax candles
+order (or ride to the beehives east along the spine). The phone says Pick up · Wahat Bee Farm,
+the mini-map pin points there and M shows an orange P by the hives. Hold E at the stall, then
+ride to the home and hold E again. Watch out on the speed bumps with honey jars.
+
+## Session 68: People who live here — 5 November 2026
+
+What works:
+- **People walk home.** Every 9 seconds or so, if you're near the Plaza, someone with a
+  shopping bag walks out of a restaurant, along the lanes and paths (the same map scan the
+  GPS uses) to a home in one of the clusters, up to the front door and in through it. Only
+  once they're inside the house are they gone. Up to 4 at a time. (scripts/home_walkers.gd,
+  scripts/home_walker.gd, made by CustomerSpawner.) Near you they stand on the real ground
+  (down the Plaza steps too).
+- **Only people near you are fully animated.** Closer than 45 m: full animation. Further:
+  they keep moving along but hold their pose. Past the life view distance: hidden. This now
+  covers the route walkers too (LifeBuilder), not just the new people.
+- **Each place has its own people** (scripts/place_looks.gd for the clothes,
+  scripts/place_crowds.gd for where they stand):
+  - all three pools: swimmers in swim shorts or rash guards (some with swim caps) and a
+    lifeguard in red and yellow with a rescue float
+  - gym: gym clothes, a towel and a water bottle (also the gym's customers at the door)
+  - school: pupils in uniform running about the yard, teachers with lanyards
+  - stables: a rider in jodhpurs and a helmet, grooms
+  - Plaza: waiters in aprons outside four restaurants, shoppers with bags walking round,
+    a parent and child
+  - bus station: commuters with backpacks and suitcases
+  - spine paths: joggers in sports kit, dog walkers (with a dog on a lead), a parent pushing
+    a buggy
+  - cluster plazas and playgrounds: neighbours chatting, a parent on each bench
+  - beekeeper: white suit, wide hat and a dark veil, gloves
+  - building sites: workers in hi-vis vests and hard hats
+  - farm beds and planters: gardeners in straw sun hats
+- Checked: smoke test PASS (new checks: every kind of person is there, all 9 swimmers wear
+  swimwear, the near/mid/far animation rule, someone walks from 1000 Pizza to C1 Villa 1,
+  253 m, and goes in the door), coplanar, detail world and static batch tests PASS.
+
+Known bugs / to do:
+- Majlis Gardens isn't built yet (Session 66), so its kids and benches aren't there; the
+  cluster playgrounds have them.
+- People walking home aren't solid (like customers), so the bike rides through them.
+- People walking home use the lanes, not only the pavements.
+
+**Louis's turn:** press F5 and ride into the Plaza. Wait by a restaurant: someone with a bag
+walks out. Follow them (slowly): they walk all the way to a cluster and go in their front door.
+Then ride round: swimmers in swimwear and a lifeguard at the community pool, the lap pool by
+the gym and the school pools; gym clothes outside the gym; pupils and teachers in the school
+yard; waiters outside the restaurants; commuters with suitcases at the bus station; a dog
+walker and a buggy on the spine; the beekeeper in white by the hives; hard hats at the
+building sites; gardeners in sun hats at the farm beds.
+
+## Session 67: Glitch fixes, full map and resolution setting — 5 November 2026
+
+What works:
+- **No flicker on the Plaza walkways.** The Plaza paving sat only 5 mm under the Plaza Road
+  and the bench bases, so it flickered from far away. Its top is now 2 cm up (PlazaBuilder
+  PAVING_TOP), a clear 2 cm under the roads. The fountain water and the teal floor ring also
+  got a real 2.5 cm step. tests/coplanar_test.gd now also checks for surfaces only a few
+  millimetres apart around the Plaza restaurants (0 left).
+- **School pool shades stand up.** Both school pool shades (and the two school playground
+  shades, which floated too) have white posts with foot plates, beams, a trim round the edge
+  and a raised middle. The posts are solid.
+- **Full map on M.** Press M: the whole community fills the screen with roads, parks, homes,
+  shops and names (clusters, Plaza, school, gym, pools, gates, beekeeper and more), a white
+  arrow where you are (also when walking), the pickup (orange P) and drop-off (teal D) of
+  your order and a legend. M or Esc closes it. The game is paused while it's open.
+  (scripts/full_map.gd, made by scripts/hud.gd, drawn with the mini-map's own drawing.)
+- **Resolution.** Settings has two new rows under Graphics: Window (Auto, 1280 x 720,
+  1600 x 900, 1920 x 1080, 2560 x 1440; desktop only) and Render scale (50, 75, 100%,
+  everywhere; the browser starts at 75%). Both are saved with the other settings.
+- Checked: smoke test PASS (new checks: full map opens, pauses, has names, closes; render
+  scale is used and saved; the pool shades have posts), coplanar test PASS. Headless Godot
+  can't take screenshots, so the screenshot step was skipped.
+
+Known bugs / to do:
+- The north restaurant row's back 3 m sits over the ring road (hidden under the shop floor).
+  That's road layout, left for the roads sessions.
+- On phones there's no M key yet, so the full map can't be opened there.
+
+**Louis's turn:** open the project in Godot and press F5, start a shift. Press M: you should
+see the whole map with names, your white arrow and a legend; everything stops moving. Press M
+again (or Esc) to close it. Accept an order and press M: an orange P at the restaurant and a
+teal D at the home. Ride into the Plaza and look at the paving in front of the restaurants from
+far away: no flickering. Ride to the school pools: the shade roofs stand on posts. Press Esc,
+Settings: change Render scale to 50% (the world gets softer), then back to 100%. Try a Window
+size. Quit and start again: your choices are still there.
+
 ## Session 60: The road network from the approved plan — 5 November 2026
 
 Built straight after looks pass Session 52, at Louis's request (the looks pass carries on

@@ -122,15 +122,20 @@ const TIME_EMPTY_AT := 2.0
 # Session 27 foods: shawarma goes cold (medium), cake keeps but breaks on bumps, groceries are
 # slow to spoil and a bit heavy, farm juice and salad spoil in the sun.
 const FRESHNESS_DRAIN := {"pizza": 0.25, "bubble tea": 0.4, "ice cream": 0.55,  # Session 17: was 0.35/0.6/1.0
-		"shawarma": 0.35, "cake": 0.2, "groceries": 0.1, "farm juice": 0.5, "salad box": 0.45, "pad thai": 0.35, "sushi": 0.5, "tacos": 0.3, "burgers": 0.3, "coffee": 0.4, "manakish": 0.25}  # Session 27
+		"shawarma": 0.35, "cake": 0.2, "groceries": 0.1, "farm juice": 0.5, "salad box": 0.45, "pad thai": 0.35, "sushi": 0.5, "tacos": 0.3, "burgers": 0.3, "coffee": 0.4, "manakish": 0.25,
+		"honey jars": 0.08, "wax candles": 0.3}  # Session 27
+# Session 69: honey jars keep (glass, a bit breakable), wax candles go soft in the sun.
 # Damage lost per knock, per food. Bubble tea hates speed bumps.
 const DAMAGE_SPEED_BUMP := {"pizza": 3.0, "bubble tea": 14.0, "ice cream": 5.0,  # at full speed
-		"shawarma": 4.0, "cake": 16.0, "groceries": 6.0, "farm juice": 10.0, "salad box": 6.0, "pad thai": 7, "sushi": 9, "tacos": 14, "burgers": 5, "coffee": 14, "manakish": 4}  # cake breaks on bumps
+		"shawarma": 4.0, "cake": 16.0, "groceries": 6.0, "farm juice": 10.0, "salad box": 6.0, "pad thai": 7, "sushi": 9, "tacos": 14, "burgers": 5, "coffee": 14, "manakish": 4,
+		"honey jars": 9, "wax candles": 4}  # cake breaks on bumps
 const DAMAGE_SPEED_BUMP_SLOW_SHARE := 0.25  # at or under SPEED_BUMP_SAFE_KMH a bump costs a quarter of that
 const DAMAGE_HARD_BRAKE := {"pizza": 3.0, "bubble tea": 8.0, "ice cream": 4.0,
-		"shawarma": 3.0, "cake": 9.0, "groceries": 5.0, "farm juice": 7.0, "salad box": 4.0, "pad thai": 5, "sushi": 5, "tacos": 8, "burgers": 3, "coffee": 8, "manakish": 3}
+		"shawarma": 3.0, "cake": 9.0, "groceries": 5.0, "farm juice": 7.0, "salad box": 4.0, "pad thai": 5, "sushi": 5, "tacos": 8, "burgers": 3, "coffee": 8, "manakish": 3,
+		"honey jars": 6, "wax candles": 3}
 const DAMAGE_COLLISION := {"pizza": 15.0, "bubble tea": 25.0, "ice cream": 18.0,  # a full-speed head-on hit
-		"shawarma": 15.0, "cake": 30.0, "groceries": 20.0, "farm juice": 25.0, "salad box": 18.0, "pad thai": 18, "sushi": 22, "tacos": 25, "burgers": 15, "coffee": 25, "manakish": 15}
+		"shawarma": 15.0, "cake": 30.0, "groceries": 20.0, "farm juice": 25.0, "salad box": 18.0, "pad thai": 18, "sushi": 22, "tacos": 25, "burgers": 15, "coffee": 25, "manakish": 15,
+		"honey jars": 24, "wax candles": 12}
 # Hard braking: braking (S or Space) while going faster than this counts once per press.
 const HARD_BRAKE_MIN_KMH := 22.0       # Session 17: was 18, then normal braking counted too
 
@@ -145,7 +150,8 @@ const SCOOTER_GIVE_WAY_TIME := 2.0    # seconds a kid waits for you before turni
 const CRITTER_SCARED_TIME := 1.5      # seconds a bumped cat runs / a bumped kid stops
 # Extra food damage when you bump a cat or a kid (on top of the crash itself).
 const DAMAGE_CRITTER := {"pizza": 10.0, "bubble tea": 15.0, "ice cream": 12.0,
-		"shawarma": 10.0, "cake": 16.0, "groceries": 12.0, "farm juice": 15.0, "salad box": 12.0, "pad thai": 12, "sushi": 14, "tacos": 15, "burgers": 10, "coffee": 15, "manakish": 10}
+		"shawarma": 10.0, "cake": 16.0, "groceries": 12.0, "farm juice": 15.0, "salad box": 12.0, "pad thai": 12, "sushi": 14, "tacos": 15, "burgers": 10, "coffee": 15, "manakish": 10,
+		"honey jars": 13, "wax candles": 8}
 
 # --- Stars, tips, XP and rating (Session 10) ---
 # Stars: start at 5, each orange meter takes off 0.5, each red one 1.5. Never below 1 (PRD).
@@ -331,6 +337,12 @@ const LIFE_GIVE_UP_TIME := 5.0        # seconds one waits for you to move before
 const LIFE_TURN_SPEED := 4.0          # how quickly they turn to face where they're going
 ## Low / Medium / High: further away than this, people stop animating and are hidden (faster).
 const LIFE_VIEW_DISTANCE := [70.0, 100.0, 140.0]
+# --- Session 68: people who live here ---
+const PEOPLE_ANIMATE_DISTANCE := 45.0  # m: closer people are fully animated, further hold their pose
+const HOME_WALKER_EVERY := 9.0         # s between people leaving a restaurant to walk home
+const HOME_WALKER_MAX := 4             # at most this many walking home at once
+const HOME_WALKER_NEAR := 160.0        # m: only restaurants this close to you send people home
+const HOME_WALKER_DOOR_FADE := 0.8     # m they walk in through the door before they're gone
 const BIRD_SPEED := 8.0               # m/s, birds circling over the community
 const PALM_SWAY_DEG := 2.5            # how far the palm tops sway in the breeze
 const PALM_SWAY_SPEED := 0.9          # how fast they sway

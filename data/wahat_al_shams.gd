@@ -357,6 +357,7 @@ const RESTAURANTS := [
 	{"id": "tacos", "name": "Mario Bonito", "arabic": "ماريو بونيتو", "food": "tacos", "colour": Color(0.75, 0.3, 0.3, 1), "position": Vector3(-174, 0, -95), "facing": 180.0, "interior": true, "venue_type": "tacos"},
 	{"id": "burger", "name": "Burgerology", "arabic": "برجرولوجي", "food": "burgers", "colour": Color(0.35, 0.45, 0.4, 1), "position": Vector3(-148, 0, -95), "facing": 180.0, "interior": true, "venue_type": "burger"},
 	{"id": "farm", "name": "Wahat Farm Stall", "arabic": "كشك مزرعة الواحة", "food": "farm juice", "foods": ["farm juice", "salad box"], "colour": Color(0.35, 0.65, 0.25, 1), "position": Vector3(-20, 0, 18), "facing": 180.0, "style": "stall", "size": Vector3(9, 4, 6)},
+	{"id": "honey", "name": "Wahat Bee Farm", "arabic": "مزرعة نحل الواحة", "food": "honey jars", "foods": ["honey jars", "wax candles"], "colour": Color(0.9, 0.62, 0.12, 1), "position": Vector3(352, 0, 18), "facing": 180.0, "style": "stall", "goods": "honey", "size": Vector3(8, 4, 6)},
 ]
 
 const SHOPS := [

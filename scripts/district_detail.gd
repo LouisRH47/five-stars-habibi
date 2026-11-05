@@ -176,7 +176,8 @@ func _school_details() -> void:
 	# Two shaded swimming pools, courts and two playgrounds fit inside the perimeter.
 	for x in [-349.0, -326.0]:
 		_pool(Rect2(x, 98, 18, 11), "SchoolPool", false)
-		LowPoly.box(school, Vector3(19, 0.14, 12), Color(0.83, 0.76, 0.6), Vector3(x + 9, 3.8, 103.5))
+		# Session 67: the shade stands on posts with a proper roof (it used to float).
+		_shade_roof(school, Vector3(x + 9, 3.8, 103.5), Vector2(19, 12), "SchoolPoolShade_%d" % int(-x))
 	var court_index := 0
 	for rect in [Rect2(-418, 80, 38, 15), Rect2(-367, 80, 38, 15)]:
 		LowPoly.box(school, Vector3(rect.size.x, 0.04, rect.size.y), Color(0.3, 0.55, 0.45), Vector3(rect.get_center().x, 0.06, rect.get_center().y))
@@ -195,7 +196,7 @@ func _school_details() -> void:
 	Props.playground(school, Vector3(-411, 0, 72), Vector2(12, 10))
 	Props.playground(school, Vector3(-321, 0, 121), Vector2(12, 10))
 	for at: Vector3 in [Vector3(-411, 4.5, 72), Vector3(-321, 4.5, 121)]:
-		LowPoly.box(school, Vector3(14, 0.15, 12), Color(0.9, 0.75, 0.4), at)
+		_shade_roof(school, at, Vector2(14, 12), "PlaygroundShade_%d" % int(-at.x), Color(0.9, 0.75, 0.4))
 	for x in range(-412, -316, 6):
 		LowPoly.box(school, Vector3(5.8, 0.16, 7.0), GLASS.darkened(0.6), Vector3(x, 3.5, 188))
 	for x in [-374.0, -357.0]:
@@ -334,6 +335,36 @@ func _street_details() -> void:
 		LowPoly.box(props, Vector3(0.5, 1.4, 0.4), TEAL, Vector3(area.position.x + 1, 0.7, area.position.y + 2))
 		for i in 4:
 			LowPoly.box(props, Vector3(0.08, 0.8, 1.4), Color.GRAY, Vector3(area.end.x - 1, 0.4, area.position.y + 3 + i))
+
+
+## Session 67: a shade roof standing on posts. `top` is the middle of the roof slab,
+## `size` its width (x) and depth (z). Posts at the corners and halfway along the long
+## sides, a trim round the edge and a low raised middle, so it reads as a real roof.
+func _shade_roof(parent: Node3D, top: Vector3, size: Vector2, id: String,
+		tint := Color(0.83, 0.76, 0.6)) -> void:
+	var shade := StaticBody3D.new()
+	shade.name = id
+	shade.position = Vector3(top.x, 0, top.z)
+	parent.add_child(shade)
+	var height := top.y
+	var inset := Vector2(size.x * 0.5 - 0.3, size.y * 0.5 - 0.3)
+	var spots: Array[Vector2] = []
+	for sx in [-1.0, 0.0, 1.0]:
+		for sz in [-1.0, 1.0]:
+			if sx == 0.0 and size.x < 15.0:
+				continue
+			spots.append(Vector2(sx * inset.x, sz * inset.y))
+	for spot in spots:
+		var at := Vector3(spot.x, height * 0.5, spot.y)
+		LowPoly.cylinder(shade, 0.11, 0.13, height, WHITE, at).name = "ShadePost"
+		LowPoly.solid_cylinder(shade, 0.15, height, at)
+		LowPoly.box(shade, Vector3(0.4, 0.12, 0.4), WHITE, Vector3(spot.x, 0.06, spot.y))  # foot plate
+	LowPoly.box(shade, Vector3(size.x, 0.14, size.y), tint, Vector3(0, height, 0)).name = "ShadeRoof"
+	for side in [-1.0, 1.0]:  # white trim round the edge
+		LowPoly.box(shade, Vector3(size.x + 0.2, 0.3, 0.1), WHITE, Vector3(0, height - 0.03, side * (size.y * 0.5 + 0.05)))
+		LowPoly.box(shade, Vector3(0.1, 0.3, size.y + 0.03), WHITE, Vector3(side * (size.x * 0.5 + 0.05), height - 0.03, 0))
+		LowPoly.box(shade, Vector3(size.x - 0.6, 0.1, 0.16), WHITE.darkened(0.08), Vector3(0, height - 0.15, side * inset.y))  # beam
+	LowPoly.box(shade, Vector3(size.x * 0.6, 0.22, size.y * 0.5), tint.darkened(0.06), Vector3(0, height + 0.17, 0))
 
 
 func _solid(body: StaticBody3D, size: Vector3, tint: Color, at: Vector3) -> void:

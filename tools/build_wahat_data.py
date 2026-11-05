@@ -150,6 +150,8 @@ for i,(id,name,arabic,food) in enumerate(shops):
     if id=='bakery':item['foods']=['cake','manakish']
     restaurants.append(item)
 restaurants.append({'id':'farm','name':'Wahat Farm Stall','arabic':'كشك مزرعة الواحة','food':'farm juice','foods':['farm juice','salad box'],'colour':colour(.35,.65,.25),'position':v3(-20,0,18),'facing':180.,'style':'stall','size':v3(9,4,6)})
+# Session 69: the beekeeper's stall beside the hives (BEEHIVES), honey jars and wax candles.
+restaurants.append({'id':'honey','name':'Wahat Bee Farm','arabic':'مزرعة نحل الواحة','food':'honey jars','foods':['honey jars','wax candles'],'colour':colour(.9,.62,.12),'position':v3(352,0,18),'facing':180.,'style':'stall','goods':'honey','size':v3(8,4,6)})
 put('RESTAURANTS',restaurants)
 put('SHOPS',[{'id':'bikes','name':'Pedal Point Bikes','arabic':'بيدال بوينت','position':v3(-275,0,-145),'facing':90.,'size':v3(20,8,18)}, {'id':'clothes','name':'Dune Drip','arabic':'ديون دريب','position':v3(-125,0,-145),'facing':-90.,'size':v3(20,8,18)}])
 put('VILLA_SIZE',v3(9,8.5,8))
@@ -190,4 +192,4 @@ for name,value in constants.items():
 (ROOT/'data/wahat_al_shams.gd').write_text('\n'.join(lines).rstrip()+'\n')
 assert len([v for v in homes if v['kind']!='spot'])==500
 assert len({v['number'] for v in homes})==504
-print('Generated 500 homes, 4 venues, 11 pickups and',len(roads),'road/path segments')
+print('Generated 500 homes, 4 venues, 12 pickups and',len(roads),'road/path segments')

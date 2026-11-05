@@ -5,6 +5,8 @@ extends Node3D
 ## teacher or a kid, at the stables a rider or a groom, and regulars say their own lines.
 ## For "leave it at the door" orders nobody comes out: a food bag is left on the doorstep
 ## for a few seconds instead.
+## Session 68: also makes HomeWalkers (scripts/home_walkers.gd): people who walk out of a
+## restaurant near you and walk home to a cluster, in through their front door.
 
 ## Knows where every villa is and which way it faces.
 @export var place_builder: PlaceBuilder
@@ -15,10 +17,16 @@ const BAG_COLOUR := Color(0.9490196, 0.54901963, 0.15686275, 1)  # Snackaroo ora
 
 ## The last one made (a customer or a bag), for the smoke test.
 var last_spawned: Node3D
+## Session 68: people walking home from the restaurants.
+var home_walkers: HomeWalkers
 
 
 func _ready() -> void:
 	GameState.order_delivered.connect(_on_order_delivered)
+	home_walkers = HomeWalkers.new()
+	home_walkers.name = "HomeWalkers"
+	home_walkers.place_builder = place_builder
+	add_child(home_walkers)
 
 
 ## A random line with the rider's name filled in.

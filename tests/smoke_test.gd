@@ -1347,6 +1347,7 @@ func _finish() -> void:
 	await _check_life_meets_events()
 	_check_session32()
 	await _check_venue_handoffs()
+	await _check_world_polish()  # Sessions 67 to 69
 	_check_saving()
 	for action in ACTIONS:
 		Input.action_release(action)
@@ -1597,7 +1598,8 @@ func _check_session27() -> void:
 	var gs: Node = _game_state
 	var foods := {"shawarma": ["shawarma"], "bakery": ["cake", "manakish"], "market": ["groceries"],
 			"farm": ["farm juice", "salad box"], "thai": ["pad thai"], "sushi": ["sushi"],
-			"tacos": ["tacos"], "burger": ["burgers"]}
+			"tacos": ["tacos"], "burger": ["burgers"],
+			"honey": ["honey jars", "wax candles"]}  # Session 69: the beekeeper
 	var start: Vector3 = data["START"]["position"]
 	for id in foods:
 		gs.reset()
@@ -2464,3 +2466,129 @@ func _check_goals() -> void:
 func _goal_done(id: String) -> bool:
 	var goals: Script = load("res://scripts/shift_goals.gd")
 	return goals.is_done(id, _game_state.history.slice(_game_state.shift_start_index), _game_state.shift_crashes)
+
+
+# --- World polish pass, Sessions 67 to 69 (people wave) ---
+
+func _check_world_polish() -> void:
+	await _check_session67()
+	_check_session68()
+	_check_session69()
+
+
+## Session 67: the full map on M, the resolution settings and the school pool shade posts.
+func _check_session67() -> void:
+	var hud := _main.get_node_or_null("HUD")
+	var full_map: Node = hud.get("full_map") if hud != null else null
+	_check("there is a full map (M)", full_map != null and InputMap.has_action("full_map"), "")
+	if full_map != null:
+		var key := InputEventAction.new()
+		key.action = "full_map"
+		key.pressed = true
+		full_map._input(key)
+		var names: Array = full_map.place_names().map(func(n): return n[0])
+		var start: Vector3 = _delivery.place_builder.data.get_script_constant_map()["START"]["position"]
+		var spot: Vector2 = full_map.world_to_screen(start)
+		var screen := Rect2(Vector2.ZERO, full_map._view.size)
+		_check("M opens the full map and pauses the game", full_map.is_open() and paused, "")
+		_check("the full map has names and your spot is on it", names.has("The Plaza") and names.has("Cluster 3")
+				and screen.has_point(spot), "%s at %s" % [names.size(), spot])
+		await process_frame  # it draws while paused
+		key = InputEventAction.new()
+		key.action = "pause"
+		key.pressed = true
+		full_map._input(key)
+		_check("Esc closes the full map and the game goes on", not full_map.is_open() and not paused, "")
+	var settings: Script = load("res://scripts/settings.gd")
+	var old_scale: int = settings.render_scale
+	settings.render_scale = 50
+	settings.save()
+	var file := ConfigFile.new()
+	file.load(settings.PATH)
+	_check("render scale 50% is used and saved", is_equal_approx(root.scaling_3d_scale, 0.5)
+			and file.get_value("video", "render_scale", 0) == 50 and file.has_section_key("video", "window_size"), "")
+	settings.render_scale = old_scale
+	settings.save()
+	var detail := _main.get_node_or_null("DistrictDetail")
+	var shades := detail.find_children("*SchoolPoolShade*", "", true, false) if detail != null else []
+	var posts := 0
+	for shade in shades:
+		posts += shade.find_children("*ShadePost*", "", true, false).size()
+	_check("the school pool shades stand on posts", shades.size() == 2 and posts >= 8, "%d shades, %d posts" % [shades.size(), posts])
+
+
+## Session 68: people dressed for each place, and people who walk home from a restaurant.
+func _check_session68() -> void:
+	var life := _main.get_node_or_null("LifeBuilder")
+	var crowds: Node = life.get("crowds") if life != null else null
+	_check("there are people for every place", crowds != null, "")
+	if crowds != null:
+		var have: Dictionary = crowds.outfits()
+		var wanted := ["swimwear", "lifeguard", "gym", "uniform", "lanyard", "jodhpurs", "groom", "shopping bag",
+				"apron", "luggage", "sports", "bee suit", "hi-vis", "sun hat", "casual", "dog walker", "buggy",
+				"parent on bench", "family"]
+		var missing := wanted.filter(func(kind): return not have.has(kind))
+		_check("each place has its own kind of people", missing.is_empty(), "missing %s" % [missing])
+		_check("all the pool swimmers wear swimwear", have.get("swimwear", 0) >= 9, "%d swimmers" % have.get("swimwear", 0))
+		var someone: Person = crowds.people[0][0]
+		var far: float = GameConfig.LIFE_VIEW_DISTANCE[1]
+		crowds.apply_detail(someone, 10.0, far)
+		var near_ok: bool = someone.visible and someone.process_mode == Node.PROCESS_MODE_INHERIT
+		crowds.apply_detail(someone, GameConfig.PEOPLE_ANIMATE_DISTANCE + 5.0, far)
+		var mid_ok: bool = someone.visible and someone.process_mode == Node.PROCESS_MODE_DISABLED
+		crowds.apply_detail(someone, far + 5.0, far)
+		var far_ok: bool = not someone.visible
+		_check("only people near you are fully animated", near_ok and mid_ok and far_ok, "")
+	var spawner := _main.get_node_or_null("CustomerSpawner")
+	var walkers: Node = spawner.get("home_walkers") if spawner != null else null
+	_check("people can walk home from the restaurants", walkers != null and _grid != null, "")
+	if walkers == null or _grid == null:
+		return
+	walkers.grid = _grid
+	var places: PlaceBuilder = _delivery.place_builder
+	var home := 101
+	var walker: Node = walkers.spawn_from("pizza", home)
+	_check("someone walks out of 1000 Pizza", walker != null and walker.points.size() > 4
+			and walker.points[0].distance_to(places.restaurant_approach("pizza")) < 12.0, "")
+	if walker == null:
+		return
+	var door: Vector3 = walker.door
+	var steps := 0
+	while walker.advance(0.25) and steps < 8000:
+		steps += 1
+	var villa: Dictionary = {}
+	for v in places.villas:
+		if v["number"] == home:
+			villa = v
+	var end: Vector3 = walker.position
+	var into_house: bool = Vector2(end.x, end.z).distance_to(Vector2(villa["position"].x, villa["position"].z)) < villa["size"].z * 0.5
+	_check("they walk home along the paths and go in the front door", walker.inside and into_house
+			and door.distance_to(places.villa_door(home)) > 0.1, "%d steps, %.0f m walked" % [steps, steps * 0.25 * walker.speed])
+
+
+## Session 69: the beekeeper's stall is a pickup: phone, mini-map and full map show it.
+func _check_session69() -> void:
+	var places: PlaceBuilder = _delivery.place_builder
+	var stall := places.get_node_or_null("Restaurant_honey")
+	_check("the beekeeper has a honey stall by the hives", stall != null and stall.get("goods") == "honey", "")
+	if stall == null:
+		return
+	var hives: Rect2 = places.data.get_script_constant_map()["BEEHIVES"]
+	var door := places.restaurant_door("honey")
+	_check("the stall is beside the hives", Vector2(door.x, door.z).distance_to(hives.get_center()) < 25.0, "%s" % door)
+	var gs: Node = _game_state
+	gs.reset()
+	var order: Order = _delivery.make_order("honey", 305)
+	var accepted: bool = gs.offer_order(order) and gs.accept_offer()
+	var phone := _main.get_node("Phone")
+	phone._process(0.0)
+	var hud := _main.get_node_or_null("HUD")
+	var full_map: Node = hud.get("full_map") if hud != null else null
+	_check("a honey order shows on the phone and the mini-map", accepted and phone._pick_up.text.contains("Wahat Bee Farm")
+			and _minimap.target_label() == "Wahat Bee Farm", phone._pick_up.text)
+	_check("the full map shows the beekeeper", full_map != null and full_map.place_names().any(func(n): return n[0] == "Beekeeper"), "")
+	var money: int = gs.money
+	var done: bool = gs.pick_up() and gs.deliver()
+	_close_card()
+	_check("a honey order can be picked up at the beekeeper and delivered", done and gs.money > money
+			and order.food in ["honey jars", "wax candles"], order.describe())

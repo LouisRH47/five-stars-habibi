@@ -1482,7 +1482,7 @@ Done when:
 - [ ] The blank space by Cluster 1 is a park people use
 - [ ] The phase 3 site looks like phase 2
 
-### Session 67: Glitch fixes, full map and resolution setting
+### Session 67: Glitch fixes, full map and resolution setting (built, needs testing)
 
 ```text
 Session 67. 1) Fix the flickering textures on the restaurant walkways and any other
@@ -1501,7 +1501,7 @@ Done when:
 - [ ] M shows the whole map and closes again
 - [ ] Changing resolution works and is remembered
 
-### Session 68: People who live here
+### Session 68: People who live here (built, needs testing)
 
 ```text
 Session 68. 1) Customers who walk out of a restaurant keep walking along the paths to a
@@ -1530,7 +1530,7 @@ Done when:
 - [ ] Follow someone out of a restaurant: they walk home and go inside
 - [ ] Each place has its own kind of people and swimmers wear swimwear
 
-### Session 69: The beekeeper as a pickup
+### Session 69: The beekeeper as a pickup (built, needs testing)
 
 ```text
 Session 69. The beekeeper works like a restaurant: orders for honey jars and wax
