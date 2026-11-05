@@ -1671,10 +1671,21 @@ Done when:
 
 ### Session 76: Kerbs that join up and curved corners
 
+Louis's screenshots from 5 Nov are in docs/fix_pass_screens/ (01 to 09). What they show:
+01 C Institute front: paving runs into the blue pool-like patch. 02 Spine road: the kerb is
+a flat white strip lying on the road and a grass gap separates road and paving. 03 A car
+park: one row of cars, the rest empty asphalt, no kerb where it meets grass. 04 Spine
+junction: the kerb curve stops dead where the side road joins. 05 Cluster entrance: white
+kerb strips end in sharp angles and don't follow the corners. 06 Pool: swimmers lie flat
+like they're dead. 07 Cluster 1 entrance: a curved kerb cuts across the lane and two kerb
+pieces overlap. 08 C Institute road: kerb pieces end in the middle of the road; blue patch
+again. 09 Pedal Point Bikes: a plain box with a sloped roof on grass, the path doesn't reach
+it. Fix every one of these and check each spot again with a screenshot on the Mac.
+
 ```text
 Session 76. Louis's screenshots show kerbs that don't meet (roundabout, cluster entrances,
-junctions) and sharp 90° turns. 1) Rebuild kerbs as continuous strips that follow every
-road edge, curve round every corner, close up at junctions (the kerb turns into the side
+junctions) and sharp 90° turns. 1) Rebuild kerbs as raised, continuous strips (not flat white lines on the road) that
+follow every road edge, never cross a lane, curve round every corner, close up at junctions (the kerb turns into the side
 road), wrap the whole roundabout (outer ring and island) and leave gaps only for crossings
 and car park entrances. 2) Every 90° corner where two roads meet gets a curved inside
 corner (radius about 6 m for lanes, 10 m for bigger roads), including the cluster lane
