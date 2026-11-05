@@ -1,5 +1,37 @@
 # Progress
 
+## Session 72: The school football pitch — 5 November 2026
+
+What works:
+- **A full football pitch** in front of the school (scripts/school_pitch.gd, built by
+  LandmarkBuilder instead of the old small green pitch): striped turf, all the white lines
+  (touchlines, halfway line, centre circle and spot, penalty and goal areas, penalty spots and
+  arcs, corner arcs) and two goals with white posts and see-through nets.
+- **A red 4-lane running track** along the north side (the new red_track.png texture) with
+  lane lines and start/finish lines.
+- **A tall fence**: green posts 6.5 m high every 5 m with see-through netting (new
+  net.png texture, made by make_textures.py) and a low kick board. It's solid. There's a gap
+  in the north side by the school gate so the pupils can get in.
+- **Four floodlights** (16 m masts at the turf corners). Each beam aims at its own quarter
+  of the pitch, with a narrow cone, so they light only the pitch. They come on by themselves
+  at 17:15 on the shift clock (GameConfig.FLOODLIGHT_ON_HOUR) and their lamps glow.
+- **Pupils play football** in the day: 8 pupils in uniform chase a ball round the pitch (the
+  two nearest run for it, the rest keep their spots). They go home at 16:30. They only move
+  while you're near.
+- **The tennis and basketball courts are gone** (only that block in district_detail.gd).
+  The gate, the booth (villa 901) and the school car park bays are clear of the pitch.
+- New tuning numbers in scripts/game_config.gd (the Session 72 block at the end).
+- PRD.md: the school description now says football pitch with floodlights, no courts.
+- Checked: smoke test PASS (new checks: the pitch, two goals, track and markings, tall fence,
+  gate and booth clear, floodlights off in the day and on at dusk, all four aim at the pitch,
+  8 pupils playing and the ball moving, the courts are gone), navigation, coplanar and detail
+  world tests PASS. No screenshots (headless).
+
+**Louis's turn:** press F5 and ride to the school gate (west side). Look through the gate:
+the pitch with its goals and the red running track, behind the tall green netting. Pupils
+are playing football. To see the floodlights, keep playing until after 17:15 on the clock
+(or ride there near the end of a shift): the four lights come on and light just the pitch.
+
 ## Session 71: New rounded playgrounds — 5 November 2026
 
 What works:

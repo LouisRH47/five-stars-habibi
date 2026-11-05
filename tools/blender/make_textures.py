@@ -92,10 +92,24 @@ def play_surface():
     return speckle("#e58b73", ["#f6d06b", "#8fd3b5", "#8cc3ec"], 77, fleck_share=0.05)
 
 
+def net():
+    """Session 72: sports netting (0.5 m per picture, 64 x 64): a white diamond mesh, see-through
+    between the strings (the fourth channel is how solid each pixel is)."""
+    size = 64
+    yy, xx = np.mgrid[0:size, 0:size]
+    a = (xx + yy) % 32
+    b = (xx - yy) % 32
+    string = (np.minimum(a, 32 - a) < 1.6) | (np.minimum(b, 32 - b) < 1.6)
+    rgba = np.zeros((size, size, 4))
+    rgba[..., :3] = 0.92
+    rgba[..., 3] = np.where(string, 1.0, 0.0)
+    return rgba
+
+
 def main():
     kit.reset()
     for name, make in [("blue_track", blue_track), ("red_track", red_track), ("horse_sand", horse_sand),
-                       ("pavers", pavers), ("play_surface", play_surface)]:
+                       ("pavers", pavers), ("play_surface", play_surface), ("net", net)]:
         kit.save_png(name, make())
         print("wrote assets/textures/%s.png" % name)
 

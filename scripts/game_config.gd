@@ -483,3 +483,13 @@ const WIND_SMOOTHING := 6.0
 const GPS_GROUND_SAMPLE_METRES := 2.0
 const COMFY_TYRES_CAMERA_VERTICAL_SHARE := 0.5
 const COMFY_TYRES_SHAKE_SHARE := 0.65
+
+# --- Session 72: the school football pitch (scripts/school_pitch.gd) ---
+const FLOODLIGHT_ON_HOUR := 17.25      # the floodlights come on at 17:15, as the light goes
+const FLOODLIGHT_ENERGY := 6.0
+const FLOODLIGHT_RANGE := 48.0         # metres: each beam only reaches its quarter of the pitch
+const FLOODLIGHT_ANGLE := 32.0         # degrees: half the width of each beam
+const PITCH_PLAY_END_HOUR := 16.5      # pupils play football until 16:30
+const PITCH_PUPILS := 8
+const PITCH_BALL_SPEED := 5.0          # m/s
+const PITCH_PUPIL_SPEED := 3.0         # m/s

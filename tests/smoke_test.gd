@@ -2476,6 +2476,7 @@ func _check_world_polish() -> void:
 	_check_session69()
 	_check_session70()  # Sessions 70 to 73: the Blender models (see the block at the end)
 	_check_session71()
+	_check_session72()
 
 
 ## Session 67: the full map on M, the resolution settings and the school pool shade posts.
@@ -2669,3 +2670,54 @@ func _check_session71() -> void:
 		kit._check_left = 1.0
 		kit._process(0.4)
 	_check("the swings, roundabouts and spring riders move", part != null and not part.basis.is_equal_approx(before), "%d moving parts" % pieces)
+
+
+## Session 72: the school football pitch, its floodlights and the courts gone.
+func _check_session72() -> void:
+	var pitch: Node = _main.get_node_or_null("LandmarkBuilder/School/SchoolPitch")
+	_check("the school has a full football pitch", pitch != null, "")
+	if pitch == null:
+		return
+	var turf: Rect2 = pitch.pitch
+	_check("the pitch has two goals, a running track and markings", pitch.goals.size() == 2
+			and pitch.get_node_or_null("TrackLines") != null and pitch.get_node_or_null("PitchLines") != null
+			and pitch.track.size.x > 60.0 and turf.size.x > 70.0, "%s" % turf)
+	_check("the fence posts are tall (taller than the old 1.3 m fence)", pitch.FENCE_HEIGHT >= 5.0, "")
+	var school: Dictionary = _delivery.place_builder.data.get_script_constant_map()["SCHOOL"]
+	var gate := Vector2(school["gate_x"], school["area"].position.y)
+	_check("the gate and the booth stay clear of the pitch", not pitch.fence.grow(1.0).has_point(gate)
+			and not pitch.fence.has_point(Vector2(-365, 32)), "%s" % pitch.fence)
+	var hour: float = _game_state.clock_hours()
+	pitch.update_lights(12.0)
+	var day_off: bool = not pitch.lights_on and not pitch.lights[0].visible
+	pitch.update_lights(GameConfig.FLOODLIGHT_ON_HOUR + 0.25)
+	var on: bool = pitch.lights_on and pitch.lights.size() == 4
+	var aimed := 0
+	for light: SpotLight3D in pitch.lights:
+		on = on and light.visible
+		var from := light.global_position
+		var way := -light.global_basis.z
+		var ground := from + way * (-from.y / way.y) if way.y < -0.01 else from
+		aimed += 1 if turf.has_point(Vector2(ground.x, ground.z)) else 0
+	_check("the floodlights are off in the day and come on at dusk", day_off and on, "")
+	_check("all four floodlights aim at the pitch", aimed == 4, "%d" % aimed)
+	pitch.update_lights(hour)
+	var playing := 0
+	for pupil: Person in pupil_list(pitch):
+		playing += 1 if turf.grow(2.0).has_point(Vector2(pupil.global_position.x, pupil.global_position.z)) else 0
+	var ball_from: Vector3 = pitch.ball.position
+	for i in 30:
+		pitch.play(0.1)
+	_check("pupils play football on the pitch in the day", playing == GameConfig.PITCH_PUPILS
+			and pitch.ball.position.distance_to(ball_from) > 1.0, "%d pupils" % playing)
+	var courts := 0
+	var detail := _main.get_node_or_null("DistrictDetail/FairGradeCampus")
+	for view: MeshInstance3D in detail.find_children("*", "MeshInstance3D", true, false) if detail != null else []:
+		var at := view.global_position
+		if view.mesh is BoxMesh and (view.mesh as BoxMesh).size.y < 0.05 and Rect2(-418, 80, 89, 15).has_point(Vector2(at.x, at.z)):
+			courts += 1
+	_check("the tennis and basketball courts are gone", courts == 0, "%d court pieces" % courts)
+
+
+func pupil_list(pitch: Node) -> Array:
+	return pitch.pupils

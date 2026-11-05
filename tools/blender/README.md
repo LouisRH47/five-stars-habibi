@@ -20,7 +20,7 @@ After rebuilding, open the project in Godot once (or run
 | make_horse.py | horse_bay, horse_chestnut, horse_grey, horse_black, horse_palomino (.glb) |
 | make_donkey.py | donkey_grey, donkey_brown (.glb) |
 | make_playground.py | play_slide, play_climber, play_swings, play_spinner, play_springer (.glb) |
-| make_textures.py | blue_track, red_track, horse_sand, pavers, play_surface (.png) |
+| make_textures.py | blue_track, red_track, horse_sand, pavers, play_surface, net (.png) |
 
 `kit.py` and `equine.py` are shared helpers (shapes, materials, the horse/donkey body).
 `out/` holds the coat pictures that go inside the horse files; it's not part of the game.
@@ -37,5 +37,6 @@ scripts/terrain_materials.gd does:
 | horse_sand.png | the horse track and the jumping arena sand | about 4 m |
 | pavers.png | paved paths and plazas (20 x 10 cm blocks) | 1.6 m |
 | play_surface.png | soft rubber playground floor | about 2 m |
+| net.png | see-through sports netting (goal nets, the pitch fence) | 0.5 m |
 
 All original work (made by these scripts), free to use.

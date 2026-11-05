@@ -1574,7 +1574,7 @@ Done when:
 
 - [ ] Every playground uses the new rounded designs and kids play on them
 
-### Session 72: School football pitch
+### Session 72: School football pitch (built, needs testing)
 
 ```text
 Session 72. Replace the green area in front of the school with a full football pitch:

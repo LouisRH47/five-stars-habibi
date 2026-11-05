@@ -51,14 +51,14 @@ def tile_noise(size, scale, seed):
 
 
 def save_png(name, rgb, folder=TEXTURES):
-    """rgb: (h, w, 3) floats 0..1, row 0 = top of the picture. Saves folder/name.png."""
+    """rgb: (h, w, 3 or 4) floats 0..1, row 0 = top of the picture. Saves folder/name.png."""
     os.makedirs(folder, exist_ok=True)
     if folder == SCRATCH and not os.path.exists(os.path.join(folder, ".gdignore")):
         open(os.path.join(folder, ".gdignore"), "w").close()
-    h, w, _ = rgb.shape
+    h, w, channels = rgb.shape
     rgba = np.ones((h, w, 4), dtype=np.float32)
-    rgba[:, :, :3] = np.clip(rgb, 0.0, 1.0)
-    image = bpy.data.images.new(name, w, h, alpha=False)
+    rgba[:, :, :channels] = np.clip(rgb, 0.0, 1.0)  # 4 channels: the last one is see-through-ness
+    image = bpy.data.images.new(name, w, h, alpha=channels == 4)
     image.pixels.foreach_set(rgba[::-1].reshape(-1))  # Blender stores the bottom row first
     path = os.path.join(folder, name + ".png")
     image.filepath_raw = path

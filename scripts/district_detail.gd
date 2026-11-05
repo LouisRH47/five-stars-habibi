@@ -173,26 +173,13 @@ func _school_details() -> void:
 	_solid(hall, Vector3(45, 10, 25), SAND, Vector3(0, 5, 0))
 	LowPoly.box(hall, Vector3(44, 1.6, 0.12), GLASS.darkened(0.4), Vector3(0, 7.2, -12.6))
 	_sign(hall, data_school["arabic"], "FAIR GRADE INTERNATIONAL SCHOOL", Vector3(0, 9.2, -12.7), 180, 38)
-	# Two shaded swimming pools, courts and two playgrounds fit inside the perimeter.
+	# Two shaded swimming pools and two playgrounds fit inside the perimeter.
 	for x in [-349.0, -326.0]:
 		_pool(Rect2(x, 98, 18, 11), "SchoolPool", false)
 		# Session 67: the shade stands on posts with a proper roof (it used to float).
 		_shade_roof(school, Vector3(x + 9, 3.8, 103.5), Vector2(19, 12), "SchoolPoolShade_%d" % int(-x))
-	var court_index := 0
-	for rect in [Rect2(-418, 80, 38, 15), Rect2(-367, 80, 38, 15)]:
-		LowPoly.box(school, Vector3(rect.size.x, 0.04, rect.size.y), Color(0.3, 0.55, 0.45), Vector3(rect.get_center().x, 0.06, rect.get_center().y))
-		for side in [-1.0, 1.0]:
-			LowPoly.box(school, Vector3(rect.size.x - 1, 0.02, 0.12), WHITE, Vector3(rect.get_center().x, 0.09, rect.get_center().y + side * (rect.size.y * 0.5 - 0.5)))
-			LowPoly.box(school, Vector3(0.12, 0.02, rect.size.y - 1), WHITE, Vector3(rect.get_center().x + side * (rect.size.x * 0.5 - 0.5), 0.09, rect.get_center().y))
-			if court_index == 0:
-				var hoop_at := Vector3(rect.get_center().x + side * 17.5, 0, rect.get_center().y)
-				LowPoly.box(school, Vector3(0.15, 3.2, 0.15), Color.GRAY, hoop_at + Vector3.UP * 1.6)
-				LowPoly.box(school, Vector3(0.12, 1.0, 1.5), WHITE, hoop_at + Vector3.UP * 3.2)
-				LowPoly.cylinder(school, 0.3, 0.3, 0.04, Color.ORANGE, hoop_at + Vector3(-side * 0.4, 2.9, 0))
-		LowPoly.box(school, Vector3(0.1, 0.02, rect.size.y - 1), WHITE, Vector3(rect.get_center().x, 0.1, rect.get_center().y))
-		if court_index == 1:
-			LowPoly.box(school, Vector3(0.05, 1.0, 13.5), Color(0.58, 0.62, 0.61), Vector3(rect.get_center().x, 0.55, rect.get_center().y))
-		court_index += 1
+	# Session 72: the tennis and basketball courts are gone; the football pitch
+	# (scripts/school_pitch.gd, built by LandmarkBuilder) has the room now.
 	PlaygroundKit.build(school, Vector3(-411, 0, 72), Vector2(12, 10))  # Session 71
 	PlaygroundKit.build(school, Vector3(-321, 0, 121), Vector2(12, 10))
 	for at: Vector3 in [Vector3(-411, 4.5, 72), Vector3(-321, 4.5, 121)]:

@@ -74,13 +74,9 @@ func _build_school(school: Dictionary) -> void:
 		var panel := LowPoly.box(body, Vector3(4.0, 0.08, 2.2), Color(0.12, 0.2, 0.35, 1),
 				Vector3(-11.0 + i * 5.5, size.y + 0.9, 0))
 		panel.rotation.x = deg_to_rad(-15.0)
-	var pitch := Rect2(area.position.x + 5, top + 8, area.size.x - 10, 24)
-	LowPoly.box(holder, Vector3(pitch.size.x, 0.03, pitch.size.y), PITCH, Vector3(pitch.get_center().x, 0.03, pitch.get_center().y))
-	_fence_box(holder, pitch.grow(0.5), RAIL, 1.3, Vector2(gate_x - 2, gate_x + 2))
-	for x in [pitch.position.x + 0.8, pitch.end.x - 0.8]:
-		for z in [pitch.get_center().y - 3.5, pitch.get_center().y + 3.5]:
-			LowPoly.box(holder, Vector3(0.12, 2.4, 0.12), RAIL, Vector3(x, 1.2, z))
-		LowPoly.box(holder, Vector3(0.12, 0.12, 7.1), RAIL, Vector3(x, 2.4, pitch.get_center().y))
+	# Session 72: the full football pitch with goals, a running track, tall netted fence and
+	# floodlights (scripts/school_pitch.gd) replaces the small green pitch.
+	SchoolPitch.build(holder, school)
 	var flag := StaticBody3D.new()
 	flag.position = Vector3(gate_x + 6.0, 0, top + 4.0)
 	holder.add_child(flag)
