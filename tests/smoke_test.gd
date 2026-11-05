@@ -1351,6 +1351,7 @@ func _finish() -> void:
 	_check_shop_buys()
 	_check_saving()
 	_check_polish_hooks()
+	_check_look_polish()
 	_check_world_polish()
 	_check_screens_polish()
 	_check_hud_polish()
@@ -2672,3 +2673,18 @@ func _check_phone_minimap_polish() -> void:
 	_check("the Session 70 mini-map has its compass ring and zoom",
 			not GameConfig.MINIMAP_V2 or (_minimap.look != null and _minimap.radius >= GameConfig.MINIMAP_RADIUS_SLOW - 0.5
 			and _minimap.radius <= GameConfig.MINIMAP_RADIUS_FAST + 0.5), "%.0f m" % _minimap.radius)
+
+
+## Session 67: the sky, light and colour extras are on in the real game world (the cartoon
+## sky, the colour grade, the vignette under the HUD and the light shafts).
+func _check_look_polish() -> void:
+	var env: Environment = (_main.get_node("WorldEnvironment") as WorldEnvironment).environment
+	var sky_ok: bool = (env.sky.sky_material is ShaderMaterial) == GameConfig.SKY_STYLIZED
+	var lut_ok: bool = (env.adjustment_color_correction != null) == (GameConfig.LOOK_LUT != "neutral")
+	var vignette := _main.get_node_or_null("Vignette")
+	var shafts := _main.get_node_or_null("LightShafts")
+	_check("the sky, colour grade, vignette and light shafts are on", sky_ok and lut_ok
+			and (vignette != null) == (GameConfig.VIGNETTE_STRENGTH > 0.0)
+			and (shafts != null) == GameConfig.LIGHT_SHAFTS_ON,
+			"sky %s, LUT %s, vignette %s, %d shafts" % [sky_ok, lut_ok, vignette != null,
+			shafts.shafts.size() if shafts != null else 0])
