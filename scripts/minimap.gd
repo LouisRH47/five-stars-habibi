@@ -7,6 +7,12 @@ extends CanvasLayer
 ## restaurant name) and how far away it is. If the stop is off the map, the pin sits on
 ## the edge and points the way. The little "N" on the edge shows where north is.
 ## Sizes and zoom are in the Mini-map block of scripts/game_config.gd.
+## Session 70 (GameConfig.MINIMAP_V2): a dark compass ring with N, E, S, W that turn with
+## the map, round logo pins for the restaurants and shops, a drop-off pin with its house
+## number, an arrow on the ring when the stop is off the map and "Villa 7 · 180 m" under
+## it, a zoom that opens up as you go faster, and a North-up option
+## (Settings.minimap_north_up). The cached static map is untouched: zoom only changes the
+## transform it's drawn with. Drawing is in scripts/minimap_look.gd.
 
 ## The bike: the map is centred on it and turns with it.
 @export var bike: Node3D
@@ -64,6 +70,12 @@ class BuildingChunk extends Node2D:
 
 @onready var _view: Control = $Panel/Margin/Window/View/Map
 var _ring: Control
+## Session 70: metres from the middle of the map to its edge right now (zooms with speed).
+var radius := GameConfig.MINIMAP_METRES_ACROSS * 0.5
+## Session 70: the ring, the pins and the logos (null when GameConfig.MINIMAP_V2 is off).
+var look: MinimapLook
+## World-space shadows under the buildings (Session 70, cached with the ground).
+var _shadows: Array[PackedVector2Array] = []
 
 
 func _ready() -> void:
@@ -71,6 +83,9 @@ func _ready() -> void:
 	$Panel.custom_minimum_size = Vector2.ONE * GameConfig.MINIMAP_SIZE
 	if place_builder != null and place_builder.data != null:
 		_map = place_builder.data.get_script_constant_map()
+	if GameConfig.MINIMAP_V2:
+		look = MinimapLook.new(self)
+		radius = target_radius(0.0)
 	var viewport := _view.get_viewport() as SubViewport
 	viewport.disable_3d = true
 	viewport.render_target_update_mode = SubViewport.UPDATE_WHEN_VISIBLE
@@ -80,7 +95,11 @@ func _ready() -> void:
 	# which ui/round_mask.gdshader cuts to a circle, with a white ring on top.
 	_ring = Control.new()
 	_ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_ring.draw.connect(func(): _ring.draw_arc(_ring.size * 0.5, _ring.size.x * 0.5 - 2.0, 0.0, TAU, 96, PLAYER, 4.0, true))
+	if look != null:
+		_ring.draw.connect(look.draw_ring)
+		look.style_panel()
+	else:
+		_ring.draw.connect(func(): _ring.draw_arc(_ring.size * 0.5, _ring.size.x * 0.5 - 2.0, 0.0, TAU, 96, PLAYER, 4.0, true))
 	$Panel/Margin.add_child(_ring)
 	_ring.resized.connect(_ring.queue_redraw)
 	_view.resized.connect(_background.queue_redraw)
@@ -91,9 +110,12 @@ func _ready() -> void:
 		_refresh_number_candidates()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if not visible or bike == null:
 		return
+	if look != null:
+		_zoom_with_speed(delta)
+		_ring.queue_redraw()
 	_map_xform = _world_xform(bike.get_global_transform_interpolated())
 	_static_root.transform = _map_xform
 	_refresh_number_candidates()
@@ -134,6 +156,10 @@ func _world_xform(bike_xform: Transform3D) -> Transform2D:
 	var heading := Vector2(forward.x, forward.z)
 	var turn := 0.0 if heading.length() < 0.001 else -PI * 0.5 - heading.angle()
 	var zoom := _view.size.x / GameConfig.MINIMAP_METRES_ACROSS
+	if look != null:
+		zoom = _view.size.x * 0.5 / radius
+		if Settings.minimap_north_up:
+			turn = 0.0  # north stays at the top; the arrow in the middle turns instead
 	var spot := Vector2(bike_xform.origin.x, bike_xform.origin.z)
 	return Transform2D(turn, Vector2(zoom, zoom), 0.0, _view.size * 0.5) * Transform2D(0.0, -spot)
 
@@ -162,6 +188,9 @@ func _draw_map() -> void:
 	_draw_target_building()
 	_draw_gps_route()
 	_view.draw_set_transform_matrix(Transform2D.IDENTITY)
+	if look != null:
+		look.draw_map(xform)
+		return
 	_draw_villa_numbers(xform)
 	_draw_shop_icons(xform)
 	_draw_road_works(xform)
@@ -209,6 +238,8 @@ func _draw_roads(canvas: CanvasItem = null) -> void:
 	if canvas == null:
 		canvas = _view
 	var width: float = _map.get("ROAD_WIDTH", 8.0)
+	if GameConfig.MINIMAP_V2:
+		MinimapLook.draw_kerbs(canvas, _map.get("ROADS", []), width)
 	for road in _map.get("ROADS", []):
 		# One road-width longer, like the real roads, so corners are filled in.
 		var road_width: float = road.get("width", width)
@@ -230,7 +261,7 @@ func _build_static_map() -> void:
 	_land = Node2D.new()
 	_land.name = "GroundAndRoads"
 	_static_root.add_child(_land)
-	_land.draw.connect(func(): _draw_ground(_land); _draw_roads(_land))
+	_land.draw.connect(func(): _draw_ground(_land); _draw_roads(_land); _draw_shadows(_land))
 	var chunks := {}
 	for key in ["MOSQUE", "SUPERMARKET"]:
 		if _map.has(key):
@@ -252,7 +283,7 @@ func _build_static_map() -> void:
 				var middle := Vector3((unit["from_x"] + unit["to_x"]) * 0.5, 0, (front + back) * 0.5)
 				_cache_block(chunks, middle, 0.0, Vector3(unit["to_x"] - unit["from_x"], 1, absf(front - back)), LANDMARK)
 			if unit["kind"] == "shop" or unit["kind"] == "scenery":
-				_shop_icons.append([Vector2((unit["from_x"] + unit["to_x"]) * 0.5, front), SHOP_LABELS.get(unit["id"], ""), unit["colour"]])
+				_shop_icons.append([Vector2((unit["from_x"] + unit["to_x"]) * 0.5, front), SHOP_LABELS.get(unit["id"], ""), unit["colour"], unit["id"]])
 	for place in place_builder.restaurants:
 		_cache_block(chunks, place["position"], place["facing"], place_builder.restaurant_size_of(place), place["colour"])
 	for shop: Dictionary in _map.get("SHOPS", []):
@@ -272,6 +303,16 @@ func _cache_block(chunks: Dictionary, spot: Vector3, facing: float, size: Vector
 	var chunk := chunks[cell] as BuildingChunk
 	chunk.polygons.append(_block_corners(spot, facing, size, chunk.position))
 	chunk.colours.append(colour)
+	if GameConfig.MINIMAP_V2:
+		var shadow := _block_corners(spot, facing, size)
+		for i in shadow.size():
+			shadow[i] += Vector2(1.0, 1.2)  # a soft shadow down-right of each building
+		_shadows.append(shadow)
+
+
+func _draw_shadows(canvas: CanvasItem) -> void:
+	for shadow in _shadows:
+		canvas.draw_colored_polygon(shadow, Color(0.25, 0.2, 0.12, 0.28))
 
 
 func _refresh_number_candidates() -> void:
@@ -282,9 +323,11 @@ func _refresh_number_candidates() -> void:
 	_candidate_revision += 1
 	_number_candidates.clear()
 	# Include the square viewport's diagonal plus the five-metre movement allowance.
-	var radius := GameConfig.MINIMAP_METRES_ACROSS * 0.75 + 6.0
+	var reach := GameConfig.MINIMAP_METRES_ACROSS * 0.75 + 6.0
+	if look != null:
+		reach = GameConfig.MINIMAP_RADIUS_FAST * 1.5 + 6.0  # the widest zoom
 	for entry: Array in _home_labels:
-		if at.distance_squared_to(entry[0]) <= radius * radius:
+		if at.distance_squared_to(entry[0]) <= reach * reach:
 			_number_candidates.append(entry)
 
 
@@ -430,5 +473,30 @@ func _draw_gps_route() -> void:
 	var gps := delivery_manager.get_node_or_null("GPSRoute") as GPSRoute
 	if gps == null or gps.points.size() < 2:
 		return
+	if look != null:
+		# Session 70: a thicker line with a dark edge, the same width in pixels at any zoom.
+		var metres_per_px := radius / (_view.size.x * 0.5)
+		var route := PackedVector2Array(gps.points)
+		_view.draw_polyline(route, OUTLINE, 6.0 * metres_per_px, true)
+		_view.draw_polyline(route, Color(0.1, 0.95, 0.9), 3.5 * metres_per_px, true)
+		return
 	for index in gps.points.size() - 1:
 		_view.draw_line(gps.points[index], gps.points[index + 1], Color(0.1, 0.95, 0.9), 1.0, true)
+
+
+# --- Session 70: zoom with speed ---
+
+## How far the map reaches (metres, middle to edge) at this speed (m/s): 60 m standing
+## still, 90 m at full sprint. With Less motion it stays put.
+func target_radius(speed: float) -> float:
+	if Settings.reduce_motion:
+		return GameConfig.MINIMAP_METRES_ACROSS * 0.5
+	var sprint := GameConfig.BIKE_SPRINT_MAX_SPEED_KMH / 3.6
+	return lerpf(GameConfig.MINIMAP_RADIUS_SLOW, GameConfig.MINIMAP_RADIUS_FAST, clampf(absf(speed) / sprint, 0.0, 1.0))
+
+
+func _zoom_with_speed(delta: float) -> void:
+	var speed = bike.get("speed")
+	var goal := target_radius(float(speed) if speed != null else 0.0)
+	# Smoothed: about 95% of the way there after MINIMAP_ZOOM_TIME seconds.
+	radius = lerpf(radius, goal, 1.0 - exp(-delta * 3.0 / GameConfig.MINIMAP_ZOOM_TIME))

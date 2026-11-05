@@ -79,19 +79,24 @@ func _process(delta: float) -> void:
 
 
 ## Sprinting: widen the view a little and show the speed lines; ease back afterwards.
+## Session 69: "Less motion" (Settings.reduce_motion) turns both off.
 func _sprint_feel(delta: float) -> void:
-	var sprint := 1.0 if target.get("sprinting") == true else 0.0
+	var sprint := 1.0 if target.get("sprinting") == true and not Settings.reduce_motion else 0.0
 	var follow := 1.0 - exp(-GameConfig.SPRINT_FOV_SPEED * delta)
 	fov = lerpf(fov, base_fov + GameConfig.SPRINT_FOV_EXTRA * sprint, follow)
 	speed_lines.strength = lerpf(speed_lines.strength, sprint, follow)
 
 
 func _on_bumped(strength: float) -> void:
+	if Settings.reduce_motion:
+		return  # Session 69: no camera shake with "Less motion"
 	_shake = maxf(_shake, strength)
 
 
 ## strength: 0 (crawling over the bump) to 1 (full speed).
 func _on_speed_bump(strength: float) -> void:
+	if Settings.reduce_motion:
+		return
 	var motion := lerpf(GameConfig.SPEED_BUMP_SHAKE_MIN, GameConfig.SPEED_BUMP_SHAKE_MAX, strength)
 	if _comfy_tyres():
 		motion *= GameConfig.COMFY_TYRES_SHAKE_SHARE

@@ -2,6 +2,22 @@ class_name GPSRoute
 extends Node3D
 ## The purchased GPS shares a cached collision grid with navigation checks. It draws a
 ## ground ribbon and publishes the same route to the mini-map. No upgrade, no route.
+## Session 70 (GameConfig.GPS_ROUTE_V2): the ribbon has soft edges and white arrows that
+## slide along it towards the stop, so you can see which way to go at a glance.
+const ROUTE_SHADER := """
+shader_type spatial;
+render_mode unshaded, cull_disabled, depth_draw_never, shadows_disabled;
+uniform vec4 colour : source_color = vec4(0.1, 0.95, 0.9, 0.85);
+uniform float speed = 3.0;
+void fragment() {
+	float across = abs(UV.x * 2.0 - 1.0);           // 0 in the middle, 1 at the edges
+	float along = UV.y - TIME * speed;              // metres along the route, sliding forwards
+	float arrow = step(0.72, fract((along + across * 0.7) / 2.2));  // a > every 2.2 m
+	ALBEDO = mix(colour.rgb, vec3(1.0), arrow * 0.85);
+	ALPHA = colour.a * smoothstep(1.0, 0.7, across) * (0.7 + 0.3 * arrow);
+}
+"""
+static var _route_material: ShaderMaterial
 var delivery_manager: Node
 var points: Array[Vector2] = []
 var grid: NavigationGrid
@@ -113,13 +129,19 @@ func _draw_ground_route() -> void:
 	if points.size() < 2:
 		_mesh.mesh = null
 		return
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.albedo_color = Color(0.1, 0.95, 0.9, 0.8)
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var material: Material
+	if GameConfig.GPS_ROUTE_V2:
+		material = _v2_material()
+	else:
+		var flat := StandardMaterial3D.new()
+		flat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		flat.albedo_color = Color(0.1, 0.95, 0.9, 0.8)
+		flat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		flat.cull_mode = BaseMaterial3D.CULL_DISABLED
+		material = flat
 	var mesh := ImmediateMesh.new()
 	mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLES, material)
+	var walked := 0.0  # metres along the route (the arrows use it)
 	for index in points.size() - 1:
 		var from := points[index]
 		var to := points[index + 1]
@@ -132,7 +154,11 @@ func _draw_ground_route() -> void:
 			var a_height := _ground_height(a)
 			var b_height := _ground_height(b)
 			var corners := [Vector3(a.x + side.x, a_height, a.y + side.y), Vector3(a.x - side.x, a_height, a.y - side.y), Vector3(b.x - side.x, b_height, b.y - side.y), Vector3(b.x + side.x, b_height, b.y + side.y)]
+			var step_length := a.distance_to(b)
+			var uvs := [Vector2(0, walked), Vector2(1, walked), Vector2(1, walked + step_length), Vector2(0, walked + step_length)]
+			walked += step_length
 			for vertex in [0, 1, 2, 0, 2, 3]:
+				mesh.surface_set_uv(uvs[vertex])
 				mesh.surface_add_vertex(corners[vertex])
 	mesh.surface_end()
 	_mesh.mesh = mesh
@@ -150,3 +176,14 @@ func _ground_height(spot: Vector2) -> float:
 	query.exclude = skip
 	var hit := get_world_3d().direct_space_state.intersect_ray(query)
 	return (float(hit["position"].y) if not hit.is_empty() else 0.0) + GameConfig.GPS_LINE_HEIGHT
+
+
+## One shared material for the arrow ribbon (made once).
+static func _v2_material() -> ShaderMaterial:
+	if _route_material == null:
+		var shader := Shader.new()
+		shader.code = ROUTE_SHADER
+		_route_material = ShaderMaterial.new()
+		_route_material.shader = shader
+		_route_material.set_shader_parameter("speed", GameConfig.GPS_ARROW_SPEED)
+	return _route_material

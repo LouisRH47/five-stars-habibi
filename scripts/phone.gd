@@ -31,6 +31,10 @@ var _streak: Label
 var _gear_goal: Label
 var _gear_progress: ProgressBar
 var _goals: Label  # Session 32: this shift's 2 goals, shown while you wait for an order
+## Session 70: the clearer phone (PRD "Polish pass"); null when GameConfig.PHONE_V2 is off.
+var _v2: PhoneV2
+## Which view the phone shows: "waiting", "offer", "to_restaurant", "to_villa" or "done".
+var mode := "waiting"
 
 @onready var _wallet: Label = $Panel/Margin/Rows/Header/Wallet
 @onready var _pill: Label = $Panel/Margin/Rows/Pill
@@ -77,6 +81,8 @@ func _ready() -> void:
 	# Your rider profile from the application (Session 14).
 	_rider.visible = GameState.rider_name != ""
 	_rider.text = "%s  ·  %s" % [GameState.rider_name, GameState.rider_country]
+	if GameConfig.PHONE_V2:
+		_build_v2()
 
 
 func _process(delta: float) -> void:
@@ -86,19 +92,22 @@ func _process(delta: float) -> void:
 	if stage == GameState.Stage.OFFERED:
 		var offer := GameState.offered_order
 		var secs := 0 if delivery_manager == null else ceili(delivery_manager.time_left_on_offer())
+		mode = "offer"
 		_set_pill("NEW ORDER", ORANGE)
 		_show("New order!", "", "E accept   Q skip", true)
 		_set_order(offer, 0)
 		_set_chip("time", "" if GameState.tutorial_running else "%d s" % secs, ORANGE)
 	elif stage == GameState.Stage.TO_RESTAURANT:
 		var order := GameState.current_order
+		mode = "to_restaurant"
 		_set_pill("PICK UP", TEAL)
-		_show("Ride to %s" % order.restaurant_name, "", _hold_hint("pick up"), near)
+		_show(order.restaurant_name if _v2 != null else "Ride to %s" % order.restaurant_name, "", _hold_hint("pick up"), near)
 		_set_order(order, 1)
 	elif stage == GameState.Stage.TO_VILLA:
 		var order := GameState.current_order
+		mode = "to_villa"
 		_set_pill("DROP OFF", TEAL)
-		_show("Deliver to %s" % order.address, "", _hold_hint("drop off"), near)
+		_show(order.address if _v2 != null else "Deliver to %s" % order.address, "", _hold_hint("drop off"), near)
 		_set_order(order, 2)
 	elif _flash_left > 0.0 and not GameState.last_result.is_empty():
 		var job := GameState.last_result
@@ -109,19 +118,23 @@ func _process(delta: float) -> void:
 			lines += "\n-%d Dh insurance" % job["insurance"]
 		lines += "\n+%d XP" % job["xp"]
 		var done := "Left at the door!" if job["left_at_door"] else "Delivered!"
+		mode = "done"
 		_set_pill("DONE", GREEN)
 		_show("%s  %s stars" % [done, _stars_text(job["stars"])], lines, "", false)
 		_set_order(null, 0)
 	else:
 		var shift_over := not GameState.shift_open()
 		var walking := not shift_over and delivery_manager != null and delivery_manager.on_foot
+		mode = "waiting"
 		_set_pill("SHIFT OVER" if shift_over else "WAITING", GREY)
-		_show("Shift over" if shift_over else "Waiting for orders...", "",
+		_show("Shift over" if shift_over else ("Waiting for orders" if _v2 != null else "Waiting for orders..."), "",
 				_walking_hint("Walk back to your bike") if walking else "", walking)
 		_set_order(null, 0)
 	_show_goals(true)
 	_streak.text = "%d in a row  ·  +%d%% tip chance" % [GameState.streak, roundi(minf(GameState.streak * GameConfig.STREAK_TIP_STEP, GameConfig.STREAK_TIP_MAX) * 100.0)] if GameState.streak > 0 else "Build a five-star streak"
 	_show_choices(stage == GameState.Stage.OFFERED and GameState.offered_orders.size() > 1)
+	if _v2 != null:
+		_v2.update(delta)
 
 
 ## The order part of the card: pick-up and drop-off rows (the one you're on now in bold
@@ -135,8 +148,11 @@ func _set_order(order: Order, step: int) -> void:
 		_set_chip("time", "", ORANGE)  # the countdown only shows on a new order
 	if order == null:
 		return
-	_pick_up.text = "%s  Pick up · %s" % ["✓" if step == 2 else "•", order.restaurant_name]
-	_drop_off.text = "•  Drop off · %s" % order.address
+	if _v2 != null:
+		_v2.set_stops(order, step)
+	else:
+		_pick_up.text = "%s  Pick up · %s" % ["✓" if step == 2 else "•", order.restaurant_name]
+		_drop_off.text = "•  Drop off · %s" % order.address
 	_font_colour(_pick_up, ORANGE if step == 1 else (SOFT if step == 2 else INK))
 	_font_colour(_drop_off, ORANGE if step == 2 else INK)
 	_set_chip("food", order.food.capitalize(), TEAL)
@@ -152,6 +168,9 @@ func _set_order(order: Order, step: int) -> void:
 
 ## This shift's goals (Session 32): a tick when done, otherwise how far along you are.
 func _show_goals(on: bool) -> void:
+	if _v2 != null:
+		on = _v2.goals_open()
+		_v2.show_gear_goal(on)
 	_goals.visible = on and not GameState.shift_goals.is_empty()
 	if not _goals.visible:
 		return
@@ -181,7 +200,7 @@ func _set_pill(text: String, colour: Color) -> void:
 
 func _set_chip(key: String, text: String, colour: Color) -> void:
 	var chip: Label = _chips[key]
-	chip.visible = text != ""
+	chip.visible = text != "" and (_v2 == null or _v2.chip_shown(key))
 	chip.text = text
 	_background_colour(chip, colour)
 
@@ -253,7 +272,7 @@ func _show(status: String, detail: String, hint: String, hint_lit: bool) -> void
 	_detail.text = detail
 	_detail.visible = detail != ""
 	_hint.text = hint
-	_hint.visible = hint != ""
+	_hint.visible = hint != "" and (_v2 == null or _v2.hint_shown())
 	_font_colour(_hint, HINT_LIT if hint_lit else HINT_DIM)
 
 
@@ -268,6 +287,8 @@ func buzz() -> void:
 	if _buzz_tween != null:
 		_buzz_tween.kill()
 	_buzz_tween = create_tween()
+	if _v2 != null:
+		_v2.slide_in(_buzz_tween)  # Session 70: the new order slides in from the right first
 	var px := GameConfig.PHONE_BUZZ_PIXELS
 	var step := GameConfig.PHONE_BUZZ_TIME / 6.0
 	for x in [px, -px, px * 0.7, -px * 0.7, px * 0.3, 0.0]:
@@ -293,9 +314,16 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("toggle_insurance"):
 		GameState.set_insurance(not GameState.insurance_on)
 		get_viewport().set_input_as_handled()
+	elif _v2 != null and event is InputEventKey and event.pressed and not event.echo \
+			and event.physical_keycode == KEY_G:
+		_v2.toggle_goals()
+		get_viewport().set_input_as_handled()
 
 
 func _on_insurance_changed(on: bool) -> void:
+	if _v2 != null:
+		_v2.show_insurance(on)
+		return
 	_insurance.text = "Insurance %s  (I to switch)" % ("ON, %d Dh a job" % GameConfig.INSURANCE_PER_DELIVERY if on else "OFF")
 	_insurance.add_theme_color_override("font_color", SOFT if on else RED)
 
@@ -418,7 +446,9 @@ func _show_choices(on: bool) -> void:
 	_choices_box.visible = on
 	var panel: PanelContainer = $Panel
 	var width := 640.0 if on else 330.0
-	var left := -664.0 if on else -354.0
+	if _v2 != null:
+		width = GameConfig.PHONE_V2_CHOICE_WIDTH if on else GameConfig.PHONE_V2_WIDTH
+	var left := -width - 24.0
 	if panel.custom_minimum_size.x != width:
 		panel.custom_minimum_size.x = width
 	if panel.offset_left != left:
@@ -437,4 +467,16 @@ func _show_choices(on: bool) -> void:
 		var places := delivery_manager.place_builder
 		var metres := roundi(places.restaurant_approach(order.restaurant_id).distance_to(places.villa_approach(order.villa_number)))
 		var customer := "  ·  ♥ " + order.regular if order.regular != "" else ("  ·  Tip-friendly" if order.special == "fragile" else "")
+		if _v2 != null:
+			_v2.set_choice(index, order, metres)
+			continue
 		_choice_info[index].text = "%s%s\n%s  ·  %d Dh\nTo %s\n%d m route%s\n%s\n%s" % [order.restaurant_name, "  ·  Better offer" if index == 1 else "", order.food.capitalize(), order.pay, order.address, metres, customer, kind, order.requirement_text()]
+
+
+# --- Session 70: the clearer phone ---
+
+func _build_v2() -> void:
+	_v2 = PhoneV2.new()
+	_v2.setup(self)
+	_v2.show_insurance(GameState.insurance_on)
+	_on_money_changed(GameState.money)
