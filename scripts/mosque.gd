@@ -23,7 +23,7 @@ const MINARET_HEIGHT := 16.0    # the main shaft
 const BALCONY_RADIUS := 1.7
 const DOOR_SIZE := Vector3(3.0, 3.5, 0.2)
 const WINDOW_SIZE := Vector3(1.0, 2.4, 0.15)
-const FORECOURT_SIZE := Vector2(14.0, 22.0)  # width, depth (out to Ghaf Street)
+const FORECOURT_SIZE := Vector2(14.0, 5.0)  # width, depth (Session 79: out to the car park road)
 const SIGN_SIZE := Vector3(9.0, 1.2, 0.15)
 const SIGN_FONT_SIZE := 80
 

@@ -522,16 +522,16 @@ Wahat Al Shams (واحة الشمس, "Sun Oasis") is a made-up eco community. It
 | Horse track | Just inside the tree belt, all the way round | Dirt and sand, white horse rails on both sides. **Horses only**: nobody else goes on it. Gaps in the rails where the gate roads cross it |
 | Run and cycle track | Right beside the horse track, all the way round | A **blue** rubber track for runners, cyclists and you. No buggies, no cars |
 | Ring road | Inside the tracks, all the way round | The only road for cars. Cars drive slowly round it on set routes and pull in and out of the car parks. **No buggies on the ring road** |
-| Mosque | North-west, just inside the north checkpoint, in front of the Plaza | A mosque with a minaret. Scenery only: no orders ever go there |
+| Mosque | North-west, just inside the north checkpoint, in front of the Plaza | A mosque with a minaret. Its own small solar car park (about 12 bays) in front of it, reached by a short road from the north ring road that passes the mosque's front. Scenery only: no orders ever go there |
 | Bus station | North-west, between the mosque and the Plaza | A bus bay with a shelter and a parked bus, joined to the ring road by its own short road so it looks real. A bus drives round the ring road and into the bay every in-game hour. A sign says "Coming soon: travel to other districts". **Each shift starts in front of the bus station.** Later (Tier 2) it becomes the way to travel to Downtown and other districts |
-| The Plaza | North-west, from the bus station to Cluster 1 (a bigger area than before) | The hub: five low-rise blocks (flats and offices above, shops below) round a sunken square with a fountain, date palms, shade sails and benches. 10 restaurants, the bike shop and the clothes shop (see "Shops and upgrades"). A solar car park in the gap between the Plaza and Cluster 1 |
+| The Plaza | North-west, from the bus station to Cluster 1 (a bigger area than before) | The hub: five low-rise blocks (flats and offices above, shops below) round a sunken square with a fountain, date palms, shade sails and benches, all on one square paved floor (concrete pavers) that reaches every restaurant door and both shops. 10 restaurants, the bike shop and the clothes shop (see "Shops and upgrades"). The Plaza road from the roundabout ends in a small buggy park behind the clothes shop, with footpaths into the Plaza. A solar car park in the gap between the Plaza and Cluster 1 |
 | Fair Grade International School | South-west | Copies the real school next door (photos Louis sent, described below). Orders only go to the security booth at the school gate |
 | Horse jumping arena | Next to the school, south-west | A sand arena with white horse rails and jumps. Horses with riders jump now and then. Scenery |
 | C Institute | Beside the school, between the school and the spine | A modern institute building (see below). Its big glass front and stepped seats face the spine. A small car park behind it. Drop-off: the receptionist inside |
 | Stables | South-west, by the jumping arena | Stable block, a paddock with horses you can watch, and the stable office (drop-off spot) |
 | Green spine | Through the middle, west to east | The long park (see below) with the domes, the farm, the gym, the lap pool and the community pool. Its paths are the main bike shortcut |
 | 5 clusters | 3 north of the spine (C1, C2, C3), 2 south (C4, C5) | **100 homes each, 500 in total**, in joined rows (see below). No cars inside |
-| Solar car parks | **In the gaps between clusters** (Plaza and C1, C1 and C2, C2 and C3, C4 and C5) | A short road off the ring road with car bays, every bay under a **solar panel roof**. Parked cars. Not behind the houses: homes go there instead |
+| Solar car parks | **In the gaps between clusters** (Plaza and C1, C1 and C2, C2 and C3, C4 and C5) | A short road off the ring road with car bays, every bay under a **solar panel roof**. Every car park (these, the stables, the school and the mosque) has the same layout: a row along one side, two rows in the middle parked nose to nose, a row across the far end, aisles between, painted bay lines and arrows, and cars in most bays. Not behind the houses: homes go there instead |
 | Building sites | Where there's nothing yet: south of the spine's west end (where the horse ring was), the south-east block where a sixth cluster could go, and any other empty patch | Fence with a bilingual "Coming soon" banner, a crane, sand piles, a site cabin and a couple of workers. Later we can swap them for real buildings |
 
 *Who drives where:* cars only on the ring road and in the car parks, never in the lanes. Golf buggies only on the asphalt roads inside the ring road (the cluster lanes, the spine road, the spine loop, the roundabout and the road behind the C Institute), keeping to the right of the yellow line and slowing at junctions; never on the ring road. People walk, and kids ride bikes and scooters, on the lanes and paths. Your bike can go everywhere except the horse track.
@@ -609,7 +609,7 @@ Build it in milestones and play-test at the end of each one. Only move on when t
 
 The approved top-down plan is docs/road_plan_2026-11-05.svg. The ring road is the only main
 road and connects to just four things: the two gate roads, the bus station loop and the
-stables car park. The car parks between the clusters keep their entrances from the ring road.
+stables car park (plus the car park entrances, and from Session 79 the mosque car park road). The car parks between the clusters keep their entrances from the ring road.
 Everything inside is one connected network with rounded corners and no dead ends: the spine
 road (the only road that gets red walking tracks, both sides), the loop round the spine (the
 cluster front road, the south road and the school road), the road behind the C Institute, and
@@ -711,6 +711,7 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 5 Nov 2026 | Session 75: kerbs have no invisible walls; riding over one is a small bump (you keep 90% of your speed, never a crash). Speed bumps only on the ring road. Buggies drive only on roads, keep right of the yellow line and slow at junctions. Space jumps on foot (about 0.6 m) |
 | 5 Nov 2026 | Session 76: kerbs are raised (12 cm) and continuous, with gaps only at paths, crossings and car parks. Road corners are curved (about 6 m for lanes, 10 m for bigger roads); each cluster's lanes form a rounded loop; the C Institute road is one smooth curve |
 | 5 Nov 2026 | Session 78: Pedal Point Bikes and Dune Drip get an arcade on the Plaza side, a stepped parapet, a wind tower and outdoor details (bike rack and pump; planters and benches); Plaza-facing restaurant walls get the same trim |
+| 6 Nov 2026 | Session 79: every car park uses one layout (side row, two middle rows, end row, solar roofs, mostly full); the mosque has a 13-space car park off the north ring road; the school car park sits in front of the gate |
 
 ## Sources
 

@@ -1,5 +1,32 @@
 # Progress
 
+## Session 79: car parks laid out properly, and a mosque car park — 6 November 2026
+
+What works:
+- **Every car park uses one layout** (scripts/car_park_builder.gd, data PARKING_LOTS): a row of
+  spaces along one side, two middle rows nose to nose, a row across the end, aisles, painted
+  bay lines and arrows, solar roofs over every row and cars in most spaces (318 parked cars).
+  The car parks are 50 to 90 m long instead of 135 m, so there's no big empty asphalt any more
+  (Louis's screenshot 03). The gap between Clusters 2 and 3 is only 15 m wide, so that one has
+  a single middle row.
+- **Mosque car park** (13 spaces, same style) in front of the mosque, joined to the ring road.
+- The school car park moved in front of the school gate, with its own short road.
+- Parked cars are drawn in batches (scripts/parked_car_batch.gd: one MultiMesh per car model
+  per map square), so 300 cars cost a few dozen draws. Each car keeps its own solid box.
+- Every car park entrance is in the data, and the kerbs leave a gap there.
+- Checked: smoke test and every focused suite PASS. The invisible-wall test now reads where
+  the batched cars are drawn (headless Godot can't). Play-test bot careful: 5 deliveries,
+  4.6 stars, no crashes.
+- Screenshots on the Mac: the car parks between the clusters from above, a car park from
+  the ground, the mosque and school car parks.
+
+Known bugs:
+- The car park asphalt is still a flat grey colour (check again after Session 82).
+
+**Louis's turn:** press F5 and ride into the car park next to Cluster 1 (where screenshot 03
+was) and the one between Clusters 4 and 5. Then ride to the mosque: its car park is off the
+ring road.
+
 ## Session 78: the bike shop and Dune Drip look like real buildings — 5 November 2026
 
 What works:

@@ -3188,9 +3188,115 @@ func _s78_check_reach(shop: Node3D) -> void:
 
 
 ## Session 79: car parks and the mosque car park.
-## (Session 79 checks go here.)
 func _check_session79() -> void:
-	await process_frame
+	var places: Node = _main.get_node_or_null("PlaceBuilder")
+	var parks := _main.get_node_or_null("DistrictDetail/CarParks")
+	if places == null or parks == null or not places.data.get_script_constant_map().has("PARKING_LOTS"):
+		print("      no car parks in this scene, Session 79 checks skipped")
+		return
+	var map: Dictionary = places.data.get_script_constant_map()
+	var cars: Array = map["PARKED_CARS"]
+	var wrong: Array = []
+	var narrow: Array = []
+	var roofless: Array = []
+	var empty: Array = []
+	var no_way_in: Array = []
+	for lot: Dictionary in map["PARKING_LOTS"]:
+		var node := parks.get_node_or_null("CarPark_" + String(lot["name"]).replace(" ", "").replace("-", "_"))
+		if lot["entrances"].is_empty() or not lot["entrances"][0].has("at"):
+			no_way_in.append(lot["name"])
+		if node == null or node.get_meta("roofs", 0) != (lot["rows"] as Array).size() or node.get_node_or_null("Markings") == null:
+			roofless.append(lot["name"])
+		if lot["kind"] != "cars":
+			continue
+		# One layout: a row along one side, two rows in the middle nose to nose, a row across
+		# the far end. Only a car park too narrow for the middle pair (C2-C3) may leave it out.
+		var rows := _session79_rows(lot)
+		var across: float = minf((lot["area"] as Rect2).size.x, (lot["area"] as Rect2).size.y)
+		if rows["side"] < 1 or rows["end"] < 1 or (rows["pairs"] < 1 and across >= 20.0):
+			wrong.append("%s %s" % [lot["name"], rows])
+		elif rows["pairs"] < 1:
+			narrow.append(lot["name"])
+		var bays := 0
+		for row: Dictionary in lot["rows"]:
+			bays += (row["bays"] as Array).size()
+		var parked := cars.filter(func(car): return (lot["area"] as Rect2).has_point(Vector2(car["position"].x, car["position"].z))).size()
+		if parked < bays * 0.7:
+			empty.append("%s %d/%d" % [lot["name"], parked, bays])
+	_check("Session 79: every car park has a side row, two middle rows nose to nose and an end row", wrong.is_empty(),
+			"wrong: %s; too narrow for the middle pair: %s" % [wrong, narrow])
+	_check("Session 79: every row has a solar roof and painted bay lines", roofless.is_empty(), "%s" % [roofless])
+	_check("Session 79: most bays have a car in them", empty.is_empty(), "%d cars; too empty: %s" % [cars.size(), empty])
+	_check("Session 79: every car park entrance is in the data (for the kerbs)", no_way_in.is_empty(), "%s" % [no_way_in])
+	# The entrances off the ring road stay where they were before Session 79.
+	var xs: Array = []
+	for area: Rect2 in map["PARKING_AREAS"]:
+		xs.append(RoadMesh.parking_access_x(area))
+	_check("Session 79: the car park entrances off the ring road stay where they were",
+			xs == [-53.5, 129.5, 278.5, -5.5, 208.5, 408.5, -144.5], "%s" % [xs])
+	# The mosque car park: about 12 bays, in front of the mosque (its door faces east), with its
+	# own road joining the ring road.
+	var mosque: Dictionary = map["MOSQUE"]
+	var lot := {}
+	for each: Dictionary in map["PARKING_LOTS"]:
+		if each["name"] == "Mosque":
+			lot = each
+	var mosque_bays := 0
+	for row: Dictionary in lot.get("rows", []):
+		mosque_bays += (row["bays"] as Array).size()
+	var mosque_area: Rect2 = lot.get("area", Rect2())
+	var link := {}
+	for road: Dictionary in map["ROADS"]:
+		if road["name"] == "Mosque Car Park Road":
+			link = road
+	var ring: Dictionary = map["RING_ROAD"]
+	var joins := not link.is_empty() and absf(absf((link["from"] as Vector2).y) - (ring["half"] as Vector2).y) < 0.5 \
+			and mosque_area.grow(0.5).has_point(link["to"])
+	_check("Session 79: the mosque has its own car park in front, joined to the ring road", mosque_bays >= 10 and mosque_bays <= 16
+			and mosque_area.position.x >= mosque["position"].x + mosque["size"].z * 0.5 and joins,
+			"%d bays at %s" % [mosque_bays, mosque_area])
+	# Parked cars stand in car parks, never on a road, and leave the visiting cars' spots free.
+	var on_road: Array = []
+	for car: Dictionary in cars:
+		var at := Vector2(car["position"].x, car["position"].z)
+		for road: Dictionary in map["ROADS"]:
+			var half: float = road.get("width", 6.0) * 0.5
+			if Geometry2D.get_closest_point_to_segment(at, road["from"], road["to"]).distance_to(at) < half + 1.0:
+				on_road.append("%s on %s" % [at, road["name"]])
+				break
+		for area: Rect2 in map["PARKING_AREAS"]:
+			if at.distance_to(Vector2(area.position.x + 4.0, area.end.y - 9.0)) < 3.0:
+				on_road.append("%s in a visiting car's spot" % at)
+	_check("Session 79: parked cars stand in their bays, off the roads", on_road.is_empty(), "%s" % [on_road.slice(0, 5)])
+	var batch := _main.get_node_or_null("DecorBuilder/ParkedCarBatch") as ParkedCarBatch
+	_check("Session 79: the parked cars are drawn in a few batches", not GameConfig.PARKED_CARS_BATCHED
+			or (batch != null and batch.count == cars.size() and batch.get_child_count() <= cars.size() / 4),
+			"%d cars in %d batches" % [batch.count if batch else 0, batch.get_child_count() if batch else 0])
+
+
+## Sorts a car park's rows: "end" rows run across the far end; the lengthwise rows are "side"
+## rows, or pairs parked nose to nose ("pairs" counts the pairs).
+func _session79_rows(lot: Dictionary) -> Dictionary:
+	var way: Dictionary = lot["entrances"][0]
+	var along := ((way["lot_at"] as Vector2) - (way["at"] as Vector2)).normalized()
+	var lengthwise: Array = []
+	var ends := 0
+	for row: Dictionary in lot["rows"]:
+		var nose := Vector2(sin(deg_to_rad(row["facing"])), cos(deg_to_rad(row["facing"])))
+		if absf(nose.dot(along)) > 0.9:
+			ends += 1
+		else:
+			lengthwise.append(row)
+	var paired := {}
+	for a: Dictionary in lengthwise:
+		for b: Dictionary in lengthwise:
+			var nose_a := Vector2(sin(deg_to_rad(a["facing"])), cos(deg_to_rad(a["facing"])))
+			var nose_b := Vector2(sin(deg_to_rad(b["facing"])), cos(deg_to_rad(b["facing"])))
+			var gap: float = ((b["bays"][0] as Vector2) - (a["bays"][0] as Vector2)).dot(nose_a)
+			if nose_a.dot(nose_b) < -0.9 and absf(gap - float(a["depth"])) < 0.3:
+				paired[a] = true
+				paired[b] = true
+	return {"side": lengthwise.size() - paired.size(), "pairs": paired.size() / 2, "end": ends}
 
 # --- end of Session 79 checks ---
 

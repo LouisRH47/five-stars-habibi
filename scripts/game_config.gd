@@ -584,10 +584,14 @@ const SHOP_TOWER_HEIGHT := 3.6      # the wind tower on top of that
 
 
 # --- Fix pass Session 79: car parks and the mosque car park ---
+# (Bay sizes and where each car park goes are map data: tools/build_wahat_data.py.)
 const CAR_PARK_ROOF_HEIGHT := 3.1         # metres from the ground to the solar panels
 const CAR_PARK_ROOF_TILT := 0.07          # how much the panels lean (radians, about 4 degrees)
 const CAR_PARK_POST_EVERY := 3            # one roof post every 3 bays
 const CAR_PARK_LINE_WIDTH := 0.12         # the painted bay lines (metres)
+const PARKED_CARS_BATCHED := true         # draw parked cars with ParkedCarBatch (much faster)
+const PARKED_CAR_BATCH_CELL := 96.0       # metres: cars in one square of this size share a draw
+const PARKED_CAR_DRAW_DISTANCE := 280.0   # metres: parked cars further away aren't drawn
 
 
 # --- Fix pass Session 80: C Institute front, seats and the basketball court ---

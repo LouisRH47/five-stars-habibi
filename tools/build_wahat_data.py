@@ -151,8 +151,7 @@ for n,cx,cz in clusters:
     plays.append({'points':[v3(cx+40,0,pz-2),v3(cx+50,0,pz-2)],'level':0})
     works.append({'name':cluster+' Lane','centre':v2(cx+30,cz+30),'along':'z','width':6.,'length':10.})
 put('ROADS',roads);put('PAVED_AREAS',paving);put('BOLLARDS',bollards)
-parking=[(-92,-199,42,135),(119,-196,14,132),(270,-196,12,132),(-25,52,23,135),(152,52,60,135),(380,50,32,145),(-165,146,24,50)]
-put('PARKING_AREAS',[rect(*r) for r in parking])
+# PARKING_AREAS (the car parks off the ring road) are made by fix_pass_car_parks() below (Session 79).
 put('PLOTS',[{'name':'Fair Grade International School','area':rect(-425,35,120,160),'colour':colour(.95,.85,.8)},
  {'name':'C Institute','area':rect(-278,-58,126,48),'colour':colour(.65,.82,.93)},
  {'name':'Mosque','area':rect(-422,-203,70,105),'colour':colour(.93,.92,.88)},
@@ -218,19 +217,14 @@ put('SPINE_TRACKS',{'from_x':-334.0,'to_x':398.0-3.0-LANE_CORNER,'road_half':3.0
 put('SAND_AREAS',[rect(-282,65,115,88),rect(-282,157,115,43)])
 put('EDGE_GREENERY',{'half':v2(433,213),'radius':20.0,'width':6.0,'spacing':9.0})
 put('PALM_TREES',palms);put('PARKED_CAR_SIZE',v3(1.9,1.5,4.3))
-PARKED_CARS=[{'position':v3(x+3,0,z+8+k*9),'facing':90.,'bay':True} for x,z,w,d in parking[:6] for k in range(8)]\
- +[{'position':v3(x,0,30),'facing':0.,'bay':True} for x in [-412,-403,-394,-385,-376,-354,-345,-336,-327,-318]]
-put('SCHOOL_PARKING',rect(-417,25,104,10))
+# PARKED_CARS and SCHOOL_PARKING are made by fix_pass_car_parks() below (Session 79).
 # --- World polish pass Sessions 64 to 66 (signs wave) -------------------------------------
-# Session 64: the stables car park gets marked bays with parked cars like the others
-# (west row; the moving car parks at the far end, z 187).
-PARKED_EXTRA=[{'position':v3(-162,0,154+k*9),'facing':90.,'bay':True} for k in range(4)]
+# Session 64's stables car park bays are now part of the Session 79 layout (fix_pass_car_parks).
 # Session 64: the bus station platform island inside the loop. Two shelters face the bay
 # lane (west, facing -90); people wait in front of them and board at the bus door.
 put('BUS_PLATFORM',{'area':rect(-328.1,-199.6,22.2,28.4),'shelters':[v3(-325.4,0,-191.6),v3(-325.4,0,-180.4)],
  'facing':-90.,'door':v3(-328.7,0,-183.4),'arrive':v3(-316,0,-198.5),
  'waiting':[v3(-327.4,0,z) for z in [-194.2,-190.4,-186.9,-178.6,-176.2]]})
-put('PARKED_CARS',PARKED_CARS+PARKED_EXTRA)
 # Session 65: cluster entrances. One green cluster sign, one police sign and one STOP sign
 # where each cluster's middle lane meets its front road (beside the lane, never in it).
 # out: +1 when the spine is to the south (+z) of the cluster. Facing: 0 = the board's front
@@ -415,7 +409,10 @@ put('ROAD_WORKS',works)
 put('HORSE_CROSSINGS',[{'name':'the stables yard','from':v3(-244,0,184),'to':v3(-244,0,205)},{'name':'the south ring road','from':v3(-170,0,192),'to':v3(-170,0,235)}])
 
 # --- Fix pass Sessions 77 and 79 (lane R2): the buggy park and every car park -----------------
-# car_park below lays out one car park from rows of bays and aisles (Session 77: the buggy park).
+# Every car park uses one layout (car_park below), seen from the entrance: a row of bays along
+# one side, two rows in the middle parked nose to nose, a row across the far end, aisles in
+# between, a solar roof over every row and a car in most bays. The car parks off the ring road
+# keep their entrances: the access road still leaves the ring road at the same x.
 BAY_WIDTH=2.6; BAY_DEPTH=4.8; AISLE=5.7; ACCESS=6.0; EDGE=0.3
 def heading(d):
     """The facing in degrees of something pointing along d = (x, z): 0 points +z (south)."""
@@ -484,7 +481,55 @@ def car_park(name,corner,across,along,columns,length,gap,end_bays=-1,depth=BAY_D
     return lot,area,filled
 import random
 def fix_pass_car_parks():
-    lots=[]
+    lots=[];parked=[];areas=[]
+    def entrance(x,ring_z,lot_z,road='Ring Road'):
+        """Where a car park's access road leaves a road (the kerbs leave a gap here) and where
+        it reaches the car park."""
+        return {'road':road,'at':v2(x,ring_z),'lot_at':v2(x,lot_z),'width':ACCESS}
+    standard=[('row',-1,True),('aisle',AISLE,False),('row',1,True),('row',-1,False),('aisle',ACCESS,True)]
+    beside=[('row',-1,True),('aisle',ACCESS,True),('row',1,True),('row',-1,False),('aisle',AISLE,False)]  # access next to the side row
+    narrow=[('row',-1,True),('aisle',ACCESS,True)]  # C2-C3: only 15 m between the clusters
+    W_STANDARD=EDGE+3*BAY_DEPTH+AISLE+ACCESS+0.5;W_BESIDE=EDGE+3*BAY_DEPTH+ACCESS+AISLE;W_NARROW=EDGE+BAY_DEPTH+ACCESS+0.5
+    # (name, access road x, entrance edge z, length, layout). North car parks start 1-4 m
+    # inside the ring road and run south; south ones end inside it and run north.
+    specs=[('C1 West',-53.5,-199,90,'standard'),('C1-C2',129.5,-196,60,'beside'),('C2-C3',278.5,-196,60,'narrow'),
+           ('C4 West',-5.5,187,60,'beside'),('C4-C5',208.5,187,60,'standard'),('C5 East',408.5,195,60,'standard'),
+           ('Stables',-144.5,196,50,'standard')]
+    for i,(name,xa,edge,length,style) in enumerate(specs):
+        north=edge<0
+        along=(0,1) if north else (0,-1)
+        if style=='beside':  # side row on the east, so the far aisle is on the west
+            x1=round(xa+EDGE+BAY_DEPTH+ACCESS/2,2);x0=round(x1-W_BESIDE,2);corner=(x1,edge);across=(-1,0);cols=beside
+            drawn=(x0,min(edge,edge+length*along[1]),round(xa+3.5-x0,2),length)
+        else:
+            w=W_STANDARD if style=='standard' else W_NARROW
+            x0=round(xa+3.5-w,2);corner=(x0,edge);across=(1,0);cols=standard if style=='standard' else narrow
+            drawn=(x0,min(edge,edge+length*along[1]),round(w,2),length)
+        areas.append(drawn)
+        z0=drawn[1];z1=drawn[1]+drawn[3];end_x=drawn[0]+drawn[2]
+        # Keep free: where the visiting car parks (DistrictTraffic), the pay machine and the
+        # little posts by the entrance (DistrictDetail).
+        clear=[(x0+4,z1-9,4.2),(x0+1,z0+2,2.2),(end_x-1,z0+4.5,2.4)]
+        lot,area,cars=car_park(name,corner,across,along,cols,length,7.0 if north else 12.0,clear=clear,drawn=drawn,
+            entrances=[entrance(xa,-200 if north else 200,edge)],seed=79+i)
+        lots.append(lot);parked+=cars
+    put('PARKING_AREAS',[rect(*a) for a in areas])
+    # The school car park: west of the spine loop road's turn, in front of the school gate,
+    # entered from that road. The gate and the security booth stay clear.
+    # (DistrictDetail paves it as SCHOOL_PARKING, so CarParkBuilder adds no pad of its own.)
+    lot,area,cars=car_park('School',(-356,35),(0,-1),(-1,0),standard,44,7.0,clear=[(-365,32,6.5),(-357.5,33,2.0)],
+        drawn=(-400,8.1,44,26.9),entrances=[entrance(-352,11.6,11.6,'Spine Loop')],seed=91)
+    lot['entrances'][0].update({'at':v2(-352,11.6),'lot_at':v2(-356,11.6)})
+    lot['pay_machine']=v3(-357.5,0,33);lots.append(lot);parked+=cars
+    put('SCHOOL_PARKING',rect(*area))
+    road('School Car Park Road',(-352,11.6),(-391,11.6),ACCESS)
+    # Session 79: the mosque car park, in front of the mosque (its door faces east), joined to
+    # the north ring road by its own road past the front of the mosque. About 12 bays.
+    lot,area,cars=car_park('Mosque',(-325.1,-148),(-1,0),(0,1),standard,25.6,7.0,end_bays=4,
+        entrances=[entrance(-348.5,-200,-148)],seed=92)
+    lot['pay_machine']=v3(-326,0,-146.5);lots.append(lot);parked+=cars
+    put('MOSQUE_PARKING',rect(*area))
+    road('Mosque Car Park Road',(-348.5,-205),(-348.5,-131.4),ACCESS)
     # Session 77: the Plaza road from the roundabout no longer stops inside the Plaza: it turns
     # east before the Plaza and ends in a small buggy park behind Dune Drip (6 bays, 2 buggies).
     roads[:]=[r for r in roads if r['name']!='Plaza Road']
@@ -494,6 +539,7 @@ def fix_pass_car_parks():
     lot['buggies']=[{'position':row['bays'][k],'facing':row['facing']} for row,k in [(lot['rows'][0],1),(lot['rows'][1],2)]]
     lots.append(lot)
     put('PARKING_LOTS',lots)
+    put('PARKED_CARS',parked)
 fix_pass_car_parks()
 
 lines=['class_name WahatAlShams','## Real-size Wahat Al Shams: generated by tools/build_wahat_data.py.','## Coordinates in metres; stable IDs and explicit human addresses are separate.','']

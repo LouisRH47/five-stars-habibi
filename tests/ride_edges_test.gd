@@ -207,8 +207,11 @@ func _visible_at(shape: CollisionShape3D) -> bool:
 			var many: MultiMesh = (view as MultiMeshInstance3D).multimesh
 			if many == null or many.mesh == null:
 				continue
+			# Headless runs can't read a MultiMesh's copies back; ParkedCarBatch keeps its list.
+			var copies: Array = view.get_meta("instance_transforms", [])
 			for i in many.instance_count:
-				var placed := view.global_transform * many.get_instance_transform(i) * many.mesh.get_aabb()
+				var each: Transform3D = copies[i] if i < copies.size() else many.get_instance_transform(i)
+				var placed := view.global_transform * each * many.mesh.get_aabb()
 				if placed.intersects(box) and placed.end.y > tall:
 					return true
 			continue

@@ -121,9 +121,9 @@ func _checkpoints_and_station() -> void:
 	_car_parks()
 
 
-## Session 77: the buggy park behind Dune Drip comes from CarParkBuilder.
-## Session 64: the school car park gets the same asphalt pad as the other car parks (its
-## bays, cars and solar roofs come from PARKED_CARS), and a pay machine like the others.
+## Session 79: every car park (bay lines, arrows, solar roofs, the pay machines and the
+## buggy park) comes from CarParkBuilder; its cars are DecorBuilder's ParkedCars.
+## Session 64: the school car park gets the same asphalt pad as the other car parks.
 func _car_parks() -> void:
 	CarParkBuilder.build(self, _map)
 	if not _map.has("SCHOOL_PARKING"):
@@ -133,7 +133,6 @@ func _car_parks() -> void:
 	var pad := LowPoly.box(self, Vector3(area.size.x, PAD, area.size.y), Color(0.36, 0.37, 0.39, 1),
 			Vector3(area.get_center().x, PAD * 0.5, area.get_center().y))
 	pad.name = "SchoolCarParkPad"
-	LowPoly.box(self, Vector3(0.5, 1.4, 0.4), TEAL, Vector3(area.end.x - 1, 0.7, area.position.y + 2))
 
 
 func _plaza_floors() -> void:

@@ -59,17 +59,13 @@ func _session64() -> void:
 	for car in _main.get_node("DecorBuilder").get_children():
 		if String(car.name).begins_with("ParkedCar_") and stables.has_point(Vector2(car.position.x, car.position.z)):
 			cars += 1
-	var roofs := 0
-	var school_roofs := 0
-	var school: Rect2 = _data["SCHOOL_PARKING"]
-	for roof in _main.get_node("DistrictTraffic").get_children():
-		if String(roof.name).begins_with("SolarBay_"):
-			var at := Vector2(roof.position.x, roof.position.z)
-			roofs += 1 if stables.has_point(at) else 0
-			school_roofs += 1 if school.has_point(at) else 0
-	_check("Session 64: the stables car park has parked cars, bay lines and solar roofs", cars >= 4 and roofs >= 5, "%d cars, %d roofs" % [cars, roofs])
+	# Session 79: one solar roof per row of bays now (CarParkBuilder), not one per car.
+	var parks := _main.get_node("DistrictDetail/CarParks")
+	var roofs: int = parks.get_node("CarPark_Stables").get_meta("roofs", 0)
+	var school_roofs: int = parks.get_node("CarPark_School").get_meta("roofs", 0)
+	_check("Session 64: the stables car park has parked cars, bay lines and solar roofs", cars >= 4 and roofs >= 4, "%d cars, %d roofs" % [cars, roofs])
 	var pad := _main.get_node_or_null("DistrictDetail/SchoolCarParkPad")
-	_check("Session 64: the school car park has an asphalt pad, cars and solar roofs", pad != null and school_roofs >= 8, "%d roofs" % school_roofs)
+	_check("Session 64: the school car park has an asphalt pad, cars and solar roofs", pad != null and school_roofs >= 4, "%d roofs" % school_roofs)
 
 
 ## Session 65: the cluster entrance signs, police and STOP signs, bins, pool gate, end houses.

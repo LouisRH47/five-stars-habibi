@@ -5,6 +5,9 @@ extends StaticBody3D
 ## in the data list is the way the car points.
 ## DecorBuilder places one of these (scenes/parked_car.tscn) for every car in the
 ## data list and calls setup().
+## Session 79: the car parks hold about 300 cars, so the car's look is drawn by a
+## ParkedCarBatch (one MultiMesh per model) instead of a copy of the model per car. The
+## solid box stays on each car. GameConfig.PARKED_CARS_BATCHED switches this off.
 
 ## The cars to pick from, by the car's number so neighbours differ. No logos on them.
 const MODELS := [
@@ -18,11 +21,25 @@ const MODELS := [
 const MODEL_TURN := 0.0
 
 
+var _size := Vector3.ONE
+var _model := 0
+var _batched := false
+
+
 ## Builds the car. size: width, height, length in metres (from the data list).
 ## colour_index: picks the car model.
 func setup(size: Vector3, colour_index: int) -> void:
 	# One solid box for the whole car.
 	LowPoly.solid_box(self, size, Vector3(0, size.y * 0.5, 0))
+	_size = size
+	_model = colour_index % MODELS.size()
+	if GameConfig.PARKED_CARS_BATCHED:
+		_batched = true
+		var marker := Node3D.new()  # the look is in the batch; this marks which model it is
+		marker.name = "Model"
+		marker.set_meta("batched_model", MODELS[_model].resource_path)
+		add_child(marker)
+		return
 	var car: Node3D = MODELS[colour_index % MODELS.size()].instantiate()
 	car.name = "Model"
 	car.rotation.y = MODEL_TURN
@@ -32,6 +49,11 @@ func setup(size: Vector3, colour_index: int) -> void:
 	if box.size.z > 0.01:
 		car.scale = Vector3.ONE * size.z / box.size.z
 		car.position.y = -box.position.y * car.scale.y
+
+
+func _ready() -> void:
+	if _batched:  # placed now: hand the car's look to the batch next to it
+		ParkedCarBatch.for_parent(get_parent()).add(MODELS[_model], transform, _size)
 
 
 ## The box around every mesh in the model (in the model's own space, before scaling).
