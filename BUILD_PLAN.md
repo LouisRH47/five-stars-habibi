@@ -1633,7 +1633,7 @@ shops, car park layouts, textures that got worse, swimmers and the lifeguard, th
 clash, NPCs that look lifeless, and a few odd spots (the blue patch at the C Institute, the
 grass gap at the cluster playgrounds).
 
-**Textures (chosen 5 Nov, real CC0 photo textures from Poly Haven, saved in tex_dl/ for the
+**Textures (chosen 5 Nov, real CC0 photo textures from Poly Haven, saved in tools/texture_sources/ for the
 build):** running_track (blue, with lane lines) for the blue bike track; the same photo
 recoloured red, one lane without the line, for the red walking tracks; brick_pavement_02,
 tinted warm sandy grey like Louis's lane photo, for paver lanes and footpaths;
@@ -1777,7 +1777,7 @@ Done when:
 ### Session 82: Textures
 
 ```text
-Session 82. Use the textures chosen above (copy them from tex_dl/ into assets/textures/,
+Session 82. Use the textures chosen above (copy them from tools/texture_sources/ into assets/textures/,
 with .import files, credited in CREDITS.md). 1) Grass: the old aerial_grass_rock mixed with
 leafy_grass so it doesn't repeat. Sand: the old sand_01. Pavers and footpaths:
 brick_pavement_02 tinted warm sandy grey. Blue track: running_track. Red track: running_track
