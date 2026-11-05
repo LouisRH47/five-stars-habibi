@@ -40,7 +40,12 @@ def rounded_loop(hx,hz,r,steps=8,reverse=False):
             a=math.radians(a0+90*j/steps)
             pts.append((round(cx+r*math.cos(a),2),round(cz+r*math.sin(a),2)))
     return pts[::-1] if reverse else pts
-put('PLAZA',{'centre':v2(-200,-145),'radius':50.0,'sunken_radius':20.0,'floor_radius':15.0,'depth':0.45,'steps':3,'fountain_radius':2.8})
+put('PLAZA',{'centre':v2(-200,-145),'radius':50.0,'sunken_radius':20.0,'floor_radius':15.0,'depth':0.45,'steps':3,'fountain_radius':2.8,
+ # Session 77: one square paved floor from the bike shop (x -284) to Dune Drip (x -134) and from
+ # the north restaurant row (front z -187) to the south row (front z -103), with a round hole
+ # for the sunken square. The apron goes round Dune Drip to the buggy park behind it, so its
+ # north and south strips are the footpaths from the buggy park into the Plaza.
+ 'floor':rect(-287,-191,153,92),'aprons':[rect(-134,-159,21,28)]})
 put('PLAZA_SAILS',[[v3(-224,0,-157),v3(-200,0,-170),v3(-176,0,-157)],[v3(-176,0,-133),v3(-200,0,-120),v3(-224,0,-133)]])
 put('PLAZA_BENCHES',[{'position':v3(-200,-.45,-155),'facing':0.0},{'position':v3(-200,-.45,-135),'facing':180.0},{'position':v3(-190,-.45,-145),'facing':-90.0}])
 put('SPINE',rect(-145,-35,560,70)); put('STREAM',{'z':25.0,'from_x':-135.0,'to_x':405.0,'width':3.0,'gaps':[v2(93,137)]})  # gaps: under the gym
@@ -408,6 +413,88 @@ put('BIRD_FLOCKS',[{'centre':v3(x,30,z),'radius':r,'birds':4,'level':i} for i,(x
 works += [{'name':'Ring Road '+name,'centre':v2(x,z),'along':along,'width':10.,'length':12.} for name,x,z,along in [('north',260,-205,'x'),('east',425,-90,'z'),('south',-200,205,'x'),('west',-425,-60,'z')]]
 put('ROAD_WORKS',works)
 put('HORSE_CROSSINGS',[{'name':'the stables yard','from':v3(-244,0,184),'to':v3(-244,0,205)},{'name':'the south ring road','from':v3(-170,0,192),'to':v3(-170,0,235)}])
+
+# --- Fix pass Sessions 77 and 79 (lane R2): the buggy park and every car park -----------------
+# car_park below lays out one car park from rows of bays and aisles (Session 77: the buggy park).
+BAY_WIDTH=2.6; BAY_DEPTH=4.8; AISLE=5.7; ACCESS=6.0; EDGE=0.3
+def heading(d):
+    """The facing in degrees of something pointing along d = (x, z): 0 points +z (south)."""
+    return round(math.degrees(math.atan2(d[0],d[1])),1)+0.0
+def cut(a,b):
+    """The parts of rect a (x, z, w, d) outside rect b, as up to four rects."""
+    ax0,az0,ax1,az1=a[0],a[1],a[0]+a[2],a[1]+a[3]
+    bx0,bz0,bx1,bz1=max(ax0,b[0]),max(az0,b[1]),min(ax1,b[0]+b[2]),min(az1,b[1]+b[3])
+    if bx0>=bx1 or bz0>=bz1: return [a]
+    parts=[(ax0,az0,ax1-ax0,bz0-az0),(ax0,bz1,ax1-ax0,az1-bz1),(ax0,bz0,bx0-ax0,bz1-bz0),(bx1,bz0,ax1-bx1,bz1-bz0)]
+    return [tuple(round(n,2) for n in p) for p in parts if p[2]>0.05 and p[3]>0.05]
+def car_park(name,corner,across,along,columns,length,gap,end_bays=-1,depth=BAY_DEPTH,clear=(),drawn=None,entrances=(),kind='cars',fill=0.8,seed=0):
+    """One car park. corner: (x, z) of the corner at the entrance end where the first column
+    starts. across/along: unit (x, z) steps across the columns and away from the entrance.
+    columns, from the corner across: ('row', +1 or -1: noses point along +across or -across,
+    roof posts?) or ('aisle', width, is it the access road?). length: metres away from the
+    entrance; gap: free metres at the entrance end before the first bays. end_bays: bays in
+    the row across the far end (-1 = as many as fit, 0 = none). clear: [(x, z, radius)] spots
+    that must stay free. drawn: the part DecorBuilder already paves (PARKING_AREAS rect)."""
+    def at(u,v): return (round(corner[0]+u*across[0]+v*along[0],2),round(corner[1]+u*across[1]+v*along[1],2))
+    def free(p): return all(math.dist(p,(x,z))>r for x,z,r in clear)
+    end_depth=depth if end_bays!=0 else 0.0
+    v_end=length-EDGE-(end_depth+AISLE if end_depth else 0.0)
+    n=int((v_end-gap)//BAY_WIDTH)
+    v0=gap+((v_end-gap)-n*BAY_WIDTH)/2+BAY_WIDTH/2
+    rows=[];arrows=[];u=EDGE;access_u=None;plain_u=None
+    def add_row(cells,nose,posts):
+        run=[]
+        for p in cells+[None]:  # a spot that must stay free splits the row in two
+            if p is not None and free(p): run.append(p); continue
+            if run: rows.append({'bays':run,'facing':heading(nose),'depth':depth,'posts':posts})
+            run=[]
+    for col in columns:
+        if col[0]=='row':
+            nose=across if col[1]>0 else (-across[0],-across[1])
+            add_row([at(u+depth/2,v0+k*BAY_WIDTH) for k in range(n)],nose,col[2])
+            u+=depth
+        else:
+            if col[2]: access_u=u+col[1]/2
+            else: plain_u=u+col[1]/2
+            u+=col[1]
+    width=round(u+(0.5 if columns[-1][0]=='aisle' and columns[-1][2] else EDGE if columns[-1][0]=='row' else 0.0),2)
+    if end_depth:
+        count=end_bays if end_bays>0 else int((width-3.2)//BAY_WIDTH)
+        first=width/2-(count-1)*BAY_WIDTH/2
+        add_row([at(first+k*BAY_WIDTH,length-EDGE-depth/2) for k in range(count)],along,True)
+    # Painted arrows: back towards the entrance in the plain aisle, and across the far end
+    # from the access road to the plain aisle (the access road gets its arrows from RoadMesh).
+    back=(-along[0],-along[1])
+    if plain_u is not None:
+        for v in range(int(gap)+6,int(v_end)-3,18): arrows.append({'position':v2(*at(plain_u,v)),'facing':heading(back)})
+        if end_depth and access_u is not None:
+            way=across if plain_u>access_u else (-across[0],-across[1])
+            arrows.append({'position':v2(*at((access_u+plain_u)/2,v_end+AISLE/2)),'facing':heading(way)})
+    elif kind=='buggies':
+        arrows.append({'position':v2(*at(access_u,gap+2)),'facing':heading(along)})
+    a=at(0,0);b=at(width,length)
+    area=(round(min(a[0],b[0]),2),round(min(a[1],b[1]),2),round(abs(b[0]-a[0]),2),round(abs(b[1]-a[1]),2))
+    # A car in `fill` of the bays (8 in 10), picked at random but the same every time.
+    bays=[(x,z,row['facing']) for row in rows for x,z in row['bays']]
+    taken=set(random.Random(seed).sample(range(len(bays)),round(len(bays)*fill)))
+    filled=[{'position':v3(x,0,z),'facing':f,'bay':False} for i,(x,z,f) in enumerate(bays) if i in taken]
+    for row in rows: row['bays']=[v2(*p) for p in row['bays']]
+    lot={'name':name,'kind':kind,'area':rect(*area),'pads':[rect(*p) for p in (cut(area,drawn) if drawn else [area])],
+         'rows':rows,'arrows':arrows,'entrances':list(entrances),'access':v2(*at(access_u,0))}
+    return lot,area,filled
+import random
+def fix_pass_car_parks():
+    lots=[]
+    # Session 77: the Plaza road from the roundabout no longer stops inside the Plaza: it turns
+    # east before the Plaza and ends in a small buggy park behind Dune Drip (6 bays, 2 buggies).
+    roads[:]=[r for r in roads if r['name']!='Plaza Road']
+    rounded('Plaza Road',[(-132,-71),(-132,-96),(-105.7,-96),(-105.7,-126)],6.,10.)
+    lot,area,bays=car_park('Buggy Park',(-113,-126),(1,0),(0,-1),[('row',-1,True),('aisle',ACCESS,True),('row',1,True)],11,2.0,
+        end_bays=0,depth=4.0,entrances=[{'road':'Plaza Road','at':v2(-105.7,-126),'lot_at':v2(-105.7,-126),'width':ACCESS}],kind='buggies',fill=0.0)
+    lot['buggies']=[{'position':row['bays'][k],'facing':row['facing']} for row,k in [(lot['rows'][0],1),(lot['rows'][1],2)]]
+    lots.append(lot)
+    put('PARKING_LOTS',lots)
+fix_pass_car_parks()
 
 lines=['class_name WahatAlShams','## Real-size Wahat Al Shams: generated by tools/build_wahat_data.py.','## Coordinates in metres; stable IDs and explicit human addresses are separate.','']
 for name,value in constants.items():

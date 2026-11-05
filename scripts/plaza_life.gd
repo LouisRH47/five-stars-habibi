@@ -100,6 +100,8 @@ func _cafe_tables(shop: Dictionary) -> void:
 
 
 func _on_paving(spot: Vector2) -> bool:
+	if _map["PLAZA"].has("floor"):  # Session 77: the square floor
+		return PlazaFloor.is_paved(_map, spot)
 	var r := spot.distance_to(_centre)
 	return r > _map["PLAZA"]["sunken_radius"] and r < _map["PLAZA"]["radius"]
 

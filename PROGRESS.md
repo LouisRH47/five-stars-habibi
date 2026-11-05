@@ -1,5 +1,28 @@
 # Progress
 
+## Session 77: a square Plaza floor and the Dune Drip buggy park — 5 November 2026
+
+What works:
+- **One square paved Plaza floor** (scripts/plaza_floor.gd) using the CC0 square_concrete_pavers
+  photo (Poly Haven, in CREDITS.md), about 1 m squares, tinted warm sandy stone
+  (PLAZA_PAVER_TILE and PLAZA_PAVER_TINT in game_config.gd). It runs from the bike shop to
+  Dune Drip and from the north restaurant row to the south row, so every restaurant door,
+  both shop doors and the café tables stand on paving. The fountain and sunken square stay.
+- **The Plaza road now ends in a buggy park** behind Dune Drip: 4 to 6 spaces with markings,
+  a solar roof, two buggies parked, and a footpath into the Plaza.
+- Smoke test checks the ground at every restaurant entrance is paving.
+- Checked: smoke test and every focused suite PASS. Screenshots on the Mac: the Plaza floor
+  from above and from the ground, the buggy park, the Plaza corner by the bike shop.
+
+Known bugs:
+- The play-test bot sometimes can't find its way through a narrow doorway next to a wall
+  (it got stuck outside the C Institute and the gym) and then the shift never ends. Walking
+  there by hand works (checked with a test walk). To look at in Session 84.
+
+**Louis's turn:** press F5, ride into the Plaza and look around: the whole square is paving,
+nothing stands on grass. Ride from the roundabout up the Plaza road: it ends in the little buggy
+park behind Dune Drip.
+
 ## Sessions 75 and 76: ride freely, jump on foot, buggies on roads, kerbs that join up — 5 November 2026
 
 Built by two helpers in parallel (roads, and people for the jump), then merged and re-tested.

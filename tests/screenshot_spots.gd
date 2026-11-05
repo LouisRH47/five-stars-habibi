@@ -47,6 +47,20 @@ const SPOTS := {
 	"r1_c1_entrance_ground": [Vector3(40, 1.8, -34), Vector3(48, 0.2, -47)],
 	"r1_institute_back_road": [Vector3(-150, 2.4, -61), Vector3(-185, 0.3, -64)],
 	"r1_institute_access_ground": [Vector3(-183, 2.2, 1), Vector3(-190, 0.5, -28)],
+	# lane R2
+	"r2_plaza_corner": [Vector3(-282, 2.4, -104), Vector3(-245, 1.0, -150)],
+	"r2_buggy_park": [Vector3(-88, 3.5, -118), Vector3(-108, 0.5, -146)],
+	"r2_buggy_park_top": [Vector3(-104, 45, -112), Vector3(-112, 0, -146)],
+	"r2_mosque_park": [Vector3(-318, 3.0, -108), Vector3(-345, 0.5, -138)],
+	"r2_car_park_c1c2_top": [Vector3(125, 70, -110), Vector3(125, 0, -160)],
+	"r2_car_park_c2c3_top": [Vector3(276, 70, -110), Vector3(276, 0, -160)],
+	"r2_car_park_c4w_top": [Vector3(-11, 70, 105), Vector3(-11, 0, 150)],
+	"r2_car_park_c4c5_top": [Vector3(195, 70, 105), Vector3(195, 0, 150)],
+	"r2_car_park_c5_top": [Vector3(398, 70, 110), Vector3(398, 0, 155)],
+	"r2_stables_park_top": [Vector3(-155, 50, 135), Vector3(-155, 0, 172)],
+	"r2_school_park_top": [Vector3(-365, 60, -5), Vector3(-365, 0, 32)],
+	"r2_car_park_ground": [Vector3(195, 2.4, 196), Vector3(190, 0.5, 150)],
+	"r2_parked_cars_close": [Vector3(193, 1.7, 176), Vector3(187.8, 0.5, 168)],
 }
 
 var _main: Node

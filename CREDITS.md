@@ -80,6 +80,10 @@ The riding wind loop (assets/audio/wind_loop.wav) is original generated CC0 audi
 
 The PERFECT and tip jingles (assets/audio/perfect.wav and tip.wav) are original generated CC0 audio, reproduced by tools/make_sounds.py.
 
+**Fix pass Plaza floor** (Session 77): `assets/textures/square_concrete_pavers_diff_1k.jpg`,
+Poly Haven "Square Concrete Pavers" (CC0 1.0), https://polyhaven.com/a/square_concrete_pavers
+(copied from tools/texture_sources/; the game tints it a pale sandy stone).
+
 ## Interior kits (looks pass, Session 53)
 
 Downloaded on 5 November 2026 from the official KayKit GitHub repositories. Only the models

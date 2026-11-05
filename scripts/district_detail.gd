@@ -121,9 +121,11 @@ func _checkpoints_and_station() -> void:
 	_car_parks()
 
 
+## Session 77: the buggy park behind Dune Drip comes from CarParkBuilder.
 ## Session 64: the school car park gets the same asphalt pad as the other car parks (its
 ## bays, cars and solar roofs come from PARKED_CARS), and a pay machine like the others.
 func _car_parks() -> void:
+	CarParkBuilder.build(self, _map)
 	if not _map.has("SCHOOL_PARKING"):
 		return
 	var area: Rect2 = _map["SCHOOL_PARKING"]

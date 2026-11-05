@@ -3030,9 +3030,86 @@ func _check_session76() -> void:
 
 
 ## Session 77: square Plaza floor and the Dune Drip buggy park.
-## (Session 77 checks go here.)
 func _check_session77() -> void:
-	await process_frame
+	var places: Node = _main.get_node_or_null("PlaceBuilder")
+	var plaza_builder: Node = _main.get_node_or_null("PlazaBuilder")
+	if places == null or plaza_builder == null or not places.data.get_script_constant_map().get("PLAZA", {}).has("floor"):
+		print("      no square Plaza floor in this scene, Session 77 checks skipped")
+		return
+	var map: Dictionary = places.data.get_script_constant_map()
+	var plaza: Dictionary = map["PLAZA"]
+	# One square floor of the square concrete pavers photo, covering the whole square.
+	var floor := plaza_builder.get_node_or_null("Plaza") as MeshInstance3D
+	var look := floor.material_override as StandardMaterial3D if floor != null else null
+	var area: Rect2 = plaza["floor"]
+	var covers := floor != null and floor.get_aabb().size.x >= area.size.x - 0.1 and floor.get_aabb().size.z >= area.size.y - 0.1
+	_check("Session 77: the Plaza floor is one square of concrete pavers", covers and look != null and look.albedo_texture != null
+			and look.albedo_texture.resource_path.ends_with("square_concrete_pavers_diff_1k.jpg"), "%s" % [area])
+	# The ground at every restaurant entrance and in front of both shop doors is paving.
+	var off: Array = []
+	for shop: Dictionary in places.restaurants:
+		if not shop.get("interior", false):
+			continue  # the farm and honey stalls are out in the spine
+		for spot: Vector3 in [places.restaurant_entrance(shop["id"]), places.restaurant_approach(shop["id"])]:
+			if not PlazaFloor.is_paved(map, Vector2(spot.x, spot.z)):
+				off.append(shop["name"])
+	for shop: Dictionary in map["SHOPS"]:
+		var size: Vector3 = shop["size"]
+		var door := PlaceBuilder.door_point(shop["position"], shop["facing"], size)
+		var p: Vector3 = shop["position"]
+		var spots := [door]
+		for corner in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:  # the whole shop too
+			spots.append(Vector3(p.x + corner.x * size.z * 0.5, 0, p.z + corner.y * size.x * 0.5))
+		for spot: Vector3 in spots:
+			if not PlazaFloor.is_paved(map, Vector2(spot.x, spot.z)):
+				off.append(shop["name"])
+	_check("Session 77: the ground at every restaurant entrance and both shops is paving", off.is_empty(), "not paved: %s" % [off])
+	# The café tables stand on the paving (at the paving's height), not on the grass.
+	var tables := 0
+	var low: Array = []
+	for table: Node in plaza_builder.find_children("CafeTable*", "Node3D", true, false):
+		if table is CollisionShape3D:
+			continue
+		tables += 1
+		var at := Vector2((table as Node3D).position.x, (table as Node3D).position.z)
+		if not PlazaFloor.is_paved(map, at) or (table as Node3D).position.y < 0.01:
+			low.append(String(table.name))
+	_check("Session 77: every café table is on the paving", tables >= 10 and low.is_empty(), "%d tables, off: %s" % [tables, low])
+	var fountain := plaza_builder.get_node_or_null("Fountain") as Node3D
+	_check("Session 77: the fountain and sunken square stay in the middle", fountain != null
+			and Vector2(fountain.position.x, fountain.position.z).distance_to(plaza["centre"]) < 0.01
+			and not PlazaFloor.is_paved(map, plaza["centre"]), "")
+	# The Plaza road ends in the buggy park behind Dune Drip, not inside the Plaza.
+	var buggy_park := _session77_lot(map, "buggies")
+	var road_end := Vector2.INF
+	var into_plaza := false
+	for road: Dictionary in map["ROADS"]:
+		if road["name"] == "Plaza Road":
+			road_end = road["to"]
+			into_plaza = into_plaza or area.grow(-0.5).has_point(road["to"]) or area.grow(-0.5).has_point(road["from"])
+	var bays := 0
+	for row: Dictionary in buggy_park.get("rows", []):
+		bays += (row["bays"] as Array).size()
+	var dune_drip: Vector3 = map["SHOPS"][1]["position"]
+	var park_area: Rect2 = buggy_park.get("area", Rect2())
+	_check("Session 77: the Plaza road ends in a small buggy park behind Dune Drip", not into_plaza and bays >= 4 and bays <= 6
+			and park_area.grow(0.2).has_point(road_end) and park_area.position.x >= dune_drip.x,
+			"%d bays, road ends at %s" % [bays, road_end])
+	var parked := _main.find_children("ParkedBuggy_*", "StaticBody3D", true, false).size()
+	var path_in := false
+	for apron: Rect2 in plaza.get("aprons", []):
+		path_in = path_in or (apron.grow(0.05).intersects(park_area) and apron.grow(0.05).intersects(area))
+	_check("Session 77: the buggy park has markings, a parked buggy and a footpath into the Plaza",
+			parked >= 1 and path_in and _main.get_node_or_null("DistrictDetail/CarParks/CarPark_BuggyPark/Markings") != null,
+			"%d buggies" % parked)
+
+
+## The first car park of this kind ("buggies" or "cars") in the data, or {}.
+func _session77_lot(map: Dictionary, kind: String) -> Dictionary:
+	for lot: Dictionary in map.get("PARKING_LOTS", []):
+		if lot["kind"] == kind:
+			return lot
+	return {}
 
 # --- end of Session 77 checks ---
 

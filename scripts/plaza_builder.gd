@@ -1,6 +1,6 @@
 extends Node3D
-## Builds the Plaza (Session 27) from data/wahat_al_shams.gd: the round paving, and in the
-## middle the sunken square: steps going down to a round floor with a fountain, benches and
+## Builds the Plaza (Session 27) from data/wahat_al_shams.gd: the paving (Session 77: one
+## square floor, PlazaFloor), and in the middle the sunken square: steps going down to a round floor with a fountain, benches and
 ## two shade sails. WahatBuilder leaves a square hole in the ground here; this fills it.
 ## The steps are only for looks: underneath them is one smooth, gentle slope (a "height map",
 ## a grid of heights) that the bike rolls down and back up without bumping.
@@ -41,7 +41,11 @@ func _ready() -> void:
 	# The paving from the edge of the Plaza to the top step. Session 67: its top sits at
 	# PAVING_TOP, a clear 2 cm under the roads (4 cm) and over the sand (0), so the walkways
 	# in front of the restaurants don't flicker where a road or bench base meets them.
-	_ring(top, outer, PAVING_TOP, PAVING_TOP + depth * 0.5 / steps, PAVING).name = "Plaza"
+	# Session 77: one square floor of concrete pavers (PlazaFloor) instead of the round paving.
+	if _plaza.has("floor"):
+		PlazaFloor.build(self, _plaza, PAVING_TOP, PAVING_TOP + depth * 0.5 / steps)
+	else:
+		_ring(top, outer, PAVING_TOP, PAVING_TOP + depth * 0.5 / steps, PAVING).name = "Plaza"
 	# The steps, each a ring a bit lower than the last, then the round floor.
 	var width := (top - bottom) / steps
 	for k in steps:

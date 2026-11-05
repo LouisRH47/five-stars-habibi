@@ -564,7 +564,9 @@ const KERB_WIDTH := 0.25              # metres across the top of a kerb
 
 
 # --- Fix pass Session 77: square Plaza floor and the Dune Drip buggy park ---
-# (Session 77 numbers go here)
+const PLAZA_PAVER_TILE := 6.0             # metres of floor one square_concrete_pavers photo covers (squares about 1 m)
+const PLAZA_PAVER_TINT := Color(1.3, 1.36, 1.38)  # lightens the brown photo to a warm sandy stone
+const PARKED_BUGGY_COLOUR := Color(0.92, 0.91, 0.84)  # the buggies parked behind Dune Drip
 
 
 # --- Fix pass Session 78: bike shop and Dune Drip buildings ---
@@ -572,7 +574,10 @@ const KERB_WIDTH := 0.25              # metres across the top of a kerb
 
 
 # --- Fix pass Session 79: car parks and the mosque car park ---
-# (Session 79 numbers go here)
+const CAR_PARK_ROOF_HEIGHT := 3.1         # metres from the ground to the solar panels
+const CAR_PARK_ROOF_TILT := 0.07          # how much the panels lean (radians, about 4 degrees)
+const CAR_PARK_POST_EVERY := 3            # one roof post every 3 bays
+const CAR_PARK_LINE_WIDTH := 0.12         # the painted bay lines (metres)
 
 
 # --- Fix pass Session 80: C Institute front, seats and the basketball court ---

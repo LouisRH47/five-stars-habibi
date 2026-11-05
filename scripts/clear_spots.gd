@@ -46,6 +46,8 @@ func _init(map: Dictionary) -> void:
 		for area in map.get(key, []):
 			if area is Rect2:
 				_boxes.append((area as Rect2).grow(0.5))
+	for lot: Dictionary in map.get("PARKING_LOTS", []):  # Session 79: every car park, all of it
+		_boxes.append((lot["area"] as Rect2).grow(0.5))
 	for key in ["COMMUNITY_POOL", "LAP_POOL", "BASKETBALL_COURT", "PLAYGROUND", "BEEHIVES", "JUMPING_ARENA", "SCHOOL_PARKING"]:
 		if map.has(key):
 			_boxes.append((map[key] as Rect2).grow(1.0))

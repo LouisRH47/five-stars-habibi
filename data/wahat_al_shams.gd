@@ -25,7 +25,7 @@ const HORSE_TRACK := {"half": Vector2(450, 230), "width": 5.0, "radius": 37.0}
 
 const BIKE_TRACK := {"half": Vector2(438, 218), "width": 4.0, "radius": 25.0}
 
-const PLAZA := {"centre": Vector2(-200, -145), "radius": 50.0, "sunken_radius": 20.0, "floor_radius": 15.0, "depth": 0.45, "steps": 3, "fountain_radius": 2.8}
+const PLAZA := {"centre": Vector2(-200, -145), "radius": 50.0, "sunken_radius": 20.0, "floor_radius": 15.0, "depth": 0.45, "steps": 3, "fountain_radius": 2.8, "floor": Rect2(-287, -191, 153, 92), "aprons": [Rect2(-134, -159, 21, 28)]}
 
 const PLAZA_SAILS := [
 	[Vector3(-224, 0, -157), Vector3(-200, 0, -170), Vector3(-176, 0, -157)],
@@ -145,12 +145,6 @@ const ROADS := [
 	{"name": "Institute Back Road", "from": Vector2(-286.5, -59.5), "to": Vector2(-289.12, -55.12), "width": 6.0},
 	{"name": "Institute Back Road", "from": Vector2(-289.12, -55.12), "to": Vector2(-290, -49), "width": 6.0},
 	{"name": "Institute Back Road", "from": Vector2(-290, -49), "to": Vector2(-290, 0), "width": 6.0},
-	{"name": "Plaza Road", "from": Vector2(-132, -71), "to": Vector2(-132, -116), "width": 6.0},
-	{"name": "Plaza Road", "from": Vector2(-132, -116), "to": Vector2(-132.62, -120.38), "width": 6.0},
-	{"name": "Plaza Road", "from": Vector2(-132.62, -120.38), "to": Vector2(-134.5, -123.5), "width": 6.0},
-	{"name": "Plaza Road", "from": Vector2(-134.5, -123.5), "to": Vector2(-137.62, -125.38), "width": 6.0},
-	{"name": "Plaza Road", "from": Vector2(-137.62, -125.38), "to": Vector2(-142, -126), "width": 6.0},
-	{"name": "Plaza Road", "from": Vector2(-142, -126), "to": Vector2(-152, -126), "width": 6.0},
 	{"name": "Institute Roundabout", "from": Vector2(-123, -62), "to": Vector2(-123.03, -61.22), "width": 6.0},
 	{"name": "Institute Roundabout", "from": Vector2(-123.03, -61.22), "to": Vector2(-123.14, -60.44), "width": 6.0},
 	{"name": "Institute Roundabout", "from": Vector2(-123.14, -60.44), "to": Vector2(-123.31, -59.67), "width": 6.0},
@@ -410,6 +404,17 @@ const ROADS := [
 	{"name": "C5 Link", "from": Vector2(303, 42), "to": Vector2(303, 35), "width": 6.0},
 	{"name": "C5 Alley", "from": Vector2(243, 52), "to": Vector2(363, 52), "width": 4.0},
 	{"name": "C5 Cross Row Alley", "from": Vector2(243, 120), "to": Vector2(363, 120), "width": 3.0},
+	{"name": "Plaza Road", "from": Vector2(-132, -71), "to": Vector2(-132, -86), "width": 6.0},
+	{"name": "Plaza Road", "from": Vector2(-132, -86), "to": Vector2(-131.38, -90.38), "width": 6.0},
+	{"name": "Plaza Road", "from": Vector2(-131.38, -90.38), "to": Vector2(-129.5, -93.5), "width": 6.0},
+	{"name": "Plaza Road", "from": Vector2(-129.5, -93.5), "to": Vector2(-126.38, -95.38), "width": 6.0},
+	{"name": "Plaza Road", "from": Vector2(-126.38, -95.38), "to": Vector2(-122, -96), "width": 6.0},
+	{"name": "Plaza Road", "from": Vector2(-122, -96), "to": Vector2(-115.7, -96), "width": 6.0},
+	{"name": "Plaza Road", "from": Vector2(-115.7, -96), "to": Vector2(-111.33, -96.62), "width": 6.0},
+	{"name": "Plaza Road", "from": Vector2(-111.33, -96.62), "to": Vector2(-108.2, -98.5), "width": 6.0},
+	{"name": "Plaza Road", "from": Vector2(-108.2, -98.5), "to": Vector2(-106.33, -101.62), "width": 6.0},
+	{"name": "Plaza Road", "from": Vector2(-106.33, -101.62), "to": Vector2(-105.7, -106), "width": 6.0},
+	{"name": "Plaza Road", "from": Vector2(-105.7, -106), "to": Vector2(-105.7, -126), "width": 6.0},
 ]
 
 const PAVED_AREAS := [
@@ -1368,4 +1373,8 @@ const ROAD_WORKS := [
 const HORSE_CROSSINGS := [
 	{"name": "the stables yard", "from": Vector3(-244, 0, 184), "to": Vector3(-244, 0, 205)},
 	{"name": "the south ring road", "from": Vector3(-170, 0, 192), "to": Vector3(-170, 0, 235)},
+]
+
+const PARKING_LOTS := [
+	{"name": "Buggy Park", "kind": "buggies", "area": Rect2(-113, -137, 14.6, 11), "pads": [Rect2(-113, -137, 14.6, 11)], "rows": [{"bays": [Vector2(-110.7, -129.75), Vector2(-110.7, -132.35), Vector2(-110.7, -134.95)], "facing": -90.0, "depth": 4.0, "posts": true}, {"bays": [Vector2(-100.7, -129.75), Vector2(-100.7, -132.35), Vector2(-100.7, -134.95)], "facing": 90.0, "depth": 4.0, "posts": true}], "arrows": [{"position": Vector2(-105.7, -130), "facing": 180.0}], "entrances": [{"road": "Plaza Road", "at": Vector2(-105.7, -126), "lot_at": Vector2(-105.7, -126), "width": 6.0}], "access": Vector2(-105.7, -126), "buggies": [{"position": Vector2(-110.7, -132.35), "facing": -90.0}, {"position": Vector2(-100.7, -134.95), "facing": 90.0}]},
 ]
