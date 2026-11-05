@@ -1,5 +1,21 @@
 # Progress
 
+## Fixes after the careless play-test — 5 November 2026
+
+The careless play-test bot found three things that could end a shift unfairly:
+- **Spine kerbs** counted as a hard wall, so riding into one at speed was a big crash (hospital,
+  shift over). They now count as a bump (`KERB_IMPACT_HARDNESS` in game_config.gd).
+- **Crossings through the spine planters** were only 1.6 m wide. They're 3 m now, and the one by
+  the gym lines up with its door (x 115).
+- **Big end houses** were 1.4 m deeper than the other homes and stuck out into the gap beside the
+  lanes. They're now 8.4 m deep (still bigger than a normal home).
+- Results: careful bot 5 deliveries, 5.0 stars, no crashes. Careless bot 4 and 5 deliveries;
+  its big crashes are now into real things in the Plaza (a shop front, a light pole), which is
+  what careless riding should cost. Smoke test PASS.
+
+**Louis's turn:** ride along the spine road and bump the kerb: you should wobble, not go to
+hospital. Ride from the spine road to the gym door through the crossing.
+
 ## Sessions 59 and 74: play-test of the looks pass and the world polish pass — 5 November 2026
 
 Everything from looks Sessions 53 to 58 and World Sessions 61 to 73 is built and merged on

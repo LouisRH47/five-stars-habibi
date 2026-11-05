@@ -185,7 +185,7 @@ palms=[v3(x,0,z) for z in [-4,4] for x in range(-310,381,45)] +[v3(-210,-.45,-15
 # 0 both) the planter and track stop; at a path the planter becomes a marked crossing.
 put('SPINE_TRACKS',{'from_x':-334.0,'to_x':390.0,'road_half':3.0,'planter':2.0,'track':2.5,
  'road_gaps':[[-290.0,-1,6.0]],
- 'path_gaps':[[-186.0,-1,3.0]]+[[x,0,1.6] for x in [-240.0,-145.0,-60.0,20.0,110.0,200.0,290.0,345.0]]})
+ 'path_gaps':[[-186.0,-1,3.0]]+[[x,0,3.0] for x in [-240.0,-145.0,-60.0,20.0,115.0,200.0,290.0,345.0]]})
 # Session 63: no bare sand. Sand stays only where the horses ride (the stables, the jumping
 # arena and the horse track); GroundType uses these for the tyre dust.
 put('SAND_AREAS',[rect(-282,65,115,88),rect(-282,157,115,43)])
@@ -237,8 +237,8 @@ for n,cx,cz in clusters:
             free=min(abs(b-edge) for b in beyond)
             if free<9.8: continue
             for side in [-1,1]:
-                end_houses.append({'cluster':f'C{n}','number':9000+n*100+len(end_houses),'position':v3(rx+side*4.7,0,edge+d*4.9),
-                    'facing':side*90.,'size':v3(9.6,8.5,9.4),'kind':'courtyard','row_mode':True,'house':0})
+                end_houses.append({'cluster':f'C{n}','number':9000+n*100+len(end_houses),'position':v3(rx+side*4.2,0,edge+d*4.9),
+                    'facing':side*90.,'size':v3(9.6,8.5,8.4),'kind':'courtyard','row_mode':True,'house':0})
 put('END_HOUSES',end_houses)
 # Session 65: the community pool is fenced. Its gate is on the south side, where the
 # crossing from the spine road's red track comes in (x 200), and the pool sign stands

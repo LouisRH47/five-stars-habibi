@@ -186,6 +186,9 @@ func _solid_kerb(a: float, b: float, z: float, side: int) -> void:
 	body.name = "SpineKerb_%d" % solid_runs.size()
 	body.set_meta("impact_category", "rigid")
 	body.set_meta("impact_name", "a kerb")
+	# Riding into a kerb is a bump, not a wall: it can knock you about but never sends you
+	# to hospital (see CrashImpact.hardness_for).
+	body.set_meta("impact_hardness", GameConfig.KERB_IMPACT_HARDNESS)
 	add_child(body)
 	LowPoly.solid_box(body, Vector3(b - a, SOLID_HEIGHT, KERB_WIDTH), Vector3((a + b) * 0.5, SOLID_HEIGHT * 0.5, z))
 	solid_runs.append([a, b, side])

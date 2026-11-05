@@ -546,3 +546,6 @@ const SPINE_GRASS_DRAW_DISTANCE := 90.0  # metres; further off the grass blades 
 const SPINE_FLOWER_PATCHES := 140
 const SPINE_ROCKS := 160
 const SPINE_TREES := 45
+
+# --- Fixes after the careless play-test (5 Nov) ---
+const KERB_IMPACT_HARDNESS := 0.35     # the spine kerbs count as a soft bump (rigid walls are 1.0)
