@@ -1,5 +1,34 @@
 # Progress
 
+## Session 63: Greenery, round tracks and no bare sand — 5 November 2026
+
+- **Green edge.** Palms, round shade trees and hedges in the strip between the ring road and
+  the blue track, all the way round (open at the two gate roads and where the horses cross).
+  The trunks and hedges are solid (scripts/edge_builder.gd).
+- **Round tracks.** The blue run-and-cycle track and the horse track have rounded corners with
+  the same centres as the ring road's (radius 25 m and 37 m). The white horse rails, the horse
+  riders and the track jogger follow the curves. The blue track has a fine rubbery texture with
+  white lane lines (assets/textures/bike_track_1k.jpg, made by tools/make_road_textures.py).
+- **No bare sand.** The ground is grass now, and every cluster sits on pavers, so the front of
+  every home is paved. Sand stays only at the stables, the jumping arena and the horse track
+  (SAND_AREAS in the data); tyre dust only puffs up there now.
+- **Past the fence.** Three more rows of trees outside the walls (past the highway on the west),
+  56 low sand dunes, desert sand out to the horizon and 14 hazy far-off towers of Al Sarab.
+- Checked: smoke test PASS (new Session 63 checks), road mesh, district traffic, bus recovery,
+  coplanar, navigation, detail world, static batch, mini-map cache, housing camera and
+  lifecycle tests PASS. Play-test bot careful: 5 deliveries, 5.0 stars, never stuck; careless:
+  3 deliveries, 3 small and 1 big crash, never stuck.
+
+**Louis's turn:** press F5 and ride to the ring road, then out to its edge: a row of palms,
+trees and hedges between the road and the blue track. Ride round a corner of the ring road and
+look at the blue and sandy tracks: they curve too, and the blue track has lane lines. Ride
+through a cluster: pavers in front of the houses, no sand. Look out past the fence from the
+ring road: thick trees, dunes and far-off towers.
+
+**Known gaps (Sessions 61 to 63):** screenshots and the Medium frame-time check need a real
+graphics card (do them on the Mac in Session 74). The plain grass ground is one big texture;
+more planters beside the roads could come with Session 70's textures.
+
 ## Session 62: The spine road and red walking tracks — 5 November 2026
 
 - **Like Louis's photo.** On both sides of the spine road: a 2 m planter (low kerbs, grass,

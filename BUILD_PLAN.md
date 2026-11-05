@@ -1401,7 +1401,7 @@ Done when:
 - [ ] Joggers and walkers use the red tracks
 - [ ] The C Institute path goes somewhere and its benches face outwards
 
-### Session 63: Greenery, round tracks and no bare sand
+### Session 63: Greenery, round tracks and no bare sand (built, needs testing)
 
 ```text
 Session 63. Make the edges green and round.

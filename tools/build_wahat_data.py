@@ -5,6 +5,7 @@ The generated file is ordinary Godot constants shared by the world, map and test
 """
 from pathlib import Path
 import json
+import math
 
 ROOT = Path(__file__).resolve().parents[1]
 class Raw(str):
@@ -28,8 +29,17 @@ put('MAP_HALF',v2(470,250)); put('ROAD_WIDTH',10.0); put('WALL_HEIGHT',2.5); put
 put('START',{'position':v3(-296,0,-160),'facing':-90.0})
 put('TREE_BELT',{'inner':v2(463,243),'spacing':8.0})
 put('GATES',[{'position':v3(-465,0,z),'facing':-90.0,'name':name} for z,name in [(-190,'North Checkpoint'),(190,'South Checkpoint')]])
-put('HORSE_TRACK',{'half':v2(450,230),'width':5.0})
-put('BIKE_TRACK',{'half':v2(438,218),'width':4.0})
+# Session 63: both tracks have rounded corners that match the ring road's (same centres).
+put('HORSE_TRACK',{'half':v2(450,230),'width':5.0,'radius':37.0})
+put('BIKE_TRACK',{'half':v2(438,218),'width':4.0,'radius':25.0})
+def rounded_loop(hx,hz,r,steps=8,reverse=False):
+    """Points round a rectangle with rounded corners, clockwise from the north-west."""
+    pts=[]
+    for cx,cz,a0 in [(-hx+r,-hz+r,180),(hx-r,-hz+r,270),(hx-r,hz-r,0),(-hx+r,hz-r,90)]:
+        for j in range(steps+1):
+            a=math.radians(a0+90*j/steps)
+            pts.append((round(cx+r*math.cos(a),2),round(cz+r*math.sin(a),2)))
+    return pts[::-1] if reverse else pts
 put('PLAZA',{'centre':v2(-200,-145),'radius':50.0,'sunken_radius':20.0,'floor_radius':15.0,'depth':0.45,'steps':3,'fountain_radius':2.8})
 put('PLAZA_SAILS',[[v3(-224,0,-157),v3(-200,0,-170),v3(-176,0,-157)],[v3(-176,0,-133),v3(-200,0,-120),v3(-224,0,-133)]])
 put('PLAZA_BENCHES',[{'position':v3(-200,-.45,-155),'facing':0.0},{'position':v3(-200,-.45,-135),'facing':180.0},{'position':v3(-190,-.45,-145),'facing':-90.0}])
@@ -174,6 +184,10 @@ palms=[v3(x,0,z) for z in [-4,4] for x in range(-310,381,45)] +[v3(-210,-.45,-15
 put('SPINE_TRACKS',{'from_x':-334.0,'to_x':390.0,'road_half':3.0,'planter':2.0,'track':2.5,
  'road_gaps':[[-290.0,-1,6.0]],
  'path_gaps':[[-186.0,-1,3.0]]+[[x,0,1.6] for x in [-240.0,-145.0,-60.0,20.0,110.0,200.0,290.0,345.0]]})
+# Session 63: no bare sand. Sand stays only where the horses ride (the stables, the jumping
+# arena and the horse track); GroundType uses these for the tyre dust.
+put('SAND_AREAS',[rect(-282,65,115,88),rect(-282,157,115,43)])
+put('EDGE_GREENERY',{'half':v2(433,213),'radius':20.0,'width':6.0,'spacing':9.0})
 put('PALM_TREES',palms);put('PARKED_CAR_SIZE',v3(1.9,1.5,4.3))
 put('PARKED_CARS',[{'position':v3(x+3,0,z+8+k*9),'facing':90.,'bay':True} for x,z,w,d in parking[:6] for k in range(8)]
  +[{'position':v3(x,0,30),'facing':0.,'bay':True} for x in [-412,-403,-394,-385,-376,-354,-345,-336,-327,-318]])
@@ -184,8 +198,8 @@ put('SPEED_BUMPS',[{'position':v3(x,0,z),'facing':90.} for z in [-205,205] for x
  +[{'position':v3(x,0,z),'facing':90.,'size':v3(6,.12,.5)} for x,z in [(-20,-40),(280,-40),(-60,35),(260,35),(-250,0),(150,0)]])
 put('CATS',cats);put('SCOOTER_KIDS',kids)
 put('BUGGIES',[{'points':[v3(cx-60,0,cz),v3(cx+(30 if n==3 else 60),0,cz),v3(cx+(30 if n==3 else 60),0,-189 if cz<0 else 189)],'colour':colour(.85,.85,.76),'level':(n-1)%3} for n,cx,cz in clusters]+[{'points':[v3(-140,0,-1),v3(410,0,-1)],'colour':colour(.3,.5,.5),'level':1}])
-put('HORSE_RIDERS',[{'points':[v3(-450,0,-230),v3(450,0,-230),v3(450,0,230),v3(-450,0,230)],'loop':True,'colour':colour(.45,.28,.15),'level':0,'collection_id':'horse_sultan','collection_name':'Sultan'},{'points':[v3(450,0,230),v3(-450,0,230),v3(-450,0,-230),v3(450,0,-230)],'loop':True,'colour':colour(.85,.82,.78),'level':1,'collection_id':'horse_noor','collection_name':'Noor'}])
-put('PEOPLE_ROUTES',[{'points':[v3(-438,0,-218),v3(438,0,-218),v3(438,0,218),v3(-438,0,218)],'loop':True,'jog':True,'look':2,'level':0}]+[{'points':[v3(-326,0,z),v3(386,0,z)],'jog':jog,'look':i,'level':i%3} for i,(z,jog) in enumerate([(-6.6,True),(-5.9,False),(6.6,True),(5.9,False)])])
+put('HORSE_RIDERS',[{'points':[v3(x,0,z) for x,z in rounded_loop(450,230,37)],'loop':True,'colour':colour(.45,.28,.15),'level':0,'collection_id':'horse_sultan','collection_name':'Sultan'},{'points':[v3(x,0,z) for x,z in rounded_loop(450,230,37,reverse=True)],'loop':True,'colour':colour(.85,.82,.78),'level':1,'collection_id':'horse_noor','collection_name':'Noor'}])
+put('PEOPLE_ROUTES',[{'points':[v3(x,0,z) for x,z in rounded_loop(438,218,25)],'loop':True,'jog':True,'look':2,'level':0}]+[{'points':[v3(-326,0,z),v3(386,0,z)],'jog':jog,'look':i,'level':i%3} for i,(z,jog) in enumerate([(-6.6,True),(-5.9,False),(6.6,True),(5.9,False)])])
 put('GARDENERS',gardeners);put('PLAY_KIDS',plays)
 put('DUCKS',[{'from_x':x,'to_x':x+65,'side':.4 if i%2 else -.4,'level':i%3} for i,x in enumerate([-100,30,160,290])])
 put('BIRD_FLOCKS',[{'centre':v3(x,30,z),'radius':r,'birds':4,'level':i} for i,(x,z,r) in enumerate([(-180,-100,70),(180,80,90),(0,0,160)])])

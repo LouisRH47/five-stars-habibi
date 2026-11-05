@@ -2553,4 +2553,24 @@ func _check_world_polish() -> void:
 	_check("Session 62: the C Institute seats face outwards, away from the glass",
 			tiers.size() >= 2 and (tiers[0].mesh as BoxMesh).size.y > (tiers[1].mesh as BoxMesh).size.y
 			and sitter != null and is_equal_approx(sitter.rotation.y, PI), "")
+	# Session 63: greenery, round tracks and no bare sand.
+	var edge: EdgeBuilder = _main.get_node_or_null("WahatBuilder/EdgeBuilder")
+	_check("Session 63: palms, trees and hedges between the ring road and the blue track", edge != null and edge.greenery_count > 200, "%d" % (edge.greenery_count if edge else 0))
+	_check("Session 63: thick tree belt, dunes and far shapes past the fence",
+			edge != null and edge.belt_trees > 500 and edge.dunes >= 30 and edge.far_shapes >= 10, "")
+	var blue: Node = edge.get_node_or_null("BikeTrack") if edge else null
+	var blue_view: MeshInstance3D = blue.get_child(0) if blue and blue.get_child_count() > 0 else null
+	_check("Session 63: the blue track has a texture and rounded corners",
+			blue_view != null and (blue_view.material_override as StandardMaterial3D).albedo_texture != null and data["BIKE_TRACK"].get("radius", 0.0) > 0.0, "")
+	_check("Session 63: horse riders follow the rounded horse track", data["HORSE_RIDERS"].all(func(r): return r["points"].size() > 20), "")
+	var sandy: Array = []
+	for villa: Dictionary in data["VILLAS"]:
+		if villa.has("approach") and GroundType.is_sand(data, Vector2(villa["approach"].x, villa["approach"].z)):
+			sandy.append(villa["number"])
+	for spot: Vector2 in [Vector2(-300, -100), Vector2(0, 200), Vector2(420, 0), Vector2(-150, 30)]:
+		if GroundType.is_sand(data, spot):
+			sandy.append(spot)
+	var arena: Rect2 = data["JUMPING_ARENA"]
+	_check("Session 63: no bare sand except where the horses ride", sandy.is_empty() and GroundType.is_sand(data, arena.get_center())
+			and GroundType.is_sand(data, Vector2(0, -230)), "%s" % [sandy.slice(0, 5)])
 

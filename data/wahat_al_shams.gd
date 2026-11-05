@@ -21,9 +21,9 @@ const GATES := [
 	{"position": Vector3(-465, 0, 190), "facing": -90.0, "name": "South Checkpoint"},
 ]
 
-const HORSE_TRACK := {"half": Vector2(450, 230), "width": 5.0}
+const HORSE_TRACK := {"half": Vector2(450, 230), "width": 5.0, "radius": 37.0}
 
-const BIKE_TRACK := {"half": Vector2(438, 218), "width": 4.0}
+const BIKE_TRACK := {"half": Vector2(438, 218), "width": 4.0, "radius": 25.0}
 
 const PLAZA := {"centre": Vector2(-200, -145), "radius": 50.0, "sunken_radius": 20.0, "floor_radius": 15.0, "depth": 0.45, "steps": 3, "fountain_radius": 2.8}
 
@@ -922,6 +922,13 @@ const REGULARS := [
 
 const SPINE_TRACKS := {"from_x": -334.0, "to_x": 390.0, "road_half": 3.0, "planter": 2.0, "track": 2.5, "road_gaps": [[-290.0, -1, 6.0]], "path_gaps": [[-186.0, -1, 3.0], [-240.0, 0, 1.6], [-145.0, 0, 1.6], [-60.0, 0, 1.6], [20.0, 0, 1.6], [110.0, 0, 1.6], [200.0, 0, 1.6], [290.0, 0, 1.6], [345.0, 0, 1.6]]}
 
+const SAND_AREAS := [
+	Rect2(-282, 65, 115, 88),
+	Rect2(-282, 157, 115, 43),
+]
+
+const EDGE_GREENERY := {"half": Vector2(433, 213), "radius": 20.0, "width": 6.0, "spacing": 9.0}
+
 const PALM_TREES := [
 	Vector3(-310, 0, -4),
 	Vector3(-265, 0, -4),
@@ -1073,12 +1080,12 @@ const BUGGIES := [
 ]
 
 const HORSE_RIDERS := [
-	{"points": [Vector3(-450, 0, -230), Vector3(450, 0, -230), Vector3(450, 0, 230), Vector3(-450, 0, 230)], "loop": true, "colour": Color(0.45, 0.28, 0.15, 1), "level": 0, "collection_id": "horse_sultan", "collection_name": "Sultan"},
-	{"points": [Vector3(450, 0, 230), Vector3(-450, 0, 230), Vector3(-450, 0, -230), Vector3(450, 0, -230)], "loop": true, "colour": Color(0.85, 0.82, 0.78, 1), "level": 1, "collection_id": "horse_noor", "collection_name": "Noor"},
+	{"points": [Vector3(-450, 0, -193), Vector3(-449.29, 0, -200.22), Vector3(-447.18, 0, -207.16), Vector3(-443.76, 0, -213.56), Vector3(-439.16, 0, -219.16), Vector3(-433.56, 0, -223.76), Vector3(-427.16, 0, -227.18), Vector3(-420.22, 0, -229.29), Vector3(-413, 0, -230), Vector3(413, 0, -230), Vector3(420.22, 0, -229.29), Vector3(427.16, 0, -227.18), Vector3(433.56, 0, -223.76), Vector3(439.16, 0, -219.16), Vector3(443.76, 0, -213.56), Vector3(447.18, 0, -207.16), Vector3(449.29, 0, -200.22), Vector3(450, 0, -193), Vector3(450, 0, 193), Vector3(449.29, 0, 200.22), Vector3(447.18, 0, 207.16), Vector3(443.76, 0, 213.56), Vector3(439.16, 0, 219.16), Vector3(433.56, 0, 223.76), Vector3(427.16, 0, 227.18), Vector3(420.22, 0, 229.29), Vector3(413, 0, 230), Vector3(-413, 0, 230), Vector3(-420.22, 0, 229.29), Vector3(-427.16, 0, 227.18), Vector3(-433.56, 0, 223.76), Vector3(-439.16, 0, 219.16), Vector3(-443.76, 0, 213.56), Vector3(-447.18, 0, 207.16), Vector3(-449.29, 0, 200.22), Vector3(-450, 0, 193)], "loop": true, "colour": Color(0.45, 0.28, 0.15, 1), "level": 0, "collection_id": "horse_sultan", "collection_name": "Sultan"},
+	{"points": [Vector3(-450, 0, 193), Vector3(-449.29, 0, 200.22), Vector3(-447.18, 0, 207.16), Vector3(-443.76, 0, 213.56), Vector3(-439.16, 0, 219.16), Vector3(-433.56, 0, 223.76), Vector3(-427.16, 0, 227.18), Vector3(-420.22, 0, 229.29), Vector3(-413, 0, 230), Vector3(413, 0, 230), Vector3(420.22, 0, 229.29), Vector3(427.16, 0, 227.18), Vector3(433.56, 0, 223.76), Vector3(439.16, 0, 219.16), Vector3(443.76, 0, 213.56), Vector3(447.18, 0, 207.16), Vector3(449.29, 0, 200.22), Vector3(450, 0, 193), Vector3(450, 0, -193), Vector3(449.29, 0, -200.22), Vector3(447.18, 0, -207.16), Vector3(443.76, 0, -213.56), Vector3(439.16, 0, -219.16), Vector3(433.56, 0, -223.76), Vector3(427.16, 0, -227.18), Vector3(420.22, 0, -229.29), Vector3(413, 0, -230), Vector3(-413, 0, -230), Vector3(-420.22, 0, -229.29), Vector3(-427.16, 0, -227.18), Vector3(-433.56, 0, -223.76), Vector3(-439.16, 0, -219.16), Vector3(-443.76, 0, -213.56), Vector3(-447.18, 0, -207.16), Vector3(-449.29, 0, -200.22), Vector3(-450, 0, -193)], "loop": true, "colour": Color(0.85, 0.82, 0.78, 1), "level": 1, "collection_id": "horse_noor", "collection_name": "Noor"},
 ]
 
 const PEOPLE_ROUTES := [
-	{"points": [Vector3(-438, 0, -218), Vector3(438, 0, -218), Vector3(438, 0, 218), Vector3(-438, 0, 218)], "loop": true, "jog": true, "look": 2, "level": 0},
+	{"points": [Vector3(-438, 0, -193), Vector3(-437.52, 0, -197.88), Vector3(-436.1, 0, -202.57), Vector3(-433.79, 0, -206.89), Vector3(-430.68, 0, -210.68), Vector3(-426.89, 0, -213.79), Vector3(-422.57, 0, -216.1), Vector3(-417.88, 0, -217.52), Vector3(-413, 0, -218), Vector3(413, 0, -218), Vector3(417.88, 0, -217.52), Vector3(422.57, 0, -216.1), Vector3(426.89, 0, -213.79), Vector3(430.68, 0, -210.68), Vector3(433.79, 0, -206.89), Vector3(436.1, 0, -202.57), Vector3(437.52, 0, -197.88), Vector3(438, 0, -193), Vector3(438, 0, 193), Vector3(437.52, 0, 197.88), Vector3(436.1, 0, 202.57), Vector3(433.79, 0, 206.89), Vector3(430.68, 0, 210.68), Vector3(426.89, 0, 213.79), Vector3(422.57, 0, 216.1), Vector3(417.88, 0, 217.52), Vector3(413, 0, 218), Vector3(-413, 0, 218), Vector3(-417.88, 0, 217.52), Vector3(-422.57, 0, 216.1), Vector3(-426.89, 0, 213.79), Vector3(-430.68, 0, 210.68), Vector3(-433.79, 0, 206.89), Vector3(-436.1, 0, 202.57), Vector3(-437.52, 0, 197.88), Vector3(-438, 0, 193)], "loop": true, "jog": true, "look": 2, "level": 0},
 	{"points": [Vector3(-326, 0, -6.6), Vector3(386, 0, -6.6)], "jog": true, "look": 0, "level": 0},
 	{"points": [Vector3(-326, 0, -5.9), Vector3(386, 0, -5.9)], "jog": false, "look": 1, "level": 1},
 	{"points": [Vector3(-326, 0, 6.6), Vector3(386, 0, 6.6)], "jog": true, "look": 2, "level": 2},

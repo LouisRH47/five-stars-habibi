@@ -288,18 +288,56 @@ func _build_horse_rails() -> void:
 		return
 	var half: Vector2 = track["half"]
 	var width: float = track["width"]
+	var radius: float = track.get("radius", 0.0)
+	var gap: float = _map.get("GATE_HALF_WIDTH", 7.0)
+	# Session 63: the rails follow the track's rounded corners. Cut the loop into short
+	# pieces, leave out the ones at the gate roads, then join straight pieces back up.
 	for offset: float in [-width * 0.5, width * 0.5]:
-		var edge: Vector2 = half + Vector2.ONE * offset
-		_rail_line(Vector3(-edge.x, 0, -edge.y), Vector3(edge.x, 0, -edge.y))
-		_rail_line(Vector3(edge.x, 0, -edge.y), Vector3(edge.x, 0, edge.y))
-		_rail_line(Vector3(edge.x, 0, edge.y), Vector3(-edge.x, 0, edge.y))
-		var previous: float = -edge.y
-		for gate: Dictionary in _map.get("GATES", []):
-			var z: float = gate["position"].z
-			var gap: float = _map.get("GATE_HALF_WIDTH", 7.0)
-			_rail_line(Vector3(-edge.x, 0, previous), Vector3(-edge.x, 0, z - gap))
-			previous = z + gap
-		_rail_line(Vector3(-edge.x, 0, previous), Vector3(-edge.x, 0, edge.y))
+		var loop := EdgeBuilder.rounded_rect(half + Vector2.ONE * offset, radius + offset if radius > 0.0 else 0.0)
+		var pieces: Array[Vector2] = []
+		for k in loop.size():
+			var a: Vector2 = loop[k]
+			var b: Vector2 = loop[(k + 1) % loop.size()]
+			var bits := maxi(1, ceili(a.distance_to(b) / 1.0))
+			for s in bits:
+				pieces.append(a.lerp(b, float(s) / bits))
+		var runs: Array = []
+		var run: Array[Vector3] = []
+		var start := 0
+		# Start just after a gate gap so no run wraps round the loop's first point.
+		for k in pieces.size():
+			if _in_gate_gap(pieces[k], gap) and not _in_gate_gap(pieces[(k + 1) % pieces.size()], gap):
+				start = k + 1
+				break
+		for j in pieces.size() + 1:
+			var p: Vector2 = pieces[(start + j) % pieces.size()]
+			if _in_gate_gap(p, gap):
+				if run.size() > 1:
+					runs.append(run)
+				run = []
+			else:
+				run.append(Vector3(p.x, 0, p.y))
+		if run.size() > 1:
+			runs.append(run)
+		for line: Array[Vector3] in runs:
+			var corners: Array[Vector3] = [line[0]]
+			for k in range(1, line.size() - 1):
+				var d1: Vector3 = (line[k] - corners.back()).normalized()
+				var d2: Vector3 = (line[k + 1] - line[k]).normalized()
+				if d1.dot(d2) < 0.99995:
+					corners.append(line[k])
+			corners.append(line.back())
+			for k in corners.size() - 1:
+				_rail_line(corners[k], corners[k + 1])
+
+
+func _in_gate_gap(p: Vector2, gap: float) -> bool:
+	if p.x > 0.0:
+		return false
+	for gate: Dictionary in _map.get("GATES", []):
+		if absf(p.y - gate["position"].z) < gap:
+			return true
+	return false
 
 
 func _rail_line(from: Vector3, to: Vector3) -> void:
