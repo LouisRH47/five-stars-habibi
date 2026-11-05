@@ -43,9 +43,16 @@ func _run() -> void:
 
 func _check_rooms(places: PlaceBuilder) -> void:
 	var signatures := {}
+	var too_close: Array = []
+	for shop: Dictionary in places.restaurants:
+		if RestaurantStyles.has_room(shop.get("venue_type", "")):
+			var gap := places.restaurant_entrance(shop["id"]).distance_to(places.restaurant_counter(shop["id"]))
+			if gap < GameConfig.INTERACT_RADIUS + 1.0:
+				too_close.append(shop["id"])
+	_expect(too_close.is_empty(), "every counter is far enough inside that you must walk in", str(too_close))
 	for shop: Dictionary in places.restaurants:
 		var kind: String = shop.get("venue_type", "")
-		if not RestaurantStyles.has_room(kind):
+		if not RestaurantStyles.has_room(kind) or RestaurantStyles.style(kind).get("supermarket", false):
 			continue
 		var room: Node3D = places.get_node("Restaurant_" + shop["id"])
 		var name: String = shop["name"]
@@ -73,6 +80,44 @@ func _check_rooms(places: PlaceBuilder) -> void:
 	var shawarma: Node3D = places.get_node("Restaurant_shawarma")
 	_expect(shawarma.find_children("ShawarmaSpit*", "Node3D", false, false).size() == 2, "Shawarma Supreme has two shawarma grills")
 	_expect(places.get_node("Restaurant_bakery").get_node("CakeDisplay").get_child_count() >= 16, "Bread & Zaatar has a glass cake display")
+	# Session 55
+	if not RestaurantStyles.has_room("sushi"):
+		return
+	_expect(signatures.size() == 9, "all nine restaurant rooms look different", str(signatures.size()))
+	var thai: Node3D = places.get_node("Restaurant_thai")
+	_expect(thai.find_children("Wok*", "", false, false).size() == 3 and thai.find_children("Lantern*", "", false, false).size() >= 6,
+			"Tok Tok Thai has woks over flames and red lanterns")
+	var sushi: Node3D = places.get_node("Restaurant_sushi")
+	var people := sushi.find_children("*", "Person", false, false).map(func(p): return str(p.name))
+	_expect(sushi.get_node("SushiBelt").get_child_count() >= 12 and sushi.get_node_or_null("FishCase") != null
+			and "Cook" in people and "BarChef" in people, "Sushi You has a conveyor belt of plates, a fish case and two chefs", str(people))
+	var tacos: Node3D = places.get_node("Restaurant_tacos")
+	_expect(tacos.get_node("Bunting").get_child_count() > 30 and tacos.get_meta("kit_names").count("furniture/cactus_medium_A") == 1,
+			"Mario Bonito has paper bunting and cactus pots")
+	var burger: Node3D = places.get_node("Restaurant_burger")
+	_expect(burger.get_node_or_null("NeonSign") != null and burger.get_node_or_null("FlatGrill") != null, "Burgerology has a flat grill and a pink neon sign")
+	var market: Node3D = places.get_node("Restaurant_market")
+	_expect(market.get_meta("interior_style", "") == "supermarket" and market.get_meta("room_rect").size == Vector2(12, 10),
+			"Grand Groceries is a supermarket room")
+	_expect(market.find_children("DrinksFridge*", "", false, false).size() >= 6, "the supermarket has a wall of drinks fridges")
+	var signs := 0
+	for i in 3:
+		var unit := market.get_node("ShelfUnit%d" % (i + 1))
+		var labels := unit.find_children("*", "Label3D", true, false).map(func(l): return l.text)
+		if str(labels).contains(GroceryRoom.AISLES[i][1]) and str(labels).contains(GroceryRoom.AISLES[i][2]):
+			signs += 1
+	_expect(signs == 3, "3 shelf units with bilingual aisle signs (Snacks, Rice and pasta, Home)")
+	for part in ["FruitAndVeg", "BreadShelf", "SweetsRack", "Checkout1", "Checkout2", "CounterStaff"]:
+		_expect(market.get_node_or_null(part) != null, "the supermarket has " + part)
+	_expect(market.find_children("Shopper*", "Person", false, false).size() >= 3 and market.find_children("Trolley*", "", true, false).size() >= 3,
+			"shoppers with trolleys and baskets")
+	var checkout := market.to_global(GroceryRoom.CHECKOUTS[0])
+	_expect(places.restaurant_counter("market").distance_to(checkout) < 2.0, "you collect at checkout 1")
+	var motion: VenueMotion = sushi.get_node("Motion")
+	var plate: Node3D = sushi.get_node("SushiBelt/BeltPlate0")
+	var before := plate.position
+	motion._move_plates(1.0)  # (it only runs by itself when the camera is close)
+	_expect(plate.position.distance_to(before) > 0.2 and plate.position.y > 1.0, "Sushi You's belt moves the plates", str(plate.position - before))
 
 
 func _check_doors_queue_camera(world: Node3D, places: PlaceBuilder) -> void:

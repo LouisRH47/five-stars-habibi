@@ -484,3 +484,4 @@ const ROOM_SOUND_DB := -8.0           # each place's background sound
 const ROOM_SOUND_UNIT_SIZE := 4.0     # metres at full volume
 const ROOM_SOUND_MAX_DISTANCE := 13.0 # silent further away than this
 const SUSHI_BELT_SPEED := 0.35        # metres per second the sushi plates travel
+const ROOM_PEOPLE_DRAW_DISTANCE := 80.0  # people inside the shops are hidden further away (metres)

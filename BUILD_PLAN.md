@@ -1205,7 +1205,7 @@ Done when:
 - [ ] You can see inside from the Plaza, and the doors slide open
 - [ ] The queue is short and never annoying
 
-### Session 55: The other 5 (Tok Tok Thai, Sushi You, Mario Bonito, Burgerology, Grand Groceries)
+### Session 55: The other 5 (Tok Tok Thai, Sushi You, Mario Bonito, Burgerology, Grand Groceries) (built, needs testing)
 
 ```text
 Session 55. Read PRD.md "Looks pass", the table. Using the Session 54 template, build

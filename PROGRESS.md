@@ -1,5 +1,46 @@
 # Progress
 
+## Session 55: The other 5 (Tok Tok Thai, Sushi You, Mario Bonito, Burgerology, Grand Groceries) — 5 November 2026
+
+What works (scripts/restaurant_recipes_more.gd and scripts/grocery_room.gd, same room template):
+- **Tok Tok Thai:** three woks over flickering flames on the kit stoves, an extractor hood,
+  nine red silk lanterns that swing a little, dark wood floor, gold trim and pictures.
+- **Sushi You:** a sushi bar on the right with a **moving conveyor belt** (14 coloured plates
+  going round, GameConfig SUSHI_BELT_SPEED), diners on stools eating off the belt, the bar chef
+  plus the kitchen chef (two chefs), a glass fish case on the pick-up counter (with a
+  bilingual "Pick-up" sign), a navy curtain over the kitchen door, a booth with a couch and two
+  people, white paper lanterns and bamboo.
+- **Mario Bonito:** a band of colourful painted tiles round the walls, three strings of paper
+  bunting, cactus pots (floor, tables, counter), the taco counter with trays of fillings, a
+  tortilla stack and tacos in a stand, and a painted sun.
+- **Burgerology:** white metro tiles, a flat grill with patties and buns under the hood, a
+  fryer with two baskets, a glowing pink neon "Burgerology" sign (Arabic too), ketchup and
+  mustard on every table, black-and-white floor.
+- **Grand Groceries is a real little supermarket:** a wall of 8 drinks fridges with a "Cold
+  drinks" sign, 3 shelf units full of products with yellow price strips and hanging bilingual
+  aisle signs (1 Snacks, 2 Rice and pasta, 3 Home), a fruit and veg stand made of kit crates,
+  a bread shelf, a sweets rack, 2 checkouts with belts (checkout 1 open with the cashier,
+  checkout 2 "Closed"), baskets and trolleys by the door, and shoppers: one pushing a trolley
+  up and down aisle 2, one with a basket, one at the fruit. You collect at checkout 1, and the
+  queue waits there too.
+- Every counter is far enough inside that you have to walk in (checked by a test).
+- People inside the shops are only drawn within 80 m, and the hidden queue people don't
+  animate, to keep Low graphics fast.
+- Smoke test: walks into all 10 places, waits in the queue, holds E and walks out. The
+  interiors test checks each place's own things and that Sushi You's belt moves.
+
+**Louis's turn:** press F5 and take orders from Sushi You and Grand Groceries (and any of the
+others). In Sushi You, watch the plates go round the bar. In Grand Groceries, walk in, look up
+at the aisle signs, then go to checkout 1 (the green "1"): if someone is in front of you, wait,
+then hold E. Check that no two restaurants look the same inside.
+
+Known bugs / to do:
+- No screenshots yet (headless Godot can't draw), so the exact look of each room still needs
+  Louis's eyes: sizes of props, lamp brightness and the indoor camera distance may need tuning
+  (all in game_config.gd or the recipe files).
+- The doors slide open for you and the queue people; they're only glass to look at, so a bike
+  could still be ridden in through the doorway, as before.
+
 ## Session 54: The new restaurant room and the first 5 restaurants — 5 November 2026
 
 What works:

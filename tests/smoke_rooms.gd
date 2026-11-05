@@ -55,7 +55,7 @@ func run(t: SceneTree) -> void:
 		await t.process_frame
 		await t.process_frame
 		var name: String = shop["name"]
-		t.call("_check", "walk in through the sliding doors of " + name,
+		t.call("_check", "walk in through the sliding doors of " + name + " (you can't collect from outside)",
 				took and off and opened and delivery.is_near_target() and RestaurantRoom.is_inside(room, walker.global_position), "")
 		t.call("_check", "%d in the queue at %s, so you wait" % [people, name], queue.waiting(), "%.1f s" % queue.wait_left)
 		var waited := 0

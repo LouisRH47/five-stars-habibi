@@ -108,6 +108,8 @@ func _process(delta: float) -> void:
 		return
 	# Keep distant staff and diners visible in their last pose, and resume before they are close.
 	for person in _venue_people:
+		if not person.visible:
+			continue  # the hidden queue people (venue_queue.gd turns them on when needed)
 		var gap := camera.global_position.distance_squared_to(person.global_position)
 		if person.process_mode == Node.PROCESS_MODE_DISABLED:
 			if gap < VENUE_ANIMATION_RESUME_M * VENUE_ANIMATION_RESUME_M:

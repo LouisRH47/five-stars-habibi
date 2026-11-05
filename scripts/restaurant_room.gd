@@ -39,6 +39,8 @@ static func room_rect(size: Vector3) -> Rect2:
 static func build(place: Dictionary, size: Vector3) -> StaticBody3D:
 	var kind: String = place.get("venue_type", "")
 	var style: Dictionary = RestaurantStyles.style(kind)
+	if style.get("supermarket", false):
+		return GroceryRoom.build(place, size)  # Grand Groceries (Session 55)
 	var tint: Color = style.get("tint", place.get("colour", Color(0.6, 0.3, 0.3)))
 	var body := StaticBody3D.new()
 	body.set_meta("walk_in", true)
@@ -73,7 +75,16 @@ static func build(place: Dictionary, size: Vector3) -> StaticBody3D:
 	sound(body, style.get("sound", ""))
 	queue_people(body)
 	Props.bake_kits(body)
+	draw_people_near(body)
 	return body
+
+
+## People inside a room are only drawn when you're fairly close (keeps Low graphics fast).
+static func draw_people_near(body: Node3D) -> void:
+	for person in body.get_children():
+		if person is Person:
+			for part: MeshInstance3D in person.find_children("*", "MeshInstance3D", true, false):
+				part.visibility_range_end = GameConfig.ROOM_PEOPLE_DRAW_DISTANCE
 
 
 ## Walls, floor, ceiling, glass front, sliding doors and the storeroom walls.

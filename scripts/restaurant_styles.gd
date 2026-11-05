@@ -41,6 +41,41 @@ const STYLES := {
 		"chair": "furniture/chair_A_wood",
 		"menu": ["Zaatar manakish  7 Dh", "Cheese manakish  9 Dh", "Birthday cake  85 Dh", "Kunafa  15 Dh"],
 	},
+	# Session 55
+	"thai": {
+		"floor": "planks", "floor_a": Color(0.3, 0.19, 0.11), "floor_b": Color(0.42, 0.27, 0.15), "tile": 0.5,
+		"wall": Color(0.95, 0.88, 0.74), "accent": Color(0.72, 0.12, 0.1), "tint": Color(0.68, 0.14, 0.12),
+		"lamp_spots": [], "dish": "restaurant/food_stew", "dish_size": 0.26, "sound": "room_thai.wav",
+		"chair": "furniture/chair_A_wood",
+		"menu": ["Pad thai  32 Dh", "Green curry  35 Dh", "Spring rolls  18 Dh", "Mango sticky rice  22 Dh"],
+	},
+	"sushi": {
+		"floor": "planks", "floor_a": Color(0.8, 0.66, 0.46), "floor_b": Color(0.7, 0.55, 0.37), "tile": 0.5,
+		"wall": Color(0.96, 0.94, 0.89), "accent": Color(0.12, 0.18, 0.36), "tint": Color(0.14, 0.22, 0.42),
+		"lamp_spots": [], "dish": "code:sushi", "sound": "room_sushi.wav", "own_tables": true,
+		"chair": "furniture/chair_A_wood",
+		"menu": ["Salmon roll  28 Dh", "Tuna nigiri  24 Dh", "Miso soup  10 Dh", "Belt plates  8-20 Dh"],
+	},
+	"tacos": {
+		"floor": "checker", "floor_a": Color(0.8, 0.45, 0.3), "floor_b": Color(0.97, 0.92, 0.82), "tile": 0.4,
+		"wall": Color(0.98, 0.86, 0.56), "accent": Color(0.1, 0.55, 0.55), "tint": Color(0.85, 0.3, 0.24),
+		"lamp": Color(0.1, 0.55, 0.55), "dish": "code:taco", "sound": "room_tacos.wav",
+		"chair": "furniture/chair_A_wood",
+		"menu": ["Chicken tacos  26 Dh", "Beef burrito  34 Dh", "Nachos  22 Dh", "Churros  14 Dh"],
+	},
+	"burger": {
+		"floor": "checker", "floor_a": WHITE, "floor_b": BLACK, "tile": 0.3,
+		"wall": WHITE, "accent": Color(1.0, 0.35, 0.62), "tint": Color(0.18, 0.18, 0.2),
+		"lamp": BLACK, "dish": "restaurant/food_burger", "dish_size": 0.22, "sound": "room_burger.wav",
+		"chair": "restaurant/chair_B", "uniform": Color(1.0, 0.35, 0.62),
+		"menu": ["Classic burger  32 Dh", "Double cheese  42 Dh", "Fries  12 Dh", "Milkshake  18 Dh"],
+	},
+	# Grand Groceries is a supermarket (scripts/grocery_room.gd): you collect at checkout 1.
+	"market": {
+		"floor": "plain", "floor_a": Color(0.93, 0.93, 0.91), "floor_b": Color(0.8, 0.8, 0.78), "tile": 0.6,
+		"wall": WHITE, "accent": Color(0.2, 0.55, 0.3), "tint": Color(0.2, 0.55, 0.3),
+		"sound": "room_market.wav", "supermarket": true, "counter_spot": Vector3(-1.8, 0, 3.9),
+	},
 }
 
 
