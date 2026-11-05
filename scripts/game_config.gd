@@ -825,6 +825,6 @@ const CLOUD_SHADOW_ALPHA := 0.12
 const CLOUD_SHADOW_SIZE := 1600.0   # metres: one big decal over the whole map
 # L8: thin comic outlines (only when Settings.outlines is on; off by default).
 const OUTLINE_COLOUR := Color(0.106, 0.227, 0.251)  # #1B3A40, dark teal
-const OUTLINE_ALPHA := 0.4
+const OUTLINE_ALPHA := 0.6               # how dark the lines are (the plan tried 0.4: too faint to see)
 const OUTLINE_DEPTH_JUMP := 0.03    # a line where the distance jumps by more than 3%
 const OUTLINE_FADE := Vector2(40.0, 80.0)  # metres: lines fade out between these distances

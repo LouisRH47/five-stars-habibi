@@ -30,7 +30,8 @@ float inv_depth(vec2 uv, mat4 inv_projection) {
 }
 
 void fragment() {
-	vec2 px = 1.0 / VIEWPORT_SIZE;
+	// Lines about 1.5 px wide on a 720p screen, and just as thick on bigger screens.
+	vec2 px = max(1.0, VIEWPORT_SIZE.y / 480.0) / VIEWPORT_SIZE;
 	float c = inv_depth(SCREEN_UV, INV_PROJECTION_MATRIX);
 	float l = inv_depth(SCREEN_UV - vec2(px.x, 0.0), INV_PROJECTION_MATRIX);
 	float r = inv_depth(SCREEN_UV + vec2(px.x, 0.0), INV_PROJECTION_MATRIX);
