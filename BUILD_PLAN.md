@@ -1624,6 +1624,207 @@ Done when:
   as a lighter demo.
 
 
+## Fix pass (Sessions 75 to 84)
+
+From Louis's play on his Mac on 5 November 2026, after the world polish pass. Roads, signs,
+bus stop, playgrounds, Majlis Gardens, NPC placement and the gym are good. What needs work:
+invisible walls, kerbs that don't join up, sharp 90° corners, the Plaza floor, the box-shaped
+shops, car park layouts, textures that got worse, swimmers and the lifeguard, the gym/stream
+clash, NPCs that look lifeless, and a few odd spots (the blue patch at the C Institute, the
+grass gap at the cluster playgrounds).
+
+**Textures (chosen 5 Nov, real CC0 photo textures from Poly Haven, saved in tex_dl/ for the
+build):** running_track (blue, with lane lines) for the blue bike track; the same photo
+recoloured red, one lane without the line, for the red walking tracks; brick_pavement_02,
+tinted warm sandy grey like Louis's lane photo, for paver lanes and footpaths;
+square_concrete_pavers for the new square Plaza floor; the old aerial_grass_rock (before
+5 Nov) mixed with leafy_grass for the lawns; the old sand_01 for sand; the old water look.
+Keep the new road asphalt. Credit each in CREDITS.md (Poly Haven, CC0).
+
+Same rules as always: one session at a time, headless checks, smoke test, focused tests,
+play-test bot careful and careless, a check for every new thing, PROGRESS.md, commit. Before
+handing over, open the game on Louis's Mac (Forward+) and take screenshots of what changed.
+
+### Session 75: Ride freely, jump on foot, buggies on roads
+
+```text
+Session 75. 1) Remove every invisible wall that isn't a real object: the solid spine kerbs
+(scripts/spine_tracks.gd _solid_kerb), any invisible kerbs along other red tracks, the
+blue track and car parks, and anything else the bike bumps into where nothing is visible
+(walk the bike along every road edge with a test to find them). Low visible kerbs stay;
+riding over one gives a small bump and a little speed loss, never a crash.
+2) Remove all speed bumps except the ones on the ring road.
+3) On foot only, Space makes the rider jump (about 0.6 m, short cooldown, a landing
+animation). On the bike Space stays the handbrake. Update the PRD Controls table and the
+pause menu key list.
+4) Buggies only drive on roads: build their routes from the road network (ROADS and the
+rounded road chains) instead of straight lines across the clusters, keep them on their side
+of the yellow line, and slow down at junctions and the roundabout.
+```
+
+Done when:
+
+- [ ] You can ride across every red track and kerb anywhere, with only a small bump
+- [ ] Speed bumps are only on the ring road
+- [ ] Space jumps when walking and still brakes on the bike
+- [ ] Every buggy stays on asphalt for a whole shift (test checks this)
+
+### Session 76: Kerbs that join up and curved corners
+
+```text
+Session 76. Louis's screenshots show kerbs that don't meet (roundabout, cluster entrances,
+junctions) and sharp 90° turns. 1) Rebuild kerbs as continuous strips that follow every
+road edge, curve round every corner, close up at junctions (the kerb turns into the side
+road), wrap the whole roundabout (outer ring and island) and leave gaps only for crossings
+and car park entrances. 2) Every 90° corner where two roads meet gets a curved inside
+corner (radius about 6 m for lanes, 10 m for bigger roads), including the cluster lane
+corners and the cluster entrances. 3) The C Institute access road follows a smooth curve
+from the spine road to the door. 4) Add a test that finds kerb ends that don't touch
+another kerb, a gap or a crossing (0 allowed).
+```
+
+Done when:
+
+- [ ] No kerb ends in mid-air anywhere (the test finds 0)
+- [ ] The roundabout kerbs join all the way round
+- [ ] Every road corner is curved, including the C Institute road
+
+### Session 77: A square Plaza floor and the Dune Drip buggy park
+
+```text
+Session 77. 1) Replace the round Plaza paving with one square paved floor using the
+square_concrete_pavers texture, running from the bike shop to Dune Drip and from the north
+restaurant row to the south row, so every restaurant door, both shop doors and the café
+tables stand on paving. Nothing stands on grass. Keep the fountain and sunken square where
+they are now. 2) The road from the roundabout no longer ends at nothing: it leads to a small
+buggy car park (4 to 6 spaces, markings, a buggy or two parked) behind Dune Drip, with a
+footpath from there into the Plaza. 3) Check the ground at every restaurant entrance is
+paving (test).
+```
+
+Done when:
+
+- [ ] The Plaza floor is one square of paving touching every door
+- [ ] The Plaza road ends in a small buggy park behind Dune Drip
+
+### Session 78: Bike shop and Dune Drip look like real buildings
+
+```text
+Session 78. Keep their fronts and insides. Change the box shape: a stepped roofline with a
+parapet, a shaded arcade with columns along the Plaza side, a small wind tower or roof
+feature, window bays and trim on the side walls, a shop-colour band, and details round the
+outside (Pedal Point: bike rack with bikes, a pump stand; Dune Drip: planters, a bench).
+Make it look good and cool, in the same Arabic-modern style as the houses. Do the same for
+any other blank wall that faces the Plaza.
+```
+
+Done when:
+
+- [ ] Neither shop looks like a plain box from any side
+
+### Session 79: Car parks laid out properly, and a mosque car park
+
+```text
+Session 79. Every car park (between the clusters, beside C3 and C5, the stables and the
+school) uses one layout: a row of spaces along one side, two rows in the middle facing each
+other nose to nose, a row across the end, aisles between, solar roofs over every row and
+cars in most spaces. Painted bay lines and arrows. The entrance stays where it is. Add a
+mosque car park (about 12 spaces, same style) in front of the mosque, joined to the ring
+road (update the PRD: the ring road now also meets the mosque car park).
+```
+
+Done when:
+
+- [ ] Every car park has the side row, two middle rows and an end row, mostly full, with roofs
+- [ ] The mosque has its own car park off the ring road
+
+### Session 80: The C Institute front, seats and the basketball court
+
+```text
+Session 80. 1) Remove the blue (pool-looking) patch in front of the C Institute; make it
+grass and put a small 5-a-side football pitch there (lines, two small goals with nets) with
+people playing during the day. 2) Raise the outdoor seats/steps so seated NPCs' feet show
+above the surface (check every bench and step seat in the game for the same problem).
+3) Make the basketball court more detailed: proper lines, hoops with nets and backboards,
+a fence, benches and a couple of players.
+```
+
+Done when:
+
+- [ ] No blue patch, and people play football in front of the C Institute
+- [ ] Nobody's feet disappear into a seat
+- [ ] The basketball court looks finished
+
+### Session 81: Gym, stream and pools
+
+```text
+Session 81. 1) Flatten the ground around the gym and the community pool so no hill dips into
+water or a building. The stream ends in a small pond with stones round the edge before the
+gym instead of running under it. 2) The community pool keeps its layout but looks less
+basic: tiled deck, a proper edge and coping, ladders, lane ropes, loungers and umbrellas,
+a shower post, plants. 3) Swimmers in all three pools swim properly: arm strokes, kicking,
+heads above the water, laps across the pool, a couple resting at the edge; they wear
+swimwear and nobody floats like they're dead. 4) The lifeguard sits on a tall lifeguard
+chair, turns to look around, sometimes stands up and blows a whistle. 5) Water uses the old
+look from before 5 November (or better).
+```
+
+Done when:
+
+- [ ] Nothing glitches into the water or the gym
+- [ ] Swimmers swim and the lifeguard sits on his chair and watches
+
+### Session 82: Textures
+
+```text
+Session 82. Use the textures chosen above (copy them from tex_dl/ into assets/textures/,
+with .import files, credited in CREDITS.md). 1) Grass: the old aerial_grass_rock mixed with
+leafy_grass so it doesn't repeat. Sand: the old sand_01. Pavers and footpaths:
+brick_pavement_02 tinted warm sandy grey. Blue track: running_track. Red track: running_track
+recoloured red (one lane, no line). Keep the new road asphalt. 2) Remove all the rectangle
+grass blade clumps (scripts/spine_greenery.gd); keep flowers, rocks and trees. 3) Fix the
+glitchy textures on signs (text flicker or shimmer). 4) Bins grey instead of green. 5) Fill
+the grass gap beside each cluster playground with the paving. 6) Look at every surface on
+Low, Medium and High on Louis's Mac and fix anything blurry, stretched or too repetitive
+(texture scale per surface in one place).
+```
+
+Done when:
+
+- [ ] Grass, sand, pavers and tracks look like real photos, not flat colour
+- [ ] No rectangle grass clumps
+- [ ] Signs don't shimmer, bins are grey, no grass gaps by the playgrounds
+
+### Session 83: People who look alive
+
+```text
+Session 83. 1) Every NPC that stands or sits moves a little: breathing, turning the head to
+look around, shifting weight, and pairs talking with hand gestures. Add simple eyes and a
+smile to faces. Keep it cheap: only people near the rider animate fully. 2) Check every
+outfit (swimwear, gym kit, uniforms, jodhpurs, hi-vis, bee suit, waiters, commuters) for
+clothes poking through bodies or floating, and fix them all. Add a test that builds each
+outfit and checks the clothes stay on the body.
+```
+
+Done when:
+
+- [ ] No NPC stands frozen, and faces have eyes
+- [ ] No glitched clothes on any outfit
+
+### Session 84: Play-test the fix pass on Louis's Mac
+
+```text
+Session 84. Run the smoke test, every focused suite and the play-test bot careful and
+careless. Then open the game on Louis's Mac and take screenshots of every spot changed in
+Sessions 75 to 83 (Plaza, shops, car parks, roundabout and kerbs, cluster entrances, pools,
+gym, C Institute front, tracks). Fix anything that still looks wrong, then hand over.
+```
+
+Done when:
+
+- [ ] All tests pass and Louis is happy with the screenshots and his own play
+
+
 ## When something breaks
 
 Copy one of these and fill in the brackets.

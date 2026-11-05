@@ -705,6 +705,9 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 5 Nov 2026 | Session 64: the bus station platform is a raised island inside the bus loop with two glass shelters facing the bay; 3 to 5 people wait and get on when a bus stops (the bus waits for them) |
 | 5 Nov 2026 | Session 65: one cluster sign per cluster at its entrance (green board, pale blue frame, ranges "Villa 1–50" / "Villa 51–100" with arrows, EXIT), a made-up "5-Star Habibi Police" sign there and along the red tracks, small STOP (قف) signs; bins at the back of each cluster; the community pool is fenced with its gate on the red-track side and the pool sign beside the gate; big end houses where rows stop 10 m short of a road are scenery, not addresses |
 | 5 Nov 2026 | Session 66: Majlis Gardens fills the strip between the C1-west car park and Cluster 1 (fountain plaza, palms, a shaded majlis with low sofas, benches, a community garden bed, paver paths to the lanes, car park and spine loop road, people using it); the phase 3 site south of the mosque has the same fence, crane, containers, workers and a "Phase 3 coming soon" sign as phase 2 |
+| 5 Nov 2026 | Fix pass planned (Sessions 75 to 84): no invisible walls (red tracks can be ridden across), speed bumps only on the ring road, Space jumps on foot, buggies stay on roads, kerbs join up and corners are curved |
+| 5 Nov 2026 | Plaza gets one square paved floor touching every door (fountain stays); the Plaza road ends in a small buggy park behind Dune Drip; the mosque gets its own car park off the ring road |
+| 5 Nov 2026 | Textures: real CC0 photo textures from Poly Haven (running track blue and red, brick pavers, square concrete pavers), old grass, sand and water looks restored, new asphalt kept |
 
 ## Sources
 
