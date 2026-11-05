@@ -258,6 +258,8 @@ func _on_stage_changed(stage: int) -> void:
 	elif stage == GameState.Stage.OFFERED:
 		_offer_left = offer_timeout
 	# One beam, over the door you need to ride to next.
+	if _marker.has_method("set_step"):
+		_marker.call("set_step", stage)  # Session 68: orange or teal, and a burst at the stop just done
 	_marker.visible = stage == GameState.Stage.TO_RESTAURANT or stage == GameState.Stage.TO_VILLA
 	# Big family order: two bags on the bike from pickup to the door (Session 32).
 	if bike != null and "heavy_load" in bike:
@@ -269,6 +271,8 @@ func _on_stage_changed(stage: int) -> void:
 
 ## A tall, see-through, glowing orange beam. It has no collision, so you ride right into it.
 func _make_marker() -> MeshInstance3D:
+	if GameConfig.MARKER_V2:
+		return ArrivalMarker.new()  # Session 68: soft column, sparkles and a ring (scripts/arrival_marker.gd)
 	var material := StandardMaterial3D.new()
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
