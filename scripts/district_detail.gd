@@ -2,8 +2,6 @@ extends Node3D
 ## Scenery and gentle riding terrain for the real-size district. Locations come from data.
 @export var data: Script
 var _map: Dictionary = {}
-var _swimmers: Array[Node3D] = []
-var _clock := 0.0
 const WHITE := Color(0.97, 0.97, 0.94)
 const SAND := Color(0.88, 0.78, 0.6)
 const TEAL := Color(0.16, 0.56, 0.61)
@@ -275,24 +273,17 @@ func _pool(area: Rect2, id: String, community: bool) -> void:
 	room.name = id
 	add_child(room)
 	var c := Vector3(area.get_center().x, 0, area.get_center().y)
-	LowPoly.box(room, Vector3(area.size.x + 2, 0.08, area.size.y + 2), WHITE, c + Vector3.UP * 0.04)
-	LowPoly.box(room, Vector3(area.size.x, 0.04, area.size.y), Color(0.13, 0.62, 0.83), c + Vector3.UP * 0.1)
-	for i in (5 if community else 2):
-		var p := PeopleLooks.resident(2, i % 4)
-		p.name = "Swimmer"
-		p.position = c + Vector3(-area.size.x * 0.3 + i * 3, 0.25, sin(i) * 2)
-		p.rotation.z = PI * 0.5
-		room.add_child(p)
-		_swimmers.append(p)
+	# Session 81: a tiled deck, a stone edge, ladders, lane ropes and the water look
+	# (scripts/pool_deck.gd). The community pool's deck fills its fence.
+	var kind := "community" if community else ("lap" if id == "LapPool" else "school")
+	var deck := area.grow(1.8 if kind == "lap" else 1.2)
+	if community and _map.has("POOL_GATE"):
+		deck = (_map["POOL_GATE"]["fence"] as Rect2).grow(-0.1)
+	PoolDeck.build(room, area, kind, deck)
+	# Session 81: the swimmers are made by PlaceCrowds (scripts/pool_swimmers.gd).
 	if community:
-		# Session 65: the sunbeds and umbrellas (now on poles) are along the north side, inside
-		# the pool fence. The gate and the pool sign face the red track (_pool_gate).
-		for i in 7:
-			var bed := c + Vector3(-18 + i * 6, 0, -area.size.y * 0.5 - 2.2)
-			LowPoly.box(room, Vector3(1.8, 0.35, 0.7), WHITE, bed + Vector3(0, 0.2, 0))
-			LowPoly.cylinder(room, 0.035, 0.035, 2.3, WHITE.darkened(0.2), bed + Vector3(1.2, 1.15, -0.1))
-			LowPoly.cylinder(room, 0, 1.8, 0.7, Color(0.96, 0.64, 0.28), bed + Vector3(1.2, 2.5, -0.1))
-		LowPoly.cylinder(room, 3, 3, 0.05, Color(0.35, 0.76, 0.88), c + Vector3(area.size.x * 0.5 - 4, 0.15, 0))
+		# Session 65: the gate and the pool sign face the red track (_pool_gate). Session 81:
+		# the loungers, umbrellas, kids' area, shower and plants are in scripts/pool_deck.gd.
 		_pool_gate(room)
 
 
@@ -438,9 +429,3 @@ func _sign(parent: Node3D, arabic: String, english: String, at: Vector3, facing:
 	sign.position = at
 	sign.rotation_degrees.y = facing
 	parent.add_child(sign)
-
-
-func _process(delta: float) -> void:
-	_clock += delta
-	for i in _swimmers.size():
-		_swimmers[i].position.x += sin(_clock * 0.6 + i) * delta * 0.5

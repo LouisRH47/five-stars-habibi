@@ -88,6 +88,11 @@ const SPOTS := {
 	"p_majlis_sofa": [Vector3(-40.6, 1.3, -89.6), Vector3(-43.3, 0.4, -91.9)],
 	"p_cluster_bench": [Vector3(-27.6, 1.2, -121.4), Vector3(-29.8, 0.5, -123.5)],
 	"p_institute_laptops": [Vector3(-211.5, 2.4, -14.5), Vector3(-216.3, 1.0, -17.6)],
+	"p_pool_wide": [Vector3(214.0, 3.0, -10.8), Vector3(214.0, 0.0, -24.0)],
+	"p_pool_resting": [Vector3(215.0, 1.3, -10.9), Vector3(212.0, 0.3, -13.5)],
+	"p_lifeguard": [Vector3(236.5, 2.4, -18.0), Vector3(240.9, 1.9, -22.0)],
+	"p_lap_pool_lifeguard": [Vector3(178.0, 2.6, 21.5), Vector3(182.9, 1.6, 17.5)],
+	"p_school_pools": [Vector3(-328.5, 5.0, 117.0), Vector3(-328.5, 0.0, 103.0)],
 }
 
 var _main: Node

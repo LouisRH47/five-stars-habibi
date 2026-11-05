@@ -18,7 +18,11 @@ const CLIPS := {
 	"jog": "Human Armature|Run",
 }
 ## Everything a person can do: the clips above, plus poses made in code.
-const ACTIONS := ["idle", "walk", "jog", "wave", "pedal", "lie", "sit"]
+## Session 81: "swim" (swimming laps), "rest" (in the water, arms on the pool edge) and
+## "whistle" (the lifeguard blowing his whistle), see scripts/pool_poses.gd.
+const ACTIONS := ["idle", "walk", "jog", "wave", "pedal", "lie", "sit", "swim", "rest", "whistle"]
+## The actions that are poses made in code (scripts/person_pose.gd), on top of the idle clip.
+const POSES := ["wave", "pedal", "lie", "sit", "swim", "rest", "whistle"]
 ## The default colours. Anything not given to paint() comes from here.
 const COLOURS := {
 	"skin": Color(0.85, 0.66, 0.5),
@@ -78,7 +82,7 @@ func play(what: String, speed := 1.0) -> void:
 	if what == action:
 		return
 	action = what
-	pose.mode = what if what in ["wave", "pedal", "lie", "sit"] else ""
+	pose.mode = what if what in POSES else ""
 	player.play(CLIPS.get(what, CLIPS["idle"]), GameConfig.PERSON_BLEND_TIME)
 
 

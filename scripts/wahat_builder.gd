@@ -49,6 +49,7 @@ func _ready() -> void:
 	_flat(spine.get_center(), spine.size, 0.02, GRASS, 0.012)
 	var stream: Dictionary = _map["STREAM"]
 	_build_stream(stream)
+	StreamPond.build(self, stream)  # Session 81: ponds where the stream stops and starts again
 	for area: Rect2 in _map["PAVED_AREAS"]:
 		_flat(area.get_center(), area.size, 0.02, PAVING, 0.03)
 	# Session 61: smooth road strips with markings, kerbs and curved corners.
@@ -111,19 +112,23 @@ func _build_stream(stream: Dictionary) -> void:
 		var origin := Vector3(x, 0.0, centre_z)
 		var chunk := SurfaceTool.new()
 		chunk.begin(Mesh.PRIMITIVE_TRIANGLES)
+		var pieces := 0
 		for index in PIECES_PER_CHUNK:
 			if x >= end_x:
 				break
 			if _in_stream_gap(stream, x, x + STEP):
 				x += STEP
-				continue  # no water through the gym (it flows under the building)
+				continue  # Session 81: no stream here (it ends in a pond before the gym)
 			var z := centre_z + sin(x * 0.06) * 3.0
 			var z2 := centre_z + sin((x + STEP) * 0.06) * 3.0
 			var piece := BoxMesh.new()
 			piece.size = Vector3(width, 0.02, Vector2(STEP, z2 - z).length() + 0.8)
 			var middle := Vector3(x + STEP * 0.5, 0.03, (z + z2) * 0.5) - origin
 			chunk.append_from(piece, 0, Transform3D(Basis(Vector3.UP, atan2(STEP, z2 - z)), middle))
+			pieces += 1
 			x += STEP
+		if pieces == 0:
+			continue  # Session 81: no empty water chunks in the gap round the gym
 		chunk.set_material(LowPoly.material(WATER))
 		var view := MeshInstance3D.new()
 		view.mesh = chunk.commit()
@@ -244,7 +249,7 @@ func _build_welcome() -> void:
 	holder.add_child(faces)
 
 
-## True if a stream piece from x to x_end would run inside a building (the STREAM "gaps" list).
+## True if a stream piece from x to x_end is in a gap (the STREAM "gaps" list: round the gym).
 func _in_stream_gap(stream: Dictionary, x: float, x_end: float) -> bool:
 	for gap: Vector2 in stream.get("gaps", []):
 		if x_end > gap.x and x < gap.y:

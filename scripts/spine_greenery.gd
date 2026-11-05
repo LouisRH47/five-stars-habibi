@@ -76,6 +76,9 @@ func _areas() -> void:
 			_blocked.append(Rect2(p.x - size.x * 0.5 - 3, p.z - size.z * 0.5 - 4, size.x + 6, size.z + 8))
 	for dome: Vector3 in _map.get("SPINE_DOMES", []):
 		_round.append([Vector2(dome.x, dome.z), _map.get("DOME_RADIUS", 7.0) + 1.0])
+	if _map.has("STREAM"):  # Session 81: nothing grows in the stream's ponds or on their stones
+		for pond: Dictionary in _map["STREAM"].get("ponds", []):
+			_round.append([pond["centre"], pond["radius"] + 1.6])
 	for mini: Dictionary in _map.get("MINI_PLAZAS", []):
 		var tower: Vector3 = mini["tower"]
 		_round.append([Vector2(tower.x, tower.z), 3.5])

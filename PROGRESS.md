@@ -1,5 +1,33 @@
 # Progress
 
+## Session 81: gym, stream and pools — 6 November 2026
+
+What works:
+- **Flat ground round the gym and the community pool**: no hill dips into water or a building
+  (the hill by the lap pool moved to x -60).
+- **The stream ends in a pond** with stones round the edge before the gym instead of running
+  under it, and starts again from a spring pond after the lap pool (scripts/stream_pond.gd).
+- **The community pool looks finished** (scripts/pool_deck.gd): tiled deck, proper edge and
+  coping, ladders, lane ropes, loungers and umbrellas, a shower post and plants.
+- **Swimmers really swim** in all the pools (scripts/pool_swimmers.gd, pool_poses.gd): front crawl
+  or breaststroke laps with arm strokes and kicking, heads out of the water, turning at each end;
+  a few rest with their arms on the edge and look round; all in swimwear. Each pool says how high
+  its water is and the swimmers float there.
+- **The lifeguard sits on a tall chair** (scripts/lifeguard_chair.gd), looks around, now and then
+  stands up, blows the whistle and points at the water.
+- **One water look for all water** (scripts/water_look.gd, the water shader from before 5 Nov,
+  improved): pools, the lap pool, the stream and the ponds.
+- Smoke test checks: flat ground, the pond before the gym, nothing under the gym, the pool
+  details, the water shader everywhere, swimmers moving with their heads up, the lifeguard.
+  Two checks were made fair: the swimmers' heads are measured from their own pool's water,
+  and the basketball check watches long enough to see a shot. Smoke test PASS three times in a
+  row; every focused suite PASS.
+- Screenshots on the Mac: the community pool (Louis's 06), the deck, the lap pool, a swimmer
+  resting at the edge, the lifeguard, the ponds and the gym.
+
+**Louis's turn:** press F5 and ride to the community pool (screenshot 06): swimmers swim laps
+and the lifeguard sits on his tall chair. Follow the stream towards the gym: it ends in a pond.
+
 ## Session 80: the C Institute front, seats and the basketball court — 6 November 2026
 
 What works:

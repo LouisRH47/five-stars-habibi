@@ -40,13 +40,18 @@ static func dress_swimmer(person: Person, i: int) -> Person:
 	return _tag(person, "swimwear")
 
 
-static func lifeguard() -> Person:
+## with_float: holding the red rescue float (Session 81: the one on the tall chair hangs
+## it on the chair and holds a whistle on a cord instead).
+static func lifeguard(with_float := true) -> Person:
 	var person := Person.new()
 	person.paint({"skin": SKINS.pick_random(), "shirt": Color(0.88, 0.12, 0.12), "pants": SKINS[1]})
 	shorts(person, Color(1.0, 0.85, 0.1))
 	PeopleLooks.cap(person, Color(0.88, 0.12, 0.12), person)
 	var hand := person.follow("RightHand")
-	LowPoly.box(hand, Vector3(0.12, 0.7, 0.08), Color(0.95, 0.2, 0.15), _past_hand(person, "Right", 0.3))
+	if with_float:
+		LowPoly.box(hand, Vector3(0.12, 0.7, 0.08), Color(0.95, 0.2, 0.15), _past_hand(person, "Right", 0.3))
+	else:  # a silver whistle in the hand
+		LowPoly.box(hand, Vector3(0.05, 0.035, 0.07), Color(0.82, 0.84, 0.86), _past_hand(person, "Right", 0.06))
 	return _tag(person, "lifeguard")
 
 

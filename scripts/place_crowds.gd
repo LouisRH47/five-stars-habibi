@@ -3,13 +3,17 @@ extends Node3D
 ## Session 68: every place has its own kind of people (PRD table in BUILD_PLAN Session 68).
 ## Made by LifeBuilder. Standing or sitting people are placed here from the map data;
 ## people who walk a route are RouteMovers made through LifeBuilder (Plaza shoppers,
-## pupils in the school yard). The pools' swimmers get swimwear and the building site
-## workers hi-vis vests and hard hats (they're built by DistrictDetail and LandmarkBuilder).
+## pupils in the school yard). The building site workers get hi-vis vests and hard hats
+## (they're built by DistrictDetail and LandmarkBuilder). Session 81: the pools' swimmers
+## and lifeguards are made here too (PoolSwimmers, LifeguardChair).
 ## Only people near the camera are animated; further away they hold still, and past the
 ## life view distance they're hidden (cheap on Low graphics).
 
 ## Everyone placed here: [Person, level]. Level: lowest Graphics setting that shows them.
 var people: Array = []
+## Session 81 (people): the pools' swimmers and the lifeguards on their tall chairs.
+var swimmers: PoolSwimmers
+var lifeguards: Array[LifeguardChair] = []
 
 var _builder: Node3D
 var _map: Dictionary
@@ -91,7 +95,6 @@ func sit_on_bench(person: Person, at: Vector3, facing: float, level := 0) -> Per
 
 func _dress_existing(world: Node) -> void:
 	var sites: Array = _map.get("BUILDING_SITES", [])
-	var swimmer := 0
 	var worker := 0
 	for root_name in ["DistrictDetail", "LandmarkBuilder"]:
 		var root := world.get_node_or_null(root_name)
@@ -99,10 +102,6 @@ func _dress_existing(world: Node) -> void:
 			continue
 		for node in root.find_children("*", "Node3D", true, false):
 			if not node is Person or node.has_meta("outfit"):
-				continue
-			if node.get_parent() != null and str(node.get_parent().name).contains("Pool"):  # the swimmers
-				PlaceLooks.dress_swimmer(node, swimmer)
-				swimmer += 1
 				continue
 			var at := Vector2(node.global_position.x, node.global_position.z)
 			for area: Rect2 in sites:
@@ -112,16 +111,32 @@ func _dress_existing(world: Node) -> void:
 					break
 
 
-## A lifeguard (red and yellow) beside each pool.
+## Session 81 (people): swimmers swimming laps and resting at the edge in every pool
+## (scripts/pool_swimmers.gd), and a lifeguard on a tall chair beside each pool
+## (scripts/lifeguard_chair.gd).
 func _pools() -> void:
+	swimmers = PoolSwimmers.new()
+	swimmers.name = "PoolSwimmers"
+	add_child(swimmers)
+	people += swimmers.build(_map, _builder.get_parent())
 	if _map.has("COMMUNITY_POOL"):
 		var pool: Rect2 = _map["COMMUNITY_POOL"]
-		place(PlaceLooks.lifeguard(), Vector3(pool.end.x + 2.0, 0.08, pool.get_center().y), -90.0)
+		_lifeguard(Vector3(pool.end.x + 0.9, 0.08, pool.get_center().y), -90.0, 0)
 	if _map.has("LAP_POOL"):  # the gym's lap pool
 		var lap: Rect2 = _map["LAP_POOL"]
-		place(PlaceLooks.lifeguard(), Vector3(lap.end.x + 2.0, 0.08, lap.get_center().y), -90.0)
+		_lifeguard(Vector3(lap.end.x + 0.9, 0.08, lap.get_center().y), -90.0, 0)
 	if _map.has("SCHOOL"):  # between the two school pools (scripts/district_detail.gd)
-		place(PlaceLooks.lifeguard(), Vector3(-328.5, 0.08, 111.5), 180.0, 1)
+		_lifeguard(Vector3(-328.5, 0.08, 110.0), 180.0, 1)
+
+
+## A lifeguard chair at `at`, the lifeguard looking `facing` degrees (0 = towards +Z).
+func _lifeguard(at: Vector3, facing: float, level: int) -> void:
+	var chair := LifeguardChair.new()
+	chair.position = at
+	chair.rotation_degrees.y = facing + 180.0  # the chair faces -Z
+	add_child(chair)
+	lifeguards.append(chair)
+	people.append([chair.person, level])
 
 
 func _gym() -> void:

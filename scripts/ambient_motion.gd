@@ -6,7 +6,6 @@ extends Node3D
 ## fountain's jet bubbling with a spray of drops, and the donkeys strolling round their pen
 ## (DONKEY_PEN). LifeBuilder makes this and calls build().
 
-const WATER_SHADER := preload("res://assets/shaders/water.gdshader")
 const BIRD := Color(0.25, 0.25, 0.28)
 const DONKEY := Color(0.55, 0.52, 0.5)
 
@@ -25,9 +24,7 @@ func build(life: Node3D, map: Dictionary) -> void:
 		var crown := palm.get_node_or_null("Crown") as Node3D
 		if crown != null:
 			_crowns.append([crown, crown.rotation])
-	var water := ShaderMaterial.new()
-	water.shader = WATER_SHADER
-	water.set_shader_parameter("flow_speed", GameConfig.WATER_FLOW_SPEED)
+	var water := WaterLook.stream()  # Session 81: the same water look everywhere (scripts/water_look.gd)
 	var stream := main.get_node_or_null("WahatBuilder/Stream")
 	if stream != null:
 		for piece: MeshInstance3D in stream.get_children():

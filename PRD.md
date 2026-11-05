@@ -713,6 +713,7 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 5 Nov 2026 | Session 78: Pedal Point Bikes and Dune Drip get an arcade on the Plaza side, a stepped parapet, a wind tower and outdoor details (bike rack and pump; planters and benches); Plaza-facing restaurant walls get the same trim |
 | 6 Nov 2026 | Session 79: every car park uses one layout (side row, two middle rows, end row, solar roofs, mostly full); the mosque has a 13-space car park off the north ring road; the school car park sits in front of the gate |
 | 6 Nov 2026 | Session 80: the C Institute front is grass with a 5-a-side pitch where people play by day; the basketball court gets full lines, hoops with nets, a fence, benches and players; seated people's feet always rest on the floor or step |
+| 6 Nov 2026 | Session 81: the stream ends in a stone-ringed pond before the gym and restarts from a spring pond after the lap pool; pools get tiled decks, coping, ladders and lane ropes; one water look for all water; swimmers swim laps with their heads up and some rest at the edge; lifeguards sit on tall chairs and whistle |
 
 ## Sources
 

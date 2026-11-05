@@ -3363,9 +3363,12 @@ func _check_session80() -> void:
 		court.update_play(11.0)
 		var start: Vector3 = court.balls[0].position
 		var highest := 0.0
-		for i in 60:
+		# Shots come at random moments: watch for up to 20 game seconds, stop once one goes up.
+		for i in 200:
 			court.play(0.1)
 			highest = maxf(highest, court.balls[0].position.y)
+			if highest > 1.0 and court.balls[0].position.distance_to(start) > 0.3:
+				break
 		shoots = court.playing and court.players.size() >= 2 and court.balls[0].position.distance_to(start) > 0.3 and highest > 1.0
 		court.update_play(_game_state.clock_hours())
 	_check("Session 80: a couple of players dribble and shoot at the hoops", shoots,
@@ -3412,6 +3415,78 @@ func _pitch_clear_of_roads(data: Dictionary, area: Rect2) -> bool:
 ## (Session 81 checks go here.)
 func _check_session81() -> void:
 	await process_frame
+	var data: Dictionary = _delivery.place_builder.data.get_script_constant_map()
+	# 1) Flat ground round the gym and both spine pools: no hill rises there.
+	var gym: Dictionary = data["GYM"]
+	var g: Vector3 = gym["position"]
+	var size: Vector3 = gym["size"]
+	var turned := absf(sin(deg_to_rad(gym.get("facing", 0.0)))) > 0.5
+	var wide := size.z if turned else size.x
+	var deep := size.x if turned else size.z
+	var foot := Rect2(g.x - wide * 0.5, g.z - deep * 0.5, wide, deep)
+	var highest := 0.0
+	for area: Rect2 in [foot.grow(6.0), (data["COMMUNITY_POOL"] as Rect2).grow(5.0), (data["LAP_POOL"] as Rect2).grow(5.0)]:
+		for i in 25:
+			for j in 25:
+				highest = maxf(highest, _hill_height(data, area.position + area.size * Vector2(i / 24.0, j / 24.0)))
+	_check("Session 81: the ground round the gym and the pools is flat (no hill dips into water or the gym)",
+			highest < 0.02, "highest %.3f m" % highest)
+	# 2) The stream ends in a pond with stones before the gym, and never runs under it.
+	var stream: Dictionary = data["STREAM"]
+	var pond_list: Array = stream.get("ponds", [])
+	var ponds := _main.get_node_or_null("WahatBuilder/StreamPonds")
+	var before_gym := false
+	if not pond_list.is_empty():
+		var west: Dictionary = pond_list[0]
+		var centre: Vector2 = west["centre"]
+		before_gym = centre.x + west["radius"] < foot.position.x - 4.0 \
+				and absf(centre.y - (stream["z"] + sin(centre.x * 0.06) * 3.0)) < 1.0
+	var stones := ponds.find_children("PondStones_*", "MeshInstance3D", false, false) if ponds != null else []
+	var pond_water := ponds.find_children("PondWater_*", "MeshInstance3D", false, false) if ponds != null else []
+	_check("Session 81: the stream ends in a small pond with stones round it before the gym",
+			before_gym and stones.size() == pond_list.size() and pond_water.size() == pond_list.size(), "")
+	var under := 0
+	for chunk: MeshInstance3D in _main.get_node("WahatBuilder/Stream").get_children():
+		var box := chunk.global_transform * chunk.mesh.get_aabb()
+		if Rect2(box.position.x, box.position.z, box.size.x, box.size.z).intersects(foot.grow(1.0)):
+			under += 1
+	_check("Session 81: no stream water under the gym", under == 0, "%d stream pieces" % under)
+	# 3) The community pool looks finished.
+	var pool := _main.get_node_or_null("DistrictDetail/CommunityPool")
+	var parts: Dictionary = pool.get_meta("pool_parts", {}) if pool != null else {}
+	var deck: MeshInstance3D = pool.get_node_or_null("PoolDeck") if pool != null else null
+	_check("Session 81: the community pool has a tiled deck, an edge, ladders, lane ropes, loungers, umbrellas, a shower and plants",
+			deck != null and (deck.material_override as StandardMaterial3D).albedo_texture != null
+			and pool.get_node_or_null("PoolDetails") != null and parts.get("ladders", 0) >= 2
+			and parts.get("ropes", 0) >= 2 and parts.get("loungers", 0) >= 5 and parts.get("umbrellas", 0) >= 3
+			and parts.get("showers", 0) >= 1 and parts.get("plants", 0) >= 2
+			and pool.get_node_or_null("KidsWater") != null and pool.get_node_or_null("PoolGate") != null, str(parts))
+	# 4) All water (the pools, the lap pool, the stream, the ponds) uses the moving water look.
+	var waters: Array = []
+	for path in ["DistrictDetail/CommunityPool/Water", "DistrictDetail/LapPool/Water", "DistrictDetail/SchoolPool/Water"]:
+		waters.append(_main.get_node_or_null(path))
+	waters.append(_main.get_node("WahatBuilder/Stream").get_child(0))
+	waters.append_array(pond_water)
+	var plain := 0
+	for water in waters:
+		var look: Material = (water as MeshInstance3D).material_override if water != null else null
+		if not (look is ShaderMaterial and (look as ShaderMaterial).shader == WaterLook.SHADER):
+			plain += 1
+	var pool_water: MeshInstance3D = pool.get_node_or_null("Water") if pool != null else null
+	var pool_look := pool_water.material_override as ShaderMaterial if pool_water != null else null
+	_check("Session 81: every pool, the stream and the ponds use the moving water look",
+			plain == 0 and pool_look != null and pool_look.get_shader_parameter("pool_floor") > 0.5,
+			"%d of %d plain" % [plain, waters.size()])
+
+
+## Session 81 helper: how high the spine hills lift the ground here (like DistrictDetail._hill).
+func _hill_height(data: Dictionary, spot: Vector2) -> float:
+	var y := 0.0
+	for hill: Dictionary in data.get("HILLS", []):
+		var r := Vector2(spot.x - hill["position"].x, spot.y - hill["position"].z).length() / 10.0
+		var flat: Vector2 = hill.get("clear", Vector2(3, 6))
+		y += hill["height"] * pow(maxf(0.0, 1.0 - r * r), 2) * smoothstep(flat.x, flat.y, absf(spot.y))
+	return y
 
 # --- end of Session 81 checks ---
 
@@ -3522,6 +3597,66 @@ func _lowest_foot(person: Person) -> float:
 
 ## Session 81 (people): swimmers swim and the lifeguard watches.
 func _check_session81_people() -> void:
-	await process_frame
+	var life := _main.get_node_or_null("LifeBuilder")
+	var crowds: Node = life.get("crowds") if life != null else null
+	if crowds == null or crowds.swimmers == null:
+		_check("the pools have swimmers", false, "no PlaceCrowds swimmers")
+		return
+	var pools: PoolSwimmers = crowds.swimmers
+	var wanted_laps := GameConfig.SWIM_COMMUNITY_LAPS + GameConfig.SWIM_LAP_POOL_LAPS + GameConfig.SWIM_SCHOOL_LAPS * 2
+	_check("every pool has lap swimmers and people resting at the edge", pools.lappers.size() == wanted_laps
+			and pools.resters.size() >= 3, "%d swimming, %d resting" % [pools.lappers.size(), pools.resters.size()])
+	var dressed := true
+	for entry in pools.lappers + pools.resters:
+		dressed = dressed and entry["person"].get_meta("outfit", "") == "swimwear"
+	_check("the swimmers wear swimwear", dressed, "")
+	# Wake one lap swimmer and one resting swimmer up (as if the rider were close) and watch.
+	crowds.set("_check_left", 1000.0)  # don't let the distance check put them back to sleep
+	var swimmer: Dictionary = pools.lappers[0]
+	var rester: Dictionary = pools.resters[0]
+	var watched: Array[Person] = [swimmer["person"], rester["person"]]
+	for person in watched:
+		person.visible = true
+		person.process_mode = Node.PROCESS_MODE_INHERIT
+	var heads := {}  # the lowest the head went, for each person
+	var hands := {}  # where the right hand was first, for each person
+	var moved := {}  # the furthest the right hand got from there (it relative to the body)
+	for person in watched:
+		person.skeleton.skeleton_updated.connect(func():
+			var head := (_bone_on_map(person, "Head") + _bone_on_map(person, "HeadTop_End")) * 0.5  # the middle of the head
+			heads[person] = minf(heads.get(person, INF), head.y)
+			var hand := person.skeleton.get_bone_global_pose(person.skeleton.find_bone("RightHand")).origin
+			if not hands.has(person):
+				hands[person] = hand
+			moved[person] = maxf(moved.get(person, 0.0), (person.skeleton_to_me.basis * (hand - hands[person])).length()))
+	var start: Vector3 = swimmer["holder"].global_position
+	for i in 90:
+		await process_frame
+	var swum: float = Vector2(start.x, start.z).distance_to(Vector2(swimmer["holder"].global_position.x, swimmer["holder"].global_position.z))
+	var area: Rect2 = swimmer["area"]
+	var spot := Vector2(swimmer["holder"].global_position.x, swimmer["holder"].global_position.z)
+	_check("a swimmer swims along the pool and stays in it", swum > 0.3 and area.grow(0.5).has_point(spot), "%.1f m" % swum)
+	var water: float = swimmer["water"]  # each pool says how high its water is
+	_check("swimmers keep their heads above the water", heads.get(watched[0], -INF) > water + 0.08
+			and heads.get(watched[1], -INF) > water + 0.1, "lowest head %.2f / %.2f m" % [heads.get(watched[0], -INF), heads.get(watched[1], -INF)])
+	_check("the swimmer's arms stroke (nobody floats still)", watched[0].action == "swim" and moved.get(watched[0], 0.0) > 0.2, "hand moved %.2f m" % moved.get(watched[0], 0.0))
+	crowds.set("_check_left", 0.0)
+	# The lifeguards sit on tall chairs, look around and now and then whistle.
+	var guards: Array = crowds.lifeguards
+	var seated := guards.size() >= 3
+	for chair: LifeguardChair in guards:
+		seated = seated and chair.person.action == "sit" and chair.person.position.y > 0.5
+	_check("a lifeguard sits on a tall chair at every pool", seated, "%d chairs" % guards.size())
+	if guards.size() > 0:
+		var chair: LifeguardChair = guards[0]
+		chair.stand_up()
+		_check("the lifeguard stands up and blows the whistle", chair.standing and chair.person.action == "whistle"
+				and chair.whistles > 0 and LifeguardChair.whistle_sound().get_length() > 0.3, "")
+
+
+## Where a bone of a person is right now, on the map.
+func _bone_on_map(person: Person, bone: String) -> Vector3:
+	var at := person.skeleton.get_bone_global_pose(person.skeleton.find_bone(bone)).origin
+	return person.global_transform * (person.skeleton_to_me * at)
 
 # --- end of Session 81 (people) checks ---

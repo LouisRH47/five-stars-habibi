@@ -612,6 +612,19 @@ const COURT_FENCE_HEIGHT := 3.0           # metres
 
 # --- Fix pass Session 81: gym, stream and pools ---
 # (Session 81 numbers go here)
+# Pools (scripts/pool_deck.gd): heights in metres above the ground.
+const POOL_WATER_Y := 0.08                # the water's surface (swimmers float here)
+const POOL_DECK_Y := 0.16                 # the tiled deck round the pool
+const POOL_COPING_Y := 0.2                # the stone edge (coping) round the water
+const POOL_TILE_SIZE := 0.6               # metres, one deck tile
+const POOL_FLOOR_DEPTH := 1.2             # how deep the pool floor looks through the water
+# Water colours and ripples (scripts/water_look.gd, assets/shaders/water.gdshader)
+const POOL_WATER_COLOUR := Color(0.24, 0.7, 0.86)
+const STREAM_WATER_COLOUR := Color(0.3, 0.6, 0.85)
+const POND_WATER_COLOUR := Color(0.22, 0.52, 0.62)
+const WATER_WAVE_TILT := 0.5              # how much the ripples catch the sun (0 = none)
+# Ponds at the stream's ends (scripts/stream_pond.gd)
+const POND_STONE_GAP := 0.55              # metres between the stones round the edge
 
 
 # --- Fix pass Session 82: textures ---
@@ -632,4 +645,26 @@ const JUMP_LAND_SQUAT := 0.16         # m the hips drop in that landing bend
 const JUMP_TUCK := 0.22               # m the feet lift towards the body in the air
 
 # --- Fix pass Session 81 (people): swimmers and the lifeguard ---
-# (numbers go here)
+const SWIM_WATER_Y := 0.12            # m, the pools' water surface if a pool doesn't say (meta "water_y")
+const SWIM_EDGE_ABOVE_WATER := 0.08   # m, the pool edge above the water, where resting swimmers fold their arms
+const SWIM_SPEED := 0.8               # m/s, a lap swimmer (each one a little faster or slower)
+const SWIM_STROKE_RATE := 0.6         # whole arm strokes per second
+const SWIM_BODY_TILT_DEG := 16.0      # degrees the swimmer's head end is higher than the feet
+const SWIM_NECK_ABOVE_WATER := 0.07   # m, the neck sits just above the water (head well above)
+const SWIM_CHIN_UP_DEG := 80.0        # degrees the head lifts to look ahead out of the water
+const SWIM_TURN_TIME := 1.8           # s to turn round at the end of the pool
+const SWIM_TURN_GAP := 1.6            # m before the wall where they start turning
+const SWIM_REST_GAP := 0.35           # m from the edge for people resting at the side
+const SWIM_SHOULDERS_ABOVE_WATER := 0.12  # m, people resting at the side
+const SWIM_COMMUNITY_LAPS := 4        # lap swimmers in the community pool
+const SWIM_COMMUNITY_RESTING := 2     # people resting at its edge
+const SWIM_KIDS_AREA := 8.0           # m at the community pool's east end kept for the kids' splash area
+const SWIM_LAP_POOL_LAPS := 3         # lap swimmers in the gym's lap pool (one per lane)
+const SWIM_SCHOOL_LAPS := 2           # lap swimmers in each school pool
+const SWIM_SCHOOL_RESTING := 1        # resting at the edge of each school pool
+const LIFEGUARD_SEAT_HEIGHT := 1.6    # m, the seat of the tall lifeguard chair
+const LIFEGUARD_FOOTREST_HEIGHT := 1.12  # m, where his feet rest (and where he stands up)
+const LIFEGUARD_LOOK_DEG := 55.0      # degrees he looks left and right
+const LIFEGUARD_STAND_EVERY := Vector2(12.0, 22.0)  # s between standing up to whistle
+const LIFEGUARD_STAND_TIME := 3.0     # s standing with the whistle
+const LIFEGUARD_WHISTLE_HEARD := 45.0 # m, how far away you hear the whistle

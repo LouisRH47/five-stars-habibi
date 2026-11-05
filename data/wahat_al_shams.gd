@@ -40,7 +40,7 @@ const PLAZA_BENCHES := [
 
 const SPINE := Rect2(-145, -35, 560, 70)
 
-const STREAM := {"z": 25.0, "from_x": -135.0, "to_x": 405.0, "width": 3.0, "gaps": [Vector2(93, 137)]}
+const STREAM := {"z": 25.0, "from_x": -135.0, "to_x": 405.0, "width": 3.0, "gaps": [Vector2(82, 188)], "ponds": [{"centre": Vector2(82, 22), "radius": 5.0}, {"centre": Vector2(190.5, 23), "radius": 3.5}]}
 
 const CLUSTERS := [
 	{"id": "C1", "area": Rect2(-17, -201, 130, 150), "centre": Vector2(48, -126)},
@@ -483,7 +483,7 @@ const SPINE_DOMES := [
 const HILLS := [
 	{"position": Vector3(20, 0, 12), "height": 0.8, "clear": Vector2(8.5, 10.5)},
 	{"position": Vector3(65, 0, 12), "height": 1.1, "clear": Vector2(8.5, 10.5)},
-	{"position": Vector3(160, 0, 12), "height": 0.6, "clear": Vector2(8.5, 10.5)},
+	{"position": Vector3(-60, 0, 12), "height": 0.6, "clear": Vector2(8.5, 10.5)},
 	{"position": Vector3(315, 0, 12), "height": 1.2, "clear": Vector2(8.5, 10.5)},
 ]
 
@@ -1274,8 +1274,8 @@ const PLAY_KIDS := [
 
 const DUCKS := [
 	{"from_x": -100, "to_x": -35, "side": -0.4, "level": 0},
-	{"from_x": 30, "to_x": 95, "side": 0.4, "level": 1},
-	{"from_x": 160, "to_x": 225, "side": -0.4, "level": 2},
+	{"from_x": 20, "to_x": 85, "side": 0.4, "level": 1},
+	{"from_x": 195, "to_x": 260, "side": -0.4, "level": 2},
 	{"from_x": 290, "to_x": 355, "side": 0.4, "level": 0},
 ]
 

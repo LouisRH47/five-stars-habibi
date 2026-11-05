@@ -48,7 +48,12 @@ put('PLAZA',{'centre':v2(-200,-145),'radius':50.0,'sunken_radius':20.0,'floor_ra
  'floor':rect(-287,-191,153,92),'aprons':[rect(-134,-159,21,28)]})
 put('PLAZA_SAILS',[[v3(-224,0,-157),v3(-200,0,-170),v3(-176,0,-157)],[v3(-176,0,-133),v3(-200,0,-120),v3(-224,0,-133)]])
 put('PLAZA_BENCHES',[{'position':v3(-200,-.45,-155),'facing':0.0},{'position':v3(-200,-.45,-135),'facing':180.0},{'position':v3(-190,-.45,-145),'facing':-90.0}])
-put('SPINE',rect(-145,-35,560,70)); put('STREAM',{'z':25.0,'from_x':-135.0,'to_x':405.0,'width':3.0,'gaps':[v2(93,137)]})  # gaps: under the gym
+put('SPINE',rect(-145,-35,560,70))
+# Session 81: the stream no longer runs under the gym. It ends in a small pond with stones
+# round it 10 m before the gym (west) and starts again from a little spring pond after the
+# gym's lap pool (east). gaps: no stream there. ponds: centre (x, z) and radius in metres.
+put('STREAM',{'z':25.0,'from_x':-135.0,'to_x':405.0,'width':3.0,'gaps':[v2(82,188)],
+ 'ponds':[{'centre':v2(82,22),'radius':5.0},{'centre':v2(190.5,23),'radius':3.5}]})
 clusters=[(1,48,-126),(2,203,-126),(3,348,-126),(4,73,120),(5,303,120)]
 put('CLUSTERS',[{'id':f'C{n}','area':rect(cx-65,cz-75,130,150),'centre':v2(cx,cz)} for n,cx,cz in clusters])
 roads=[]
@@ -161,7 +166,9 @@ put('PLOTS',[{'name':'Fair Grade International School','area':rect(-425,35,120,1
 put('WELCOME_SIGN',{'name':'Welcome to Wahat Al Shams','arabic':'أهلاً بكم في واحة الشمس','position':v3(-421,0,-180),'facing':-90.0})
 put('SPINE_DOMES',[v3(x,0,-20) for x in [-110,-20,70,160,250,340]])
 # Session 62: the hills moved 4 m south and stay flat near the road, so they don't cover the red track.
-put('HILLS',[{'position':v3(x,0,z),'height':h,'clear':v2(8.5,10.5)} for x,z,h in [(20,12,.8),(65,12,1.1),(160,12,.6),(315,12,1.2)]])
+# Session 81: the hill that dipped into the gym's lap pool (x 160) moved between the west farm
+# beds (x -60), so the ground round the gym and both pools is flat (the smoke test checks it).
+put('HILLS',[{'position':v3(x,0,z),'height':h,'clear':v2(8.5,10.5)} for x,z,h in [(20,12,.8),(65,12,1.1),(-60,12,.6),(315,12,1.2)]])
 put('LAP_POOL',rect(140,13,42,9))
 put('DOME_RADIUS',7.0);put('FARM_BEDS',[rect(-115,13,35,8),rect(-40,13,35,8),rect(200,13,35,8)])
 put('BEEHIVES',rect(360,13,16,8));put('DONKEY_PEN',{'area':rect(245,12,44,10),'donkeys':2})
@@ -405,7 +412,8 @@ put('BUGGIES',buggies)
 put('HORSE_RIDERS',[{'points':[v3(x,0,z) for x,z in rounded_loop(450,230,37)],'loop':True,'colour':colour(.45,.28,.15),'level':0,'collection_id':'horse_sultan','collection_name':'Sultan'},{'points':[v3(x,0,z) for x,z in rounded_loop(450,230,37,reverse=True)],'loop':True,'colour':colour(.85,.82,.78),'level':1,'collection_id':'horse_noor','collection_name':'Noor'}])
 put('PEOPLE_ROUTES',[{'points':[v3(x,0,z) for x,z in rounded_loop(438,218,25)],'loop':True,'jog':True,'look':2,'level':0}]+[{'points':[v3(-326,0,z),v3(386,0,z)],'jog':jog,'look':i,'level':i%3} for i,(z,jog) in enumerate([(-6.6,True),(-5.9,False),(6.6,True),(5.9,False)])])
 put('GARDENERS',gardeners);put('PLAY_KIDS',plays)
-put('DUCKS',[{'from_x':x,'to_x':x+65,'side':.4 if i%2 else -.4,'level':i%3} for i,x in enumerate([-100,30,160,290])])
+# Session 81: every duck stays on the water (one paddles into the pond before the gym).
+put('DUCKS',[{'from_x':x,'to_x':x+65,'side':.4 if i%2 else -.4,'level':i%3} for i,x in enumerate([-100,20,195,290])])
 put('BIRD_FLOCKS',[{'centre':v3(x,30,z),'radius':r,'birds':4,'level':i} for i,(x,z,r) in enumerate([(-180,-100,70),(180,80,90),(0,0,160)])])
 works += [{'name':'Ring Road '+name,'centre':v2(x,z),'along':along,'width':10.,'length':12.} for name,x,z,along in [('north',260,-205,'x'),('east',425,-90,'z'),('south',-200,205,'x'),('west',-425,-60,'z')]]
 put('ROAD_WORKS',works)
