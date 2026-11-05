@@ -623,6 +623,14 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 4 Nov 2026 | The old Palm Grove map is removed (scene, data, and the road, street-sign and park builders only it used). Wahat Al Shams is the only map; the flat test area stays for tests |
 | 4 Nov 2026 | The game is released both on itch.io (Mac and Windows downloads) and in the browser at fivestarshabibi.middleleap.com. A crash "week" is 7 shifts, as the clinic screen already counts (CRASH_WEEK_SHIFTS) |
 | 4 Nov 2026 | Opening the game no longer counts as a new shift: a shift you quit halfway through is played again (same number, same kind of day); only a finished shift counts. Your last accept / skip choices are saved, so the acceptance rate survives a restart |
+| 5 Nov 2026 | Road plan approved (docs/road_plan_2026-11-05.svg): the ring road is the only main road and connects only to the two gates, the bus station loop and the stables car park; the inside roads form one connected, rounded network with a roundabout east of the C Institute and no dead ends |
+| 5 Nov 2026 | Red walking tracks only along the spine road, both sides behind a planter; buggies can't use them |
+| 5 Nov 2026 | Cluster lanes are asphalt with a front and back cross road; only the front links out; at least 12 m from the ring road |
+| 5 Nov 2026 | All roads get a yellow dashed centre line and direction arrows (drive on the right); tyre marks removed |
+| 5 Nov 2026 | New: stables car park, school car park, Majlis Gardens, phase 3 building site by the mosque, football pitch with floodlights replacing the tennis and basketball courts |
+| 5 Nov 2026 | Cluster signs copy the real green SIKKA signs ("Cluster N"); a made-up "5-Star Habibi Police" sign; people dressed for each place; customers walk home instead of vanishing |
+| 5 Nov 2026 | Beekeeper becomes a pickup (honey jars, candles); new horses and donkeys and rounded playgrounds made with Blender scripts; full map on M; resolution setting |
+| 5 Nov 2026 | Parked for later: a delivery robot upgrade, and whether the desktop download becomes the main version |
 
 ## Sources
 
