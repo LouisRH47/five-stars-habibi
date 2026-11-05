@@ -1504,7 +1504,7 @@ Done when:
 - [x] polish_groundwork_test and the smoke test pass
 - [x] Settings saved with the new values load again after a restart
 
-### Session 67: Sky, light and colour
+### Session 67: Sky, light and colour (built)
 
 ```text
 Session 67. Read PRD.md "Polish pass" (Light and colour) and docs/polish_plan.md
@@ -1521,12 +1521,12 @@ after at 8:30, 12:00 and 17:30, both LUTs, outlines on/off.
 
 Done when:
 
-- [ ] The sky has soft clouds that change colour through the day (none on Low)
-- [ ] Ground stays sharp far ahead on the Mac
+- [x] The sky has soft clouds that change colour through the day (none on Low)
+- [x] Ground stays sharp far ahead on the Mac
 - [ ] Louis has picked Golden or Fresh, and said yes or no to outlines
 - [ ] 60 fps on Medium on Louis's Mac; the browser still smooth on the iPad
 
-### Session 68: Water, beam, road wear and particles
+### Session 68: Water, beam, road wear and particles (built)
 
 ```text
 Session 68. Read PRD.md "Polish pass" (Details in the world) and
@@ -1543,12 +1543,12 @@ the beam.
 
 Done when:
 
-- [ ] The beam is easy to see and shows orange for pick-up, teal for drop-off
-- [ ] Water has foam at the edges and pools shimmer
-- [ ] Roads look used (marks, sand) but nothing floats or shows on grass or walls
-- [ ] Particle numbers stay in budget on Low, Medium and High
+- [x] The beam is easy to see and shows orange for pick-up, teal for drop-off
+- [x] Water has foam at the edges and pools shimmer
+- [x] Roads look used (marks, sand) but nothing floats or shows on grass or walls
+- [x] Particle numbers stay in budget on Low, Medium and High
 
-### Session 69: HUD, meters, clock and shift summary
+### Session 69: HUD, meters, clock and shift summary (built)
 
 ```text
 Session 69. Read PRD.md "Polish pass" (HUD) and docs/polish_plan.md items
@@ -1565,11 +1565,11 @@ UiSounds. Check no panels overlap at 1280x720, 1920x1080, 1024x768 and
 
 Done when:
 
-- [ ] The HUD looks like the mockup: chips top left, clock top middle, meters bottom middle
-- [ ] A meter turning orange is easy to notice, even with Colour help on
-- [ ] Nothing overlaps on the iPad at 130% text
+- [x] The HUD looks like the mockup: chips top left, clock top middle, meters bottom middle
+- [x] A meter turning orange is easy to notice, even with Colour help on
+- [x] Nothing overlaps on the iPad at 130% text
 
-### Session 70: Phone app and mini-map
+### Session 70: Phone app and mini-map (built)
 
 ```text
 Session 70. Read PRD.md "Polish pass" (Phone and mini-map) and
@@ -1584,11 +1584,11 @@ North-up option). Keep every name the existing phone and mini-map tests use.
 
 Done when:
 
-- [ ] You can read the phone at a glance while riding
-- [ ] The countdown ring runs down over 30 seconds and the offer slides in
-- [ ] The mini-map shows where to go even when the stop is far away; North up works
+- [x] You can read the phone at a glance while riding
+- [x] The countdown ring runs down over 30 seconds and the offer slides in
+- [x] The mini-map shows where to go even when the stop is far away; North up works
 
-### Session 71: Screens, menus, sounds and accessibility
+### Session 71: Screens, menus, sounds and accessibility (built)
 
 ```text
 Session 71. Read PRD.md "Polish pass" (Screens, sounds and accessibility) and
@@ -1604,9 +1604,9 @@ START_DIORAMA.
 
 Done when:
 
-- [ ] A perfect delivery feels like a reward (stamp, dings, count-up) and E skips it
-- [ ] Settings has Text size, Colour help, Less motion and Mini-map, and they're saved
-- [ ] Menus click and whoosh; the start screen shows the 3D scene
+- [x] A perfect delivery feels like a reward (stamp, dings, count-up) and E skips it
+- [x] Settings has Text size, Colour help, Less motion and Mini-map, and they're saved
+- [x] Menus click and whoosh; the start screen shows the 3D scene
 
 ### Session 72: Play-test the polish pass
 

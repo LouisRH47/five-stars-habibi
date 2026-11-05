@@ -19,6 +19,37 @@ next to the clusters, a red walking track and buggy road on the spine, buggies e
 except the ring road, and half-built buildings on the building sites. Render:
 docs/plaza_carpark_spine.svg. Step-by-step detail for every session: docs/looks_pass_detailed_plan.md.
 
+## Polish pass, Sessions 67–71 (5 November 2026, morning)
+
+Built in parallel on their own branches after the Session 66 groundwork, then merged one by one
+with the full test run (smoke + 33 suites) after each merge. Details and Louis's checks:
+docs/session_notes/s67.md … s71.md. Everything new is behind GameConfig switches.
+
+- **67 Sky, light and colour:** our own cartoon sky (sun disc, flat-bottomed clouds coloured by
+  the time of day; no clouds on Low), sharper distant ground (anisotropic filtering, debanding),
+  a colour grade (default Golden; Fresh available; LUTs made by tools/make_luts.py), a soft
+  vignette, SSIL bounce light on High (Mac only), light shafts through the shop windows. Comic
+  outlines and cloud shadows are built but OFF (Louis to decide).
+- **68 Water, beam, road wear, particles:** a new delivery beam (orange pick-up, teal drop-off,
+  sparkles, pulsing ring, burst on arrival), water with edge foam, deeper middle, sun glints and
+  pool caustics, road wear decals (sand drifts, tyre marks, manholes, patches, oil spots, a SLOW /
+  ببطء school zebra), particles within a budget per graphics level, confetti and coins, skid marks.
+- **69 HUD:** wallet / rating / level chips top left with count-ups, a clock with temperature,
+  the special and a shift bar, meters at the bottom with icons, words and ticks (they stack or
+  step aside next to a tall phone), a hold ring for E, a payout-style shift summary.
+- **70 Phone and mini-map:** bigger text, one "what now" line, an offer card with pay, distance,
+  route and a 30-second ring, a job view with live distance, compass-ring mini-map with logo pins,
+  speed zoom and a north-up option, a phone-style profile page, a softer GPS route with arrows.
+- **71 Screens, sounds, accessibility:** the Delivered card reveal (stars, count-up, PERFECT
+  stamp), Settings with text size, colour help, less motion and mini-map north-up, 9 original UI
+  sounds, button feel, a 3D golden-hour start screen, a loading-screen rider, pause blur, clinic
+  count-up.
+- **Fixes after merging:** the meters overlapping a tall phone at 130% text (flaky by order
+  length; the test now always checks a 700 px phone).
+
+All tests pass on looks-build 226ddef. Louis has it on his Mac (Documents/GitHub/five-stars-habibi,
+branch looks-build). Session 72 (the final play-test, with 65) is running on looks-s72.
+
 ## Overnight 4–5 November 2026: Sessions 58–59, two fresh-eyes reviews, and the Polish pass started
 
 - **58–59 All 12 insides** (s58.md, s59.md): every restaurant, Grand Groceries, Pedal Point Bikes
