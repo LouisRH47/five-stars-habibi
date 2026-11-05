@@ -1349,6 +1349,7 @@ func _finish() -> void:
 	_check_roads_polish()  # Sessions 61 to 63 (roads, spine tracks, greenery)
 	await _check_venue_handoffs()
 	await _check_world_polish()  # Sessions 67 to 69
+	load("res://tests/smoke_signs.gd").new().run(self)  # Sessions 64 to 66 (bus stop, signs, Majlis Gardens)
 	# --- Looks pass (Sessions 54-55): walk into every restaurant room, queue, hold E, walk out ---
 	await preload("res://tests/smoke_rooms.gd").new().run(self)
 	_check_saving()
@@ -1554,8 +1555,9 @@ func _check_session26() -> void:
 			if _has_arabic_label(board) and _has_label_text(board, data["CLUSTER_NAMES"].get(id, "?")) \
 					and _has_label_text(board, "Cluster " + id.substr(1)):
 				signed[id] = signed.get(id, 0) + 1
-	_check("bilingual cluster signs at the lane ends of every cluster",
-			signed.size() == data["CLUSTER_NAMES"].size() and signed.values().all(func(n): return n >= 2), "%s" % [signed])
+	# Session 65: one green cluster sign per cluster, at its entrance (tests/smoke_signs.gd checks the rest).
+	_check("a bilingual cluster sign at the entrance of every cluster",
+			signed.size() == data["CLUSTER_NAMES"].size() and signed.values().all(func(n): return n == 1), "%s" % [signed])
 
 
 ## How many house parts (bodies called Villa...) a shape at this spot touches.

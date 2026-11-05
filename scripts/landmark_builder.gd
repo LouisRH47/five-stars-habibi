@@ -37,6 +37,8 @@ func _ready() -> void:
 		_build_stables(_map["STABLES"])
 	if _map.has("BUILDING_SITE"):
 		_build_site(_map["BUILDING_SITE"])
+	if _map.has("PHASE3_SITE"):  # Session 66: the phase 3 site south of the mosque, same dressing
+		_build_site(_map["PHASE3_SITE"], "Phase3Site")
 	for place in _map["VILLAS"]:
 		if place.get("kind", "") == "spot" and not place.get("interior", false):
 			_build_spot(place)
@@ -125,9 +127,9 @@ func _build_stables(stables: Dictionary) -> void:
 
 ## The building site: a tall fence all round (you can't get in), a crane, containers, sand
 ## piles and the bilingual "Phase 2 coming soon" sign.
-func _build_site(site: Dictionary) -> void:
+func _build_site(site: Dictionary, id := "BuildingSite") -> void:
 	var holder := Node3D.new()
-	holder.name = "BuildingSite"
+	holder.name = id
 	add_child(holder)
 	var area: Rect2 = site["area"]
 	_fence_box(holder, area, HOARDING, 2.2, Vector2.ZERO, true)

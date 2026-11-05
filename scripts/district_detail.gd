@@ -21,8 +21,12 @@ func _ready() -> void:
 	_pool(_map["LAP_POOL"], "LapPool", false)
 	_pool(_map["COMMUNITY_POOL"], "CommunityPool", true)
 	for area: Rect2 in _map.get("BUILDING_SITES", []).slice(1):
+		if _map.has("PHASE3_SITE") and area == _map["PHASE3_SITE"]["area"]:
+			continue  # Session 66: LandmarkBuilder dresses the phase 3 site like phase 2
 		_site(area)
 	_street_details()
+	EndHouses.build(self, _map)  # Session 65: big end houses at the row ends
+	MajlisGardens.build(self, _map)  # Session 66: the park between the car park and Cluster 1
 	TerrainMaterials.dress_ground(get_parent().get_node("WahatBuilder"))
 	TerrainMaterials.dress_ground(get_parent().get_node("SpineBuilder"))
 	_finish_static_world.call_deferred()
@@ -111,17 +115,23 @@ func _checkpoints_and_station() -> void:
 		checkpoint.position = entry["position"]
 		checkpoint.rotation_degrees.y = entry["facing"]
 		add_child(checkpoint)
-	var station := StaticBody3D.new()
-	station.name = "BusStation"
-	station.position = _map["BUS_STATION"]["position"] + Vector3(-7, 0, -12)
-	add_child(station)
-	for x in [-8.0, 8.0]:
-		_solid(station, Vector3(0.18, 3.4, 0.18), WHITE, Vector3(x, 1.7, 0))
-	LowPoly.box(station, Vector3(18, 0.3, 6), TEAL, Vector3(0, 3.5, 0))
-	LowPoly.box(station, Vector3(18, 2.7, 0.14), GLASS, Vector3(0, 1.4, -2.7))
-	Props.bench(station, Vector3(-4, 0, -1.5), 0)
-	Props.bench(station, Vector3(4, 0, -1.5), 0)
-	_sign(station, "قريباً: السفر إلى مناطق أخرى", "Coming soon: travel to other districts", Vector3(0, 2.7, 0.2), 0, 40)
+	# Session 64: the platform island inside the bus loop with two detailed shelters and
+	# people who get on the bus (scripts/bus_stop.gd). It replaces the single shelter.
+	BusStop.build(self, _map)
+	_car_parks()
+
+
+## Session 64: the school car park gets the same asphalt pad as the other car parks (its
+## bays, cars and solar roofs come from PARKED_CARS), and a pay machine like the others.
+func _car_parks() -> void:
+	if not _map.has("SCHOOL_PARKING"):
+		return
+	var area: Rect2 = _map["SCHOOL_PARKING"]
+	const PAD := 0.03  # like DecorBuilder's car park pads: just under the roads, the bay lines on top
+	var pad := LowPoly.box(self, Vector3(area.size.x, PAD, area.size.y), Color(0.36, 0.37, 0.39, 1),
+			Vector3(area.get_center().x, PAD * 0.5, area.get_center().y))
+	pad.name = "SchoolCarParkPad"
+	LowPoly.box(self, Vector3(0.5, 1.4, 0.4), TEAL, Vector3(area.end.x - 1, 0.7, area.position.y + 2))
 
 
 func _plaza_floors() -> void:
@@ -269,10 +279,60 @@ func _pool(area: Rect2, id: String, community: bool) -> void:
 		room.add_child(p)
 		_swimmers.append(p)
 	if community:
+		# Session 65: the sunbeds and umbrellas (now on poles) are along the north side, inside
+		# the pool fence. The gate and the pool sign face the red track (_pool_gate).
 		for i in 7:
-			LowPoly.box(room, Vector3(1.8, 0.35, 0.7), WHITE, c + Vector3(-18 + i * 6, 0.2, area.size.y * 0.5 + 2))
-			LowPoly.cylinder(room, 0, 1.8, 0.7, Color(0.96, 0.64, 0.28), c + Vector3(-18 + i * 6, 2.5, area.size.y * 0.5 + 3))
+			var bed := c + Vector3(-18 + i * 6, 0, -area.size.y * 0.5 - 2.2)
+			LowPoly.box(room, Vector3(1.8, 0.35, 0.7), WHITE, bed + Vector3(0, 0.2, 0))
+			LowPoly.cylinder(room, 0.035, 0.035, 2.3, WHITE.darkened(0.2), bed + Vector3(1.2, 1.15, -0.1))
+			LowPoly.cylinder(room, 0, 1.8, 0.7, Color(0.96, 0.64, 0.28), bed + Vector3(1.2, 2.5, -0.1))
 		LowPoly.cylinder(room, 3, 3, 0.05, Color(0.35, 0.76, 0.88), c + Vector3(area.size.x * 0.5 - 4, 0.15, 0))
+		_pool_gate(room)
+
+
+## Session 65: a white pool fence with a gate on the south side and the bilingual pool sign
+## standing outside the fence beside the gate (data: POOL_GATE).
+func _pool_gate(room: Node3D) -> void:
+	var spec: Dictionary = _map.get("POOL_GATE", {})
+	if spec.is_empty():
+		return
+	var area: Rect2 = spec["fence"]
+	var gx: float = spec["gate_x"]
+	var half: float = spec["gate_width"] * 0.5
+	var south := area.end.y
+	var a := area.position
+	var b := Vector2(area.end.x, area.position.y)
+	for side in [[a, b], [b, area.end], [Vector2(area.position.x, south), a],
+			[area.end, Vector2(gx + half, south)], [Vector2(gx - half, south), Vector2(area.position.x, south)]]:
+		Props.fence(room, side[0], side[1], 1.2, WHITE)
+	var gate := StaticBody3D.new()
+	gate.name = "PoolGate"
+	gate.position = Vector3(gx, 0, south)
+	room.add_child(gate)
+	for x in [-half, half]:
+		LowPoly.box(gate, Vector3(0.16, 1.6, 0.16), TEAL, Vector3(x, 0.8, 0))
+		LowPoly.solid_box(gate, Vector3(0.16, 1.6, 0.16), Vector3(x, 0.8, 0))
+	LowPoly.box(gate, Vector3(spec["gate_width"] + 0.16, 0.1, 0.12), TEAL, Vector3(0, 1.62, 0))
+	var leaf := Node3D.new()  # the gate itself, swung open inwards
+	leaf.position = Vector3(-half, 0, 0)
+	leaf.rotation_degrees.y = 100.0
+	gate.add_child(leaf)
+	for y in [0.25, 1.1]:
+		LowPoly.box(leaf, Vector3(half * 2.0 - 0.2, 0.05, 0.05), WHITE, Vector3(half - 0.1, y, 0))
+	for k in 7:
+		LowPoly.box(leaf, Vector3(0.03, 0.9, 0.03), WHITE, Vector3(0.2 + k * 0.4, 0.68, 0))
+	var sign := StaticBody3D.new()
+	sign.name = "PoolSign"
+	sign.position = spec["sign"]
+	sign.rotation_degrees.y = spec["facing"]
+	room.add_child(sign)
+	LowPoly.box(sign, Vector3(1.9, 0.85, 0.08), TEAL, Vector3(0, 1.55, 0))
+	for x in [-0.8, 0.8]:
+		LowPoly.box(sign, Vector3(0.08, 1.2, 0.08), WHITE, Vector3(x, 0.6, -0.02))
+		LowPoly.solid_box(sign, Vector3(0.1, 1.2, 0.1), Vector3(x, 0.6, -0.02))
+	var faces := SignText.make_two_faces("المسبح المجتمعي", "Community Pool", SignText.fit_size("المسبح المجتمعي", "Community Pool", 40, 1.6), Color.WHITE, 0.08)
+	faces.position.y = 1.55
+	sign.add_child(faces)
 
 
 func _site(area: Rect2) -> void:
@@ -316,10 +376,16 @@ func _street_details() -> void:
 			var p := a + direction * (i * 45 + 15) + side * 7
 			LowPoly.cylinder(props, 0.07, 0.13, 5.5, Color.DIM_GRAY, Vector3(p.x, 2.75, p.y))
 			LowPoly.box(props, Vector3(1.3, 0.15, 0.4), WHITE, Vector3(p.x, 5.5, p.y))
-	for cluster: Dictionary in _map["CLUSTERS"]:
-		var c: Vector2 = cluster["centre"]
+	# Session 65: each cluster's three bins stand at the back, beside the back cross road.
+	for entrance: Dictionary in _map.get("CLUSTER_ENTRANCES", []):
+		var spot: Vector3 = entrance["bins"]
+		var bins := StaticBody3D.new()
+		bins.name = "ClusterBins_%s" % entrance["cluster"]
+		bins.position = spot
+		props.add_child(bins)
 		for i in 3:
-			LowPoly.box(props, Vector3(0.65, 1.1, 0.65), [TEAL, Color.DARK_GREEN, Color(0.2, 0.35, 0.65)][i], Vector3(c.x - 9 + i, 0.55, c.y + (70 if c.y < 0 else -70)))
+			LowPoly.box(bins, Vector3(0.65, 1.1, 0.65), [TEAL, Color.DARK_GREEN, Color(0.2, 0.35, 0.65)][i], Vector3(-1 + i, 0.55, 0))
+		LowPoly.solid_box(bins, Vector3(2.8, 1.1, 0.7), Vector3(0, 0.55, 0))
 	for area: Rect2 in _map["PARKING_AREAS"]:
 		LowPoly.box(props, Vector3(0.5, 1.4, 0.4), TEAL, Vector3(area.position.x + 1, 0.7, area.position.y + 2))
 		for i in 4:

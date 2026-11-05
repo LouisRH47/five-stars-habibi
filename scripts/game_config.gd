@@ -275,8 +275,6 @@ const HOUSE_FRONT_STRIP := 0.8        # pot plants may stand this far in front o
 const SIGNATURE_EXTRA_DEPTH := 3.0    # signature villas are this much deeper (at the back)...
 const SIGNATURE_EXTRA_WIDTH := 2.0    # ...and this much wider on the courtyard side
 const HOUSE_NUMBER_FONT := 130        # size of the house number by the door
-const CLUSTER_SIGN_INSET := 5.0       # cluster signs stand this far in from the lane's end...
-const CLUSTER_SIGN_SIDE := 3.4        # ...and this far to the side of the lane's middle line
 # How likely each extra is (0 = never, 1 = always). Picked from the home's number, so the
 # same home always looks the same.
 const HOUSE_BUGGY_CHANCE := 0.45      # a golf buggy beside the house
@@ -518,3 +516,10 @@ const PITCH_PUPIL_SPEED := 3.0         # m/s
 # --- Session 73: more life at the stables (scripts/stable_life.gd) ---
 const ARENA_RIDERS_OUT := 2            # riders on the jumping course at once (the rest wait their turn)
 const GROOM_WALK_SPEED := 1.1          # m/s, a groom leading a horse round the yard
+
+# --- World polish pass Sessions 64 to 66 (bus stop, signs, Majlis Gardens) ---
+const BUS_STOP_START_PEOPLE := 4      # people waiting at the bus station when the game starts
+const BUS_STOP_MAX_PEOPLE := 5        # never more than this many waiting
+const BUS_STOP_SPAWN_EVERY := 10.0    # seconds between new people arriving at the stop
+const BUS_STOP_WALK_SPEED := 1.4      # m/s walking to their spot and to the bus door
+const BUS_STOP_BOARD_GAP := 0.8       # seconds between one person and the next getting on

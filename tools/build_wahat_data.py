@@ -149,7 +149,7 @@ put('MOSQUE',{'name':'Wahat Al Shams Mosque','arabic':'مسجد واحة الش�
 put('BUS_STATION',{'position':v3(-310,0,-174),'area':rect(-336,-202,52,52),'name':'Wahat Bus Station','arabic':'محطة حافلات الواحة'})
 put('INSTITUTE',{'position':v3(-215,0,-33),'size':v3(46,14,36),'facing':90.,'name':'C Institute','arabic':'معهد سي'})
 put('GYM',{'position':v3(115,0,22),'size':v3(36,8,22),'facing':180.,'name':'Wahat Gym','arabic':'نادي الواحة الرياضي'})
-put('COMMUNITY_POOL',rect(190,-30,50,24));put('JUMPING_ARENA',rect(-282,65,115,88))
+put('COMMUNITY_POOL',rect(190,-32,50,20));put('JUMPING_ARENA',rect(-282,65,115,88))  # Session 65: the pool is off the red track, inside its fence
 put('STABLES',{'name':'Wahat Stables','arabic':'إسطبلات الواحة','block':{'position':v3(-224,0,174),'size':v3(100,5,14)},'paddock':rect(-280,157,110,9),'horses':4})
 put('BUILDING_SITE',{'area':rect(-135,55,110,135),'crane':v3(-80,0,120),'sign':{'name':'Phase 2 coming soon','arabic':'المرحلة الثانية قريباً','position':v3(-140,0,110),'facing':-90.}})
 put('BUILDING_SITES',[rect(-135,55,110,135),rect(217,56,16,132),rect(-275,-86,105,18),rect(-301,50,15,125),rect(-413,-89,100,76)])  # Session 62: the last one ends 13 m north of the spine road
@@ -191,9 +191,96 @@ put('SPINE_TRACKS',{'from_x':-334.0,'to_x':390.0,'road_half':3.0,'planter':2.0,'
 put('SAND_AREAS',[rect(-282,65,115,88),rect(-282,157,115,43)])
 put('EDGE_GREENERY',{'half':v2(433,213),'radius':20.0,'width':6.0,'spacing':9.0})
 put('PALM_TREES',palms);put('PARKED_CAR_SIZE',v3(1.9,1.5,4.3))
-put('PARKED_CARS',[{'position':v3(x+3,0,z+8+k*9),'facing':90.,'bay':True} for x,z,w,d in parking[:6] for k in range(8)]
- +[{'position':v3(x,0,30),'facing':0.,'bay':True} for x in [-412,-403,-394,-385,-376,-354,-345,-336,-327,-318]])
+PARKED_CARS=[{'position':v3(x+3,0,z+8+k*9),'facing':90.,'bay':True} for x,z,w,d in parking[:6] for k in range(8)]\
+ +[{'position':v3(x,0,30),'facing':0.,'bay':True} for x in [-412,-403,-394,-385,-376,-354,-345,-336,-327,-318]]
 put('SCHOOL_PARKING',rect(-417,25,104,10))
+# --- World polish pass Sessions 64 to 66 (signs wave) -------------------------------------
+# Session 64: the stables car park gets marked bays with parked cars like the others
+# (west row; the moving car parks at the far end, z 187).
+PARKED_EXTRA=[{'position':v3(-162,0,154+k*9),'facing':90.,'bay':True} for k in range(4)]
+# Session 64: the bus station platform island inside the loop. Two shelters face the bay
+# lane (west, facing -90); people wait in front of them and board at the bus door.
+put('BUS_PLATFORM',{'area':rect(-328.1,-199.6,22.2,28.4),'shelters':[v3(-325.4,0,-191.6),v3(-325.4,0,-180.4)],
+ 'facing':-90.,'door':v3(-328.7,0,-183.4),'arrive':v3(-316,0,-198.5),
+ 'waiting':[v3(-327.4,0,z) for z in [-194.2,-190.4,-186.9,-178.6,-176.2]]})
+put('PARKED_CARS',PARKED_CARS+PARKED_EXTRA)
+# Session 65: cluster entrances. One green cluster sign, one police sign and one STOP sign
+# where each cluster's middle lane meets its front road (beside the lane, never in it).
+# out: +1 when the spine is to the south (+z) of the cluster. Facing: 0 = the board's front
+# points +z. The bins stand at the back, on the far side of the back cross road.
+entrances=[]
+for n,cx,cz in clusters:
+    out=1 if cz<0 else -1
+    back=cz-63 if cz<0 else cz+69
+    # Riders come in heading -out; villas 1-50 are west of the middle lane (x < cx).
+    rows=[['Villa 1–50','فيلا ١–٥٠'],['Villa 51–100','فيلا ٥١–١٠٠']]
+    entrances.append({'cluster':f'C{n}','lane_x':float(cx),'out':out,'front_z':float(cz+79*out),
+        'sign':v3(cx+5.0*out,0,cz+73.4*out),'sign_facing':0. if out>0 else 180.,
+        'police':v3(cx-5.6*out,0,cz+71.6*out),'police_facing':0. if out>0 else 180.,
+        'stop':v3(cx-4.3*out,0,cz+75.2*out),'stop_facing':180. if out>0 else 0.,
+        'left':rows[0] if out>0 else rows[1],'right':rows[1] if out>0 else rows[0],
+        'bins':v3(cx-8,0,back-4.6*out)})
+put('CLUSTER_ENTRANCES',entrances)
+# A few police signs beside the spine's red tracks, just off the park side of the track.
+put('POLICE_SIGNS',[{'position':v3(x,0,z),'facing':0. if z<0 else 180.} for x,z in [(-100,-8.8),(150,-8.8),(-200,8.8),(60,8.8),(320,8.8)]])
+# Big end houses: a larger house (same kit) at a row end where 10 m of ground is free
+# before the next road (decoration, not addresses: all 500 homes stay as they are).
+end_houses=[]
+for n,cx,cz in clusters:
+    front=cz+79 if cz<0 else cz-79; back=cz-63 if cz<0 else cz+69; alley=cz+(68 if cz<0 else -68)
+    edges=[(front,3.),(back,3.),(alley,2.)]
+    for row,count in enumerate([13,12,13,12]):
+        rx=cx-45+row*30
+        ends={-1:cz-56.,1:cz+6.5+(count-count//2-1)*9+4.5}
+        for d,edge in ends.items():
+            beyond=[z-d*w for z,w in edges if (z-edge)*d>0]
+            free=min(abs(b-edge) for b in beyond)
+            if free<9.8: continue
+            for side in [-1,1]:
+                end_houses.append({'cluster':f'C{n}','number':9000+n*100+len(end_houses),'position':v3(rx+side*4.7,0,edge+d*4.9),
+                    'facing':side*90.,'size':v3(9.6,8.5,9.4),'kind':'courtyard','row_mode':True,'house':0})
+put('END_HOUSES',end_houses)
+# Session 65: the community pool is fenced. Its gate is on the south side, where the
+# crossing from the spine road's red track comes in (x 200), and the pool sign stands
+# outside the fence beside the gate, facing the track. The sunbeds are along the north side.
+put('POOL_GATE',{'fence':rect(187.6,-35.4,54.8,25.2),'gate_x':200.,'gate_width':3.,'sign':v3(203.6,0,-9.3),'facing':0.})
+# Session 66: Majlis Gardens, the strip of park between the C1-west car park (x -92..-50)
+# and Cluster 1 (its paving starts at x -17). A fountain on a round paved plaza, palms, a
+# shaded majlis, benches, a community garden bed and curving paver paths that join the
+# cluster's alleys and back road, the car park and the spine loop road.
+def smooth(ctrl,steps=6):
+    """Catmull-Rom curve through the control points, as short straight pieces."""
+    pts=[ctrl[0]]+list(ctrl)+[ctrl[-1]]; out=[]
+    for k in range(1,len(pts)-2):
+        p0,p1,p2,p3=pts[k-1],pts[k],pts[k+1],pts[k+2]
+        for j in range(steps):
+            t=j/steps
+            out.append(tuple(round(0.5*((2*p1[c])+(-p0[c]+p2[c])*t+(2*p0[c]-5*p1[c]+4*p2[c]-p3[c])*t*t+(-p0[c]+3*p1[c]-3*p2[c]+p3[c])*t**3),2) for c in (0,1)))
+    out.append(ctrl[-1])
+    return [v2(x,z) for x,z in out]
+mx,mz=-33.5,-117.0  # the fountain
+majlis_paths=[
+ smooth([(-31,-43.5),(-29,-60),(-37,-78),(-31,-96),(mx,mz+5.5)]),          # south: from the spine loop road
+ smooth([(mx,mz-5.5),(-38,-134),(-30,-152),(-36,-170),(-28,-183),(-14.5,-189)]),  # north: to the back road
+ smooth([(mx+5.5,mz-1),(-23,-121),(-14.5,-126)]),                       # east: the C1 cross row alley
+ smooth([(mx-5.5,mz),(-44,-114),(-50.5,-112)]),                          # west: the car park
+]
+def on_path(path,z):
+    """The point of a path (a list of v2 strings) nearest to this z, as (x, z)."""
+    pts=[tuple(float(c) for c in str(p)[8:-1].split(', ')) for p in path]
+    return min(pts,key=lambda q:abs(q[1]-z))
+majlis_paths.append(smooth([on_path(majlis_paths[0],-62),(-22,-59),(-14.5,-58)]))      # to the C1 alley
+majlis_paths.append(smooth([on_path(majlis_paths[1],-158),(-42,-156),(-50.5,-152)]))  # to the car park's north end
+bench_ring=[{'position':v3(round(mx+7.4*math.cos(math.radians(a)),2),0,round(mz+7.4*math.sin(math.radians(a)),2)),
+ 'facing':round(math.degrees(math.atan2(-math.cos(math.radians(a)),-math.sin(math.radians(a)))),1)} for a in [40,140,220,300]]
+put('MAJLIS_GARDENS',{'area':rect(-48,-186,29,138),'name':'Majlis Gardens','arabic':'حدائق المجلس',
+ 'fountain':v3(mx,0,mz),'plaza_radius':6.5,'path_width':2.4,'paths':majlis_paths,
+ 'benches':bench_ring+[{'position':v3(-25.5,0,-84),'facing':-90.},{'position':v3(-41.5,0,-140),'facing':90.}],
+ 'palms':[v3(round(mx+10*math.cos(math.radians(a)),2),0,round(mz+10*math.sin(math.radians(a)),2)) for a in [45,135,225,315]]+[v3(-43,0,-70),v3(-23,0,-100),v3(-44,0,-130),v3(-22,0,-165),v3(-42,0,-180)],
+ 'majlis':v3(-41,0,-92),'bed':rect(-45,-178,9,12),'sign':v3(-26.5,0,-51),'sign_facing':0.,
+ 'walk':[v3(x,0,z) for x,z in [(-30.5,-50),(-31,-96),(mx,mz+7),(mx+7,mz),(mx,mz-7),(-30,-152),(-28,-180),(-30,-152),(mx,mz-7),(mx-7,mz),(mx,mz+7),(-31,-96)]]})
+# Session 66: the phase 3 building site south of the mosque, dressed like phase 2.
+put('PHASE3_SITE',{'area':rect(-413,-89,100,76),'crane':v3(-372,0,-55),'sign':{'name':'Phase 3 coming soon','arabic':'المرحلة الثالثة قريباً','position':v3(-363,0,-12.2),'facing':0.}})
 put('SPEED_BUMP_SIZE',v3(10,.12,.5))
 put('SPEED_BUMPS',[{'position':v3(x,0,z),'facing':90.} for z in [-205,205] for x in [-180,50,300]]+[{'position':v3(x,0,z),'facing':0.} for x in [-425,425] for z in [-80,80]]
  # Session 61: narrower bumps on the inside roads (spine loop north and south, spine road).

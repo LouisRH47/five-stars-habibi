@@ -30,6 +30,7 @@ func build(builder: Node3D, map: Dictionary) -> void:
 	_beekeeper()
 	_farm_beds()
 	_clusters()
+	_majlis_gardens()  # Session 66
 
 
 ## How many people of each outfit there are (swimmers and workers included).
@@ -187,11 +188,13 @@ func _plaza() -> void:
 
 
 func _bus_station() -> void:
-	if not _map.has("BUS_STATION"):
+	# Session 64: the people waiting for the bus (and getting on) are BusStop's. Here: one
+	# traveller with a suitcase reading the route map in the first shelter, who stays.
+	var platform: Dictionary = _map.get("BUS_PLATFORM", {})
+	if platform.is_empty():
 		return
-	var shelter: Vector3 = _map["BUS_STATION"]["position"] + Vector3(-7, 0, -12)  # like DistrictDetail
-	for i in 3:
-		place(PlaceLooks.commuter(i), shelter + Vector3(-5.0 + i * 4.5, 0, 1.5), 0.0, i % 2)
+	var shelter: Vector3 = platform["shelters"][0]
+	place(PlaceLooks.commuter(1), shelter + Vector3(0.1, BusStop.PLATFORM_TOP, 2.9), 90.0)
 
 
 func _beekeeper() -> void:
@@ -226,3 +229,37 @@ func _clusters() -> void:
 			var parent := PlaceLooks.neighbour(i + 2)
 			parent.set_meta("outfit", "parent on bench")
 			sit_on_bench(parent, bench["position"], bench["facing"], i % 2)
+
+
+## Session 66: Majlis Gardens: neighbours on the benches and in the majlis, two people out
+## for a walk on the paths, a child by the fountain and a gardener at the garden bed.
+func _majlis_gardens() -> void:
+	var park: Dictionary = _map.get("MAJLIS_GARDENS", {})
+	if park.is_empty():
+		return
+	var benches: Array = park["benches"]
+	for i in [0, 1, 3]:
+		var sitter := PlaceLooks.neighbour(i + 5)
+		sitter.set_meta("outfit", "parent on bench" if i == 1 else "casual")
+		sit_on_bench(sitter, benches[i]["position"], benches[i]["facing"], i % 2)
+	var majlis: Vector3 = park["majlis"]
+	for k in 2:  # sitting on the low sofas (seat 0.4 m), chatting over coffee
+		var guest := sit_on_bench(PlaceLooks.neighbour(k + 8), majlis + Vector3(-2.2, 0, -0.6 + k * 1.4), 90.0, k)
+		guest.position.y -= 0.1
+	var fountain: Vector3 = park["fountain"]
+	var child := LifeLooks.kid()
+	child.set_meta("outfit", "family")
+	place(child, fountain + Vector3(0, 0.05, 3.4), 180.0)
+	place(PlaceLooks.neighbour(11), fountain + Vector3(1.2, 0.05, 4.2), 200.0, 1)
+	var walk: Array = park["walk"]
+	for i in 2:
+		var walker := PlaceLooks.neighbour(12 + i)
+		var route := {"points": walk, "loop": true, "level": i, "extra": true}
+		var mover: RouteMover = _builder._add("MajlisWalker_%d" % i, "person", route, GameConfig.WALKER_SPEED,
+				Vector3(0.5, 1.8, 0.5), _builder._holder(walker), walker)
+		mover.start_at(i * 6, 0.2, i == 0)
+	var bed: Rect2 = park["bed"]
+	var look := LifeLooks.gardener(1.0)
+	var spot := {"position": Vector3(bed.end.x + 1.0, 0, bed.get_center().y), "level": 0, "extra": true}
+	var gardener: RouteMover = _builder._add("MajlisGardener", "gardener", spot, 0.0, Vector3(0.5, 1.8, 0.5), look[0], look[1])
+	gardener.rotation_degrees.y = 90.0  # facing the bed (-X)

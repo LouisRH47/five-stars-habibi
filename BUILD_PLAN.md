@@ -1422,7 +1422,7 @@ Done when:
 - [ ] The tracks have curved corners and the blue track has a texture
 - [ ] Looking out past the fence shows trees and dunes, not an empty edge
 
-### Session 64: Bus station loop, bus stop and car parks
+### Session 64: Bus station loop, bus stop and car parks (built, needs testing)
 
 ```text
 Session 64. 1) Build the bus station as a loop off the ring road: buses turn in, go round
@@ -1439,7 +1439,7 @@ Done when:
 - [ ] Buses loop through the station and people get on
 - [ ] Both new car parks look like the existing ones
 
-### Session 65: Cluster entrances and signs
+### Session 65: Cluster entrances and signs (built, needs testing)
 
 ```text
 Session 65. Louis's photos are of the real signs.
@@ -1467,7 +1467,7 @@ Done when:
 - [ ] The end houses match the others, just bigger
 - [ ] Bins are at the back and the pool sign is in front of the gate
 
-### Session 66: Majlis Gardens and the new building site
+### Session 66: Majlis Gardens and the new building site (built, needs testing)
 
 ```text
 Session 66. 1) Majlis Gardens in the empty strip between the car park and Cluster 1: a

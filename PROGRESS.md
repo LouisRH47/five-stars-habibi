@@ -124,6 +124,116 @@ the stable doors and the paddock, and the riders on the edge track. They should 
 horses (long neck and head, mane, tail), not donkeys. Then ride to the donkey pen in the
 middle of the green spine: the donkeys are smaller with long ears.
 Rebuild a model on your Mac: `blender --background --python tools/blender/make_horse.py`.
+## Session 66: Majlis Gardens and the phase 3 building site — 5 November 2026
+
+What works:
+- **Majlis Gardens (حدائق المجلس)** in the empty strip between the C1-west car park and
+  Cluster 1 (scripts/majlis_gardens.gd, layout in MAJLIS_GARDENS in the data):
+  - a fountain on a round paved plaza (stone basin, pedestal, bowl and little jets; solid)
+  - curving paver paths (about 220 m) that join the Cluster 1 lanes (by the alley, the cross
+    row alley and the back road), the car park (two places) and the spine loop road
+  - palms round the plaza and along the paths, low clipped hedges along both sides with gaps
+    where the paths go through
+  - a shaded majlis: a cloth roof on wooden posts over low sofas with cushions, a rug and a
+    coffee table with a dallah and cups
+  - six benches, a community garden bed (raised wooden bed with rows of vegetables, tomatoes,
+    marigolds, a watering can, a tap and a "Community garden / حديقة المجتمع" sign)
+  - a stone sign at the entrance from the spine loop road
+  - people (PlaceCrowds): neighbours on three benches and two in the majlis, a child and a
+    parent at the fountain, two people walking round the paths and a gardener at the bed
+  - "Majlis Gardens" is named on the full map (M)
+- **Phase 3 building site** south of the mosque: dressed exactly like phase 2 (LandmarkBuilder):
+  tall hoarding all round, a lattice crane, three containers, sand piles, two workers in hi-vis
+  and hard hats, and the orange "Phase 3 coming soon / المرحلة الثالثة قريباً" sign facing the spine.
+  The plain "Coming soon" version that stood there before is gone.
+- Checked: smoke test PASS (new Session 66 checks in tests/smoke_signs.gd: everything in the
+  gardens, they're in the free strip, every path end joins a road, lane or the car park, nothing
+  stands on a path, people sit, walk and garden there, the phase 3 site matches phase 2 and its
+  sign is bilingual), tests/signs_wave_test.gd, coplanar, navigation, detail world, static batch,
+  mini-map cache, lifecycle, district traffic and bus recovery tests PASS. Play-test bot: 4
+  deliveries, 5.0 stars, no crashes, never stuck. No screenshots (headless).
+
+**Louis's turn:** press F5 and ride east along the north spine loop road to just before Cluster 1.
+On the left: the stone "Majlis Gardens" sign and a paver path. Ride in (slowly): the fountain on
+its round plaza with palms and benches, people sitting, someone walking round, the shaded majlis
+with sofas and a coffee pot, and at the far end the garden bed with a gardener. Follow a path to
+the car park and one into Cluster 1. Then ride to the mosque and south of it: the phase 3 site
+with its crane and the "Phase 3 coming soon" sign. Press M: Majlis Gardens is on the full map.
+
+## Session 65: Cluster entrances and signs — 5 November 2026
+
+What works (scripts/cluster_signs.gd, scripts/police_sign.gd, scripts/end_houses.gd; layout in
+CLUSTER_ENTRANCES, POLICE_SIGNS, END_HOUSES and POOL_GATE in the data):
+- **The real-style cluster sign** at each cluster's entrance (where the middle lane meets the
+  front road), on the verge beside the lane: a dark green board with a white border on a pale
+  blue metal frame and pole. "Cluster 3" with المجموعة ٣ under it, then two lines with arrows
+  ("Villa 1–50 ←", "Villa 51–100 →", with the Arabic under each) pointing the way to those
+  houses for a rider coming in, and an "EXIT خروج" line with a down arrow. The back shows the
+  cluster name. The 50 old teal lane-end signs are gone.
+- **Police sign** (made up, no real badge): white board on a grey pole, red "Attention / تنبيه"
+  header with a camera icon, an emblem (gold star over a little dhow on a navy disc), and
+  "5-Star Habibi Police: Area is monitored by Habibi Smart Home Security" in English and Arabic.
+  One at each cluster entrance and five beside the spine's red tracks.
+- **STOP signs:** a small red octagon with قف above STOP where each cluster entrance meets the road.
+- **Bins** moved to the back of each cluster, beside the back cross road.
+- **Community pool:** it now has a white fence with a gate on the red-track side (where the
+  crossing from the spine road comes in), and the "Community Pool / المسبح المجتمعي" sign stands
+  outside the fence beside the gate. The pool moved 2 m north and is a little shorter so it's
+  off the red track, and the sunbeds (umbrellas now on poles) are along the north side.
+- **Big end houses:** 36 bigger homes from the same house kit (9.6 x 9.4 m instead of 9 x 8,
+  a bit taller) where a row stops 10 m short of a road (12 in each of Clusters 4 and 5, 4 in each
+  of Clusters 1 to 3). They're scenery: no number, no address. All 500 homes keep their numbers.
+  Each cluster's end houses are one joined mesh (cheap on Low).
+- The Arabic on the signs is checked by a test: the letters join up and run right to left.
+- Checked: smoke test PASS (the cluster sign check now expects one sign per cluster; new Session
+  65 checks in tests/smoke_signs.gd: all three signs at every entrance in both languages, the
+  arrows point at the right villas, no sign in the road or on the track, police signs on the
+  tracks, joined right-to-left Arabic, bins at the back, pool sign outside the gate, end houses
+  bigger and clear of roads and homes), tests/signs_wave_test.gd, coplanar, navigation, housing
+  camera and static batch tests PASS. No screenshots (headless).
+
+Known bugs / to do:
+- The end houses don't show on the mini-map or full map (they aren't addresses).
+
+**Louis's turn:** press F5 and ride along the spine loop road to a cluster entrance (e.g.
+Cluster 1, north of the spine). On the right, beside the lane: the green sign with "Cluster 1",
+the Arabic, "Villa 1–50 ←" and "Villa 51–100 →" and EXIT. Ride left: the houses there are 1 to 50.
+On the other side: the police sign with the red Attention header, the camera and the star and
+dhow emblem. Ride out again: a little STOP sign where the lane meets the road. Ride along the red
+tracks: a few more police signs. Look at the end of the house rows next to the little plaza:
+a bigger house. Ride round the back road: the bins are there now. Go to the community pool from
+the spine road: the gate and the pool sign next to it.
+
+## Session 64: Bus stop and car parks — 5 November 2026
+
+What works:
+- **A real platform at the bus station.** Inside the bus loop there's a raised paved island
+  (with a kerb and a yellow line at the edge) right beside the lane where the bus stops. On it
+  stand **two shelters** facing the bus: a teal roof on metal posts, a glass back panel with a
+  **route map** (three coloured lines and a red "you are here" dot), two benches, a green bin and
+  a small bilingual sign on the front of the roof ("Wahat Bus Station / محطة حافلات الواحة" and
+  "Coming soon: travel to other districts"). It replaces the old single shelter
+  (scripts/bus_stop.gd, layout in BUS_PLATFORM in the data).
+- **People get on the bus.** 4 people wait in front of the shelters when you start (never more
+  than 5). When a bus stops at the bay they walk to its door one after another and get on (they
+  disappear into the bus); the bus waits until the last one is in. New people walk onto the
+  platform every 10 seconds or so. One traveller with a suitcase stays in the first shelter,
+  reading the route map. Numbers: BUS_STOP_* in scripts/game_config.gd.
+- **Stables car park** now has four marked bays with parked cars and solar roofs, like the others.
+- **School car park** now has the same dark asphalt under its ten cars and solar roofs (it was on
+  grass) and a pay machine.
+- Checked: smoke test PASS (new Session 64 checks in tests/smoke_signs.gd: two shelters with
+  glass, route map, sign; platform right beside the bay lane; 3 to 5 waiting; they get on; new
+  people arrive; stables and school car parks), new focused test tests/signs_wave_test.gd PASS,
+  district traffic, bus recovery, coplanar and detail world tests PASS. Headless Godot can't
+  take screenshots, so the screenshot step was skipped.
+
+**Louis's turn:** press F5 and ride to the bus station (north side, next to the mosque, the loop
+off the ring road). On the island: two glass shelters with benches, a bin and a route map. Wait
+for a bus (one comes every game hour): when it stops beside the shelters, the people walk to its
+door and get on, and it waits for them. Wait a bit longer: new people walk up to the shelters.
+Then ride to the stables car park (south, by the stables) and the school car park (in front of
+the school): cars in marked bays under solar roofs, on dark asphalt.
 
 ## Session 69: The beekeeper as a pickup — 5 November 2026
 
