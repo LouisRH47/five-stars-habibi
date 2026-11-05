@@ -700,6 +700,7 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 5 Nov 2026 | World polish pass numbered Sessions 60 to 74; Session 60 (roads) built before looks Sessions 53 to 59 |
 | 5 Nov 2026 | Parked for later: a delivery robot upgrade, and whether the desktop download becomes the main version |
 | 5 Nov 2026 | Session 61: the ring road's corners are rounded (12 m) and traffic follows them; the roundabout is one-way anticlockwise; kerbs are low and only for looks (except the spine's red-track kerb); a hard brake leaves a short faint skid mark that fades after about 10 s |
+| 5 Nov 2026 | Session 62: the spine road has a planter and a red walking track on both sides with crossing gaps; the Domes Path is removed (the north red track passes the domes); the C Institute's stepped seats face outwards |
 
 ## Sources
 

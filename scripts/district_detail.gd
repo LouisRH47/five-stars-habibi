@@ -51,7 +51,7 @@ func _planting() -> void:
 	var spots: Array[Vector3] = []
 	for i in 1800:
 		var spot := Vector3(rng.randf_range(-140, 410), 0.2, rng.randf_range(-34, 34))
-		if absf(spot.z) < 6 or absf(spot.z + 11) < 2 or spot.z > 22:
+		if absf(spot.z) < 8.5 or spot.z > 22:  # Session 62: off the planters and red tracks
 			continue
 		var clear := true
 		for dome: Vector3 in _map["SPINE_DOMES"]:
@@ -66,7 +66,8 @@ func _planting() -> void:
 			continue
 		for hill: Dictionary in _map["HILLS"]:
 			var r := Vector2(spot.x - hill["position"].x, spot.z - hill["position"].z).length() / 10
-			spot.y += hill["height"] * pow(maxf(0, 1-r*r), 2) * smoothstep(3, 6, absf(spot.z))
+			var flat: Vector2 = hill.get("clear", Vector2(3, 6))
+			spot.y += hill["height"] * pow(maxf(0, 1-r*r), 2) * smoothstep(flat.x, flat.y, absf(spot.z))
 		spots.append(spot)
 	var many := MultiMesh.new()
 	many.transform_format = MultiMesh.TRANSFORM_3D
@@ -215,12 +216,15 @@ func _institute_steps() -> void:
 	add_child(steps)
 	var front := size.z * 0.5
 	# Seating leaves the central doorway and its level access clear.
+	# Session 62: the seats step down away from the glass, so people sit facing outwards
+	# (towards the spine), with their backs to the building.
 	for side in [-1.0, 1.0]:
 		for level in 4:
-			LowPoly.box(steps, Vector3(16, 0.35 * (level + 1), 1.4), WHITE,
-					Vector3(side * 11, 0.175 * (level + 1), front + 0.7 + level * 1.4))
+			LowPoly.box(steps, Vector3(16, 0.35 * (4 - level), 1.4), WHITE,
+					Vector3(side * 11, 0.175 * (4 - level), front + 0.7 + level * 1.4))
 		var visitor := PeopleLooks.teacher()
-		visitor.position = Vector3(side * 10, 0.7 - visitor.spot("Hips").y, front + 2.8)
+		visitor.name = "InstituteSitter"
+		visitor.position = Vector3(side * 10, 1.05 - visitor.spot("Hips").y, front + 3.1)
 		visitor.rotation.y = PI
 		steps.add_child(visitor)
 		visitor.play("sit")
@@ -235,12 +239,13 @@ func _hill(spec: Dictionary) -> void:
 	add_child(body)
 	var width := 21
 	var heights := PackedFloat32Array()
+	var clear: Vector2 = spec.get("clear", Vector2(3, 6))  # flat this close to the spine road
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	for z in width:
 		for x in width:
 			var radius := Vector2(x - 10, z - 10).length() / 10.0
-			var path_blend := smoothstep(3.0, 6.0, absf(body.position.z + z - 10))
+			var path_blend := smoothstep(clear.x, clear.y, absf(body.position.z + z - 10))
 			heights.append(spec["height"] * pow(maxf(0, 1 - radius * radius), 2) * path_blend)
 	for z in width - 1:
 		for x in width - 1:

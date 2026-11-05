@@ -77,7 +77,7 @@ for i in range(24):  # the roundabout ring, 24 short pieces (Session 61: was 10,
     a0=2*math.pi*i/24; a1=2*math.pi*(i+1)/24
     road('Institute Roundabout',(round(-132+9*math.cos(a0),2),round(-62+9*math.sin(a0),2)),(round(-132+9*math.cos(a1),2),round(-62+9*math.sin(a1),2)),6.)
 put('ROUNDABOUTS',roundabouts)
-road('Domes Path',(-118,-11),(348,-11),3.)
+# Session 62: the Domes Path is gone; the spine road's north red track links the domes now.
 # Session 52 (looks pass): the C Institute faces the spine, so its path comes up from the
 # spine road along the front and turns in at the door.
 road('Institute Access',(-186,0),(-186,-33),5.)
@@ -128,7 +128,8 @@ put('PLOTS',[{'name':'Fair Grade International School','area':rect(-425,35,120,1
  {'name':'Building site','area':rect(-135,55,110,135),'colour':colour(.8,.78,.74)}])
 put('WELCOME_SIGN',{'name':'Welcome to Wahat Al Shams','arabic':'أهلاً بكم في واحة الشمس','position':v3(-421,0,-180),'facing':-90.0})
 put('SPINE_DOMES',[v3(x,0,-20) for x in [-110,-20,70,160,250,340]])
-put('HILLS',[{'position':v3(x,0,z),'height':h} for x,z,h in [(20,8,.8),(65,8,1.1),(160,9,.6),(315,8,1.2)]])
+# Session 62: the hills moved 4 m south and stay flat near the road, so they don't cover the red track.
+put('HILLS',[{'position':v3(x,0,z),'height':h,'clear':v2(8.5,10.5)} for x,z,h in [(20,12,.8),(65,12,1.1),(160,12,.6),(315,12,1.2)]])
 put('LAP_POOL',rect(140,13,42,9))
 put('DOME_RADIUS',7.0);put('FARM_BEDS',[rect(-115,13,35,8),rect(-40,13,35,8),rect(200,13,35,8)])
 put('BEEHIVES',rect(360,13,16,8));put('DONKEY_PEN',{'area':rect(245,12,44,10),'donkeys':2})
@@ -141,7 +142,7 @@ put('GYM',{'position':v3(115,0,22),'size':v3(36,8,22),'facing':180.,'name':'Waha
 put('COMMUNITY_POOL',rect(190,-30,50,24));put('JUMPING_ARENA',rect(-282,65,115,88))
 put('STABLES',{'name':'Wahat Stables','arabic':'إسطبلات الواحة','block':{'position':v3(-224,0,174),'size':v3(100,5,14)},'paddock':rect(-280,157,110,9),'horses':4})
 put('BUILDING_SITE',{'area':rect(-135,55,110,135),'crane':v3(-80,0,120),'sign':{'name':'Phase 2 coming soon','arabic':'المرحلة الثانية قريباً','position':v3(-140,0,110),'facing':-90.}})
-put('BUILDING_SITES',[rect(-135,55,110,135),rect(217,56,16,132),rect(-275,-86,105,18),rect(-301,50,15,125),rect(-413,-89,100,84)])
+put('BUILDING_SITES',[rect(-135,55,110,135),rect(217,56,16,132),rect(-275,-86,105,18),rect(-301,50,15,125),rect(-413,-89,100,76)])  # Session 62: the last one ends 13 m north of the spine road
 put('CLUSTER_NAMES',{f'C{i}':'المجموعة '+a for i,a in enumerate('١٢٣٤٥',1)})
 put('TUTORIAL_ORDER',{'restaurant':'pizza','villa':101})
 put('RESTAURANT_SIZE',v3(18,8,16))
@@ -165,7 +166,14 @@ homes += [
 ]
 put('VILLAS',homes)
 put('REGULARS',[{'id':'mariam','name':'Auntie Mariam','villa':207,'shop':'boba','food':'bubble tea','who':'resident','look':1},{'id':'rashid','name':'Mr Rashid','villa':503,'shop':'shawarma','food':'shawarma','who':'resident','look':0},{'id':'dana','name':'Ms Dana','villa':901,'shop':'bakery','food':'cake','who':'teacher','look':-1},{'id':'hamdan','name':'Hamdan','villa':902,'shop':'farm','food':'farm juice','who':'groom','look':-1}])
-palms=[v3(x,0,z) for z in [-7,7] for x in range(-130,411,45)] +[v3(-210,-.45,-155),v3(-190,-.45,-155),v3(-210,-.45,-135),v3(-190,-.45,-135)]
+# Session 62: the spine road's palms stand in the planters (z +-4), all along the road.
+palms=[v3(x,0,z) for z in [-4,4] for x in range(-310,381,45)] +[v3(-210,-.45,-155),v3(-190,-.45,-155),v3(-210,-.45,-135),v3(-190,-.45,-135)]
+# Session 62: the spine road's cross-section, both sides: asphalt, a planter (kerb, grass,
+# shrubs) and a raised red walking track. Gaps: where a road joins (side -1 north, 1 south,
+# 0 both) the planter and track stop; at a path the planter becomes a marked crossing.
+put('SPINE_TRACKS',{'from_x':-334.0,'to_x':390.0,'road_half':3.0,'planter':2.0,'track':2.5,
+ 'road_gaps':[[-290.0,-1,6.0]],
+ 'path_gaps':[[-186.0,-1,3.0]]+[[x,0,1.6] for x in [-240.0,-145.0,-60.0,20.0,110.0,200.0,290.0,345.0]]})
 put('PALM_TREES',palms);put('PARKED_CAR_SIZE',v3(1.9,1.5,4.3))
 put('PARKED_CARS',[{'position':v3(x+3,0,z+8+k*9),'facing':90.,'bay':True} for x,z,w,d in parking[:6] for k in range(8)]
  +[{'position':v3(x,0,30),'facing':0.,'bay':True} for x in [-412,-403,-394,-385,-376,-354,-345,-336,-327,-318]])
@@ -177,7 +185,7 @@ put('SPEED_BUMPS',[{'position':v3(x,0,z),'facing':90.} for z in [-205,205] for x
 put('CATS',cats);put('SCOOTER_KIDS',kids)
 put('BUGGIES',[{'points':[v3(cx-60,0,cz),v3(cx+(30 if n==3 else 60),0,cz),v3(cx+(30 if n==3 else 60),0,-189 if cz<0 else 189)],'colour':colour(.85,.85,.76),'level':(n-1)%3} for n,cx,cz in clusters]+[{'points':[v3(-140,0,-1),v3(410,0,-1)],'colour':colour(.3,.5,.5),'level':1}])
 put('HORSE_RIDERS',[{'points':[v3(-450,0,-230),v3(450,0,-230),v3(450,0,230),v3(-450,0,230)],'loop':True,'colour':colour(.45,.28,.15),'level':0,'collection_id':'horse_sultan','collection_name':'Sultan'},{'points':[v3(450,0,230),v3(-450,0,230),v3(-450,0,-230),v3(450,0,-230)],'loop':True,'colour':colour(.85,.82,.78),'level':1,'collection_id':'horse_noor','collection_name':'Noor'}])
-put('PEOPLE_ROUTES',[{'points':[v3(-438,0,-218),v3(438,0,-218),v3(438,0,218),v3(-438,0,218)],'loop':True,'jog':True,'look':2,'level':0}]+[{'points':[v3(-130,0,z),v3(405,0,z)],'jog':False,'look':i,'level':i%3} for i,z in enumerate([-1.5,1.5,-2.5])])
+put('PEOPLE_ROUTES',[{'points':[v3(-438,0,-218),v3(438,0,-218),v3(438,0,218),v3(-438,0,218)],'loop':True,'jog':True,'look':2,'level':0}]+[{'points':[v3(-326,0,z),v3(386,0,z)],'jog':jog,'look':i,'level':i%3} for i,(z,jog) in enumerate([(-6.6,True),(-5.9,False),(6.6,True),(5.9,False)])])
 put('GARDENERS',gardeners);put('PLAY_KIDS',plays)
 put('DUCKS',[{'from_x':x,'to_x':x+65,'side':.4 if i%2 else -.4,'level':i%3} for i,x in enumerate([-100,30,160,290])])
 put('BIRD_FLOCKS',[{'centre':v3(x,30,z),'radius':r,'birds':4,'level':i} for i,(x,z,r) in enumerate([(-180,-100,70),(180,80,90),(0,0,160)])])

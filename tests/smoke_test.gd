@@ -2512,4 +2512,45 @@ func _check_world_polish() -> void:
 		skid._physics_process(GameConfig.SKID_MARK_HOLD + GameConfig.SKID_MARK_FADE + 0.5)
 		_check("Session 61: a hard brake leaves a faint, short skid mark that fades away",
 				made and fresh <= 0.4 and skid.marks.is_empty(), "%d marks" % skid.marks.size())
+	# Session 62: the spine road's planters and red walking tracks.
+	var tracks: SpineTracks = _main.get_node_or_null("WahatBuilder/SpineTracks")
+	var spec: Dictionary = data["SPINE_TRACKS"]
+	_check("Session 62: red tracks and planters on both sides of the spine road",
+			tracks != null and tracks.track_length > 1300.0 and tracks.plants > 40, "%s" % [tracks.track_length if tracks else 0.0])
+	var space := _bike.get_world_3d().direct_space_state
+	var ray := PhysicsRayQueryParameters3D.create(Vector3(60, 0.3, 0), Vector3(60, 0.3, 7))
+	ray.exclude = [_bike.get_rid()]
+	var hit := space.intersect_ray(ray)
+	_check("Session 62: a kerb stops the bike riding onto the red track", not hit.is_empty() and String((hit["collider"] as Node).name).begins_with("SpineKerb"), "%s" % [hit.get("collider")])
+	var open_gaps := 0
+	for gap: Array in spec["path_gaps"] + spec["road_gaps"]:
+		var side := -1.0 if int(gap[1]) < 0 else 1.0
+		ray.from = Vector3(gap[0], 0.3, 0)
+		ray.to = Vector3(gap[0], 0.3, 9.0 * side)
+		var through := space.intersect_ray(ray)
+		if through.is_empty() or not String((through["collider"] as Node).name).begins_with("SpineKerb"):
+			open_gaps += 1
+	_check("Session 62: crossing gaps at every junction and path", open_gaps == spec["path_gaps"].size() + spec["road_gaps"].size(), "%d open" % open_gaps)
+	var on_track := 0
+	for route: Dictionary in data["PEOPLE_ROUTES"]:
+		var z: float = route["points"][0].z
+		if absf(absf(z) - 6.25) <= 1.25 and absf(route["points"][-1].z - z) < 0.01:
+			on_track += 1
+	_check("Session 62: joggers and walkers use the red tracks", on_track >= 4, "%d routes" % on_track)
+	var palms_clear := true
+	for palm: Vector3 in data["PALM_TREES"]:
+		if palm.x > spec["from_x"] and palm.x < spec["to_x"] and absf(palm.z) > 5.0 and absf(palm.z) < 7.5:
+			palms_clear = false
+	_check("Session 62: no palm stands on a red track", palms_clear, "")
+	var access_ok := false
+	for road: Dictionary in data["ROADS"]:
+		if road["name"] == "Institute Access" and _on_any_road(data, road["from"], -2.0):
+			access_ok = spec["path_gaps"].any(func(g): return absf(g[0] - road["from"].x) < 0.5)
+	_check("Session 62: the C Institute path joins the spine road through a crossing", access_ok, "")
+	var seats := _main.get_node("DistrictDetail/InstituteSeating")
+	var tiers: Array = seats.get_children().filter(func(n): return n is MeshInstance3D and n.mesh is BoxMesh)
+	var sitter: Node3D = seats.find_child("InstituteSitter", false, false)
+	_check("Session 62: the C Institute seats face outwards, away from the glass",
+			tiers.size() >= 2 and (tiers[0].mesh as BoxMesh).size.y > (tiers[1].mesh as BoxMesh).size.y
+			and sitter != null and is_equal_approx(sitter.rotation.y, PI), "")
 

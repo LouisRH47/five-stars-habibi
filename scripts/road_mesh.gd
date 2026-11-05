@@ -33,6 +33,8 @@ const ASPHALT_MIN_WIDTH := 6.0
 ## The roundabout goes anticlockwise, as roundabouts do when you drive on the right.
 const ONE_WAY := {"Institute Roundabout": -1, "Bus Loop": 1}
 const UNDER := ["Highway"]
+## Roads whose kerbs another builder makes (Session 62: SpineTracks builds the spine road's).
+const NO_KERB := ["Spine Road"]
 
 const YELLOW := Color(0.96, 0.78, 0.18)
 const WHITE := Color(0.95, 0.95, 0.92)
@@ -381,7 +383,8 @@ func _build_chain(index: int, info: Dictionary) -> void:
 		# Just under both roads it joins, so it never shares their height.
 		fillet["top"] = minf(top, chains[fillet["host"]]["top"]) - LEVEL_STEP * 0.5
 		_fillet(fillet, top)
-	_kerbs(pts, sides, closed, half, top, info["gaps"])
+	if not chain["name"] in NO_KERB:
+		_kerbs(pts, sides, closed, half, top, info["gaps"])
 	var no_paint: Array = []
 	for g in info["gaps"]:
 		if g[2] == Vector2.ZERO:

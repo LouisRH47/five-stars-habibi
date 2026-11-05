@@ -1,5 +1,36 @@
 # Progress
 
+## Session 62: The spine road and red walking tracks — 5 November 2026
+
+- **Like Louis's photo.** On both sides of the spine road: a 2 m planter (low kerbs, grass,
+  clipped hedges, pink bougainvillea and purple flower beds under the date palms), then a
+  2.5 m matte red-brown walking track, slightly raised (scripts/spine_tracks.gd, layout in
+  SPINE_TRACKS in the data). The red track uses a new CC0 texture made by
+  tools/make_road_textures.py.
+- **Kerbs keep you off.** A solid kerb on the road side and on the park side stops the bike
+  and buggies getting onto the red track. Gaps: at the Institute Back Road junction (white
+  stripes on the road where it crosses the track) and at nine paths (the planter becomes a
+  paved crossing with white stripes), including the C Institute path.
+- **Joggers and walkers** now use the red tracks: two joggers and two walkers, one of each per
+  side (they used to walk on the road).
+- **Palms** moved from z ±7 (where the track is) into the planters at z ±4, and now line the
+  whole spine road from the west end.
+- **C Institute.** Its path joins the spine road through a marked crossing. The stepped seats
+  now step down away from the glass, so the people sitting there face outwards, to the spine.
+- The Domes Path is gone: the north red track runs past the domes instead. The spine hills
+  moved 4 m south and stay flat near the road. The building site west of the C Institute
+  ends 13 m short of the spine road, so its fence is off the track.
+- Checked: smoke test PASS (new Session 62 checks: kerb blocks a ride onto the track, every gap
+  is open, routes on the tracks, palms off the tracks, institute path and seats), road mesh,
+  district traffic, bus recovery, coplanar, navigation, detail world and static batch tests
+  PASS. Play-test bot: 6 deliveries, 4.83 stars, no crashes, never stuck.
+
+**Louis's turn:** press F5 and ride along the spine road (the long road through the park). Red
+tracks on both sides behind a planter with palms, hedges and pink and purple flowers. Try to
+ride onto the red track: the kerb stops you. Find a white-striped crossing and ride through it.
+Watch the joggers on the red tracks. Ride to the C Institute: its path meets the spine road at
+a crossing, and the people on the stepped seats face the spine.
+
 ## Session 61: Road surfaces, markings and junctions — 5 November 2026
 
 - **Smooth roads.** A new script, scripts/road_mesh.gd, joins the short road pieces from the

@@ -1379,7 +1379,7 @@ Done when:
 - [ ] No tyre marks except short fading ones after a hard brake
 - [ ] Frame time on Medium is no worse than before
 
-### Session 62: The spine road and red walking tracks
+### Session 62: The spine road and red walking tracks (built, needs testing)
 
 ```text
 Session 62. Louis's photo: a paver road with a yellow line, then a narrow planter with a
