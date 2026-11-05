@@ -549,3 +549,45 @@ const SPINE_TREES := 45
 
 # --- Fixes after the careless play-test (5 Nov) ---
 const KERB_IMPACT_HARDNESS := 0.35     # the spine kerbs count as a soft bump (rigid walls are 1.0)
+
+# --- Fix pass Session 75: ride freely, jump on foot, buggies on roads ---
+# (Session 75 numbers go here)
+
+
+# --- Fix pass Session 76: kerbs that join up and curved corners ---
+# (Session 76 numbers go here)
+
+
+# --- Fix pass Session 77: square Plaza floor and the Dune Drip buggy park ---
+# (Session 77 numbers go here)
+
+
+# --- Fix pass Session 78: bike shop and Dune Drip buildings ---
+# (Session 78 numbers go here)
+
+
+# --- Fix pass Session 79: car parks and the mosque car park ---
+# (Session 79 numbers go here)
+
+
+# --- Fix pass Session 80: C Institute front, seats and the basketball court ---
+# (Session 80 numbers go here)
+
+
+# --- Fix pass Session 81: gym, stream and pools ---
+# (Session 81 numbers go here)
+
+
+# --- Fix pass Session 82: textures ---
+# (Session 82 numbers go here)
+
+
+# --- Fix pass Session 83: people who look alive ---
+# (Session 83 numbers go here)
+
+
+# --- Fix pass Session 75 (people): jumping on foot ---
+# (numbers go here)
+
+# --- Fix pass Session 81 (people): swimmers and the lifeguard ---
+# (numbers go here)

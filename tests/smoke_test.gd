@@ -1351,6 +1351,7 @@ func _finish() -> void:
 	await _check_world_polish()  # Sessions 67 to 69
 	load("res://tests/smoke_signs.gd").new().run(self)  # Sessions 64 to 66 (bus stop, signs, Majlis Gardens)
 	_check_looks_venues()  # looks pass Sessions 56 to 58
+	await _check_fix_pass()  # fix pass Sessions 75 to 83 (blocks at the end)
 	# --- Looks pass (Sessions 54-55): walk into every restaurant room, queue, hold E, walk out ---
 	await preload("res://tests/smoke_rooms.gd").new().run(self)
 	_check_saving()
@@ -2923,3 +2924,112 @@ func _check_looks_venues() -> void:
 			and green.get_meta("counts", {}).get("grass", 0) >= 15000 and green.get_meta("counts", {}).get("trees", 0) >= 30, "")
 	_check("Session 58: the lights come on at sunset", SunsetLights.amount_at(GameConfig.SHIFT_START_HOUR) == 0.0
 			and SunsetLights.amount_at(GameConfig.SHIFT_END_HOUR) > 0.9, "")
+
+
+## Fix pass (Sessions 75 to 83). Each session fills in its own block below.
+func _check_fix_pass() -> void:
+	await _check_session75()
+	await _check_session76()
+	await _check_session77()
+	await _check_session78()
+	await _check_session79()
+	await _check_session80()
+	await _check_session81()
+	await _check_session82()
+	await _check_session83()
+	await _check_session75_people()  # the jump on foot
+	await _check_session80_people()  # seats
+	await _check_session81_people()  # swimmers and the lifeguard
+
+
+## Session 75: ride freely, jump on foot, buggies on roads.
+## (Session 75 checks go here.)
+func _check_session75() -> void:
+	await process_frame
+
+# --- end of Session 75 checks ---
+
+
+## Session 76: kerbs that join up and curved corners.
+## (Session 76 checks go here.)
+func _check_session76() -> void:
+	await process_frame
+
+# --- end of Session 76 checks ---
+
+
+## Session 77: square Plaza floor and the Dune Drip buggy park.
+## (Session 77 checks go here.)
+func _check_session77() -> void:
+	await process_frame
+
+# --- end of Session 77 checks ---
+
+
+## Session 78: bike shop and Dune Drip buildings.
+## (Session 78 checks go here.)
+func _check_session78() -> void:
+	await process_frame
+
+# --- end of Session 78 checks ---
+
+
+## Session 79: car parks and the mosque car park.
+## (Session 79 checks go here.)
+func _check_session79() -> void:
+	await process_frame
+
+# --- end of Session 79 checks ---
+
+
+## Session 80: C Institute front, seats and the basketball court.
+## (Session 80 checks go here.)
+func _check_session80() -> void:
+	await process_frame
+
+# --- end of Session 80 checks ---
+
+
+## Session 81: gym, stream and pools.
+## (Session 81 checks go here.)
+func _check_session81() -> void:
+	await process_frame
+
+# --- end of Session 81 checks ---
+
+
+## Session 82: textures.
+## (Session 82 checks go here.)
+func _check_session82() -> void:
+	await process_frame
+
+# --- end of Session 82 checks ---
+
+
+## Session 83: people who look alive.
+## (Session 83 checks go here.)
+func _check_session83() -> void:
+	await process_frame
+
+# --- end of Session 83 checks ---
+
+
+## Session 75 (people): jumping on foot.
+func _check_session75_people() -> void:
+	await process_frame
+
+# --- end of Session 75 (people) checks ---
+
+
+## Session 80 (people): seated people's feet show above the seat.
+func _check_session80_people() -> void:
+	await process_frame
+
+# --- end of Session 80 (people) checks ---
+
+
+## Session 81 (people): swimmers swim and the lifeguard watches.
+func _check_session81_people() -> void:
+	await process_frame
+
+# --- end of Session 81 (people) checks ---
