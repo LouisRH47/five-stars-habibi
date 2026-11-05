@@ -1,25 +1,21 @@
 class_name SpineGreenery
 extends Node3D
 ## Looks pass Session 58: the spine park looks alive.
-##   grass blades: clumps of thin tapered blades (MultiMesh, in 40 m chunks); Medium and
-##     High draw all of them, Low only a quarter (GameConfig SPINE_GRASS_*)
+##   (Session 82: the rectangle grass blade clumps are gone; the lawn is a grass photo now)
 ##   flower patches: little groups of one colour on short stems
 ##   rocks: grey and sandy stones, some in small groups
 ##   trees: round shade trees with solid trunks
 ## Everything keeps clear of the spine road, its planters and red tracks (SPINE_TRACKS),
 ## the domes, farm beds, pools, court, playground, pen, hives, stream, gym and stalls.
-## SpineBuilder makes this. Settings.apply() calls apply_graphics() (group "graphics").
+## SpineBuilder makes this.
 
 const CHUNK := 40.0
-const BLADE_BASE := Color(0.18, 0.38, 0.12)
-const BLADE_TIP := Color(0.52, 0.72, 0.3)
 const FLOWERS := [Color(1.0, 0.85, 0.2), Color(0.95, 0.5, 0.7), Color(0.97, 0.97, 0.95),
 		Color(0.65, 0.45, 0.9), Color(1.0, 0.55, 0.2)]
 const ROCKS := [Color(0.62, 0.6, 0.57), Color(0.78, 0.7, 0.56), Color(0.52, 0.5, 0.48)]
 const LEAVES := [Color(0.28, 0.52, 0.24), Color(0.36, 0.58, 0.26)]
 const TRUNK := Color(0.45, 0.33, 0.22)
 
-var grass_count := 0
 var flower_count := 0
 var rock_count := 0
 var tree_count := 0
@@ -27,7 +23,6 @@ var tree_spots: Array[Vector2] = []
 var _map: Dictionary
 var _clear: ClearSpots
 var _rng := RandomNumberGenerator.new()
-var _grass_views: Array[MultiMeshInstance3D] = []
 var _blocked: Array[Rect2] = []
 var _round: Array = []  # [Vector2, radius]
 
@@ -41,19 +36,13 @@ static func make(map: Dictionary) -> SpineGreenery:
 	return green
 
 
-func _ready() -> void:
-	add_to_group("graphics")
-	apply_graphics()
-
-
 func _build() -> void:
 	_rng.seed = 58058
 	_areas()
-	_grass()
 	_flowers()
 	_rocks()
 	_trees()
-	set_meta("counts", {"grass": grass_count, "flowers": flower_count, "rocks": rock_count, "trees": tree_count})
+	set_meta("counts", {"flowers": flower_count, "rocks": rock_count, "trees": tree_count})
 
 
 ## Where nothing may grow (besides the spine road, planters and tracks).
@@ -120,65 +109,6 @@ func ground(spot: Vector2) -> float:
 
 func _random_spot(spine: Rect2) -> Vector2:
 	return Vector2(_rng.randf_range(spine.position.x, spine.end.x), _rng.randf_range(spine.position.y, spine.end.y))
-
-
-# --- Grass blades ---
-
-func _grass() -> void:
-	var spine: Rect2 = _map.get("SPINE", Rect2(-145, -35, 560, 70))
-	var spots: Array[Transform3D] = []
-	var tries: int = GameConfig.SPINE_GRASS_CLUMPS * 2
-	for i in tries:
-		if spots.size() >= GameConfig.SPINE_GRASS_CLUMPS:
-			break
-		var spot := _random_spot(spine)
-		if not can_grow(spot):
-			continue
-		var size := _rng.randf_range(0.75, 1.3)
-		var basis := Basis(Vector3.UP, _rng.randf() * TAU).scaled(Vector3(size, size * _rng.randf_range(0.8, 1.25), size))
-		spots.append(Transform3D(basis, Vector3(spot.x, ground(spot) - 0.01, spot.y)))
-	grass_count = spots.size()
-	_grass_views = _chunks("GrassBlades", _blade_clump(), spots, GameConfig.SPINE_GRASS_DRAW_DISTANCE)
-
-
-## One clump of 5 thin blades leaning out, dark at the bottom and light at the tip.
-func _blade_clump() -> Mesh:
-	var tool := SurfaceTool.new()
-	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 5
-	for i in 5:
-		var turn := i * TAU / 5.0 + rng.randf() * 0.6
-		var out := Vector3(cos(turn), 0, sin(turn))
-		var across := Vector3(-out.z, 0, out.x) * 0.025
-		var root := out * 0.04
-		var height := rng.randf_range(0.28, 0.42)
-		var tip := root + out * rng.randf_range(0.06, 0.14) + Vector3(0, height, 0)
-		var mid := root.lerp(tip, 0.5) + out * 0.02
-		var normal := Vector3(0, 0.3, 0).lerp(out, 0.7).normalized()
-		var corners := [[root - across, BLADE_BASE], [root + across, BLADE_BASE], [mid + across * 0.6, BLADE_BASE.lerp(BLADE_TIP, 0.5)],
-				[mid - across * 0.6, BLADE_BASE.lerp(BLADE_TIP, 0.5)], [tip, BLADE_TIP]]
-		for tri in [[0, 1, 2], [0, 2, 3], [3, 2, 4]]:
-			for k in tri:
-				tool.set_color(corners[k][1])
-				tool.set_normal(normal)
-				tool.add_vertex(corners[k][0])
-	var mesh := tool.commit()
-	var made := StandardMaterial3D.new()
-	made.vertex_color_use_as_albedo = true
-	made.cull_mode = BaseMaterial3D.CULL_DISABLED
-	made.roughness = 1.0
-	mesh.surface_set_material(0, made)
-	return mesh
-
-
-## Settings.apply() calls this: Low draws only a part of the grass blades.
-func apply_graphics() -> void:
-	var share: float = GameConfig.SPINE_GRASS_LOW_SHARE if Settings.graphics == 0 else 1.0
-	for view in _grass_views:
-		var many := view.multimesh
-		many.visible_instance_count = int(ceil(many.instance_count * share))
-		view.visibility_range_end = GameConfig.SPINE_GRASS_DRAW_DISTANCE * (0.7 if Settings.graphics == 0 else 1.0)
 
 
 # --- Flowers, rocks and trees ---
@@ -322,8 +252,14 @@ func _chunks(id: String, mesh: Mesh, places: Array, reach: float, colours: Array
 		var view := MultiMeshInstance3D.new()
 		view.position = origin
 		view.multimesh = many
+		# Headless runs (the tests) can't read copies back from a MultiMesh, so keep the list.
+		var kept: Array = []
+		for k in list.size():
+			var t: Transform3D = places[list[k]]
+			kept.append(Transform3D(t.basis, t.origin - origin))
+		view.set_meta("instance_transforms", kept)
 		view.visibility_range_end = reach
-		if id == "GrassBlades" or id.begins_with("Flower"):
+		if id.begins_with("Flower"):
 			view.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		group.add_child(view)
 		views.append(view)

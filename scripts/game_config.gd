@@ -540,9 +540,6 @@ const LIGHTS_LAMP_ENERGY := 3.0       # how bright the street lamp heads glow
 const STREET_LAMP_HEIGHT := 5.0       # metres
 const STRING_LIGHT_SAG := 0.45        # metres the string lights hang down between poles
 const PLAZA_STROLLERS := 6            # extra people strolling round the Plaza
-const SPINE_GRASS_CLUMPS := 22000     # grass blade clumps in the spine (Medium and High)
-const SPINE_GRASS_LOW_SHARE := 0.25   # Low graphics draws this share of them
-const SPINE_GRASS_DRAW_DISTANCE := 90.0  # metres; further off the grass blades aren't drawn
 const SPINE_FLOWER_PATCHES := 140
 const SPINE_ROCKS := 160
 const SPINE_TREES := 45
@@ -628,7 +625,8 @@ const POND_STONE_GAP := 0.55              # metres between the stones round the 
 
 
 # --- Fix pass Session 82: textures ---
-# (Session 82 numbers go here)
+# (The ground pictures' sizes and tints are in one table: SURFACES in scripts/surface_textures.gd.)
+const BIN_GREY := Color(0.5, 0.52, 0.53)          # street, bus stop and cluster bins (were green)
 
 
 # --- Fix pass Session 83: people who look alive ---

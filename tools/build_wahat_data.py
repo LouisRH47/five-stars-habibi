@@ -147,7 +147,11 @@ for n,cx,cz in clusters:
     z=cz+(68 if cz<0 else -68)
     road(cluster+' Alley',(cx-60,z),(cx+60,z),4.)
     road(cluster+' Cross Row Alley',(cx-60,cz),(cx+60,cz),3.)
-    paving.append(rect(cx-65,cz+(65 if cz<0 else -75),130,10))
+    # Session 82: the paving in front of each cluster (where its playground is) reaches the front
+    # lane's kerb and the spine loop's kerb, so there's no grass gap left between them.
+    # C3's playground is past its last lane, so its paving runs up to the loop's curve.
+    if cz<0: paving.append(rect(cx-65,cz+65,130,22 if cluster=='C3' else 18))
+    else: paving.append(rect(cx-65,cz-82,130,17))  # down to the 1 m island by the spine loop, like the north side
     pz=cz+(70 if cz<0 else -70)
     plazas.append({'cluster':cluster,'tower':v3(cx-48,0,pz),'playground':v3(cx+45,0,pz),'benches':[{'position':v3(cx+20,0,pz),'facing':0.0}]})
     cats.append({'area':rect(cx+27,pz-2,5,4),'colour':colour(.8,.55,.3),'collection_id':f'cat_{n}','collection_name':['Mango','Mishmish','Shadow','Pearl','Biscuit'][n-1]})

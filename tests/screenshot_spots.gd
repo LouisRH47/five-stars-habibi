@@ -93,6 +93,19 @@ const SPOTS := {
 	"p_lifeguard": [Vector3(236.5, 2.4, -18.0), Vector3(240.9, 1.9, -22.0)],
 	"p_lap_pool_lifeguard": [Vector3(178.0, 2.6, 21.5), Vector3(182.9, 1.6, 17.5)],
 	"p_school_pools": [Vector3(-328.5, 5.0, 117.0), Vector3(-328.5, 0.0, 103.0)],
+	# lane T
+	"t_cluster_sign_close": [Vector3(53, 2.2, -48.5), Vector3(53, 2.15, -52.6)],
+	"t_cluster_sign_far": [Vector3(50, 1.8, -32), Vector3(53, 2.15, -52.6)],
+	"t_police_sign_close": [Vector3(42.4, 2.0, -51.5), Vector3(42.4, 2.0, -54.4)],
+	"t_shop_sign": [Vector3(-174, 2.4, -178), Vector3(-174, 4.6, -195)],
+	"t_shop_sign_far": [Vector3(-180, 2.0, -150), Vector3(-174, 4.6, -195)],
+	"t_playground_close_top": [Vector3(93, 16, -46), Vector3(93, 0, -56)],
+	"t_playground_down": [Vector3(93, 30, -49), Vector3(93, 0, -50)],
+	"t_stables_sand": [Vector3(-196, 2.4, 98), Vector3(-226, 0.0, 118)],
+	"t_red_track": [Vector3(-30, 1.8, -6.3), Vector3(10, 0.0, -6.3)],
+	"t_footpath_pavers": [Vector3(44, 1.8, -75), Vector3(60, 0.0, -95)],
+	"t_bin": [Vector3(55, 1.6, -42), Vector3(59, 0.5, -48)],
+	"t_lawn_top": [Vector3(20, 30, 0), Vector3(40, 0, 20)],
 }
 
 var _main: Node

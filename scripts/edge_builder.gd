@@ -73,7 +73,7 @@ func _tracks() -> void:
 		_ring_strip("HorseTrack", horse, HORSE_TOP, TerrainMaterials.make("sand"))
 	if not bike.is_empty():
 		var mat := StandardMaterial3D.new()
-		mat.albedo_texture = load("res://assets/textures/bike_track_1k.jpg")
+		mat.albedo_texture = SurfaceTextures.picture("blue_track")  # Session 82: running_track photo
 		mat.roughness = 0.95
 		mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 		_ring_strip("BikeTrack", bike, BIKE_TOP, mat)

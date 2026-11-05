@@ -10,7 +10,7 @@ extends Node3D
 ## a doorstep, a home or another thing. All poles are solid.
 
 const POLE := Color(0.25, 0.27, 0.29)
-const BIN := Color(0.2, 0.42, 0.3)
+const BIN := GameConfig.BIN_GREY  # Session 82: grey, not green
 const SIGN_BLUE := Color(0.1, 0.25, 0.55)
 const RACK := Color(0.7, 0.72, 0.74)
 const LAMP_SPACING := 30.0
@@ -127,7 +127,7 @@ func _lamp(spot: Vector2, toward: Vector2, with_bin: bool) -> void:
 				break
 
 
-## A green street bin with a dark lid.
+## A grey street bin with a dark lid.
 func _bin(spot: Vector2) -> void:
 	var at := Vector3(spot.x, 0, spot.y)
 	var bin := LowPoly.cylinder(_body, 0.26, 0.22, 0.9, BIN, at + Vector3(0, 0.45, 0))

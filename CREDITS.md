@@ -83,6 +83,18 @@ The PERFECT and tip jingles (assets/audio/perfect.wav and tip.wav) are original 
 **Fix pass Plaza floor** (Session 77): `assets/textures/square_concrete_pavers_diff_1k.jpg`,
 Poly Haven "Square Concrete Pavers" (CC0 1.0), https://polyhaven.com/a/square_concrete_pavers
 (copied from tools/texture_sources/; the game tints it a pale sandy stone).
+**Fix pass ground photos (Session 82)**: Poly Haven, CC0 1.0 (public domain),
+https://polyhaven.com/license. The original photos are kept in `tools/texture_sources/`;
+`tools/make_photo_textures.gd` makes the game's versions from them.
+- Leafy Grass: https://polyhaven.com/a/leafy_grass
+  (`assets/textures/leafy_grass_diff_1k.jpg`, unchanged; mixed into the lawns with Aerial Grass Rock)
+- Brick Pavement 02: https://polyhaven.com/a/brick_pavement_02
+  (`assets/textures/paving_sandy_1k.jpg`, recoloured warm sandy grey: pavers and footpaths)
+- Running Track: https://polyhaven.com/a/running_track
+  (`assets/textures/blue_track_photo_1k.jpg`, turned and made more blue: the blue track;
+  `assets/textures/red_walking_track_1k.jpg`, one lane without its line, recoloured red: the
+  red walking tracks)
+- The lawns also use Aerial Grass Rock and the sand uses Sand 01 (both credited above).
 
 ## Interior kits (looks pass, Session 53)
 

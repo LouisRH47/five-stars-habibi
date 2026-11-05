@@ -1,23 +1,11 @@
 class_name TerrainMaterials
 extends RefCounted
-## Small shared CC0 textures in world metres, so road slabs never stretch a single pixel.
-static var _cache: Dictionary = {}
+## The ground boxes' materials. Session 82: the pictures, sizes and tints all come from the
+## one table in SurfaceTextures (grass, sand, road, paving).
 
-static func make(kind: String) -> StandardMaterial3D:
-	if _cache.has(kind):
-		return _cache[kind]
-	var files := {"grass":"aerial_grass_rock", "sand":"sand_01", "road":"asphalt_02", "paving":"pavement_02"}
-	var mat := StandardMaterial3D.new()
-	mat.albedo_texture = load("res://assets/textures/%s_diff_1k.jpg" % files[kind])
-	mat.roughness = 0.92
-	if kind == "grass":
-		mat.albedo_color = Color(0.67, 0.92, 0.55)
-	mat.uv1_triplanar = true
-	mat.uv1_world_triplanar = true
-	mat.uv1_scale = Vector3.ONE * (0.2 if kind == "grass" else 0.5)
-	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
-	_cache[kind] = mat
-	return mat
+
+static func make(kind: String) -> Material:
+	return SurfaceTextures.make(kind)
 
 
 static func dress_ground(root: Node3D) -> void:

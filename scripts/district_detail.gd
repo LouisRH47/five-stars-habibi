@@ -43,13 +43,6 @@ func _finish_static_world() -> void:
 func _planting() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 35042
-	var grass := QuadMesh.new()
-	grass.size = Vector2(0.22, 0.45)
-	var green := StandardMaterial3D.new()
-	green.albedo_color = Color(0.27, 0.55, 0.18)
-	green.cull_mode = BaseMaterial3D.CULL_DISABLED
-	green.roughness = 1.0
-	grass.material = green
 	var spots: Array[Vector3] = []
 	for i in 1800:
 		var spot := Vector3(rng.randf_range(-140, 410), 0.2, rng.randf_range(-34, 34))
@@ -71,17 +64,8 @@ func _planting() -> void:
 			var flat: Vector2 = hill.get("clear", Vector2(3, 6))
 			spot.y += hill["height"] * pow(maxf(0, 1-r*r), 2) * smoothstep(flat.x, flat.y, absf(spot.z))
 		spots.append(spot)
-	var many := MultiMesh.new()
-	many.transform_format = MultiMesh.TRANSFORM_3D
-	many.mesh = grass
-	many.instance_count = spots.size()
-	for i in spots.size():
-		many.set_instance_transform(i, Transform3D(Basis(Vector3.UP, rng.randf() * TAU), spots[i]))
-	var view := MultiMeshInstance3D.new()
-	view.name = "SpineGrassTufts"
-	view.multimesh = many
-	view.visibility_range_end = 100
-	add_child(view)
+	# Session 82: no rectangle grass tufts any more (the lawn is a grass photo); the
+	# spots are only used for the little flowers below.
 	var flowers := MultiMesh.new()
 	flowers.transform_format = MultiMesh.TRANSFORM_3D
 	flowers.use_colors = true
@@ -381,7 +365,7 @@ func _street_details() -> void:
 		bins.position = spot
 		props.add_child(bins)
 		for i in 3:
-			LowPoly.box(bins, Vector3(0.65, 1.1, 0.65), [TEAL, Color.DARK_GREEN, Color(0.2, 0.35, 0.65)][i], Vector3(-1 + i, 0.55, 0))
+			LowPoly.box(bins, Vector3(0.65, 1.1, 0.65), GameConfig.BIN_GREY, Vector3(-1 + i, 0.55, 0))
 		LowPoly.solid_box(bins, Vector3(2.8, 1.1, 0.7), Vector3(0, 0.55, 0))
 	for area: Rect2 in _map["PARKING_AREAS"]:
 		LowPoly.box(props, Vector3(0.5, 1.4, 0.4), TEAL, Vector3(area.position.x + 1, 0.7, area.position.y + 2))

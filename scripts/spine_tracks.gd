@@ -53,11 +53,11 @@ static func build(parent: Node3D, map: Dictionary, kerb_bumps: KerbBumps = null)
 
 static func track_material() -> StandardMaterial3D:
 	var mat := StandardMaterial3D.new()
-	mat.albedo_texture = load("res://assets/textures/red_track_1k.jpg")
+	mat.albedo_texture = SurfaceTextures.picture("walking_track")  # Session 82: red running_track photo
 	mat.roughness = 0.97  # matte
 	mat.uv1_triplanar = true
 	mat.uv1_world_triplanar = true
-	mat.uv1_scale = Vector3.ONE * 0.3
+	mat.uv1_scale = Vector3.ONE / SurfaceTextures.metres("walking_track")
 	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 	return mat
 

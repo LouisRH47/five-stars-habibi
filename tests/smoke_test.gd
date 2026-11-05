@@ -2920,8 +2920,8 @@ func _check_looks_venues() -> void:
 			and life.get_meta("counts", {}).get("bulbs", 0) > 100, "")
 	_check("Session 58: street lamps, bins, street signs and bike racks", streets != null
 			and streets.get_meta("counts", {}).get("lamps", 0) >= 40 and streets.get_meta("counts", {}).get("racks", 0) >= 5, "")
-	_check("Session 58: grass blades, flowers, rocks and trees in the spine", green != null
-			and green.get_meta("counts", {}).get("grass", 0) >= 15000 and green.get_meta("counts", {}).get("trees", 0) >= 30, "")
+	_check("Session 58: flowers, rocks and trees in the spine (Session 82: no grass clumps)", green != null
+			and green.get_meta("counts", {}).get("flowers", 0) >= 500 and green.get_meta("counts", {}).get("trees", 0) >= 30, "")
 	_check("Session 58: the lights come on at sunset", SunsetLights.amount_at(GameConfig.SHIFT_START_HOUR) == 0.0
 			and SunsetLights.amount_at(GameConfig.SHIFT_END_HOUR) > 0.9, "")
 
@@ -3492,9 +3492,82 @@ func _hill_height(data: Dictionary, spot: Vector2) -> float:
 
 
 ## Session 82: textures.
-## (Session 82 checks go here.)
 func _check_session82() -> void:
 	await process_frame
+	var places: Node = _main.get_node_or_null("PlaceBuilder")
+	if places == null or not places.data.get_script_constant_map().has("PAVED_AREAS"):
+		return
+	var map: Dictionary = places.data.get_script_constant_map()
+	# 1) Every surface's photo is there, loads, and has mipmaps (no shimmer far away).
+	var bad := []
+	for surface: String in SurfaceTextures.SURFACES:
+		var file: String = "res://assets/textures/" + SurfaceTextures.SURFACES[surface]["file"]
+		var settings := FileAccess.get_file_as_string(file + ".import")
+		if SurfaceTextures.picture(surface) == null or not settings.contains("mipmaps/generate=true"):
+			bad.append(surface)
+	_check("Session 82: every ground photo loads, with mipmaps", bad.is_empty(), str(bad))
+	var lawn := SurfaceTextures.make("grass") as ShaderMaterial
+	var ground := _s82_big_ground()
+	_check("Session 82: the lawn mixes aerial_grass_rock with leafy_grass", lawn != null
+			and lawn.get_shader_parameter("main_photo") == SurfaceTextures.picture("grass")
+			and lawn.get_shader_parameter("patch_photo") == SurfaceTextures.picture("leafy_grass")
+			and ground != null and ground.material_override == lawn, "")
+	_check("Session 82: sand is sand_01, pavers are the sandy brick photo, tracks are running_track",
+			SurfaceTextures.SURFACES["sand"]["file"] == "sand_01_diff_1k.jpg" and SurfaceTextures.SURFACES["horse_sand"]["file"] == "sand_01_diff_1k.jpg"
+			and SurfaceTextures.SURFACES["paving"]["file"] == "paving_sandy_1k.jpg"
+			and SpineTracks.track_material().albedo_texture == SurfaceTextures.picture("walking_track")
+			and _main.find_child("BikeTrack", true, false) != null, "")
+	# 2) No rectangle grass clumps anywhere.
+	var clumps := _main.find_children("GrassBlades", "", true, false).size() + _main.find_children("SpineGrassTufts", "", true, false).size()
+	_check("Session 82: no grass blade clumps", clumps == 0, "%d" % clumps)
+	# 3) Sign text: a sharp font (MSDF + mipmaps), drawn solid, a little in front of its board.
+	var base := (SignText.font() as FontVariation).base_font as FontFile
+	var close := 0
+	var labels := 0
+	for sign: Node3D in _main.find_children("ClusterSign_*", "", true, false) + _main.find_children("PoliceSign_*", "", true, false):
+		for label: Label3D in sign.find_children("*", "Label3D", false, false):
+			labels += 1
+			var front: float = (ClusterSigns.BOARD.z if sign.name.begins_with("Cluster") else PoliceSign.BOARD.z) * 0.5
+			if label.position.z < front + 0.005 or label.alpha_cut != Label3D.ALPHA_CUT_OPAQUE_PREPASS:
+				close += 1
+	_check("Session 82: sign text is sharp and doesn't flicker against the board", base.multichannel_signed_distance_field
+			and base.generate_mipmaps and labels > 20 and close == 0, "%d of %d labels too close" % [close, labels])
+	# 4) Bins are grey.
+	_check("Session 82: bins are grey, not green", StreetDetails.BIN == GameConfig.BIN_GREY
+			and absf(GameConfig.BIN_GREY.g - GameConfig.BIN_GREY.r) < 0.05, "")
+	# 5) No grass between each cluster playground and the roads in front of it.
+	var gaps := []
+	for mini: Dictionary in map["MINI_PLAZAS"]:
+		var spot: Vector3 = mini["playground"]
+		var toward := -signf(spot.z)  # the spine (z = 0) is in front of every cluster
+		for step in range(0, 80):
+			var at := Vector2(spot.x, spot.z + toward * step * 0.25)
+			var on := _s82_paved(map, at)
+			if on == "Spine Loop":
+				break  # reached the road round the spine
+			if on == "":
+				gaps.append("%s z %.1f" % [mini["cluster"], at.y])
+				break
+	_check("Session 82: paving all the way from every cluster playground to the road", gaps.is_empty(), str(gaps))
+
+
+## The big ground slab (the lawn under the whole map).
+func _s82_big_ground() -> MeshInstance3D:
+	for view: MeshInstance3D in _main.get_node("WahatBuilder").find_children("*", "MeshInstance3D", true, false):
+		if view.mesh is BoxMesh and (view.mesh as BoxMesh).size.z > 400.0:
+			return view
+	return null
+
+
+## What's at this spot: a road's name, "paving", or "" (grass).
+func _s82_paved(map: Dictionary, at: Vector2) -> String:
+	for road: Dictionary in map["ROADS"]:
+		if Geometry2D.get_closest_point_to_segment(at, road["from"], road["to"]).distance_to(at) <= road.get("width", 10.0) * 0.5:
+			return road["name"]
+	for area: Rect2 in map["PAVED_AREAS"] + map["CLUSTERS"].map(func(c): return c["area"]):
+		if area.has_point(at):
+			return "paving"
+	return ""
 
 # --- end of Session 82 checks ---
 

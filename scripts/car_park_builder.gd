@@ -37,7 +37,8 @@ static func _build_lot(holder: Node3D, lot: Dictionary) -> void:
 	holder.add_child(node)
 	for pad: Rect2 in lot.get("pads", []):
 		var middle := pad.get_center()
-		LowPoly.box(node, Vector3(pad.size.x, PAD, pad.size.y), ASPHALT, Vector3(middle.x, PAD * 0.5, middle.y))
+		# Session 82: the same asphalt photo as the roads (SurfaceTextures "road"), not flat grey.
+		SurfaceTextures.slab(node, "road", pad.size, Vector3(middle.x, PAD, middle.y), PAD)
 	var paint := MeshKit.new()  # all the lines and arrows of this car park: one mesh
 	var roofs := MeshKit.new()  # all its roofs and posts: one more mesh
 	var posts := StaticBody3D.new()  # the posts are solid, the roofs are too high to hit

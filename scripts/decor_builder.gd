@@ -40,8 +40,8 @@ func _ready() -> void:
 
 	for area: Rect2 in _map["PARKING_AREAS"]:
 		var middle := area.get_center()
-		LowPoly.box(self, Vector3(area.size.x, PAD_THICKNESS, area.size.y), ASPHALT_COLOUR,
-				Vector3(middle.x, PAD_THICKNESS * 0.5, middle.y))
+		# Session 82: the same asphalt photo as the roads, not flat grey.
+		SurfaceTextures.slab(self, "road", area.size, Vector3(middle.x, PAD_THICKNESS, middle.y), PAD_THICKNESS)
 	if _map.has("MOSQUE"):
 		_build_mosque()
 	if _map.has("SUPERMARKET"):

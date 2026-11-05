@@ -20,10 +20,19 @@ static var _bold: Font = null
 
 
 ## The sign font, made bold. Made once, then shared by every sign.
+## Session 82: why sign text used to shimmer and flicker: the font was drawn into its letter
+## pictures with no smaller copies (mipmaps), so a sign further away showed a few random
+## pixels of each big letter, different ones every frame as you moved. Now the sign font has
+## its own copy that stores letters as distance fields (MSDF: sharp at any size) with
+## mipmaps, and each label writes its depth like a solid object (no flicker with the
+## board behind it, and High's TAA smoothing keeps it steady).
 static func font() -> Font:
 	if _bold == null:
+		var sharp := FONT.duplicate() as FontFile
+		sharp.multichannel_signed_distance_field = true
+		sharp.generate_mipmaps = true
 		var bold := FontVariation.new()
-		bold.base_font = FONT
+		bold.base_font = sharp
 		var wght: int = TextServerManager.get_primary_interface().name_to_tag("wght")
 		bold.variation_opentype = {wght: WEIGHT}
 		_bold = bold
@@ -43,6 +52,8 @@ static func make_label(text: String, font_size: int, colour: Color,
 	label.outline_size = outline_size * SHARPNESS
 	label.billboard = BaseMaterial3D.BILLBOARD_DISABLED
 	label.double_sided = false
+	label.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+	label.alpha_cut = Label3D.ALPHA_CUT_OPAQUE_PREPASS
 	return label
 
 

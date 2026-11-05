@@ -110,7 +110,7 @@ func _shelter(at: Vector3, words: Array, index: int) -> void:
 	# Two benches and a bin.
 	for x in [-2.2, 0.6]:
 		Props.bench(body, Vector3(x, 0, -0.5), 0.0)
-	kit.cylinder(0.24, 0.21, 0.75, Color(0.2, 0.42, 0.3), Vector3(-4.0, 0.375, 0.6), Basis(), 10)
+	kit.cylinder(0.24, 0.21, 0.75, GameConfig.BIN_GREY, Vector3(-4.0, 0.375, 0.6), Basis(), 10)
 	kit.cylinder(0.26, 0.26, 0.05, METAL, Vector3(-4.0, 0.77, 0.6), Basis(), 10)
 	LowPoly.solid_cylinder(body, 0.25, 0.8, Vector3(-4.0, 0.4, 0.6))
 	var look := kit.finish("Shelter")

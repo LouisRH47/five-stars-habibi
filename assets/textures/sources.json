@@ -26,5 +26,33 @@
     "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/pavement_02/pavement_02_diff_1k.jpg",
     "license": "CC0-1.0",
     "sha256": "791d39aadbd48b483468d2ed68d21efce5be197c1d91cf7f3fad7e561c8e7675"
+  },
+  {
+    "file": "leafy_grass_diff_1k.jpg",
+    "source": "https://polyhaven.com/a/leafy_grass",
+    "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/leafy_grass/leafy_grass_diff_1k.jpg",
+    "license": "CC0-1.0",
+    "note": "copied as it is"
+  },
+  {
+    "file": "paving_sandy_1k.jpg",
+    "source": "https://polyhaven.com/a/brick_pavement_02",
+    "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/brick_pavement_02/brick_pavement_02_diff_1k.jpg",
+    "license": "CC0-1.0",
+    "note": "made from the photo by tools/make_photo_textures.gd"
+  },
+  {
+    "file": "blue_track_photo_1k.jpg",
+    "source": "https://polyhaven.com/a/running_track",
+    "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/running_track/running_track_diff_1k.jpg",
+    "license": "CC0-1.0",
+    "note": "made from the photo by tools/make_photo_textures.gd"
+  },
+  {
+    "file": "red_walking_track_1k.jpg",
+    "source": "https://polyhaven.com/a/running_track",
+    "download": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/running_track/running_track_diff_1k.jpg",
+    "license": "CC0-1.0",
+    "note": "made from the photo by tools/make_photo_textures.gd"
   }
 ]

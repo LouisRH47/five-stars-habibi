@@ -1,5 +1,34 @@
 # Progress
 
+## Session 82: textures — 6 November 2026
+
+What works:
+- **Real photo textures** (Poly Haven, CC0, credited in CREDITS.md), all set in one table:
+  SURFACES in scripts/surface_textures.gd (picture, size in metres, tint for each surface).
+  - Lawns: the old aerial_grass_rock mixed with leafy_grass in big soft patches through a new
+    shader (assets/shaders/ground_photo.gdshader) that hides the repeats. Sand: the old sand_01.
+  - Pavers and footpaths: brick_pavement_02 recoloured warm sandy grey.
+  - Blue track: running_track with its lane lines. Red walking tracks: running_track recoloured
+    red, one lane, no line. (tools/make_photo_textures.gd makes these from the photos.)
+  - Roads keep the new asphalt; the car parks now use the same asphalt photo instead of flat grey.
+- **Mipmaps** (smaller copies for far away) on every ground texture, so the ground doesn't shimmer.
+- **No rectangle grass clumps** any more (flowers, rocks and trees stay).
+- **Signs don't shimmer:** the cause was the sign font having no mipmaps. Signs now use their own
+  copy of the font with MSDF (sharp at any size) and mipmaps, drawn solid.
+- **Bins are grey** (GameConfig.BIN_GREY), including the cluster recycling bins.
+- **No grass gap by the cluster playgrounds:** the paving reaches the road in front of every
+  cluster (made by the map generator, so the data file is never edited by hand).
+- Checked: smoke test and every focused suite PASS. Screenshots on the Mac on Low, Medium and
+  High: the spine grass, the blue and red tracks, footpaths, stables sand, a cluster sign close
+  up, the playground paving from above, a car park.
+
+Known bugs:
+- The red walking track looks fairly plain up close (the source photo has little detail).
+
+**Louis's turn:** press F5 and look at the grass, sand, footpaths and the blue and red tracks.
+Ride past a cluster sign and a police sign: the letters should stay sharp, no flicker. Try
+Settings > Graphics on Low, Medium and High.
+
 ## Session 81: gym, stream and pools — 6 November 2026
 
 What works:

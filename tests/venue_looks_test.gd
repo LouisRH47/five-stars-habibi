@@ -227,28 +227,18 @@ func _check_outside() -> void:
 		if p.x > spec["from_x"] and p.x < spec["to_x"] and absf(p.y) > band - 0.2 and absf(p.y) < band + spec["track"] + 0.3:
 			on_road.append(holder.name + " on a red track")
 	_expect(on_road.is_empty(), "nothing stands on a road or a red track", str(on_road.slice(0, 5)))
-	# The spine: grass blades, flowers, rocks and trees, clear of the road, planters and tracks.
+	# The spine: flowers, rocks and trees, clear of the road, planters and tracks (Session 82:
+	# no grass blade clumps any more).
 	var green: SpineGreenery = world.get_node("SpineBuilder/SpineGreenery")
 	var spine_counts: Dictionary = green.get_meta("counts")
-	_expect(spine_counts["grass"] >= 15000 and spine_counts["flowers"] >= 500 and spine_counts["rocks"] >= 150 and spine_counts["trees"] >= 30,
-			"grass blades, flowers, rocks and more trees in the spine", str(spine_counts))
+	_expect(not spine_counts.has("grass") and green.get_node_or_null("GrassBlades") == null and spine_counts["flowers"] >= 500 and spine_counts["rocks"] >= 150 and spine_counts["trees"] >= 30,
+			"flowers, rocks and more trees in the spine, no grass clumps", str(spine_counts))
 	var clear_band: float = band + spec["track"]
 	var wrong := 0
-	for group in ["GrassBlades", "FlowerHeads", "Rocks", "ShadeTrees0", "ShadeTrees1"]:
+	for group in ["FlowerHeads", "Rocks", "ShadeTrees0", "ShadeTrees1"]:
 		for view: MultiMeshInstance3D in green.get_node(group).get_children():
 			for i in view.multimesh.instance_count:
 				var at := view.position + view.multimesh.get_instance_transform(i).origin
 				if absf(at.z) < clear_band + 0.2:
 					wrong += 1
-	_expect(wrong == 0, "no grass, flowers, rocks or trees on the spine road, planters or red tracks", str(wrong))
-	var grass: MultiMeshInstance3D = green.get_node("GrassBlades").get_child(0)
-	var before := Settings.graphics
-	Settings.graphics = 0
-	green.apply_graphics()
-	var low := grass.multimesh.visible_instance_count
-	Settings.graphics = 1
-	green.apply_graphics()
-	var medium := grass.multimesh.visible_instance_count
-	Settings.graphics = before
-	green.apply_graphics()
-	_expect(low > 0 and low < medium * 0.4 and medium == grass.multimesh.instance_count, "Low draws a sparser grass, Medium all of it", "%d / %d" % [low, medium])
+	_expect(wrong == 0, "no flowers, rocks or trees on the spine road, planters or red tracks", str(wrong))
