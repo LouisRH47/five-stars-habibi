@@ -215,7 +215,8 @@ func villa_door(number: int) -> Vector3:
 	for place in villas:
 		if place["number"] == number:
 			if place.get("interior", false):
-				return VenueBuilder.world_point(place, VenueBuilder.counter_local(villa_size_of(place)))
+				var kind := "institute" if number == 903 else "gym"
+				return VenueBuilder.world_point(place, VenueBuilder.reception_spot(kind, villa_size_of(place)))
 			return door_point(place["position"], place["facing"], villa_size_of(place))
 	push_error("No villa number %d" % number)
 	return Vector3.ZERO

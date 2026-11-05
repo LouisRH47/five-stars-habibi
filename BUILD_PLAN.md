@@ -1222,7 +1222,7 @@ Done when:
 - [ ] No two restaurants look alike, and Sushi You's belt moves
 - [ ] Grand Groceries looks like a real supermarket
 
-### Session 56: The gym and the C Institute inside
+### Session 56: The gym and the C Institute inside (built, needs testing)
 
 ```text
 Session 56. Read PRD.md "Looks pass", the Wahat Gym and C Institute rows. Build the
@@ -1241,7 +1241,7 @@ Done when:
 - [ ] The gym looks and feels like a gym
 - [ ] The C Institute lobby is tall and bright, and the talk screen changes
 
-### Session 57: Bike shop, clothes shop, stable office, farm stall and school booth
+### Session 57: Bike shop, clothes shop, stable office, farm stall and school booth (built, needs testing)
 
 ```text
 Session 57. Read PRD.md "Looks pass", the last 5 rows of the table. Rebuild Pedal
@@ -1254,7 +1254,7 @@ Done when:
 
 - [ ] Every place you go into is as detailed as the restaurants
 
-### Session 58: Plaza, streets and the spine
+### Session 58: Plaza, streets and the spine (built, needs testing)
 
 ```text
 Session 58. Read PRD.md "Looks pass", More detail outside. Plaza: café tables outside

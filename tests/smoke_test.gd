@@ -1350,6 +1350,7 @@ func _finish() -> void:
 	await _check_venue_handoffs()
 	await _check_world_polish()  # Sessions 67 to 69
 	load("res://tests/smoke_signs.gd").new().run(self)  # Sessions 64 to 66 (bus stop, signs, Majlis Gardens)
+	_check_looks_venues()  # looks pass Sessions 56 to 58
 	# --- Looks pass (Sessions 54-55): walk into every restaurant room, queue, hold E, walk out ---
 	await preload("res://tests/smoke_rooms.gd").new().run(self)
 	_check_saving()
@@ -2884,3 +2885,41 @@ func _check_session73() -> void:
 			groom._physics_process(0.5)
 	_check("grooms walk horses by the stables", life.grooms.size() >= 2 and groom.position.distance_to(from) > 1.0
 			and groom.model.get_node_or_null("Horse") != null, "")
+# --- Looks pass Sessions 56 to 58 (gym, institute, shops, outside detail) ---
+# The full checks are in tests/venue_looks_test.gd.
+func _check_looks_venues() -> void:
+	var places: PlaceBuilder = _delivery.place_builder
+	var gym := places.get_node_or_null("Gym")
+	var lobby := places.get_node_or_null("Institute")
+	if gym == null or lobby == null:
+		return
+	_check("Session 56: the gym is a real gym (treadmills, rack, mirror wall)", gym.get_meta("interior_style", "") == "gym"
+			and gym.get_node_or_null("Treadmill3") != null and gym.get_node_or_null("SquatRack") != null
+			and gym.get_node_or_null("TrainHard") != null, "")
+	_check("Session 56: the C Institute lobby is two storeys with a talk screen", lobby.get_meta("ceiling", 0.0) > 12.0
+			and lobby.get_node_or_null("TalkScreen") != null and lobby.get_node_or_null("Balcony") != null, "")
+	_check("Session 56: both receptions are inside their rooms", RestaurantRoom.is_inside(lobby, places.villa_door(903))
+			and RestaurantRoom.is_inside(gym, places.villa_door(904)), "")
+	# Session 57: the shops, the two drop-off buildings and the farm stall are detailed.
+	var marks := _main.get_node_or_null("LandmarkBuilder")
+	var bikes := places.get_node_or_null("Shop_bikes")
+	var clothes := places.get_node_or_null("Shop_clothes")
+	_check("Session 57: the shops are rebuilt (hanging bikes, caps wall, sliding doors)", bikes != null and clothes != null
+			and bikes.get_node_or_null("HangingBikes") != null and clothes.get_node_or_null("CapsWall") != null
+			and bikes.get_node_or_null("SlidingDoor") != null, "")
+	_check("Session 57: the stable office, school booth and farm stall are detailed", marks != null
+			and marks.get_node_or_null("StableOffice/OfficeGroom") != null and marks.get_node_or_null("SchoolBooth/Guard") != null
+			and places.get_node_or_null("Restaurant_farm/Farmer") != null, "")
+	# Session 58: the Plaza, streets and spine have more detail, and lights for sunset.
+	var life := _main.get_node_or_null("PlazaBuilder/PlazaLife")
+	var streets := _main.get_node_or_null("PlazaBuilder/StreetDetails")
+	var green := _main.get_node_or_null("SpineBuilder/SpineGreenery")
+	_check("Session 58: café tables, a juice kiosk and string lights in the Plaza", life != null
+			and life.get_meta("counts", {}).get("tables", 0) >= 12 and life.get_node_or_null("PlazaFurniture/JuiceKiosk") != null
+			and life.get_meta("counts", {}).get("bulbs", 0) > 100, "")
+	_check("Session 58: street lamps, bins, street signs and bike racks", streets != null
+			and streets.get_meta("counts", {}).get("lamps", 0) >= 40 and streets.get_meta("counts", {}).get("racks", 0) >= 5, "")
+	_check("Session 58: grass blades, flowers, rocks and trees in the spine", green != null
+			and green.get_meta("counts", {}).get("grass", 0) >= 15000 and green.get_meta("counts", {}).get("trees", 0) >= 30, "")
+	_check("Session 58: the lights come on at sunset", SunsetLights.amount_at(GameConfig.SHIFT_START_HOUR) == 0.0
+			and SunsetLights.amount_at(GameConfig.SHIFT_END_HOUR) > 0.9, "")

@@ -234,6 +234,149 @@ for a bus (one comes every game hour): when it stops beside the shelters, the pe
 door and get on, and it waits for them. Wait a bit longer: new people walk up to the shelters.
 Then ride to the stables car park (south, by the stables) and the school car park (in front of
 the school): cars in marked bays under solar roofs, on dark asphalt.
+## Session 58: Plaza, streets and the spine — 5 November 2026
+
+What works:
+- **The Plaza** (scripts/plaza_life.gd): 18 café tables with chairs, a drink and a parasol
+  outside the restaurants (8 with someone sitting at them), a juice kiosk on the west side
+  of the paving with a green and white striped canopy, bottles and oranges, a bilingual
+  "Fresh Juice · عصير طازج" sign, the juice seller and a customer, 12 poles round the sunken
+  square with strings of 228 bulbs hanging between them, and 6 more people strolling slowly
+  round the Plaza (they only move while you're near, to keep Low fast).
+- **Lights at sunset** (scripts/sunset_lights.gd): from about 17:00 the string light bulbs,
+  the kiosk bulbs and every street lamp head glow, fading in over half an hour (GameConfig
+  LIGHTS_*). On Medium and High four real warm lights also come on over the sunken square.
+- **Streets and lanes** (scripts/street_details.gd): 169 street lamps every ~30 m along the
+  inside roads and cluster lanes and in the spine planters (the ring road keeps its own
+  light posts), 87 green bins beside them, 21 blue bilingual street name signs (for example
+  "Spine Road · طريق الحديقة", "C1 Lane · ممر المجموعة ١") and 9 bike racks (Plaza, gym,
+  C Institute, farm stall, bee farm, school). Every spot is checked against the map
+  (scripts/clear_spots.gd) so nothing stands on a road, a red track, a doorstep or a home.
+  The poles, bins, signs and racks are solid. Road markings and kerbs are Session 61's.
+- **The spine** (scripts/spine_greenery.gd): 22,000 clumps of real grass blades (thin
+  tapered blades, dark at the root and light at the tip), drawn in 40 m chunks up to 90 m
+  away; Low draws only a quarter of them, up to 63 m. Plus 140 flower patches (1,239 flowers
+  in groups of one colour on stems), 271 rocks, and 40 more round shade trees with solid
+  trunks. All of it keeps clear of the spine road, the planters, the red tracks, the path
+  crossings, the stream, the domes, beds, pools, court, playground, pen, hives, gym and stalls.
+- Checked: smoke test PASS (new Session 58 checks). tests/venue_looks_test.gd PASS (96 checks:
+  counts, lights off at noon and on at sunset, Arabic + English signs, nothing on a road or
+  red track, nothing growing on the spine road, planters or tracks, Low draws sparser grass).
+  Coplanar, navigation, detail world, static batch, road mesh, district traffic, bus
+  recovery, housing camera, mini-map cache, lifecycle, interiors, shop, reception, touch,
+  phone refresh, kit props and crash impact tests PASS. Play-test bot: 5 deliveries,
+  5.0 stars, 0 crashes, never stuck. The frame-rate check on Low and Medium needs a real
+  graphics card (Session 59 on the Mac); headless Godot can't take screenshots either.
+
+**Louis's turn:** press F5 and ride into the Plaza: café tables with parasols outside the
+restaurants and people sitting at some, the juice kiosk on the west side, people strolling
+round, strings of bulbs round the sunken square. Keep playing until about 17:00 on the clock
+(or ride round till late in the shift): the bulbs and the street lamps start to glow. Ride
+down a cluster lane: lamps, green bins and a blue street sign with Arabic and English. Then
+ride along the spine and look at the grass between the red track and the domes: thin blades,
+flower patches, rocks and new trees. Press Esc, Settings, Graphics Low: the grass gets
+sparser. Back to Medium or High.
+
+Known bugs / to do:
+- The street lamps only glow (no real light on the road) to keep it fast; only the Plaza has
+  real lights at sunset.
+- The kiosk is for looks: you can't buy a juice there.
+
+## Session 57: Bike shop, clothes shop, stable office, farm stall and school booth — 5 November 2026
+
+What works:
+- **Both shops are rebuilt like the restaurants** (scripts/shop_interior.gd for the room,
+  scripts/shop_recipes.gd for each shop's things): a glass front with sliding glass doors, a
+  5 m ceiling with hanging lamps and a light with soft shadows, a tiled floor, plants and a
+  bin. The indoor camera comes closer inside them too.
+  - **Pedal Point Bikes:** five bikes in different colours hanging by their front wheels on
+    the left wall, a tool pegboard full of spanners, screwdrivers and pliers over a workbench
+    with a vice, parts boxes and a wheel, a tyre rack of 16 tyres, a repair stand with a bike
+    clamped on it, two bikes on show by the window, a floor pump, a shelf of helmets, a
+    "Ride safe · قُد بأمان" poster, and the mechanic in overalls at the counter.
+  - **Dune Drip:** a caps and sunglasses wall ("Caps & shades · قبعات ونظارات"), two clothes
+    rails of shirts and hoodies, a table of folded hoodies, shelves of T-shirts behind the
+    till, a patterned rug and a big framed mirror where you try things on, two mannequins in
+    hoodies and caps in the window, and the cashier.
+  - The shop screens (side panel, cart, checkout, mirror) work as before: the counter, the
+    try-on spot and the shop camera didn't move.
+- **The stable office** (scripts/spot_buildings.gd) has plank walls, a wooden door standing
+  open under a little porch roof, a big front window so you can see in, and a back window
+  onto the stable block. Inside: the groom sitting at his desk (papers, ledger, mug), two
+  saddles on wooden stands with stirrups, four prize rosettes and three horse photos, three
+  riding helmets on hooks, a hay bale and a warm lamp.
+- **The school gate booth** is a glass security booth with white posts and a teal roof, the
+  guard (navy uniform and cap) at a desk with a glowing screen and a phone, and a red and white
+  barrier arm beside it, raised so the gate stays open.
+- **The Wahat Farm Stall** has a striped awning over the front, the farmer in a straw sun hat
+  behind the counter, a juice press with a jug and fruit, a glass cooler of juice, five crates
+  of veg from the kit in front, and a chalkboard menu ("Farm juice 12 Dh", "Salad box 18 Dh",
+  "Dates 10 Dh"). The Bee Farm stall keeps its own honey look.
+- Checked: smoke test PASS (new Session 57 checks; the school, stables, institute and gym
+  drop-offs still work). tests/shop_test.gd PASS (both shops still sell). The focused test
+  tests/venue_looks_test.gd now has 84 checks (every new thing in each place) and PASS.
+  Coplanar and detail world tests PASS. No screenshots (headless Godot can't draw).
+
+**Louis's turn:** press F5. Ride to Pedal Point Bikes, get off (F), walk in through the
+sliding doors: bikes hanging on the left, the pegboard and workbench behind the mechanic, the
+tyre rack on the right. Hold E at the counter: the shop screen opens like before; buy
+something to check it still works, then Esc. Do the same in Dune Drip and try a cap in the
+mirror. Then ride to the stables office (behind the stables) and look in through the window,
+to the school gate to see the glass booth and the guard, and to the farm stall by the domes.
+
+Known bugs / to do:
+- The horse you see from the stable office is in the stable block behind it; the paddock is
+  on the far side of the block (and horses are another session's job).
+- You can walk into the stable office but there's nothing to do inside (the drop-off is at
+  the door, as before).
+
+## Session 56: The gym and the C Institute inside — 5 November 2026
+
+What works:
+- **The Wahat Gym is a real gym** (scripts/gym_room.gd). The building outside keeps its size
+  and its rounded back. The front (onto the spine) and the side next to the lap pool are glass
+  from the floor to the ceiling. Inside: 4 treadmills facing the glass with 3 people running,
+  3 exercise bikes with 2 people pedalling (their feet go round), 2 rowing machines by the pool
+  glass with people rowing (they slide back and forth and pull the handle), a squat rack on a
+  wooden platform with someone squatting a loaded barbell, a dumbbell rack and a flat bench in
+  front of a big mirror wall that says "Train hard · تمرّن بقوة", someone holding dumbbells,
+  3 yoga mats with someone stretching, kettlebells, a rubber tile floor, a 4.8 m ceiling with
+  light panels, a water fountain, a towel stand, and the reception desk with the receptionist,
+  smoothies and a smoothie cooler in front of a "Wahat Gym" logo wall. Gym music in the
+  background (room_gym.wav from tools/make_sounds.py). Everyone working out wears gym clothes
+  (PlaceLooks.gym_goer). The movements are in scripts/gym_motion.gd (numbers: GameConfig GYM_*).
+- **The C Institute lobby** (scripts/institute_room.gd) fills the whole building and is two
+  storeys tall. Glass on both long sides, both storeys, so you see right through (the front
+  faces the spine). Inside: a curved white reception desk with a big teal "C" logo wall behind
+  it, four wide wooden steps with cushions and 8 people on glowing laptops, facing a big talk
+  screen on the left wall, a balcony walkway along the back and right walls with a glass
+  railing and people looking down, a wooden staircase up to it, 12 hanging plants and trailing
+  plants on the balcony, a wood-slat ceiling, couches by the back glass and a quiet chatter
+  and typing sound.
+- **The talk screen changes during the shift** with the game clock (scripts/talk_screen.gd):
+  "Welcome · أهلاً" until 12:00, "Talk today · 4 PM" until 16:00, then "Solar cities of
+  tomorrow" (times in GameConfig TALK_SCREEN_TIMES).
+- Both receptions are inside their rooms, straight in from the door. The indoor camera works
+  in both (they are "venue rooms" now).
+- Checked: smoke test PASS (new Session 56 checks: the gym, the lobby, both receptions inside;
+  gym and institute deliveries and the staffed counter panel still work). New focused test
+  tests/venue_looks_test.gd PASS (45 checks: every gym machine, people in gym clothes, the
+  rower and lifter move, pool-side glass, two-storey glass both sides, the talk screen's three
+  slides, a clear walk to both receptions). Reception panel, interiors, detail world,
+  coplanar and static batch tests PASS. Headless Godot can't take screenshots, so the look
+  still needs Louis's eyes.
+
+**Louis's turn:** press F5 and do deliveries until one goes to the Wahat Gym (or ride there:
+it's on the spine next to the lap pool). Get off (F) and walk in through the sliding doors:
+treadmills with runners on the left, bikes on the right, rowers by the pool glass, someone
+squatting in front of the "Train hard" mirror. Walk to the reception desk and hold E. Then get
+an order to the C Institute: walk in and look up (it's two floors tall), look left at the talk
+screen and the people on laptops, and right at the stairs and the balcony. Check the talk
+screen in the morning, after 12:00 and after 16:00: it says something different each time.
+
+Known bugs / to do:
+- You can't walk up the institute stairs (they're for looking at).
+- The rowing handle has no cord, and the treadmill belts don't move.
 
 ## Session 69: The beekeeper as a pickup — 5 November 2026
 

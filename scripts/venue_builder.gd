@@ -16,7 +16,23 @@ static func world_point(place: Dictionary, local: Vector3) -> Vector3:
 	return place["position"] + local.rotated(Vector3.UP, deg_to_rad(place.get("facing", 0.0)))
 
 
+## Where you stand to hand over the food at a reception (the gym and the C Institute have
+## their own rooms since looks pass Session 56).
+static func reception_spot(kind: String, size: Vector3) -> Vector3:
+	match kind:
+		"gym":
+			return GymRoom.COUNTER_SPOT
+		"institute":
+			return InstituteRoom.COUNTER_SPOT
+	return counter_local(size)
+
+
 static func build(place: Dictionary, size: Vector3) -> StaticBody3D:
+	match place.get("venue_type", ""):
+		"gym":
+			return GymRoom.build(place, size)  # looks pass Session 56: a real gym
+		"institute":
+			return InstituteRoom.build(place, size)  # looks pass Session 56: the two-storey lobby
 	var body := StaticBody3D.new()
 	body.set_meta("walk_in", true)
 	body.set_meta("venue_type", place.get("venue_type", "reception"))

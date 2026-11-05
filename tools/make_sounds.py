@@ -470,9 +470,32 @@ def room_market():
     return room(chatter(volume=0.25), hum(60, volume=0.12), beeps, rattle)
 
 
+def room_gym():
+    room_random.seed(56)  # own dice, so this sound is the same however it is made
+    beat = silence(ROOM_SECONDS)
+    for k in range(10):  # gym music: a steady kick drum and a clap
+        mix_in(beat, tone(60, 0.25, 14, 0.7), k * 0.5)
+        if k % 2 == 1:
+            mix_in(beat, r_noise(0.12, 30, 0.2, 0.35), k * 0.5)
+    for at in (1.3, 3.6):  # weights clanking down
+        mix_in(beat, tone(310, 0.5, 9, 0.35), at)
+        mix_in(beat, tone(780, 0.4, 12, 0.2), at)
+    belt = hum(48, volume=0.08)  # the treadmills
+    return room(chatter(volume=0.18), belt, beat)
+
+
+def room_institute():
+    room_random.seed(57)
+    keys = silence(ROOM_SECONDS)
+    for _ in range(40):  # people typing on laptops
+        mix_in(keys, r_noise(0.015, 200, 0.1, 0.18), room_random.uniform(0, ROOM_SECONDS))
+    return room(echo(chatter(volume=0.22), 0.18, 0.35, 0.4), keys)
+
+
 ROOM_SOUNDS = {"pizza": room_pizza, "gelato": room_gelato, "boba": room_boba, "shawarma": room_shawarma,
                "bakery": room_bakery, "thai": room_thai, "sushi": room_sushi, "tacos": room_tacos,
-               "burger": room_burger, "market": room_market}
+               "burger": room_burger, "market": room_market,
+               "gym": room_gym, "institute": room_institute}  # Session 56
 
 
 if __name__ == "__main__":
