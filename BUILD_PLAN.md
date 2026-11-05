@@ -1222,7 +1222,7 @@ Done when:
 - [ ] No two restaurants look alike, and Sushi You's belt moves
 - [ ] Grand Groceries looks like a real supermarket
 
-### Session 56: The gym and the C Institute inside
+### Session 56: The gym and the C Institute inside (built, needs testing)
 
 ```text
 Session 56. Read PRD.md "Looks pass", the Wahat Gym and C Institute rows. Build the

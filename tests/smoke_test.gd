@@ -1349,6 +1349,7 @@ func _finish() -> void:
 	_check_roads_polish()  # Sessions 61 to 63 (roads, spine tracks, greenery)
 	await _check_venue_handoffs()
 	await _check_world_polish()  # Sessions 67 to 69
+	_check_looks_venues()  # looks pass Sessions 56 to 58
 	# --- Looks pass (Sessions 54-55): walk into every restaurant room, queue, hold E, walk out ---
 	await preload("res://tests/smoke_rooms.gd").new().run(self)
 	_check_saving()
@@ -2702,3 +2703,19 @@ func _check_roads_polish() -> void:
 	_check("Session 63: no bare sand except where the horses ride", sandy.is_empty() and GroundType.is_sand(data, arena.get_center())
 			and GroundType.is_sand(data, Vector2(0, -230)), "%s" % [sandy.slice(0, 5)])
 
+
+# --- Looks pass Sessions 56 to 58 (gym, institute, shops, outside detail) ---
+# The full checks are in tests/venue_looks_test.gd.
+func _check_looks_venues() -> void:
+	var places: PlaceBuilder = _delivery.place_builder
+	var gym := places.get_node_or_null("Gym")
+	var lobby := places.get_node_or_null("Institute")
+	if gym == null or lobby == null:
+		return
+	_check("Session 56: the gym is a real gym (treadmills, rack, mirror wall)", gym.get_meta("interior_style", "") == "gym"
+			and gym.get_node_or_null("Treadmill3") != null and gym.get_node_or_null("SquatRack") != null
+			and gym.get_node_or_null("TrainHard") != null, "")
+	_check("Session 56: the C Institute lobby is two storeys with a talk screen", lobby.get_meta("ceiling", 0.0) > 12.0
+			and lobby.get_node_or_null("TalkScreen") != null and lobby.get_node_or_null("Balcony") != null, "")
+	_check("Session 56: both receptions are inside their rooms", RestaurantRoom.is_inside(lobby, places.villa_door(903))
+			and RestaurantRoom.is_inside(gym, places.villa_door(904)), "")

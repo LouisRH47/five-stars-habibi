@@ -1,5 +1,53 @@
 # Progress
 
+## Session 56: The gym and the C Institute inside — 5 November 2026
+
+What works:
+- **The Wahat Gym is a real gym** (scripts/gym_room.gd). The building outside keeps its size
+  and its rounded back. The front (onto the spine) and the side next to the lap pool are glass
+  from the floor to the ceiling. Inside: 4 treadmills facing the glass with 3 people running,
+  3 exercise bikes with 2 people pedalling (their feet go round), 2 rowing machines by the pool
+  glass with people rowing (they slide back and forth and pull the handle), a squat rack on a
+  wooden platform with someone squatting a loaded barbell, a dumbbell rack and a flat bench in
+  front of a big mirror wall that says "Train hard · تمرّن بقوة", someone holding dumbbells,
+  3 yoga mats with someone stretching, kettlebells, a rubber tile floor, a 4.8 m ceiling with
+  light panels, a water fountain, a towel stand, and the reception desk with the receptionist,
+  smoothies and a smoothie cooler in front of a "Wahat Gym" logo wall. Gym music in the
+  background (room_gym.wav from tools/make_sounds.py). Everyone working out wears gym clothes
+  (PlaceLooks.gym_goer). The movements are in scripts/gym_motion.gd (numbers: GameConfig GYM_*).
+- **The C Institute lobby** (scripts/institute_room.gd) fills the whole building and is two
+  storeys tall. Glass on both long sides, both storeys, so you see right through (the front
+  faces the spine). Inside: a curved white reception desk with a big teal "C" logo wall behind
+  it, four wide wooden steps with cushions and 8 people on glowing laptops, facing a big talk
+  screen on the left wall, a balcony walkway along the back and right walls with a glass
+  railing and people looking down, a wooden staircase up to it, 12 hanging plants and trailing
+  plants on the balcony, a wood-slat ceiling, couches by the back glass and a quiet chatter
+  and typing sound.
+- **The talk screen changes during the shift** with the game clock (scripts/talk_screen.gd):
+  "Welcome · أهلاً" until 12:00, "Talk today · 4 PM" until 16:00, then "Solar cities of
+  tomorrow" (times in GameConfig TALK_SCREEN_TIMES).
+- Both receptions are inside their rooms, straight in from the door. The indoor camera works
+  in both (they are "venue rooms" now).
+- Checked: smoke test PASS (new Session 56 checks: the gym, the lobby, both receptions inside;
+  gym and institute deliveries and the staffed counter panel still work). New focused test
+  tests/venue_looks_test.gd PASS (45 checks: every gym machine, people in gym clothes, the
+  rower and lifter move, pool-side glass, two-storey glass both sides, the talk screen's three
+  slides, a clear walk to both receptions). Reception panel, interiors, detail world,
+  coplanar and static batch tests PASS. Headless Godot can't take screenshots, so the look
+  still needs Louis's eyes.
+
+**Louis's turn:** press F5 and do deliveries until one goes to the Wahat Gym (or ride there:
+it's on the spine next to the lap pool). Get off (F) and walk in through the sliding doors:
+treadmills with runners on the left, bikes on the right, rowers by the pool glass, someone
+squatting in front of the "Train hard" mirror. Walk to the reception desk and hold E. Then get
+an order to the C Institute: walk in and look up (it's two floors tall), look left at the talk
+screen and the people on laptops, and right at the stairs and the balcony. Check the talk
+screen in the morning, after 12:00 and after 16:00: it says something different each time.
+
+Known bugs / to do:
+- You can't walk up the institute stairs (they're for looking at).
+- The rowing handle has no cord, and the treadmill belts don't move.
+
 ## Session 69: The beekeeper as a pickup — 5 November 2026
 
 What works:

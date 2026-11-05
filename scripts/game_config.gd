@@ -505,3 +505,11 @@ const ROOM_SOUND_UNIT_SIZE := 4.0     # metres at full volume
 const ROOM_SOUND_MAX_DISTANCE := 13.0 # silent further away than this
 const SUSHI_BELT_SPEED := 0.35        # metres per second the sushi plates travel
 const ROOM_PEOPLE_DRAW_DISTANCE := 80.0  # people inside the shops are hidden further away (metres)
+
+# --- Looks pass Session 56: the gym and the C Institute ---
+const GYM_PEDAL_TURNS := 1.2          # exercise bike pedal turns per second
+const GYM_ROW_STROKES := 0.45         # rowing strokes per second
+const GYM_ROW_SLIDE := 0.45           # metres the rower slides back on each stroke
+const GYM_SQUATS := 0.3               # squats per second
+const GYM_SQUAT_DEPTH := 0.32         # metres the lifter goes down
+const TALK_SCREEN_TIMES := [12.0, 16.0]  # the talk screen: "Welcome" until 12:00, "Talk today" until 16:00, then the talk
