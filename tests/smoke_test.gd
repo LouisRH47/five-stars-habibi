@@ -1349,6 +1349,7 @@ func _finish() -> void:
 	_check_roads_polish()  # Sessions 61 to 63 (roads, spine tracks, greenery)
 	await _check_venue_handoffs()
 	await _check_world_polish()  # Sessions 67 to 69
+	load("res://tests/smoke_signs.gd").new().run(self)  # Sessions 64 to 66 (bus stop, signs, Majlis Gardens)
 	# --- Looks pass (Sessions 54-55): walk into every restaurant room, queue, hold E, walk out ---
 	await preload("res://tests/smoke_rooms.gd").new().run(self)
 	_check_saving()

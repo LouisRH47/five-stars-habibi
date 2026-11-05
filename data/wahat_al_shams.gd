@@ -971,6 +971,10 @@ const PALM_TREES := [
 
 const PARKED_CAR_SIZE := Vector3(1.9, 1.5, 4.3)
 
+const SCHOOL_PARKING := Rect2(-417, 25, 104, 10)
+
+const BUS_PLATFORM := {"area": Rect2(-328.1, -199.6, 22.2, 28.4), "shelters": [Vector3(-325.4, 0, -191.6), Vector3(-325.4, 0, -180.4)], "facing": -90.0, "door": Vector3(-328.7, 0, -183.4), "arrive": Vector3(-316, 0, -198.5), "waiting": [Vector3(-327.4, 0, -194.2), Vector3(-327.4, 0, -190.4), Vector3(-327.4, 0, -186.9), Vector3(-327.4, 0, -178.6), Vector3(-327.4, 0, -176.2)]}
+
 const PARKED_CARS := [
 	{"position": Vector3(-89, 0, -191), "facing": 90.0, "bay": true},
 	{"position": Vector3(-89, 0, -182), "facing": 90.0, "bay": true},
@@ -1030,9 +1034,11 @@ const PARKED_CARS := [
 	{"position": Vector3(-336, 0, 30), "facing": 0.0, "bay": true},
 	{"position": Vector3(-327, 0, 30), "facing": 0.0, "bay": true},
 	{"position": Vector3(-318, 0, 30), "facing": 0.0, "bay": true},
+	{"position": Vector3(-162, 0, 154), "facing": 90.0, "bay": true},
+	{"position": Vector3(-162, 0, 163), "facing": 90.0, "bay": true},
+	{"position": Vector3(-162, 0, 172), "facing": 90.0, "bay": true},
+	{"position": Vector3(-162, 0, 181), "facing": 90.0, "bay": true},
 ]
-
-const SCHOOL_PARKING := Rect2(-417, 25, 104, 10)
 
 const SPEED_BUMP_SIZE := Vector3(10, 0.12, 0.5)
 

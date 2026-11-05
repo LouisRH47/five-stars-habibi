@@ -1,5 +1,36 @@
 # Progress
 
+## Session 64: Bus stop and car parks — 5 November 2026
+
+What works:
+- **A real platform at the bus station.** Inside the bus loop there's a raised paved island
+  (with a kerb and a yellow line at the edge) right beside the lane where the bus stops. On it
+  stand **two shelters** facing the bus: a teal roof on metal posts, a glass back panel with a
+  **route map** (three coloured lines and a red "you are here" dot), two benches, a green bin and
+  a small bilingual sign on the front of the roof ("Wahat Bus Station / محطة حافلات الواحة" and
+  "Coming soon: travel to other districts"). It replaces the old single shelter
+  (scripts/bus_stop.gd, layout in BUS_PLATFORM in the data).
+- **People get on the bus.** 4 people wait in front of the shelters when you start (never more
+  than 5). When a bus stops at the bay they walk to its door one after another and get on (they
+  disappear into the bus); the bus waits until the last one is in. New people walk onto the
+  platform every 10 seconds or so. One traveller with a suitcase stays in the first shelter,
+  reading the route map. Numbers: BUS_STOP_* in scripts/game_config.gd.
+- **Stables car park** now has four marked bays with parked cars and solar roofs, like the others.
+- **School car park** now has the same dark asphalt under its ten cars and solar roofs (it was on
+  grass) and a pay machine.
+- Checked: smoke test PASS (new Session 64 checks in tests/smoke_signs.gd: two shelters with
+  glass, route map, sign; platform right beside the bay lane; 3 to 5 waiting; they get on; new
+  people arrive; stables and school car parks), new focused test tests/signs_wave_test.gd PASS,
+  district traffic, bus recovery, coplanar and detail world tests PASS. Headless Godot can't
+  take screenshots, so the screenshot step was skipped.
+
+**Louis's turn:** press F5 and ride to the bus station (north side, next to the mosque, the loop
+off the ring road). On the island: two glass shelters with benches, a bin and a route map. Wait
+for a bus (one comes every game hour): when it stops beside the shelters, the people walk to its
+door and get on, and it waits for them. Wait a bit longer: new people walk up to the shelters.
+Then ride to the stables car park (south, by the stables) and the school car park (in front of
+the school): cars in marked bays under solar roofs, on dark asphalt.
+
 ## Session 69: The beekeeper as a pickup — 5 November 2026
 
 What works:

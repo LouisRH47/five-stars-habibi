@@ -111,17 +111,23 @@ func _checkpoints_and_station() -> void:
 		checkpoint.position = entry["position"]
 		checkpoint.rotation_degrees.y = entry["facing"]
 		add_child(checkpoint)
-	var station := StaticBody3D.new()
-	station.name = "BusStation"
-	station.position = _map["BUS_STATION"]["position"] + Vector3(-7, 0, -12)
-	add_child(station)
-	for x in [-8.0, 8.0]:
-		_solid(station, Vector3(0.18, 3.4, 0.18), WHITE, Vector3(x, 1.7, 0))
-	LowPoly.box(station, Vector3(18, 0.3, 6), TEAL, Vector3(0, 3.5, 0))
-	LowPoly.box(station, Vector3(18, 2.7, 0.14), GLASS, Vector3(0, 1.4, -2.7))
-	Props.bench(station, Vector3(-4, 0, -1.5), 0)
-	Props.bench(station, Vector3(4, 0, -1.5), 0)
-	_sign(station, "قريباً: السفر إلى مناطق أخرى", "Coming soon: travel to other districts", Vector3(0, 2.7, 0.2), 0, 40)
+	# Session 64: the platform island inside the bus loop with two detailed shelters and
+	# people who get on the bus (scripts/bus_stop.gd). It replaces the single shelter.
+	BusStop.build(self, _map)
+	_car_parks()
+
+
+## Session 64: the school car park gets the same asphalt pad as the other car parks (its
+## bays, cars and solar roofs come from PARKED_CARS), and a pay machine like the others.
+func _car_parks() -> void:
+	if not _map.has("SCHOOL_PARKING"):
+		return
+	var area: Rect2 = _map["SCHOOL_PARKING"]
+	const PAD := 0.03  # like DecorBuilder's car park pads: just under the roads, the bay lines on top
+	var pad := LowPoly.box(self, Vector3(area.size.x, PAD, area.size.y), Color(0.36, 0.37, 0.39, 1),
+			Vector3(area.get_center().x, PAD * 0.5, area.get_center().y))
+	pad.name = "SchoolCarParkPad"
+	LowPoly.box(self, Vector3(0.5, 1.4, 0.4), TEAL, Vector3(area.end.x - 1, 0.7, area.position.y + 2))
 
 
 func _plaza_floors() -> void:

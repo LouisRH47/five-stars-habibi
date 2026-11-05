@@ -505,3 +505,10 @@ const ROOM_SOUND_UNIT_SIZE := 4.0     # metres at full volume
 const ROOM_SOUND_MAX_DISTANCE := 13.0 # silent further away than this
 const SUSHI_BELT_SPEED := 0.35        # metres per second the sushi plates travel
 const ROOM_PEOPLE_DRAW_DISTANCE := 80.0  # people inside the shops are hidden further away (metres)
+
+# --- World polish pass Sessions 64 to 66 (bus stop, signs, Majlis Gardens) ---
+const BUS_STOP_START_PEOPLE := 4      # people waiting at the bus station when the game starts
+const BUS_STOP_MAX_PEOPLE := 5        # never more than this many waiting
+const BUS_STOP_SPAWN_EVERY := 10.0    # seconds between new people arriving at the stop
+const BUS_STOP_WALK_SPEED := 1.4      # m/s walking to their spot and to the bus door
+const BUS_STOP_BOARD_GAP := 0.8       # seconds between one person and the next getting on

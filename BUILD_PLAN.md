@@ -1422,7 +1422,7 @@ Done when:
 - [ ] The tracks have curved corners and the blue track has a texture
 - [ ] Looking out past the fence shows trees and dunes, not an empty edge
 
-### Session 64: Bus station loop, bus stop and car parks
+### Session 64: Bus station loop, bus stop and car parks (built, needs testing)
 
 ```text
 Session 64. 1) Build the bus station as a loop off the ring road: buses turn in, go round

@@ -191,9 +191,19 @@ put('SPINE_TRACKS',{'from_x':-334.0,'to_x':390.0,'road_half':3.0,'planter':2.0,'
 put('SAND_AREAS',[rect(-282,65,115,88),rect(-282,157,115,43)])
 put('EDGE_GREENERY',{'half':v2(433,213),'radius':20.0,'width':6.0,'spacing':9.0})
 put('PALM_TREES',palms);put('PARKED_CAR_SIZE',v3(1.9,1.5,4.3))
-put('PARKED_CARS',[{'position':v3(x+3,0,z+8+k*9),'facing':90.,'bay':True} for x,z,w,d in parking[:6] for k in range(8)]
- +[{'position':v3(x,0,30),'facing':0.,'bay':True} for x in [-412,-403,-394,-385,-376,-354,-345,-336,-327,-318]])
+PARKED_CARS=[{'position':v3(x+3,0,z+8+k*9),'facing':90.,'bay':True} for x,z,w,d in parking[:6] for k in range(8)]\
+ +[{'position':v3(x,0,30),'facing':0.,'bay':True} for x in [-412,-403,-394,-385,-376,-354,-345,-336,-327,-318]]
 put('SCHOOL_PARKING',rect(-417,25,104,10))
+# --- World polish pass Sessions 64 to 66 (signs wave) -------------------------------------
+# Session 64: the stables car park gets marked bays with parked cars like the others
+# (west row; the moving car parks at the far end, z 187).
+PARKED_EXTRA=[{'position':v3(-162,0,154+k*9),'facing':90.,'bay':True} for k in range(4)]
+# Session 64: the bus station platform island inside the loop. Two shelters face the bay
+# lane (west, facing -90); people wait in front of them and board at the bus door.
+put('BUS_PLATFORM',{'area':rect(-328.1,-199.6,22.2,28.4),'shelters':[v3(-325.4,0,-191.6),v3(-325.4,0,-180.4)],
+ 'facing':-90.,'door':v3(-328.7,0,-183.4),'arrive':v3(-316,0,-198.5),
+ 'waiting':[v3(-327.4,0,z) for z in [-194.2,-190.4,-186.9,-178.6,-176.2]]})
+put('PARKED_CARS',PARKED_CARS+PARKED_EXTRA)
 put('SPEED_BUMP_SIZE',v3(10,.12,.5))
 put('SPEED_BUMPS',[{'position':v3(x,0,z),'facing':90.} for z in [-205,205] for x in [-180,50,300]]+[{'position':v3(x,0,z),'facing':0.} for x in [-425,425] for z in [-80,80]]
  # Session 61: narrower bumps on the inside roads (spine loop north and south, spine road).

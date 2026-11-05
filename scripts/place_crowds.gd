@@ -187,11 +187,13 @@ func _plaza() -> void:
 
 
 func _bus_station() -> void:
-	if not _map.has("BUS_STATION"):
+	# Session 64: the people waiting for the bus (and getting on) are BusStop's. Here: one
+	# traveller with a suitcase reading the route map in the first shelter, who stays.
+	var platform: Dictionary = _map.get("BUS_PLATFORM", {})
+	if platform.is_empty():
 		return
-	var shelter: Vector3 = _map["BUS_STATION"]["position"] + Vector3(-7, 0, -12)  # like DistrictDetail
-	for i in 3:
-		place(PlaceLooks.commuter(i), shelter + Vector3(-5.0 + i * 4.5, 0, 1.5), 0.0, i % 2)
+	var shelter: Vector3 = platform["shelters"][0]
+	place(PlaceLooks.commuter(1), shelter + Vector3(0.1, BusStop.PLATFORM_TOP, 2.9), 90.0)
 
 
 func _beekeeper() -> void:
