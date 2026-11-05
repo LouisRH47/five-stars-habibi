@@ -1355,7 +1355,7 @@ Done when:
 - [ ] All 500 addresses still work and a full delivery works from the new start
 - [ ] Smoke test, navigation test and bus recovery test pass
 
-### Session 61: Road surfaces, markings and junctions
+### Session 61: Road surfaces, markings and junctions (built, needs testing)
 
 ```text
 Session 61. Make the roads look real.
@@ -1379,7 +1379,7 @@ Done when:
 - [ ] No tyre marks except short fading ones after a hard brake
 - [ ] Frame time on Medium is no worse than before
 
-### Session 62: The spine road and red walking tracks
+### Session 62: The spine road and red walking tracks (built, needs testing)
 
 ```text
 Session 62. Louis's photo: a paver road with a yellow line, then a narrow planter with a
@@ -1401,7 +1401,7 @@ Done when:
 - [ ] Joggers and walkers use the red tracks
 - [ ] The C Institute path goes somewhere and its benches face outwards
 
-### Session 63: Greenery, round tracks and no bare sand
+### Session 63: Greenery, round tracks and no bare sand (built, needs testing)
 
 ```text
 Session 63. Make the edges green and round.

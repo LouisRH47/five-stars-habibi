@@ -5,6 +5,7 @@ The generated file is ordinary Godot constants shared by the world, map and test
 """
 from pathlib import Path
 import json
+import math
 
 ROOT = Path(__file__).resolve().parents[1]
 class Raw(str):
@@ -28,8 +29,17 @@ put('MAP_HALF',v2(470,250)); put('ROAD_WIDTH',10.0); put('WALL_HEIGHT',2.5); put
 put('START',{'position':v3(-296,0,-160),'facing':-90.0})
 put('TREE_BELT',{'inner':v2(463,243),'spacing':8.0})
 put('GATES',[{'position':v3(-465,0,z),'facing':-90.0,'name':name} for z,name in [(-190,'North Checkpoint'),(190,'South Checkpoint')]])
-put('HORSE_TRACK',{'half':v2(450,230),'width':5.0})
-put('BIKE_TRACK',{'half':v2(438,218),'width':4.0})
+# Session 63: both tracks have rounded corners that match the ring road's (same centres).
+put('HORSE_TRACK',{'half':v2(450,230),'width':5.0,'radius':37.0})
+put('BIKE_TRACK',{'half':v2(438,218),'width':4.0,'radius':25.0})
+def rounded_loop(hx,hz,r,steps=8,reverse=False):
+    """Points round a rectangle with rounded corners, clockwise from the north-west."""
+    pts=[]
+    for cx,cz,a0 in [(-hx+r,-hz+r,180),(hx-r,-hz+r,270),(hx-r,hz-r,0),(-hx+r,hz-r,90)]:
+        for j in range(steps+1):
+            a=math.radians(a0+90*j/steps)
+            pts.append((round(cx+r*math.cos(a),2),round(cz+r*math.sin(a),2)))
+    return pts[::-1] if reverse else pts
 put('PLAZA',{'centre':v2(-200,-145),'radius':50.0,'sunken_radius':20.0,'floor_radius':15.0,'depth':0.45,'steps':3,'fountain_radius':2.8})
 put('PLAZA_SAILS',[[v3(-224,0,-157),v3(-200,0,-170),v3(-176,0,-157)],[v3(-176,0,-133),v3(-200,0,-120),v3(-224,0,-133)]])
 put('PLAZA_BENCHES',[{'position':v3(-200,-.45,-155),'facing':0.0},{'position':v3(-200,-.45,-135),'facing':180.0},{'position':v3(-190,-.45,-145),'facing':-90.0}])
@@ -38,9 +48,6 @@ clusters=[(1,48,-126),(2,203,-126),(3,348,-126),(4,73,120),(5,303,120)]
 put('CLUSTERS',[{'id':f'C{n}','area':rect(cx-65,cz-75,130,150),'centre':v2(cx,cz)} for n,cx,cz in clusters])
 roads=[]
 def road(name,a,b,width=6.0): roads.append({'name':name,'from':v2(*a),'to':v2(*b),'width':width})
-for a,b in [((-425,-205),(425,-205)),((425,-205),(425,205)),((425,205),(-425,205)),((-425,205),(-425,-205))]: road('Ring Road',a,b,10.)
-for z in [-190,190]: road('Gate Road',(-490,z),(-425,z),10.)
-road('Highway',(-482,-245),(-482,245),10.)
 import math
 def rounded(name,pts,width=6.0,r=14.0,steps=4):
     """A road along a polyline whose corners are rounded with short straight pieces."""
@@ -57,6 +64,13 @@ def rounded(name,pts,width=6.0,r=14.0,steps=4):
     pts=[(round(x,2),round(z,2)) for x,z in out]
     for a,b in zip(pts,pts[1:]):
         if math.dist(a,b)>0.05: road(name,a,b,width)
+# Session 61: the ring road's four corners are rounded (radius 12 m) like the inside roads.
+# It starts and ends in the middle of the north side so the loop closes on a straight.
+RING_RADIUS=12.0
+rounded('Ring Road',[(0,-205),(425,-205),(425,205),(-425,205),(-425,-205),(0,-205)],10.,RING_RADIUS,6)
+put('RING_ROAD',{'half':v2(425,205),'radius':RING_RADIUS,'width':10.0})
+for z in [-190,190]: road('Gate Road',(-490,z),(-425,z),10.)
+road('Highway',(-482,-245),(-482,245),10.)
 # Session 60 road plan (docs/road_plan_2026-11-05.svg). The ring road is the only main road:
 # it meets the two gates, the bus loop and the stables car park, nothing else.
 rounded('Bus Loop',[(-332,-205),(-332,-160),(-302,-160),(-302,-205)],7.,12.)
@@ -69,11 +83,11 @@ rounded('Spine Loop',[(-125.6,-55.6),(-113,-40),(398,-40),(398,35),(-142,35),(-1
 rounded('Institute Back Road',[(-141,-63),(-290,-63),(-290,0)],6.)
 rounded('Plaza Road',[(-132,-71),(-132,-126),(-152,-126)],6.,16.)
 roundabouts=[{'centre':v2(-132,-62),'radius':9.0,'island':5.6}]
-for i in range(10):  # the roundabout ring, ten short pieces
-    a0=2*math.pi*i/10; a1=2*math.pi*(i+1)/10
+for i in range(24):  # the roundabout ring, 24 short pieces (Session 61: was 10, now a smooth circle)
+    a0=2*math.pi*i/24; a1=2*math.pi*(i+1)/24
     road('Institute Roundabout',(round(-132+9*math.cos(a0),2),round(-62+9*math.sin(a0),2)),(round(-132+9*math.cos(a1),2),round(-62+9*math.sin(a1),2)),6.)
 put('ROUNDABOUTS',roundabouts)
-road('Domes Path',(-118,-11),(348,-11),3.)
+# Session 62: the Domes Path is gone; the spine road's north red track links the domes now.
 # Session 52 (looks pass): the C Institute faces the spine, so its path comes up from the
 # spine road along the front and turns in at the door.
 road('Institute Access',(-186,0),(-186,-33),5.)
@@ -124,7 +138,8 @@ put('PLOTS',[{'name':'Fair Grade International School','area':rect(-425,35,120,1
  {'name':'Building site','area':rect(-135,55,110,135),'colour':colour(.8,.78,.74)}])
 put('WELCOME_SIGN',{'name':'Welcome to Wahat Al Shams','arabic':'أهلاً بكم في واحة الشمس','position':v3(-421,0,-180),'facing':-90.0})
 put('SPINE_DOMES',[v3(x,0,-20) for x in [-110,-20,70,160,250,340]])
-put('HILLS',[{'position':v3(x,0,z),'height':h} for x,z,h in [(20,8,.8),(65,8,1.1),(160,9,.6),(315,8,1.2)]])
+# Session 62: the hills moved 4 m south and stay flat near the road, so they don't cover the red track.
+put('HILLS',[{'position':v3(x,0,z),'height':h,'clear':v2(8.5,10.5)} for x,z,h in [(20,12,.8),(65,12,1.1),(160,12,.6),(315,12,1.2)]])
 put('LAP_POOL',rect(140,13,42,9))
 put('DOME_RADIUS',7.0);put('FARM_BEDS',[rect(-115,13,35,8),rect(-40,13,35,8),rect(200,13,35,8)])
 put('BEEHIVES',rect(360,13,16,8));put('DONKEY_PEN',{'area':rect(245,12,44,10),'donkeys':2})
@@ -137,7 +152,7 @@ put('GYM',{'position':v3(115,0,22),'size':v3(36,8,22),'facing':180.,'name':'Waha
 put('COMMUNITY_POOL',rect(190,-30,50,24));put('JUMPING_ARENA',rect(-282,65,115,88))
 put('STABLES',{'name':'Wahat Stables','arabic':'إسطبلات الواحة','block':{'position':v3(-224,0,174),'size':v3(100,5,14)},'paddock':rect(-280,157,110,9),'horses':4})
 put('BUILDING_SITE',{'area':rect(-135,55,110,135),'crane':v3(-80,0,120),'sign':{'name':'Phase 2 coming soon','arabic':'المرحلة الثانية قريباً','position':v3(-140,0,110),'facing':-90.}})
-put('BUILDING_SITES',[rect(-135,55,110,135),rect(217,56,16,132),rect(-275,-86,105,18),rect(-301,50,15,125),rect(-413,-89,100,84)])
+put('BUILDING_SITES',[rect(-135,55,110,135),rect(217,56,16,132),rect(-275,-86,105,18),rect(-301,50,15,125),rect(-413,-89,100,76)])  # Session 62: the last one ends 13 m north of the spine road
 put('CLUSTER_NAMES',{f'C{i}':'المجموعة '+a for i,a in enumerate('١٢٣٤٥',1)})
 put('TUTORIAL_ORDER',{'restaurant':'pizza','villa':101})
 put('RESTAURANT_SIZE',v3(18,8,16))
@@ -163,17 +178,30 @@ homes += [
 ]
 put('VILLAS',homes)
 put('REGULARS',[{'id':'mariam','name':'Auntie Mariam','villa':207,'shop':'boba','food':'bubble tea','who':'resident','look':1},{'id':'rashid','name':'Mr Rashid','villa':503,'shop':'shawarma','food':'shawarma','who':'resident','look':0},{'id':'dana','name':'Ms Dana','villa':901,'shop':'bakery','food':'cake','who':'teacher','look':-1},{'id':'hamdan','name':'Hamdan','villa':902,'shop':'farm','food':'farm juice','who':'groom','look':-1}])
-palms=[v3(x,0,z) for z in [-7,7] for x in range(-130,411,45)] +[v3(-210,-.45,-155),v3(-190,-.45,-155),v3(-210,-.45,-135),v3(-190,-.45,-135)]
+# Session 62: the spine road's palms stand in the planters (z +-4), all along the road.
+palms=[v3(x,0,z) for z in [-4,4] for x in range(-310,381,45)] +[v3(-210,-.45,-155),v3(-190,-.45,-155),v3(-210,-.45,-135),v3(-190,-.45,-135)]
+# Session 62: the spine road's cross-section, both sides: asphalt, a planter (kerb, grass,
+# shrubs) and a raised red walking track. Gaps: where a road joins (side -1 north, 1 south,
+# 0 both) the planter and track stop; at a path the planter becomes a marked crossing.
+put('SPINE_TRACKS',{'from_x':-334.0,'to_x':390.0,'road_half':3.0,'planter':2.0,'track':2.5,
+ 'road_gaps':[[-290.0,-1,6.0]],
+ 'path_gaps':[[-186.0,-1,3.0]]+[[x,0,1.6] for x in [-240.0,-145.0,-60.0,20.0,110.0,200.0,290.0,345.0]]})
+# Session 63: no bare sand. Sand stays only where the horses ride (the stables, the jumping
+# arena and the horse track); GroundType uses these for the tyre dust.
+put('SAND_AREAS',[rect(-282,65,115,88),rect(-282,157,115,43)])
+put('EDGE_GREENERY',{'half':v2(433,213),'radius':20.0,'width':6.0,'spacing':9.0})
 put('PALM_TREES',palms);put('PARKED_CAR_SIZE',v3(1.9,1.5,4.3))
 put('PARKED_CARS',[{'position':v3(x+3,0,z+8+k*9),'facing':90.,'bay':True} for x,z,w,d in parking[:6] for k in range(8)]
  +[{'position':v3(x,0,30),'facing':0.,'bay':True} for x in [-412,-403,-394,-385,-376,-354,-345,-336,-327,-318]])
 put('SCHOOL_PARKING',rect(-417,25,104,10))
 put('SPEED_BUMP_SIZE',v3(10,.12,.5))
-put('SPEED_BUMPS',[{'position':v3(x,0,z),'facing':90.} for z in [-205,205] for x in [-180,50,300]]+[{'position':v3(x,0,z),'facing':0.} for x in [-425,425] for z in [-80,80]])
+put('SPEED_BUMPS',[{'position':v3(x,0,z),'facing':90.} for z in [-205,205] for x in [-180,50,300]]+[{'position':v3(x,0,z),'facing':0.} for x in [-425,425] for z in [-80,80]]
+ # Session 61: narrower bumps on the inside roads (spine loop north and south, spine road).
+ +[{'position':v3(x,0,z),'facing':90.,'size':v3(6,.12,.5)} for x,z in [(-20,-40),(280,-40),(-60,35),(260,35),(-250,0),(150,0)]])
 put('CATS',cats);put('SCOOTER_KIDS',kids)
 put('BUGGIES',[{'points':[v3(cx-60,0,cz),v3(cx+(30 if n==3 else 60),0,cz),v3(cx+(30 if n==3 else 60),0,-189 if cz<0 else 189)],'colour':colour(.85,.85,.76),'level':(n-1)%3} for n,cx,cz in clusters]+[{'points':[v3(-140,0,-1),v3(410,0,-1)],'colour':colour(.3,.5,.5),'level':1}])
-put('HORSE_RIDERS',[{'points':[v3(-450,0,-230),v3(450,0,-230),v3(450,0,230),v3(-450,0,230)],'loop':True,'colour':colour(.45,.28,.15),'level':0,'collection_id':'horse_sultan','collection_name':'Sultan'},{'points':[v3(450,0,230),v3(-450,0,230),v3(-450,0,-230),v3(450,0,-230)],'loop':True,'colour':colour(.85,.82,.78),'level':1,'collection_id':'horse_noor','collection_name':'Noor'}])
-put('PEOPLE_ROUTES',[{'points':[v3(-438,0,-218),v3(438,0,-218),v3(438,0,218),v3(-438,0,218)],'loop':True,'jog':True,'look':2,'level':0}]+[{'points':[v3(-130,0,z),v3(405,0,z)],'jog':False,'look':i,'level':i%3} for i,z in enumerate([-1.5,1.5,-2.5])])
+put('HORSE_RIDERS',[{'points':[v3(x,0,z) for x,z in rounded_loop(450,230,37)],'loop':True,'colour':colour(.45,.28,.15),'level':0,'collection_id':'horse_sultan','collection_name':'Sultan'},{'points':[v3(x,0,z) for x,z in rounded_loop(450,230,37,reverse=True)],'loop':True,'colour':colour(.85,.82,.78),'level':1,'collection_id':'horse_noor','collection_name':'Noor'}])
+put('PEOPLE_ROUTES',[{'points':[v3(x,0,z) for x,z in rounded_loop(438,218,25)],'loop':True,'jog':True,'look':2,'level':0}]+[{'points':[v3(-326,0,z),v3(386,0,z)],'jog':jog,'look':i,'level':i%3} for i,(z,jog) in enumerate([(-6.6,True),(-5.9,False),(6.6,True),(5.9,False)])])
 put('GARDENERS',gardeners);put('PLAY_KIDS',plays)
 put('DUCKS',[{'from_x':x,'to_x':x+65,'side':.4 if i%2 else -.4,'level':i%3} for i,x in enumerate([-100,30,160,290])])
 put('BIRD_FLOCKS',[{'centre':v3(x,30,z),'radius':r,'birds':4,'level':i} for i,(x,z,r) in enumerate([(-180,-100,70),(180,80,90),(0,0,160)])])

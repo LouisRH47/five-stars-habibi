@@ -21,9 +21,9 @@ const GATES := [
 	{"position": Vector3(-465, 0, 190), "facing": -90.0, "name": "South Checkpoint"},
 ]
 
-const HORSE_TRACK := {"half": Vector2(450, 230), "width": 5.0}
+const HORSE_TRACK := {"half": Vector2(450, 230), "width": 5.0, "radius": 37.0}
 
-const BIKE_TRACK := {"half": Vector2(438, 218), "width": 4.0}
+const BIKE_TRACK := {"half": Vector2(438, 218), "width": 4.0, "radius": 25.0}
 
 const PLAZA := {"centre": Vector2(-200, -145), "radius": 50.0, "sunken_radius": 20.0, "floor_radius": 15.0, "depth": 0.45, "steps": 3, "fountain_radius": 2.8}
 
@@ -50,6 +50,8 @@ const CLUSTERS := [
 	{"id": "C5", "area": Rect2(238, 45, 130, 150), "centre": Vector2(303, 120)},
 ]
 
+const RING_ROAD := {"half": Vector2(425, 205), "radius": 12.0, "width": 10.0}
+
 const BUS_LOOP := {"entry": Vector2(-332, -205), "exit": Vector2(-302, -205), "bay": Vector3(-332, 0, -186), "points": [Vector3(-332, 0, -205), Vector3(-332, 0, -186), Vector3(-332, 0, -170), Vector3(-328, 0, -162), Vector3(-317, 0, -159), Vector3(-306, 0, -162), Vector3(-302, 0, -170), Vector3(-302, 0, -205)]}
 
 const ROUNDABOUTS := [
@@ -57,10 +59,35 @@ const ROUNDABOUTS := [
 ]
 
 const ROADS := [
-	{"name": "Ring Road", "from": Vector2(-425, -205), "to": Vector2(425, -205), "width": 10.0},
-	{"name": "Ring Road", "from": Vector2(425, -205), "to": Vector2(425, 205), "width": 10.0},
-	{"name": "Ring Road", "from": Vector2(425, 205), "to": Vector2(-425, 205), "width": 10.0},
-	{"name": "Ring Road", "from": Vector2(-425, 205), "to": Vector2(-425, -205), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(0, -205), "to": Vector2(413, -205), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(413, -205), "to": Vector2(416.67, -204.67), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(416.67, -204.67), "to": Vector2(419.67, -203.67), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(419.67, -203.67), "to": Vector2(422, -202), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(422, -202), "to": Vector2(423.67, -199.67), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(423.67, -199.67), "to": Vector2(424.67, -196.67), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(424.67, -196.67), "to": Vector2(425, -193), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(425, -193), "to": Vector2(425, 193), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(425, 193), "to": Vector2(424.67, 196.67), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(424.67, 196.67), "to": Vector2(423.67, 199.67), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(423.67, 199.67), "to": Vector2(422, 202), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(422, 202), "to": Vector2(419.67, 203.67), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(419.67, 203.67), "to": Vector2(416.67, 204.67), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(416.67, 204.67), "to": Vector2(413, 205), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(413, 205), "to": Vector2(-413, 205), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(-413, 205), "to": Vector2(-416.67, 204.67), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(-416.67, 204.67), "to": Vector2(-419.67, 203.67), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(-419.67, 203.67), "to": Vector2(-422, 202), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(-422, 202), "to": Vector2(-423.67, 199.67), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(-423.67, 199.67), "to": Vector2(-424.67, 196.67), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(-424.67, 196.67), "to": Vector2(-425, 193), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(-425, 193), "to": Vector2(-425, -193), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(-425, -193), "to": Vector2(-424.67, -196.67), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(-424.67, -196.67), "to": Vector2(-423.67, -199.67), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(-423.67, -199.67), "to": Vector2(-422, -202), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(-422, -202), "to": Vector2(-419.67, -203.67), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(-419.67, -203.67), "to": Vector2(-416.67, -204.67), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(-416.67, -204.67), "to": Vector2(-413, -205), "width": 10.0},
+	{"name": "Ring Road", "from": Vector2(-413, -205), "to": Vector2(0, -205), "width": 10.0},
 	{"name": "Gate Road", "from": Vector2(-490, -190), "to": Vector2(-425, -190), "width": 10.0},
 	{"name": "Gate Road", "from": Vector2(-490, 190), "to": Vector2(-425, 190), "width": 10.0},
 	{"name": "Highway", "from": Vector2(-482, -245), "to": Vector2(-482, 245), "width": 10.0},
@@ -124,17 +151,30 @@ const ROADS := [
 	{"name": "Plaza Road", "from": Vector2(-134.5, -123.5), "to": Vector2(-137.62, -125.38), "width": 6.0},
 	{"name": "Plaza Road", "from": Vector2(-137.62, -125.38), "to": Vector2(-142, -126), "width": 6.0},
 	{"name": "Plaza Road", "from": Vector2(-142, -126), "to": Vector2(-152, -126), "width": 6.0},
-	{"name": "Institute Roundabout", "from": Vector2(-123, -62), "to": Vector2(-124.72, -56.71), "width": 6.0},
-	{"name": "Institute Roundabout", "from": Vector2(-124.72, -56.71), "to": Vector2(-129.22, -53.44), "width": 6.0},
-	{"name": "Institute Roundabout", "from": Vector2(-129.22, -53.44), "to": Vector2(-134.78, -53.44), "width": 6.0},
-	{"name": "Institute Roundabout", "from": Vector2(-134.78, -53.44), "to": Vector2(-139.28, -56.71), "width": 6.0},
-	{"name": "Institute Roundabout", "from": Vector2(-139.28, -56.71), "to": Vector2(-141, -62), "width": 6.0},
-	{"name": "Institute Roundabout", "from": Vector2(-141, -62), "to": Vector2(-139.28, -67.29), "width": 6.0},
-	{"name": "Institute Roundabout", "from": Vector2(-139.28, -67.29), "to": Vector2(-134.78, -70.56), "width": 6.0},
-	{"name": "Institute Roundabout", "from": Vector2(-134.78, -70.56), "to": Vector2(-129.22, -70.56), "width": 6.0},
-	{"name": "Institute Roundabout", "from": Vector2(-129.22, -70.56), "to": Vector2(-124.72, -67.29), "width": 6.0},
-	{"name": "Institute Roundabout", "from": Vector2(-124.72, -67.29), "to": Vector2(-123, -62), "width": 6.0},
-	{"name": "Domes Path", "from": Vector2(-118, -11), "to": Vector2(348, -11), "width": 3.0},
+	{"name": "Institute Roundabout", "from": Vector2(-123, -62), "to": Vector2(-123.31, -59.67), "width": 6.0},
+	{"name": "Institute Roundabout", "from": Vector2(-123.31, -59.67), "to": Vector2(-124.21, -57.5), "width": 6.0},
+	{"name": "Institute Roundabout", "from": Vector2(-124.21, -57.5), "to": Vector2(-125.64, -55.64), "width": 6.0},
+	{"name": "Institute Roundabout", "from": Vector2(-125.64, -55.64), "to": Vector2(-127.5, -54.21), "width": 6.0},
+	{"name": "Institute Roundabout", "from": Vector2(-127.5, -54.21), "to": Vector2(-129.67, -53.31), "width": 6.0},
+	{"name": "Institute Roundabout", "from": Vector2(-129.67, -53.31), "to": Vector2(-132, -53), "width": 6.0},
+	{"name": "Institute Roundabout", "from": Vector2(-132, -53), "to": Vector2(-134.33, -53.31), "width": 6.0},
+	{"name": "Institute Roundabout", "from": Vector2(-134.33, -53.31), "to": Vector2(-136.5, -54.21), "width": 6.0},
+	{"name": "Institute Roundabout", "from": Vector2(-136.5, -54.21), "to": Vector2(-138.36, -55.64), "width": 6.0},
+	{"name": "Institute Roundabout", "from": Vector2(-138.36, -55.64), "to": Vector2(-139.79, -57.5), "width": 6.0},
+	{"name": "Institute Roundabout", "from": Vector2(-139.79, -57.5), "to": Vector2(-140.69, -59.67), "width": 6.0},
+	{"name": "Institute Roundabout", "from": Vector2(-140.69, -59.67), "to": Vector2(-141, -62), "width": 6.0},
+	{"name": "Institute Roundabout", "from": Vector2(-141, -62), "to": Vector2(-140.69, -64.33), "width": 6.0},
+	{"name": "Institute Roundabout", "from": Vector2(-140.69, -64.33), "to": Vector2(-139.79, -66.5), "width": 6.0},
+	{"name": "Institute Roundabout", "from": Vector2(-139.79, -66.5), "to": Vector2(-138.36, -68.36), "width": 6.0},
+	{"name": "Institute Roundabout", "from": Vector2(-138.36, -68.36), "to": Vector2(-136.5, -69.79), "width": 6.0},
+	{"name": "Institute Roundabout", "from": Vector2(-136.5, -69.79), "to": Vector2(-134.33, -70.69), "width": 6.0},
+	{"name": "Institute Roundabout", "from": Vector2(-134.33, -70.69), "to": Vector2(-132, -71), "width": 6.0},
+	{"name": "Institute Roundabout", "from": Vector2(-132, -71), "to": Vector2(-129.67, -70.69), "width": 6.0},
+	{"name": "Institute Roundabout", "from": Vector2(-129.67, -70.69), "to": Vector2(-127.5, -69.79), "width": 6.0},
+	{"name": "Institute Roundabout", "from": Vector2(-127.5, -69.79), "to": Vector2(-125.64, -68.36), "width": 6.0},
+	{"name": "Institute Roundabout", "from": Vector2(-125.64, -68.36), "to": Vector2(-124.21, -66.5), "width": 6.0},
+	{"name": "Institute Roundabout", "from": Vector2(-124.21, -66.5), "to": Vector2(-123.31, -64.33), "width": 6.0},
+	{"name": "Institute Roundabout", "from": Vector2(-123.31, -64.33), "to": Vector2(-123, -62), "width": 6.0},
 	{"name": "Institute Access", "from": Vector2(-186, 0), "to": Vector2(-186, -33), "width": 5.0},
 	{"name": "Institute Door", "from": Vector2(-186, -33), "to": Vector2(-197, -33), "width": 5.0},
 	{"name": "C1 Lane", "from": Vector2(-12, -189), "to": Vector2(-12, -47), "width": 6.0},
@@ -281,10 +321,10 @@ const SPINE_DOMES := [
 ]
 
 const HILLS := [
-	{"position": Vector3(20, 0, 8), "height": 0.8},
-	{"position": Vector3(65, 0, 8), "height": 1.1},
-	{"position": Vector3(160, 0, 9), "height": 0.6},
-	{"position": Vector3(315, 0, 8), "height": 1.2},
+	{"position": Vector3(20, 0, 12), "height": 0.8, "clear": Vector2(8.5, 10.5)},
+	{"position": Vector3(65, 0, 12), "height": 1.1, "clear": Vector2(8.5, 10.5)},
+	{"position": Vector3(160, 0, 12), "height": 0.6, "clear": Vector2(8.5, 10.5)},
+	{"position": Vector3(315, 0, 12), "height": 1.2, "clear": Vector2(8.5, 10.5)},
 ]
 
 const LAP_POOL := Rect2(140, 13, 42, 9)
@@ -336,7 +376,7 @@ const BUILDING_SITES := [
 	Rect2(217, 56, 16, 132),
 	Rect2(-275, -86, 105, 18),
 	Rect2(-301, 50, 15, 125),
-	Rect2(-413, -89, 100, 84),
+	Rect2(-413, -89, 100, 76),
 ]
 
 const CLUSTER_NAMES := {"C1": "المجموعة ١", "C2": "المجموعة ٢", "C3": "المجموعة ٣", "C4": "المجموعة ٤", "C5": "المجموعة ٥"}
@@ -881,33 +921,48 @@ const REGULARS := [
 	{"id": "hamdan", "name": "Hamdan", "villa": 902, "shop": "farm", "food": "farm juice", "who": "groom", "look": -1},
 ]
 
+const SPINE_TRACKS := {"from_x": -334.0, "to_x": 390.0, "road_half": 3.0, "planter": 2.0, "track": 2.5, "road_gaps": [[-290.0, -1, 6.0]], "path_gaps": [[-186.0, -1, 3.0], [-240.0, 0, 1.6], [-145.0, 0, 1.6], [-60.0, 0, 1.6], [20.0, 0, 1.6], [110.0, 0, 1.6], [200.0, 0, 1.6], [290.0, 0, 1.6], [345.0, 0, 1.6]]}
+
+const SAND_AREAS := [
+	Rect2(-282, 65, 115, 88),
+	Rect2(-282, 157, 115, 43),
+]
+
+const EDGE_GREENERY := {"half": Vector2(433, 213), "radius": 20.0, "width": 6.0, "spacing": 9.0}
+
 const PALM_TREES := [
-	Vector3(-130, 0, -7),
-	Vector3(-85, 0, -7),
-	Vector3(-40, 0, -7),
-	Vector3(5, 0, -7),
-	Vector3(50, 0, -7),
-	Vector3(95, 0, -7),
-	Vector3(140, 0, -7),
-	Vector3(185, 0, -7),
-	Vector3(230, 0, -7),
-	Vector3(275, 0, -7),
-	Vector3(320, 0, -7),
-	Vector3(365, 0, -7),
-	Vector3(410, 0, -7),
-	Vector3(-130, 0, 7),
-	Vector3(-85, 0, 7),
-	Vector3(-40, 0, 7),
-	Vector3(5, 0, 7),
-	Vector3(50, 0, 7),
-	Vector3(95, 0, 7),
-	Vector3(140, 0, 7),
-	Vector3(185, 0, 7),
-	Vector3(230, 0, 7),
-	Vector3(275, 0, 7),
-	Vector3(320, 0, 7),
-	Vector3(365, 0, 7),
-	Vector3(410, 0, 7),
+	Vector3(-310, 0, -4),
+	Vector3(-265, 0, -4),
+	Vector3(-220, 0, -4),
+	Vector3(-175, 0, -4),
+	Vector3(-130, 0, -4),
+	Vector3(-85, 0, -4),
+	Vector3(-40, 0, -4),
+	Vector3(5, 0, -4),
+	Vector3(50, 0, -4),
+	Vector3(95, 0, -4),
+	Vector3(140, 0, -4),
+	Vector3(185, 0, -4),
+	Vector3(230, 0, -4),
+	Vector3(275, 0, -4),
+	Vector3(320, 0, -4),
+	Vector3(365, 0, -4),
+	Vector3(-310, 0, 4),
+	Vector3(-265, 0, 4),
+	Vector3(-220, 0, 4),
+	Vector3(-175, 0, 4),
+	Vector3(-130, 0, 4),
+	Vector3(-85, 0, 4),
+	Vector3(-40, 0, 4),
+	Vector3(5, 0, 4),
+	Vector3(50, 0, 4),
+	Vector3(95, 0, 4),
+	Vector3(140, 0, 4),
+	Vector3(185, 0, 4),
+	Vector3(230, 0, 4),
+	Vector3(275, 0, 4),
+	Vector3(320, 0, 4),
+	Vector3(365, 0, 4),
 	Vector3(-210, -0.45, -155),
 	Vector3(-190, -0.45, -155),
 	Vector3(-210, -0.45, -135),
@@ -992,6 +1047,12 @@ const SPEED_BUMPS := [
 	{"position": Vector3(-425, 0, 80), "facing": 0.0},
 	{"position": Vector3(425, 0, -80), "facing": 0.0},
 	{"position": Vector3(425, 0, 80), "facing": 0.0},
+	{"position": Vector3(-20, 0, -40), "facing": 90.0, "size": Vector3(6, 0.12, 0.5)},
+	{"position": Vector3(280, 0, -40), "facing": 90.0, "size": Vector3(6, 0.12, 0.5)},
+	{"position": Vector3(-60, 0, 35), "facing": 90.0, "size": Vector3(6, 0.12, 0.5)},
+	{"position": Vector3(260, 0, 35), "facing": 90.0, "size": Vector3(6, 0.12, 0.5)},
+	{"position": Vector3(-250, 0, 0), "facing": 90.0, "size": Vector3(6, 0.12, 0.5)},
+	{"position": Vector3(150, 0, 0), "facing": 90.0, "size": Vector3(6, 0.12, 0.5)},
 ]
 
 const CATS := [
@@ -1020,15 +1081,16 @@ const BUGGIES := [
 ]
 
 const HORSE_RIDERS := [
-	{"points": [Vector3(-450, 0, -230), Vector3(450, 0, -230), Vector3(450, 0, 230), Vector3(-450, 0, 230)], "loop": true, "colour": Color(0.45, 0.28, 0.15, 1), "level": 0, "collection_id": "horse_sultan", "collection_name": "Sultan"},
-	{"points": [Vector3(450, 0, 230), Vector3(-450, 0, 230), Vector3(-450, 0, -230), Vector3(450, 0, -230)], "loop": true, "colour": Color(0.85, 0.82, 0.78, 1), "level": 1, "collection_id": "horse_noor", "collection_name": "Noor"},
+	{"points": [Vector3(-450, 0, -193), Vector3(-449.29, 0, -200.22), Vector3(-447.18, 0, -207.16), Vector3(-443.76, 0, -213.56), Vector3(-439.16, 0, -219.16), Vector3(-433.56, 0, -223.76), Vector3(-427.16, 0, -227.18), Vector3(-420.22, 0, -229.29), Vector3(-413, 0, -230), Vector3(413, 0, -230), Vector3(420.22, 0, -229.29), Vector3(427.16, 0, -227.18), Vector3(433.56, 0, -223.76), Vector3(439.16, 0, -219.16), Vector3(443.76, 0, -213.56), Vector3(447.18, 0, -207.16), Vector3(449.29, 0, -200.22), Vector3(450, 0, -193), Vector3(450, 0, 193), Vector3(449.29, 0, 200.22), Vector3(447.18, 0, 207.16), Vector3(443.76, 0, 213.56), Vector3(439.16, 0, 219.16), Vector3(433.56, 0, 223.76), Vector3(427.16, 0, 227.18), Vector3(420.22, 0, 229.29), Vector3(413, 0, 230), Vector3(-413, 0, 230), Vector3(-420.22, 0, 229.29), Vector3(-427.16, 0, 227.18), Vector3(-433.56, 0, 223.76), Vector3(-439.16, 0, 219.16), Vector3(-443.76, 0, 213.56), Vector3(-447.18, 0, 207.16), Vector3(-449.29, 0, 200.22), Vector3(-450, 0, 193)], "loop": true, "colour": Color(0.45, 0.28, 0.15, 1), "level": 0, "collection_id": "horse_sultan", "collection_name": "Sultan"},
+	{"points": [Vector3(-450, 0, 193), Vector3(-449.29, 0, 200.22), Vector3(-447.18, 0, 207.16), Vector3(-443.76, 0, 213.56), Vector3(-439.16, 0, 219.16), Vector3(-433.56, 0, 223.76), Vector3(-427.16, 0, 227.18), Vector3(-420.22, 0, 229.29), Vector3(-413, 0, 230), Vector3(413, 0, 230), Vector3(420.22, 0, 229.29), Vector3(427.16, 0, 227.18), Vector3(433.56, 0, 223.76), Vector3(439.16, 0, 219.16), Vector3(443.76, 0, 213.56), Vector3(447.18, 0, 207.16), Vector3(449.29, 0, 200.22), Vector3(450, 0, 193), Vector3(450, 0, -193), Vector3(449.29, 0, -200.22), Vector3(447.18, 0, -207.16), Vector3(443.76, 0, -213.56), Vector3(439.16, 0, -219.16), Vector3(433.56, 0, -223.76), Vector3(427.16, 0, -227.18), Vector3(420.22, 0, -229.29), Vector3(413, 0, -230), Vector3(-413, 0, -230), Vector3(-420.22, 0, -229.29), Vector3(-427.16, 0, -227.18), Vector3(-433.56, 0, -223.76), Vector3(-439.16, 0, -219.16), Vector3(-443.76, 0, -213.56), Vector3(-447.18, 0, -207.16), Vector3(-449.29, 0, -200.22), Vector3(-450, 0, -193)], "loop": true, "colour": Color(0.85, 0.82, 0.78, 1), "level": 1, "collection_id": "horse_noor", "collection_name": "Noor"},
 ]
 
 const PEOPLE_ROUTES := [
-	{"points": [Vector3(-438, 0, -218), Vector3(438, 0, -218), Vector3(438, 0, 218), Vector3(-438, 0, 218)], "loop": true, "jog": true, "look": 2, "level": 0},
-	{"points": [Vector3(-130, 0, -1.5), Vector3(405, 0, -1.5)], "jog": false, "look": 0, "level": 0},
-	{"points": [Vector3(-130, 0, 1.5), Vector3(405, 0, 1.5)], "jog": false, "look": 1, "level": 1},
-	{"points": [Vector3(-130, 0, -2.5), Vector3(405, 0, -2.5)], "jog": false, "look": 2, "level": 2},
+	{"points": [Vector3(-438, 0, -193), Vector3(-437.52, 0, -197.88), Vector3(-436.1, 0, -202.57), Vector3(-433.79, 0, -206.89), Vector3(-430.68, 0, -210.68), Vector3(-426.89, 0, -213.79), Vector3(-422.57, 0, -216.1), Vector3(-417.88, 0, -217.52), Vector3(-413, 0, -218), Vector3(413, 0, -218), Vector3(417.88, 0, -217.52), Vector3(422.57, 0, -216.1), Vector3(426.89, 0, -213.79), Vector3(430.68, 0, -210.68), Vector3(433.79, 0, -206.89), Vector3(436.1, 0, -202.57), Vector3(437.52, 0, -197.88), Vector3(438, 0, -193), Vector3(438, 0, 193), Vector3(437.52, 0, 197.88), Vector3(436.1, 0, 202.57), Vector3(433.79, 0, 206.89), Vector3(430.68, 0, 210.68), Vector3(426.89, 0, 213.79), Vector3(422.57, 0, 216.1), Vector3(417.88, 0, 217.52), Vector3(413, 0, 218), Vector3(-413, 0, 218), Vector3(-417.88, 0, 217.52), Vector3(-422.57, 0, 216.1), Vector3(-426.89, 0, 213.79), Vector3(-430.68, 0, 210.68), Vector3(-433.79, 0, 206.89), Vector3(-436.1, 0, 202.57), Vector3(-437.52, 0, 197.88), Vector3(-438, 0, 193)], "loop": true, "jog": true, "look": 2, "level": 0},
+	{"points": [Vector3(-326, 0, -6.6), Vector3(386, 0, -6.6)], "jog": true, "look": 0, "level": 0},
+	{"points": [Vector3(-326, 0, -5.9), Vector3(386, 0, -5.9)], "jog": false, "look": 1, "level": 1},
+	{"points": [Vector3(-326, 0, 6.6), Vector3(386, 0, 6.6)], "jog": true, "look": 2, "level": 2},
+	{"points": [Vector3(-326, 0, 5.9), Vector3(386, 0, 5.9)], "jog": false, "look": 3, "level": 0},
 ]
 
 const GARDENERS := [

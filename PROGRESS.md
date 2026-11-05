@@ -218,6 +218,100 @@ The gym models are for Session 56 (not this wave).
 **Louis's turn:** open scenes/kit_gallery.tscn and press F6. You should see two long rows of
 models (restaurant bits, then furniture bits) with their names floating above, and a third
 row with the fridge, bin, plant and lamp. Use the arrow keys to slide the camera along.
+## Session 63: Greenery, round tracks and no bare sand — 5 November 2026
+
+- **Green edge.** Palms, round shade trees and hedges in the strip between the ring road and
+  the blue track, all the way round (open at the two gate roads and where the horses cross).
+  The trunks and hedges are solid (scripts/edge_builder.gd).
+- **Round tracks.** The blue run-and-cycle track and the horse track have rounded corners with
+  the same centres as the ring road's (radius 25 m and 37 m). The white horse rails, the horse
+  riders and the track jogger follow the curves. The blue track has a fine rubbery texture with
+  white lane lines (assets/textures/bike_track_1k.jpg, made by tools/make_road_textures.py).
+- **No bare sand.** The ground is grass now, and every cluster sits on pavers, so the front of
+  every home is paved. Sand stays only at the stables, the jumping arena and the horse track
+  (SAND_AREAS in the data); tyre dust only puffs up there now.
+- **Past the fence.** Three more rows of trees outside the walls (past the highway on the west),
+  56 low sand dunes, desert sand out to the horizon and 14 hazy far-off towers of Al Sarab.
+- Checked: smoke test PASS (new Session 63 checks), road mesh, district traffic, bus recovery,
+  coplanar, navigation, detail world, static batch, mini-map cache, housing camera and
+  lifecycle tests PASS. Play-test bot careful: 5 deliveries, 5.0 stars, never stuck; careless:
+  3 deliveries, 3 small and 1 big crash, never stuck.
+
+**Louis's turn:** press F5 and ride to the ring road, then out to its edge: a row of palms,
+trees and hedges between the road and the blue track. Ride round a corner of the ring road and
+look at the blue and sandy tracks: they curve too, and the blue track has lane lines. Ride
+through a cluster: pavers in front of the houses, no sand. Look out past the fence from the
+ring road: thick trees, dunes and far-off towers.
+
+**Known gaps (Sessions 61 to 63):** screenshots and the Medium frame-time check need a real
+graphics card (do them on the Mac in Session 74). The plain grass ground is one big texture;
+more planters beside the roads could come with Session 70's textures.
+
+## Session 62: The spine road and red walking tracks — 5 November 2026
+
+- **Like Louis's photo.** On both sides of the spine road: a 2 m planter (low kerbs, grass,
+  clipped hedges, pink bougainvillea and purple flower beds under the date palms), then a
+  2.5 m matte red-brown walking track, slightly raised (scripts/spine_tracks.gd, layout in
+  SPINE_TRACKS in the data). The red track uses a new CC0 texture made by
+  tools/make_road_textures.py.
+- **Kerbs keep you off.** A solid kerb on the road side and on the park side stops the bike
+  and buggies getting onto the red track. Gaps: at the Institute Back Road junction (white
+  stripes on the road where it crosses the track) and at nine paths (the planter becomes a
+  paved crossing with white stripes), including the C Institute path.
+- **Joggers and walkers** now use the red tracks: two joggers and two walkers, one of each per
+  side (they used to walk on the road).
+- **Palms** moved from z ±7 (where the track is) into the planters at z ±4, and now line the
+  whole spine road from the west end.
+- **C Institute.** Its path joins the spine road through a marked crossing. The stepped seats
+  now step down away from the glass, so the people sitting there face outwards, to the spine.
+- The Domes Path is gone: the north red track runs past the domes instead. The spine hills
+  moved 4 m south and stay flat near the road. The building site west of the C Institute
+  ends 13 m short of the spine road, so its fence is off the track.
+- Checked: smoke test PASS (new Session 62 checks: kerb blocks a ride onto the track, every gap
+  is open, routes on the tracks, palms off the tracks, institute path and seats), road mesh,
+  district traffic, bus recovery, coplanar, navigation, detail world and static batch tests
+  PASS. Play-test bot: 6 deliveries, 4.83 stars, no crashes, never stuck.
+
+**Louis's turn:** press F5 and ride along the spine road (the long road through the park). Red
+tracks on both sides behind a planter with palms, hedges and pink and purple flowers. Try to
+ride onto the red track: the kerb stops you. Find a white-striped crossing and ride through it.
+Watch the joggers on the red tracks. Ride to the C Institute: its path meets the spine road at
+a crossing, and the people on the stepped seats face the spine.
+
+## Session 61: Road surfaces, markings and junctions — 5 November 2026
+
+- **Smooth roads.** A new script, scripts/road_mesh.gd, joins the short road pieces from the
+  map data into one smooth strip per road, so rounded corners, the bus loop and the
+  roundabout are real curves (the roundabout now has 24 pieces, not 10). The ring road's four
+  corners are rounded too (12 m radius, in the generator).
+- **Asphalt.** A new asphalt texture (assets/textures/asphalt_road_1k.jpg, cut from the CC0
+  Poly Haven photo without its long cracks: those repeating cracks and the old white dashes on
+  the ring road were the "tyre marks"). The middle of each road is a little darker, with light
+  wear along it. Low graphics uses plain grey.
+- **Markings.** A yellow dashed centre line on every two-way asphalt road, and white arrows on
+  each side every 40 m (ring road every 60 m) showing which way to drive (on the right). The
+  roundabout (anticlockwise) and the bus loop are one-way, with arrows in the middle.
+- **Kerbs and junctions.** Low kerbs on both sides, with gaps where roads and paths join. Where
+  a road meets another it stops at the other road's edge and a curved corner piece fills the
+  gap. Roads that meet are a couple of millimetres apart in height, and pavers sit lower than
+  asphalt, so no two surfaces share a height (no flicker). Car park access roads are part of
+  the road mesh now.
+- **Traffic follows the curves.** Ring-road cars, car-park cars and buses drive the rounded ring.
+- **Skid marks.** A hard brake leaves a faint, short dark mark behind the back tyre; it fades
+  away after about 10 seconds (scripts/skid_marks.gd, numbers in game_config.gd).
+- **Speed bumps and road works** checked on the new roads, plus six narrower bumps on the
+  inside roads (spine loop and spine road).
+- Checked: smoke test PASS (new Session 61 checks), new tests/road_mesh_test.gd PASS, district
+  traffic, bus recovery, coplanar, navigation and detail world tests PASS. Screenshots and the
+  Medium frame-time check can't be done on the cloud machine (no graphics card); the roads add
+  about 170 merged meshes and replace about 155 road boxes.
+
+**Louis's turn:** open the project in Godot and press F5, start a shift. Ride onto the ring
+road: yellow dashes down the middle, white arrows on your side pointing the way you're going,
+grey kerbs at the edges. Ride round a corner of the ring road: it's a smooth curve now, and the
+cars go round it too. Ride to the roundabout east of the C Institute: it's round, with arrows
+going anticlockwise. Look at where a cluster lane meets the cross road: a curved corner, no
+flickering. Ride fast and brake hard (S): a short faint skid mark appears and fades away.
 
 ## Session 60: The road network from the approved plan — 5 November 2026
 

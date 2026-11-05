@@ -1346,6 +1346,7 @@ func _finish() -> void:
 	await _check_session33()
 	await _check_life_meets_events()
 	_check_session32()
+	_check_roads_polish()  # Sessions 61 to 63 (roads, spine tracks, greenery)
 	await _check_venue_handoffs()
 	await _check_world_polish()  # Sessions 67 to 69
 	# --- Looks pass (Sessions 54-55): walk into every restaurant room, queue, hold E, walk out ---
@@ -2594,3 +2595,110 @@ func _check_session69() -> void:
 	_close_card()
 	_check("a honey order can be picked up at the beekeeper and delivered", done and gs.money > money
 			and order.food in ["honey jars", "wax candles"], order.describe())
+# --- World polish pass (Sessions 61 to 63) -------------------------------------------
+
+func _on_any_road(data: Dictionary, spot: Vector2, slack := 0.0) -> bool:
+	for road: Dictionary in data["ROADS"]:
+		var width: float = road.get("width", data["ROAD_WIDTH"])
+		if Geometry2D.get_closest_point_to_segment(spot, road["from"], road["to"]).distance_to(spot) <= width * 0.5 + slack:
+			return true
+	return false
+
+
+func _check_roads_polish() -> void:
+	var data: Dictionary = (_main.get_node("WahatBuilder").data as Script).get_script_constant_map()
+	# Session 61: road surfaces, markings and junctions.
+	var roads: RoadMesh = _main.get_node_or_null("WahatBuilder/Roads")
+	_check("Session 61: roads are smooth strips with centre lines, arrows, kerbs and curved corners",
+			roads != null and roads.stats["dashes"] > 1000 and roads.stats["arrows"] > 200
+			and roads.stats["fillets"] >= 60 and roads.stats["kerb_pieces"] > 3000, "%s" % [roads.stats if roads else {}])
+	_check("Session 61: no two road surfaces meet at the same height", roads != null and roads.stats["same_height_overlaps"] == 0, "")
+	var ring_pieces: Array = data["ROADS"].filter(func(r): return r["name"] == "Ring Road")
+	_check("Session 61: the ring road has rounded corners", ring_pieces.size() > 20 and data.has("RING_ROAD"), "%d pieces" % ring_pieces.size())
+	var old_dashes := 0
+	for part: Node in _main.get_node("DistrictDetail/StreetFurniture").get_children():
+		if part is MeshInstance3D and part.mesh is BoxMesh and (part.mesh as BoxMesh).size.is_equal_approx(Vector3(0.14, 0.02, 4)):
+			old_dashes += 1
+	_check("Session 61: the old white ring-road dashes (tyre marks) are gone", old_dashes == 0, "%d left" % old_dashes)
+	var off_road: Array = []
+	for bump: Dictionary in data["SPEED_BUMPS"]:
+		if not _on_any_road(data, Vector2(bump["position"].x, bump["position"].z)):
+			off_road.append(bump["position"])
+	for works: Dictionary in data["ROAD_WORKS"]:
+		if not _on_any_road(data, works["centre"]):
+			off_road.append(works["name"])
+	_check("Session 61: speed bumps and road works sit on the new roads", off_road.is_empty(), "%s" % [off_road])
+	var traffic: Node = _main.get_node("DistrictTraffic")
+	_check("Session 61: ring-road cars follow the rounded ring", traffic.cars.size() > 0 and traffic.cars[0].points.size() > 20, "")
+	var skid: Node = _bike.get_node_or_null("SkidMarks")
+	_check("Session 61: the bike can leave skid marks", skid != null, "")
+	if skid != null:
+		skid.start_mark()
+		skid.add_point(_bike.global_position + Vector3(0, 0.06, 2))
+		var made: bool = skid.marks.size() > 0 and skid.marks.back()["view"].mesh != null
+		var fresh: float = skid.marks.back()["material"].albedo_color.a
+		skid._physics_process(GameConfig.SKID_MARK_HOLD + GameConfig.SKID_MARK_FADE + 0.5)
+		_check("Session 61: a hard brake leaves a faint, short skid mark that fades away",
+				made and fresh <= 0.4 and skid.marks.is_empty(), "%d marks" % skid.marks.size())
+	# Session 62: the spine road's planters and red walking tracks.
+	var tracks: SpineTracks = _main.get_node_or_null("WahatBuilder/SpineTracks")
+	var spec: Dictionary = data["SPINE_TRACKS"]
+	_check("Session 62: red tracks and planters on both sides of the spine road",
+			tracks != null and tracks.track_length > 1300.0 and tracks.plants > 40, "%s" % [tracks.track_length if tracks else 0.0])
+	var space := _bike.get_world_3d().direct_space_state
+	var ray := PhysicsRayQueryParameters3D.create(Vector3(60, 0.3, 0), Vector3(60, 0.3, 7))
+	ray.exclude = [_bike.get_rid()]
+	var hit := space.intersect_ray(ray)
+	_check("Session 62: a kerb stops the bike riding onto the red track", not hit.is_empty() and String((hit["collider"] as Node).name).begins_with("SpineKerb"), "%s" % [hit.get("collider")])
+	var open_gaps := 0
+	for gap: Array in spec["path_gaps"] + spec["road_gaps"]:
+		var side := -1.0 if int(gap[1]) < 0 else 1.0
+		ray.from = Vector3(gap[0], 0.3, 0)
+		ray.to = Vector3(gap[0], 0.3, 9.0 * side)
+		var through := space.intersect_ray(ray)
+		if through.is_empty() or not String((through["collider"] as Node).name).begins_with("SpineKerb"):
+			open_gaps += 1
+	_check("Session 62: crossing gaps at every junction and path", open_gaps == spec["path_gaps"].size() + spec["road_gaps"].size(), "%d open" % open_gaps)
+	var on_track := 0
+	for route: Dictionary in data["PEOPLE_ROUTES"]:
+		var z: float = route["points"][0].z
+		if absf(absf(z) - 6.25) <= 1.25 and absf(route["points"][-1].z - z) < 0.01:
+			on_track += 1
+	_check("Session 62: joggers and walkers use the red tracks", on_track >= 4, "%d routes" % on_track)
+	var palms_clear := true
+	for palm: Vector3 in data["PALM_TREES"]:
+		if palm.x > spec["from_x"] and palm.x < spec["to_x"] and absf(palm.z) > 5.0 and absf(palm.z) < 7.5:
+			palms_clear = false
+	_check("Session 62: no palm stands on a red track", palms_clear, "")
+	var access_ok := false
+	for road: Dictionary in data["ROADS"]:
+		if road["name"] == "Institute Access" and _on_any_road(data, road["from"], -2.0):
+			access_ok = spec["path_gaps"].any(func(g): return absf(g[0] - road["from"].x) < 0.5)
+	_check("Session 62: the C Institute path joins the spine road through a crossing", access_ok, "")
+	var seats := _main.get_node("DistrictDetail/InstituteSeating")
+	var tiers: Array = seats.get_children().filter(func(n): return n is MeshInstance3D and n.mesh is BoxMesh)
+	var sitter: Node3D = seats.find_child("InstituteSitter", false, false)
+	_check("Session 62: the C Institute seats face outwards, away from the glass",
+			tiers.size() >= 2 and (tiers[0].mesh as BoxMesh).size.y > (tiers[1].mesh as BoxMesh).size.y
+			and sitter != null and is_equal_approx(sitter.rotation.y, PI), "")
+	# Session 63: greenery, round tracks and no bare sand.
+	var edge: EdgeBuilder = _main.get_node_or_null("WahatBuilder/EdgeBuilder")
+	_check("Session 63: palms, trees and hedges between the ring road and the blue track", edge != null and edge.greenery_count > 200, "%d" % (edge.greenery_count if edge else 0))
+	_check("Session 63: thick tree belt, dunes and far shapes past the fence",
+			edge != null and edge.belt_trees > 500 and edge.dunes >= 30 and edge.far_shapes >= 10, "")
+	var blue: Node = edge.get_node_or_null("BikeTrack") if edge else null
+	var blue_view: MeshInstance3D = blue.get_child(0) if blue and blue.get_child_count() > 0 else null
+	_check("Session 63: the blue track has a texture and rounded corners",
+			blue_view != null and (blue_view.material_override as StandardMaterial3D).albedo_texture != null and data["BIKE_TRACK"].get("radius", 0.0) > 0.0, "")
+	_check("Session 63: horse riders follow the rounded horse track", data["HORSE_RIDERS"].all(func(r): return r["points"].size() > 20), "")
+	var sandy: Array = []
+	for villa: Dictionary in data["VILLAS"]:
+		if villa.has("approach") and GroundType.is_sand(data, Vector2(villa["approach"].x, villa["approach"].z)):
+			sandy.append(villa["number"])
+	for spot: Vector2 in [Vector2(-300, -100), Vector2(0, 200), Vector2(420, 0), Vector2(-150, 30)]:
+		if GroundType.is_sand(data, spot):
+			sandy.append(spot)
+	var arena: Rect2 = data["JUMPING_ARENA"]
+	_check("Session 63: no bare sand except where the horses ride", sandy.is_empty() and GroundType.is_sand(data, arena.get_center())
+			and GroundType.is_sand(data, Vector2(0, -230)), "%s" % [sandy.slice(0, 5)])
+

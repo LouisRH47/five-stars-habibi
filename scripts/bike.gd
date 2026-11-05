@@ -131,6 +131,10 @@ func _ready() -> void:
 	var dust := preload("res://scripts/tyre_dust.gd").new()
 	dust.name = "TyreDust"
 	add_child(dust)
+	# Session 61: faint, short skid marks after a hard brake, which fade away.
+	var skid := preload("res://scripts/skid_marks.gd").new()
+	skid.name = "SkidMarks"
+	add_child(skid)
 	var wind := preload("res://scripts/ride_wind.gd").new()
 	wind.name = "RideWind"
 	wind.bike = self

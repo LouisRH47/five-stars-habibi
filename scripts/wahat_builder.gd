@@ -37,7 +37,11 @@ func _ready() -> void:
 		return
 	_map = data.get_script_constant_map()
 	_build_ground()
-	_build_tracks()
+	EdgeBuilder.build(self, _map)  # Session 63: round tracks, edge greenery, dunes
+	# Session 63: pavers under each whole cluster, so there's no bare sand in front of homes.
+	for cluster: Dictionary in _map["CLUSTERS"]:
+		var block: Rect2 = cluster["area"]
+		_flat(block.get_center(), block.size, 0.02, PAVING, 0.022)
 	for plot in _map["PLOTS"]:
 		var area: Rect2 = plot["area"]
 		_flat(area.get_center(), area.size, 0.02, plot["colour"], 0.01)
@@ -47,8 +51,9 @@ func _ready() -> void:
 	_build_stream(stream)
 	for area: Rect2 in _map["PAVED_AREAS"]:
 		_flat(area.get_center(), area.size, 0.02, PAVING, 0.03)
-	for road in _map["ROADS"]:
-		_build_road(road)
+	# Session 61: smooth road strips with markings, kerbs and curved corners.
+	RoadMesh.build(self, _map)
+	SpineTracks.build(self, _map)  # Session 62: planters and red walking tracks on the spine road
 	for spot: Vector2 in _map["BOLLARDS"]:
 		var post := StaticBody3D.new()
 		post.position = Vector3(spot.x, 0, spot.y)
@@ -68,10 +73,13 @@ func _build_ground() -> void:
 	var plaza: Dictionary = _map["PLAZA"]
 	var c: Vector2 = plaza["centre"]
 	var hole: float = plaza.get("sunken_radius", 0.0)
-	_flat(Vector2((-half.x + c.x - hole) * 0.5, 0), Vector2(c.x - hole + half.x, half.y * 2.0), 1.0, SAND, 0.0, true)
-	_flat(Vector2((c.x + hole + half.x) * 0.5, 0), Vector2(half.x - c.x - hole, half.y * 2.0), 1.0, SAND, 0.0, true)
-	_flat(Vector2(c.x, (-half.y + c.y - hole) * 0.5), Vector2(hole * 2.0, c.y - hole + half.y), 1.0, SAND, 0.0, true)
-	_flat(Vector2(c.x, (c.y + hole + half.y) * 0.5), Vector2(hole * 2.0, half.y - c.y - hole), 1.0, SAND, 0.0, true)
+	# Session 63: the ground is grass now (sand only where the horses ride: their plots and
+	# the horse track are built on top).
+	var ground := GRASS if _map.has("SAND_AREAS") else SAND
+	_flat(Vector2((-half.x + c.x - hole) * 0.5, 0), Vector2(c.x - hole + half.x, half.y * 2.0), 1.0, ground, 0.0, true)
+	_flat(Vector2((c.x + hole + half.x) * 0.5, 0), Vector2(half.x - c.x - hole, half.y * 2.0), 1.0, ground, 0.0, true)
+	_flat(Vector2(c.x, (-half.y + c.y - hole) * 0.5), Vector2(hole * 2.0, c.y - hole + half.y), 1.0, ground, 0.0, true)
+	_flat(Vector2(c.x, (c.y + hole + half.y) * 0.5), Vector2(hole * 2.0, half.y - c.y - hole), 1.0, ground, 0.0, true)
 
 
 ## A flat coloured slab. middle: x/z. height: its thickness. top: how high its top is.
@@ -85,33 +93,6 @@ func _flat(middle: Vector2, size: Vector2, height: float, colour: Color, top: fl
 	LowPoly.box(body, Vector3(size.x, height, size.y), colour, Vector3.ZERO)
 	LowPoly.solid_box(body, Vector3(size.x, height, size.y), Vector3.ZERO)
 	return body
-
-
-## A road is a strip from one end of its middle line to the other, one width longer so
-## corners are filled in. Lanes (narrower) are light paving, roads are asphalt.
-func _build_road(road: Dictionary) -> void:
-	var width: float = road.get("width", _map["ROAD_WIDTH"])
-	var from: Vector2 = road["from"]
-	var to: Vector2 = road["to"]
-	var length := from.distance_to(to) + width
-	var strip := LowPoly.box(self, Vector3(width, 0.04, length), ROAD if width >= 6.0 else LANE,
-			Vector3((from.x + to.x) * 0.5, 0.02 if width >= 6.0 else 0.025, (from.y + to.y) * 0.5))
-	var way := to - from
-	strip.rotation.y = atan2(way.x, way.y)
-
-
-## The horse track and the bike track: rings of sand and red paving inside the tree belt.
-func _build_tracks() -> void:
-	for pair in [[_map["HORSE_TRACK"], HORSE_SAND, 0.008], [_map["BIKE_TRACK"], BIKE_RED, 0.01]]:
-		var track: Dictionary = pair[0]
-		var h: Vector2 = track["half"]
-		var w: float = track["width"]
-		var colour: Color = pair[1]
-		var top: float = pair[2]
-		_flat(Vector2(0, -h.y), Vector2(h.x * 2.0 + w, w), 0.02, colour, top)
-		_flat(Vector2(0, h.y), Vector2(h.x * 2.0 + w, w), 0.02, colour, top)
-		_flat(Vector2(-h.x, 0), Vector2(w, h.y * 2.0 + w), 0.02, colour, top)
-		_flat(Vector2(h.x, 0), Vector2(w, h.y * 2.0 + w), 0.02, colour, top)
 
 
 ## A winding blue stream through the spine (flat: you can ride through it).

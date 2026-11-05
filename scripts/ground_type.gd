@@ -9,6 +9,12 @@ class_name GroundType
 static func is_sand(map: Dictionary, spot: Vector2) -> bool:
 	if map.is_empty():
 		return false
+	# Session 63: the map is grass and paving now; sand is only where the horses ride.
+	if map.has("SAND_AREAS"):
+		for area: Rect2 in map["SAND_AREAS"]:
+			if area.has_point(spot):
+				return true
+		return _on_track(map.get("HORSE_TRACK", {}), spot)
 	var width: float = map.get("ROAD_WIDTH", 8.0)
 	for road in map.get("ROADS", []):
 		var road_width: float = road.get("width", width)

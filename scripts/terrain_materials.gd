@@ -31,7 +31,9 @@ static func dress_ground(root: Node3D) -> void:
 		if material == null:
 			continue
 		var color := material.albedo_color
-		if color.is_equal_approx(Color(0.91, 0.83, 0.65)) or color.is_equal_approx(Color(0.8, 0.68, 0.5)):
+		# Session 63: the stables and jumping arena plots are sand too.
+		if color.is_equal_approx(Color(0.91, 0.83, 0.65)) or color.is_equal_approx(Color(0.8, 0.68, 0.5)) \
+				or color.is_equal_approx(Color(0.86, 0.75, 0.55)) or color.is_equal_approx(Color(0.82, 0.7, 0.5)):
 			part.material_override = make("sand")
 		elif color.is_equal_approx(Color(0.47, 0.66, 0.34)):
 			part.material_override = make("grass")
