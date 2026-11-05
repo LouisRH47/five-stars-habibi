@@ -1,5 +1,33 @@
 # Progress
 
+## Session 73: More life at the stables — 5 November 2026
+
+What works:
+- **Six jumps** in the jumping arena (was two), one on each short side and two on each long
+  side, in different kinds: striped poles in red, blue, green and yellow, wide doubles
+  (oxers) and a low painted wall, with flower boxes by the wings. The arena floor uses the
+  new horse_sand.png texture (sand with hoof prints).
+- **Five riders take turns** on the new horses (chestnut, grey, black, palomino, bay). Each
+  waits at its own spot by the arena gate, facing the course, then rides one round over
+  all six jumps and comes back to wait again. Two are out at once at most, the next one
+  setting off once the one before is on the far straight, so three are always waiting.
+  (scripts/stable_life.gd; ArenaHorse now knows how to wait its turn.)
+- **Grooms walk horses** up and down the stable yard on a red lead rope (two of them), the
+  horse's legs stepping as they go. Riding into them is a small bump, like the other horses.
+- The arena and its life are built by scripts/stable_life.gd; district_traffic.gd only
+  builds the arena rails now and hands over to it (a small change in _build_arena).
+- New numbers in scripts/game_config.gd (Session 73 block): ARENA_RIDERS_OUT, GROOM_WALK_SPEED.
+- Checked: smoke test PASS (new checks: six jumps and five riders with some waiting, 160
+  seconds of arena time: 3 riders cleared 4+ jumps, 4 rounds finished, never more than 2 out;
+  grooms walk horses), district traffic test PASS (the first rider still clears a jump),
+  bus recovery, static batch and lifecycle tests PASS. A 200-second real-physics run showed
+  the riders going round in turns with nobody turning back. No screenshots (headless).
+
+**Louis's turn:** press F5 and ride to the jumping arena (south-west, next to the school).
+Watch from the rail: a rider or two trot round and jump the six jumps while the others wait
+by the gate; when one comes back, the next one goes. Then ride round to the stable yard
+south of the stable block: grooms are walking horses up and down.
+
 ## Session 72: The school football pitch — 5 November 2026
 
 What works:

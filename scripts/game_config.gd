@@ -493,3 +493,7 @@ const PITCH_PLAY_END_HOUR := 16.5      # pupils play football until 16:30
 const PITCH_PUPILS := 8
 const PITCH_BALL_SPEED := 5.0          # m/s
 const PITCH_PUPIL_SPEED := 3.0         # m/s
+
+# --- Session 73: more life at the stables (scripts/stable_life.gd) ---
+const ARENA_RIDERS_OUT := 2            # riders on the jumping course at once (the rest wait their turn)
+const GROOM_WALK_SPEED := 1.1          # m/s, a groom leading a horse round the yard

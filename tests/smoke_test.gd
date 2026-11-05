@@ -2477,6 +2477,7 @@ func _check_world_polish() -> void:
 	_check_session70()  # Sessions 70 to 73: the Blender models (see the block at the end)
 	_check_session71()
 	_check_session72()
+	_check_session73()
 
 
 ## Session 67: the full map on M, the resolution settings and the school pool shade posts.
@@ -2721,3 +2722,53 @@ func _check_session72() -> void:
 
 func pupil_list(pitch: Node) -> Array:
 	return pitch.pupils
+
+
+## Session 73: more jumps, riders taking turns over them, grooms walking horses.
+func _check_session73() -> void:
+	var life: Node = _main.get_node_or_null("DistrictTraffic/StableLife")
+	_check("the stables have their own life (jumps, riders, grooms)", life != null, "")
+	if life == null:
+		return
+	var waiting := 0
+	for rider: Node in life.riders:
+		waiting += 1 if rider.holding else 0
+	_check("the arena has six jumps and five riders, some waiting their turn", life.jumps.size() >= 6
+			and life.riders.size() >= 5 and waiting >= 2 and waiting < life.riders.size(), "%d waiting" % waiting)
+	var cleared := {}  # rider -> {jump index: true}
+	var max_out := 0
+	# Stepping by hand doesn't move the physics shapes, so the riders' "is someone ahead"
+	# check would see stale spots: switch their solid bodies off while we fast-forward.
+	var layers := []
+	for rider: Node in life.riders:
+		layers.append(rider.collision_layer)
+		rider.collision_layer = 0
+	for step in 640:  # 160 seconds of arena time
+		life._physics_process(0.25)
+		var out := 0
+		for rider: Node in life.riders:
+			rider._physics_process(0.25)
+			out += 0 if rider.holding else 1
+			if rider.jump_height > 0.7:
+				for j in life.jumps.size():
+					if Vector2(rider.position.x - life.jumps[j].x, rider.position.z - life.jumps[j].z).length() < 2.0:
+						if not cleared.has(rider.name):
+							cleared[rider.name] = {}
+						cleared[rider.name][j] = true
+		max_out = maxi(max_out, out)
+	for i in life.riders.size():
+		life.riders[i].collision_layer = layers[i]
+	var good := 0
+	var rounds := 0
+	for rider: Node in life.riders:
+		rounds += rider.rounds
+		good += 1 if cleared.has(rider.name) and cleared[rider.name].size() >= 4 else 0
+	_check("several riders take turns over several jumps", good >= 2 and rounds >= 1
+			and max_out <= GameConfig.ARENA_RIDERS_OUT, "%d riders cleared 4+ jumps, %d rounds, at most %d out" % [good, rounds, max_out])
+	var groom: Node3D = life.grooms[0] if not life.grooms.is_empty() else null
+	var from := groom.position if groom != null else Vector3.ZERO
+	for step in 8:
+		if groom != null:
+			groom._physics_process(0.5)
+	_check("grooms walk horses by the stables", life.grooms.size() >= 2 and groom.position.distance_to(from) > 1.0
+			and groom.model.get_node_or_null("Horse") != null, "")

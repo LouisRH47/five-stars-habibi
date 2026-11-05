@@ -1589,7 +1589,7 @@ Done when:
 - [ ] There's a full pitch with goals and a running track, fenced with tall posts
 - [ ] The floodlights come on at dusk and light only the pitch
 
-### Session 73: More life at the stables
+### Session 73: More life at the stables (built, needs testing)
 
 ```text
 Session 73. Add more jumps to the arena and more riders doing them. Use the new horses,
