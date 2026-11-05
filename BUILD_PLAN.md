@@ -1166,7 +1166,7 @@ Done when:
 - [x] The C Institute's glass and seats face the spine, with windows on both sides
 - [x] The careless bot earns clearly less than the careful one and never gets stuck in a crash loop
 
-### Session 53: The free asset kits
+### Session 53: The free asset kits (built, needs testing)
 
 ```text
 Session 53. Read PRD.md "Looks pass", Interiors. Download the CC0 kits: KayKit

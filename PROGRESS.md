@@ -1,5 +1,33 @@
 # Progress
 
+## Session 53: The free asset kits — 5 November 2026
+
+What works:
+- **Two free CC0 kits** from the official KayKit GitHub pages: KayKit Restaurant Bits (kitchen
+  counters, stoves, fridges, tables, chairs, crates of veg, plates, food) and KayKit Furniture
+  Bits (cactus pots, couch, wooden chairs and stools, shelves, rugs, picture frames). Both say
+  CC0 in their licence files. Only the 73 models the game uses are in assets/kits/ (about
+  2 MB, glTF), each kit with its License.txt, and both are listed in CREDITS.md.
+- **Prop library.** `Props.kit(name, parent, position, rotation, scale)` places a kit model by
+  name (e.g. `"restaurant/chair_A"`). `Props.bake_kits(room)` then joins every kit model in a
+  room into one mesh per kit, so a full restaurant is only a couple of draws (good for Low).
+  Kit models are hidden further than 90 m away.
+- **Props built in code** for things the kits don't have (scripts/room_props.gd): a glass drinks
+  fridge with bottles, a bin, a big plant, a warm hanging lamp, a menu board, glass panes and
+  tiled floors (checker, plain, Arabic star, wood planks, painted tiles, metro tiles).
+- **Kit gallery:** scenes/kit_gallery.tscn shows a row of every model from each kit, with names.
+- New test: tests/kit_props_test.gd (licences, credits, every model loads, place and join).
+
+Skipped (and why): kenney.nl is blocked from the build machine and there is no official GitHub
+copy of the Kenney Furniture Kit or Food Kit (only an unofficial mirror, which I didn't use).
+The CC0 supermarket pack (itch.io) and the Poly Pizza gym models can't be reached either. The
+food, drinks, shelves and supermarket bits are built from basic shapes in code instead.
+The gym models are for Session 56 (not this wave).
+
+**Louis's turn:** open scenes/kit_gallery.tscn and press F6. You should see two long rows of
+models (restaurant bits, then furniture bits) with their names floating above, and a third
+row with the fridge, bin, plant and lamp. Use the arrow keys to slide the camera along.
+
 ## Session 60: The road network from the approved plan — 5 November 2026
 
 Built straight after looks pass Session 52, at Louis's request (the looks pass carries on
