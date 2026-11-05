@@ -145,15 +145,15 @@ def sand_drift():
     phase = [rng.uniform(0, math.tau) for _ in range(3)]
     for x in range(w):
         u = x / (w - 1)
-        ends = math.sin(u * math.pi) ** 0.6   # thin at both ends
-        reach = ends * (0.62 + 0.2 * math.sin(u * 7 + phase[0]) + 0.1 * math.sin(u * 19 + phase[1]))
+        ends = math.sin(u * math.pi) ** 0.35   # thin at both ends
+        reach = ends * (0.78 + 0.14 * math.sin(u * 7 + phase[0]) + 0.08 * math.sin(u * 19 + phase[1]))
         for y in range(h):
             v = y / (h - 1)
             depth = reach - v + (n[x, y] / 255 - 0.5) * 0.18
             if depth <= 0:
                 continue
             ripple = 0.93 + 0.07 * math.sin(v * 30 + u * 5 + phase[2])
-            px[x, y] = int(min(1.0, depth * 2.2) * 200 * ripple * (0.85 + 0.15 * fine[x, y] / 255))
+            px[x, y] = int(min(1.0, depth * 2.6) * 225 * ripple * (0.85 + 0.15 * fine[x, y] / 255))
     a = a.filter(ImageFilter.GaussianBlur(1.2))
     return with_alpha((226, 204, 160), a)
 

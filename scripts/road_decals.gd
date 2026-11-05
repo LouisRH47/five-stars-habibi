@@ -121,8 +121,8 @@ func _sand(road: Dictionary) -> void:
 		var normal := Vector2(-dir.y, dir.x) * side   # pointing out to this edge
 		var s := _rng.randf_range(4.0, spacing.y)
 		while s < length - 4.0:
-			var long := _rng.randf_range(3.5, 6.5)
-			var deep := _rng.randf_range(1.2, 1.7)
+			var long := _rng.randf_range(5.0, 9.0)
+			var deep := _rng.randf_range(1.5, 2.2)
 			var spot := from + dir * s + normal * (half - deep * 0.5 - 0.05)
 			var kerb := from + dir * s + normal * (half + 0.8)
 			var ends_ok := _is_clear(spot + dir * long * 0.5, 2.0) and _is_clear(spot - dir * long * 0.5, 2.0)

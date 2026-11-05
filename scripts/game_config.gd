@@ -711,7 +711,7 @@ const DECAL_MAX_NEAR := [64, 400, 400]         # most decals in view at once (th
 const DECAL_LOW_PER_CELL := 8          # Low: at most 8 on one 48 m piece of ground
 const DECAL_SAND_SPACING := Vector2(12, 20)    # metres between sand drifts on the car roads
 const DECAL_MANHOLE_SPACING := 40.0    # metres between manholes on the ring road
-const DECAL_OIL_BAY_CHANCE := 0.25     # 1 in 4 empty bays has an oil spot
+const DECAL_OIL_BAY_CHANCE := 0.4      # 2 in 5 empty bays has an oil spot
 const DECAL_CAR_GAP := 1.0             # metres to keep from cars
 # W4 particles in the air (scripts/vfx_ambient.gd)
 const VFX_MAX_PARTICLES := [150, 600, 1200]    # Low, Medium, High: particles at once
