@@ -735,3 +735,28 @@ const CLINIC_COUNT_TIME := 0.6     # seconds the clinic bills take to count up
 const DIORAMA_ORBIT_DEG := 8.0     # the start-screen camera swings this far each way
 const DIORAMA_ORBIT_TIME := 20.0   # seconds for one full swing there and back
 const DIORAMA_WEB_SCALE := 0.75    # the start-screen 3D scene renders smaller in the browser
+
+# --- Session 69: HUD, meters, clock and shift summary ---
+# Switches (false = the old look; HUD_TOP_CHIPS is in the Session 66 section above).
+const HUD_CLOCK_V2 := true        # clock with temperature, today's special and a shift progress bar
+const METERS_V2 := true           # meters at the bottom middle with icons, words and tick marks
+const SPEED_PANEL_V2 := true      # speed number and unit on one line, stamina in segments
+const HOLD_RING := true           # a round "hold E" ring in the middle of the screen
+const SUMMARY_V2 := true          # the shift summary counts up row by row with stamps
+# Temperature on the clock (°C) at these hours; in between it slides smoothly. Hot Noon adds more.
+const SHIFT_TEMPERATURE := {8.0: 31, 13.0: 42, 15.0: 43, 18.0: 37}
+const HOT_NOON_EXTRA_DEGREES := 4
+const CLOCK_LAST_HOUR_PULSE := 1.06   # how much the clock grows when it pulses in the last hour
+# Wallet chip: how long the money counts up, and how far and how long "+15" floats.
+const CHIP_COUNT_TIME := 0.6
+const CHIP_FLOAT_PIXELS := 36.0
+const CHIP_FLOAT_TIME := 0.8
+# Meters: how long a meter flashes when it drops into a worse colour.
+const METER_FLASH_TIME := 0.45
+const STAMINA_SEGMENTS := 5
+const HOLD_RING_SIZE := 96.0          # pixels across at the 1920x1080 base
+const HOLD_RING_BELOW_MIDDLE := 90.0  # pixels under the middle of the screen
+# Shift summary: one row every SUMMARY_ROW_GAP seconds, each counting up for SUMMARY_COUNT_TIME.
+const SUMMARY_ROW_GAP := 0.22
+const SUMMARY_COUNT_TIME := 0.45
+const SUMMARY_STAMP_TIME := 0.25
