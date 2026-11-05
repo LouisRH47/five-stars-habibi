@@ -21,9 +21,12 @@ func _ready() -> void:
 	_pool(_map["LAP_POOL"], "LapPool", false)
 	_pool(_map["COMMUNITY_POOL"], "CommunityPool", true)
 	for area: Rect2 in _map.get("BUILDING_SITES", []).slice(1):
+		if _map.has("PHASE3_SITE") and area == _map["PHASE3_SITE"]["area"]:
+			continue  # Session 66: LandmarkBuilder dresses the phase 3 site like phase 2
 		_site(area)
 	_street_details()
 	EndHouses.build(self, _map)  # Session 65: big end houses at the row ends
+	MajlisGardens.build(self, _map)  # Session 66: the park between the car park and Cluster 1
 	TerrainMaterials.dress_ground(get_parent().get_node("WahatBuilder"))
 	TerrainMaterials.dress_ground(get_parent().get_node("SpineBuilder"))
 	_finish_static_world.call_deferred()

@@ -113,6 +113,8 @@ func place_names() -> Array:
 		names.append(["The Plaza", map["PLAZA"]["centre"]])
 	if map.has("COMMUNITY_POOL"):
 		names.append(["Community Pool", (map["COMMUNITY_POOL"] as Rect2).get_center()])
+	if map.has("MAJLIS_GARDENS"):  # Session 66
+		names.append(["Majlis Gardens", (map["MAJLIS_GARDENS"]["area"] as Rect2).get_center()])
 	if map.has("BEEHIVES"):
 		names.append(["Beekeeper", (map["BEEHIVES"] as Rect2).get_center() + Vector2(0, -6)])
 	for gate in map.get("GATES", []):

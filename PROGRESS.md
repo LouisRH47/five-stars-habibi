@@ -1,5 +1,41 @@
 # Progress
 
+## Session 66: Majlis Gardens and the phase 3 building site — 5 November 2026
+
+What works:
+- **Majlis Gardens (حدائق المجلس)** in the empty strip between the C1-west car park and
+  Cluster 1 (scripts/majlis_gardens.gd, layout in MAJLIS_GARDENS in the data):
+  - a fountain on a round paved plaza (stone basin, pedestal, bowl and little jets; solid)
+  - curving paver paths (about 220 m) that join the Cluster 1 lanes (by the alley, the cross
+    row alley and the back road), the car park (two places) and the spine loop road
+  - palms round the plaza and along the paths, low clipped hedges along both sides with gaps
+    where the paths go through
+  - a shaded majlis: a cloth roof on wooden posts over low sofas with cushions, a rug and a
+    coffee table with a dallah and cups
+  - six benches, a community garden bed (raised wooden bed with rows of vegetables, tomatoes,
+    marigolds, a watering can, a tap and a "Community garden / حديقة المجتمع" sign)
+  - a stone sign at the entrance from the spine loop road
+  - people (PlaceCrowds): neighbours on three benches and two in the majlis, a child and a
+    parent at the fountain, two people walking round the paths and a gardener at the bed
+  - "Majlis Gardens" is named on the full map (M)
+- **Phase 3 building site** south of the mosque: dressed exactly like phase 2 (LandmarkBuilder):
+  tall hoarding all round, a lattice crane, three containers, sand piles, two workers in hi-vis
+  and hard hats, and the orange "Phase 3 coming soon / المرحلة الثالثة قريباً" sign facing the spine.
+  The plain "Coming soon" version that stood there before is gone.
+- Checked: smoke test PASS (new Session 66 checks in tests/smoke_signs.gd: everything in the
+  gardens, they're in the free strip, every path end joins a road, lane or the car park, nothing
+  stands on a path, people sit, walk and garden there, the phase 3 site matches phase 2 and its
+  sign is bilingual), tests/signs_wave_test.gd, coplanar, navigation, detail world, static batch,
+  mini-map cache, lifecycle, district traffic and bus recovery tests PASS. Play-test bot: 4
+  deliveries, 5.0 stars, no crashes, never stuck. No screenshots (headless).
+
+**Louis's turn:** press F5 and ride east along the north spine loop road to just before Cluster 1.
+On the left: the stone "Majlis Gardens" sign and a paver path. Ride in (slowly): the fountain on
+its round plaza with palms and benches, people sitting, someone walking round, the shaded majlis
+with sofas and a coffee pot, and at the far end the garden bed with a gardener. Follow a path to
+the car park and one into Cluster 1. Then ride to the mosque and south of it: the phase 3 site
+with its crane and the "Phase 3 coming soon" sign. Press M: Majlis Gardens is on the full map.
+
 ## Session 65: Cluster entrances and signs — 5 November 2026
 
 What works (scripts/cluster_signs.gd, scripts/police_sign.gd, scripts/end_houses.gd; layout in

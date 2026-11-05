@@ -18,6 +18,7 @@ func run(t: SceneTree) -> void:
 	_data = (builder.data as Script).get_script_constant_map()
 	_session64()
 	_session65()
+	_session66()
 
 
 func _check(label: String, ok: bool, detail := "") -> void:
@@ -214,3 +215,88 @@ func _arabic_ok(words: String) -> bool:
 	var last_first: bool = glyphs.size() > 0 and int(glyphs[0]["start"]) > int(glyphs[glyphs.size() - 1]["start"])
 	ts.free_rid(shaped)
 	return rtl and joined and last_first
+
+
+## Session 66: Majlis Gardens and the phase 3 building site.
+func _session66() -> void:
+	var park = _main.get_node_or_null("DistrictDetail/MajlisGardens")
+	var spec: Dictionary = _data["MAJLIS_GARDENS"]
+	var area: Rect2 = spec["area"]
+	_check("Session 66: Majlis Gardens has a fountain, palms, benches, a majlis shade and a garden bed",
+			park != null and park.get_node_or_null("MajlisFountain") != null and park.palms >= 4 and park.benches >= 4
+			and park.get_node_or_null("MajlisShade") != null and park.get_node_or_null("CommunityGardenBed") != null
+			and _texts(park).has("Majlis Gardens") and _texts(park).has("حدائق المجلس"))
+	if park == null:
+		return
+	# The free strip really is free: nothing of the car park, the cluster or a road inside it.
+	var clash: Array = []
+	for parking: Rect2 in _data["PARKING_AREAS"]:
+		if parking.intersects(area):
+			clash.append("car park")
+	for cluster: Dictionary in _data["CLUSTERS"]:
+		if (cluster["area"] as Rect2).intersects(area):
+			clash.append(cluster["id"])
+	for road: Dictionary in _data["ROADS"]:
+		var a: Vector2 = road["from"]
+		var b: Vector2 = road["to"]
+		var bounds := Rect2(Vector2(minf(a.x, b.x), minf(a.y, b.y)), Vector2(absf(b.x - a.x), absf(b.y - a.y))).grow(road.get("width", 6.0) * 0.5)
+		if bounds.intersects(area):
+			clash.append(road["name"])
+	_check("Session 66: the gardens are in the empty strip between the car park and Cluster 1", clash.is_empty(), "%s" % [clash])
+	# Each path that leaves the park ends on a road or lane (it joins the paths around).
+	var joined := 0
+	var leaving := 0
+	for path: Array in spec["paths"]:
+		var end: Vector2 = path[-1]
+		var start: Vector2 = path[0]
+		for point: Vector2 in [start, end]:
+			if not area.grow(-0.5).has_point(point):
+				leaving += 1
+				var parking_edge := false
+				for parking: Rect2 in _data["PARKING_AREAS"]:
+					if parking.grow(1.0).has_point(point):
+						parking_edge = true
+				if _on_road(point, 1.0) or parking_edge:
+					joined += 1
+	_check("Session 66: the paver paths join the lanes, the car park and the spine loop road", leaving >= 5 and joined == leaving,
+			"%d of %d ends join up, %.0f m of paths" % [joined, leaving, park.path_length])
+	var space: PhysicsDirectSpaceState3D = (park as Node3D).get_world_3d().direct_space_state
+	var blocked: Array = []
+	for path: Array in spec["paths"]:
+		for point: Vector2 in path:
+			var query := PhysicsPointQueryParameters3D.new()
+			query.position = Vector3(point.x, 0.4, point.y)
+			for hit in space.intersect_point(query, 4):
+				var thing: Node = hit["collider"]
+				if park.is_ancestor_of(thing):
+					blocked.append("%s at %s" % [thing.name, point])
+	_check("Session 66: nothing stands on the garden paths", blocked.is_empty(), "%s" % [blocked.slice(0, 4)])
+	var crowds = _main.get_node_or_null("LifeBuilder").get("crowds") if _main.get_node_or_null("LifeBuilder") else null
+	var here := 0
+	if crowds != null:
+		for entry in crowds.people:
+			var p: Node3D = entry[0]
+			if area.grow(2.0).has_point(Vector2(p.global_position.x, p.global_position.z)):
+				here += 1
+	var walkers := 0
+	for mover in _main.get_node("LifeBuilder").get_children():
+		if String(mover.name).begins_with("MajlisWalker") or String(mover.name) == "MajlisGardener":
+			walkers += 1
+	_check("Session 66: people sit, walk and garden in Majlis Gardens", here >= 5 and walkers >= 3, "%d sitting or standing, %d moving" % [here, walkers])
+	# The phase 3 site is dressed like phase 2.
+	var site := _main.get_node_or_null("LandmarkBuilder/Phase3Site")
+	var phase2 := _main.get_node_or_null("LandmarkBuilder/BuildingSite")
+	var same := site != null and phase2 != null and site.get_node_or_null("Crane") != null
+	if same:
+		same = site.find_children("SiteWorker*", "", true, false).size() >= 2 and site.get_child_count() >= phase2.get_child_count() - 1
+	_check("Session 66: the phase 3 site has a fence, a crane, materials and workers like phase 2", same,
+			"%d vs %d parts" % [site.get_child_count() if site else 0, phase2.get_child_count() if phase2 else 0])
+	_check("Session 66: the phase 3 sign says Phase 3 coming soon in English and Arabic",
+			site != null and _texts(site).has("Phase 3 coming soon") and _texts(site).has("المرحلة الثالثة قريباً"))
+	var generic := 0
+	for node in _main.get_node("DistrictDetail").get_children():
+		if String(node.name).begins_with("ConstructionSite"):
+			var floor_spot: Vector3 = (node.get_child(0) as Node3D).position
+			if (_data["PHASE3_SITE"]["area"] as Rect2).has_point(Vector2(floor_spot.x, floor_spot.z)):
+				generic += 1
+	_check("Session 66: the phase 3 site isn't built twice", generic == 0)

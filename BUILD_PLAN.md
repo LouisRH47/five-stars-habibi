@@ -1467,7 +1467,7 @@ Done when:
 - [ ] The end houses match the others, just bigger
 - [ ] Bins are at the back and the pool sign is in front of the gate
 
-### Session 66: Majlis Gardens and the new building site
+### Session 66: Majlis Gardens and the new building site (built, needs testing)
 
 ```text
 Session 66. 1) Majlis Gardens in the empty strip between the car park and Cluster 1: a
