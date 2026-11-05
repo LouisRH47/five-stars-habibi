@@ -1,5 +1,26 @@
 # Progress
 
+## Sessions 59 and 74: play-test of the looks pass and the world polish pass — 5 November 2026
+
+Everything from looks Sessions 53 to 58 and World Sessions 61 to 73 is built and merged on
+`world-roads` (they were built by several agents in parallel, then merged and re-tested together).
+- Smoke test PASS, and all 22 focused test suites PASS on the merged code.
+- Play-test bot, careful: 6 deliveries, 5.0 stars, no crashes, never stuck. Careless: one run
+  had a big crash into a Plaza wall early and made no deliveries; earlier careless runs made
+  3 deliveries. Worth a look if careless riding feels too punishing.
+- Screenshots were rendered on a Linux machine with the simpler Compatibility renderer, so the
+  frame-rate check on Low/Medium/High still needs doing on the Mac.
+- Fixes found from the screenshots: the stream no longer runs through the gym (it stops at the
+  gym and carries on after it), grass no longer grows in the stream, and the start spot moved
+  12 m north so you face the Plaza instead of the bike shop's back wall.
+
+**Louis's turn:** open the project in Godot and press F5, then play a full shift. Check each
+place: the restaurants and supermarket inside, the gym and C Institute, the two shops, the
+Plaza at sunset (string lights), the spine road and red tracks, the cluster signs and police
+signs, Majlis Gardens, the bus station (people get on the bus), the school pitch (floodlights
+at 5:15 PM), the arena jumps and the new horses and donkeys. Press M for the full map. In
+Settings, try the Resolution options. Write down anything that looks wrong or feels off.
+
 ## Session 73: More life at the stables — 5 November 2026
 
 What works:

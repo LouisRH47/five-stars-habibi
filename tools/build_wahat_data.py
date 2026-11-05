@@ -26,7 +26,7 @@ def put(name,value): constants[name]=value
 
 put('DETAIL_VERSION',1)
 put('MAP_HALF',v2(470,250)); put('ROAD_WIDTH',10.0); put('WALL_HEIGHT',2.5); put('GATE_HALF_WIDTH',7.0)
-put('START',{'position':v3(-296,0,-160),'facing':-90.0})
+put('START',{'position':v3(-296,0,-172),'facing':-90.0})
 put('TREE_BELT',{'inner':v2(463,243),'spacing':8.0})
 put('GATES',[{'position':v3(-465,0,z),'facing':-90.0,'name':name} for z,name in [(-190,'North Checkpoint'),(190,'South Checkpoint')]])
 # Session 63: both tracks have rounded corners that match the ring road's (same centres).
@@ -43,7 +43,7 @@ def rounded_loop(hx,hz,r,steps=8,reverse=False):
 put('PLAZA',{'centre':v2(-200,-145),'radius':50.0,'sunken_radius':20.0,'floor_radius':15.0,'depth':0.45,'steps':3,'fountain_radius':2.8})
 put('PLAZA_SAILS',[[v3(-224,0,-157),v3(-200,0,-170),v3(-176,0,-157)],[v3(-176,0,-133),v3(-200,0,-120),v3(-224,0,-133)]])
 put('PLAZA_BENCHES',[{'position':v3(-200,-.45,-155),'facing':0.0},{'position':v3(-200,-.45,-135),'facing':180.0},{'position':v3(-190,-.45,-145),'facing':-90.0}])
-put('SPINE',rect(-145,-35,560,70)); put('STREAM',{'z':25.0,'from_x':-135.0,'to_x':405.0,'width':3.0})
+put('SPINE',rect(-145,-35,560,70)); put('STREAM',{'z':25.0,'from_x':-135.0,'to_x':405.0,'width':3.0,'gaps':[v2(93,137)]})  # gaps: under the gym
 clusters=[(1,48,-126),(2,203,-126),(3,348,-126),(4,73,120),(5,303,120)]
 put('CLUSTERS',[{'id':f'C{n}','area':rect(cx-65,cz-75,130,150),'centre':v2(cx,cz)} for n,cx,cz in clusters])
 roads=[]

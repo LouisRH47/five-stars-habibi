@@ -114,6 +114,9 @@ func _build_stream(stream: Dictionary) -> void:
 		for index in PIECES_PER_CHUNK:
 			if x >= end_x:
 				break
+			if _in_stream_gap(stream, x, x + STEP):
+				x += STEP
+				continue  # no water through the gym (it flows under the building)
 			var z := centre_z + sin(x * 0.06) * 3.0
 			var z2 := centre_z + sin((x + STEP) * 0.06) * 3.0
 			var piece := BoxMesh.new()
@@ -239,3 +242,11 @@ func _build_welcome() -> void:
 	var faces := SignText.make_two_faces(welcome["arabic"], welcome["name"], size, Color(1, 1, 1, 1), board_size.z)
 	faces.position.y = 2.4
 	holder.add_child(faces)
+
+
+## True if a stream piece from x to x_end would run inside a building (the STREAM "gaps" list).
+func _in_stream_gap(stream: Dictionary, x: float, x_end: float) -> bool:
+	for gap: Vector2 in stream.get("gaps", []):
+		if x_end > gap.x and x < gap.y:
+			return true
+	return false

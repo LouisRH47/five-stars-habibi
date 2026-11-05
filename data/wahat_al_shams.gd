@@ -12,7 +12,7 @@ const WALL_HEIGHT := 2.5
 
 const GATE_HALF_WIDTH := 7.0
 
-const START := {"position": Vector3(-296, 0, -160), "facing": -90.0}
+const START := {"position": Vector3(-296, 0, -172), "facing": -90.0}
 
 const TREE_BELT := {"inner": Vector2(463, 243), "spacing": 8.0}
 
@@ -40,7 +40,7 @@ const PLAZA_BENCHES := [
 
 const SPINE := Rect2(-145, -35, 560, 70)
 
-const STREAM := {"z": 25.0, "from_x": -135.0, "to_x": 405.0, "width": 3.0}
+const STREAM := {"z": 25.0, "from_x": -135.0, "to_x": 405.0, "width": 3.0, "gaps": [Vector2(93, 137)]}
 
 const CLUSTERS := [
 	{"id": "C1", "area": Rect2(-17, -201, 130, 150), "centre": Vector2(48, -126)},

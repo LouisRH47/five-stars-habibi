@@ -1269,7 +1269,7 @@ Done when:
 - [ ] The Plaza, streets and spine no longer look plain
 - [ ] Low still runs smoothly on an iPad-like setting
 
-### Session 59: Play-test the looks pass
+### Session 59: Play-test the looks pass (automatic checks done, needs Louis's play)
 
 ```text
 Session 59. Run the smoke test and every focused test, the play-test bot careful and
@@ -1600,7 +1600,7 @@ Done when:
 
 - [ ] Several riders take turns over several jumps
 
-### Session 74: Play-test the world polish pass
+### Session 74: Play-test the world polish pass (automatic checks done, needs Louis's play)
 
 ```text
 Session 74. Run the smoke test, every focused test suite and the play-test bot. Check

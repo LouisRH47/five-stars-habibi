@@ -98,10 +98,10 @@ script = ExtResource("35_traffic")
 data = ExtResource("8_data")
 
 [node name="Bike" parent="." instance=ExtResource("1_bike")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -296, 0, -160)
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -296, 0, -172)
 
 [node name="FollowCamera" type="Camera3D" parent="." node_paths=PackedStringArray("target")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -300.5, 2.2, -160)
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -300.5, 2.2, -172)
 fov = 70.0
 script = ExtResource("2_camera")
 target = NodePath("../Bike")

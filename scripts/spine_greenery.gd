@@ -92,7 +92,9 @@ func can_grow(spot: Vector2, radius := 0.0) -> bool:
 			return false
 	if _map.has("STREAM"):
 		var stream: Dictionary = _map["STREAM"]
-		if absf(spot.y - stream["z"]) < stream["width"] * 0.5 + 1.0 + radius:
+		# The stream wiggles 3 m either side of its line (same curve as WahatBuilder._build_stream).
+		var water_z: float = stream["z"] + sin(spot.x * 0.06) * 3.0
+		if absf(spot.y - water_z) < stream["width"] * 0.5 + 1.2 + radius:
 			return false
 	for box in _blocked:
 		if box.grow(radius).has_point(spot):
