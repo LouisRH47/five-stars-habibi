@@ -33,10 +33,10 @@ void vertex() {
 
 void fragment() {
 	// Brightest near the glass, gone at the far end; soft at both ends and both edges.
-	float along = smoothstep(0.0, 0.12, UV.y) * pow(1.0 - UV.y, 1.3);
-	float across = smoothstep(0.0, 0.3, UV.x) * smoothstep(1.0, 0.7, UV.x);
+	float along = smoothstep(0.0, 0.08, UV.y) * (1.0 - UV.y);
+	float across = smoothstep(0.0, 0.25, UV.x) * (1.0 - smoothstep(0.75, 1.0, UV.x));
 	// Looking along a side (not through it) makes it fade, so no hard edges show.
-	float facing = pow(abs(dot(normalize(NORMAL), normalize(VIEW))), 1.5);
+	float facing = abs(dot(normalize(NORMAL), normalize(VIEW)));
 	vec3 drift = world_pos * 1.4 + vec3(0.0, -TIME * dust_speed * 1.4, TIME * dust_speed * 0.7);
 	float haze = 0.65 + 0.35 * soft_noise(drift);
 	// Little specks of dust catching the light.

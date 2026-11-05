@@ -815,7 +815,7 @@ const LIGHT_SHAFTS_ON := true
 const SHAFT_MAX := 24               # at most this many in the whole map
 const SHAFTS_PER_ROOM := 2
 const SHAFT_WIDTH := 1.6            # metres across each beam
-const SHAFT_ALPHA := 0.4            # how strong the beams are at their brightest (they add light, so bright rooms need more)
+const SHAFT_ALPHA := 0.7            # how strong the beams are at their brightest (they add light, so bright rooms need more)
 const SHAFT_RANGE := 40.0           # metres: beams are only drawn this close to the camera
 # How strong the beams are through the day: strong when the sun is low, faint at noon.
 const SHAFT_HOUR_KEYS := [[8.0, 1.0], [9.5, 1.0], [11.0, 0.3], [14.0, 0.3], [16.0, 1.0], [18.0, 1.0]]

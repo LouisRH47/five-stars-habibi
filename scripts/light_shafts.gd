@@ -12,6 +12,8 @@ const SHADER := preload("res://assets/shaders/light_shaft.gdshader")
 const MARGIN := 0.15        # metres the beams stay inside the walls, floor and ceiling
 const GLASS_IN := 0.3       # metres inside the glass where a beam starts
 const WINDOW_Y := Vector2(1.0, 3.0)  # the part of the glass the beams come through (height)
+const LEAN := 0.6           # the most a beam leans sideways (per metre into the room)
+const DROP := Vector2(0.35, 0.75)  # how steeply beams go down (per metre across the floor), least and most
 const MAX_LENGTH := 7.0     # metres: the longest a beam edge gets
 const REBUILD_HOURS := 0.25  # the beams follow the sun every quarter of a game hour
 
@@ -121,8 +123,13 @@ static func strength_at(hour: float) -> float:
 func _light_in_room(room: Node3D) -> Vector3:
 	var travel := -sun.global_basis.z.normalized()
 	var local := room.global_basis.inverse() * travel
-	local.z = -maxf(absf(local.z), 0.45)
-	local.y = minf(local.y, -0.3)
+	# Mostly into the room, leaning a little sideways with the sun, and gently downwards,
+	# so the beams reach well into the room instead of hugging the glass.
+	var inward := maxf(absf(local.z), 0.8)
+	local.x = clampf(local.x, -inward * LEAN, inward * LEAN)
+	local.z = -inward
+	var flat := Vector2(local.x, local.z).length()
+	local.y = clampf(local.y, -flat * DROP.y, -flat * DROP.x)
 	return local.normalized()
 
 
