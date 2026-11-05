@@ -1254,7 +1254,7 @@ Done when:
 
 - [ ] Every place you go into is as detailed as the restaurants
 
-### Session 58: Plaza, streets and the spine
+### Session 58: Plaza, streets and the spine (built, needs testing)
 
 ```text
 Session 58. Read PRD.md "Looks pass", More detail outside. Plaza: café tables outside

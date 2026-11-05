@@ -513,3 +513,18 @@ const GYM_ROW_SLIDE := 0.45           # metres the rower slides back on each str
 const GYM_SQUATS := 0.3               # squats per second
 const GYM_SQUAT_DEPTH := 0.32         # metres the lifter goes down
 const TALK_SCREEN_TIMES := [12.0, 16.0]  # the talk screen: "Welcome" until 12:00, "Talk today" until 16:00, then the talk
+
+# --- Looks pass Session 58: Plaza, streets and spine ---
+const LIGHTS_ON_HOUR := 17.25         # street lamps and string lights are half on at this time (sunset)...
+const LIGHTS_FADE_HOURS := 0.5        # ...fading in over this long
+const LIGHTS_BULB_ENERGY := 4.0       # how bright the string light bulbs glow
+const LIGHTS_LAMP_ENERGY := 3.0       # how bright the street lamp heads glow
+const STREET_LAMP_HEIGHT := 5.0       # metres
+const STRING_LIGHT_SAG := 0.45        # metres the string lights hang down between poles
+const PLAZA_STROLLERS := 6            # extra people strolling round the Plaza
+const SPINE_GRASS_CLUMPS := 22000     # grass blade clumps in the spine (Medium and High)
+const SPINE_GRASS_LOW_SHARE := 0.25   # Low graphics draws this share of them
+const SPINE_GRASS_DRAW_DISTANCE := 90.0  # metres; further off the grass blades aren't drawn
+const SPINE_FLOWER_PATCHES := 140
+const SPINE_ROCKS := 160
+const SPINE_TREES := 45

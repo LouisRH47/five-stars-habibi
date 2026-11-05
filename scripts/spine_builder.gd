@@ -40,6 +40,7 @@ func _ready() -> void:
 		Props.playground(self, mini["playground"], Vector2(6, 4.5))
 		for bench in mini["benches"]:
 			Props.bench(self, bench["position"], bench["facing"])
+	add_child(SpineGreenery.make(_map))  # looks pass Session 58: grass blades, flowers, rocks, trees
 
 
 ## A white greenhouse dome: a squashed ball with ribs, a door, on a low ring wall. Solid.

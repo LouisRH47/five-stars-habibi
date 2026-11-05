@@ -2729,3 +2729,16 @@ func _check_looks_venues() -> void:
 	_check("Session 57: the stable office, school booth and farm stall are detailed", marks != null
 			and marks.get_node_or_null("StableOffice/OfficeGroom") != null and marks.get_node_or_null("SchoolBooth/Guard") != null
 			and places.get_node_or_null("Restaurant_farm/Farmer") != null, "")
+	# Session 58: the Plaza, streets and spine have more detail, and lights for sunset.
+	var life := _main.get_node_or_null("PlazaBuilder/PlazaLife")
+	var streets := _main.get_node_or_null("PlazaBuilder/StreetDetails")
+	var green := _main.get_node_or_null("SpineBuilder/SpineGreenery")
+	_check("Session 58: café tables, a juice kiosk and string lights in the Plaza", life != null
+			and life.get_meta("counts", {}).get("tables", 0) >= 12 and life.get_node_or_null("PlazaFurniture/JuiceKiosk") != null
+			and life.get_meta("counts", {}).get("bulbs", 0) > 100, "")
+	_check("Session 58: street lamps, bins, street signs and bike racks", streets != null
+			and streets.get_meta("counts", {}).get("lamps", 0) >= 40 and streets.get_meta("counts", {}).get("racks", 0) >= 5, "")
+	_check("Session 58: grass blades, flowers, rocks and trees in the spine", green != null
+			and green.get_meta("counts", {}).get("grass", 0) >= 15000 and green.get_meta("counts", {}).get("trees", 0) >= 30, "")
+	_check("Session 58: the lights come on at sunset", SunsetLights.amount_at(GameConfig.SHIFT_START_HOUR) == 0.0
+			and SunsetLights.amount_at(GameConfig.SHIFT_END_HOUR) > 0.9, "")

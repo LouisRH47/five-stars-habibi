@@ -56,6 +56,11 @@ func _ready() -> void:
 		Props.bench(self, bench["position"], bench["facing"])
 	for posts in map.get("PLAZA_SAILS", []):
 		_build_sail(posts)
+	# Looks pass Session 58: café tables, the juice kiosk, string lights and more people,
+	# then street lamps, bins, street name signs and bike racks round the community.
+	var clear := ClearSpots.new(map)
+	add_child(PlazaLife.make(map, clear))
+	add_child(StreetDetails.make(map, clear))
 
 
 ## The invisible ground under the sunken square: flat at the top, a gentle slope over the

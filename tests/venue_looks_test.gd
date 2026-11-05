@@ -36,6 +36,7 @@ func _run() -> void:
 	_check_institute(places)
 	await _check_receptions(places)
 	_check_shops_and_spots(places)
+	_check_outside()
 	world.queue_free()
 	await process_frame
 	SaveGame.delete(state.save_path)
@@ -185,3 +186,69 @@ func _check_shops_and_spots(places: PlaceBuilder) -> void:
 		_expect(stall.get_node_or_null(part) != null, "the farm stall has " + part)
 	_expect(stall.get_meta("kit_props", 0) >= 5, "the farm stall has kit crates of veg", str(stall.get_meta("kit_props", 0)))
 	_expect(places.get_node("Restaurant_honey").get_node_or_null("Farmer") == null, "the bee farm keeps its own look")
+
+
+## Session 58: the Plaza, streets and the spine.
+func _check_outside() -> void:
+	var map: Dictionary = (world.get_node("PlazaBuilder").get("data") as Script).get_script_constant_map()
+	var plaza: Node = world.get_node("PlazaBuilder/PlazaLife")
+	var counts: Dictionary = plaza.get_meta("counts")
+	_expect(counts["tables"] >= 12 and counts["sitters"] >= 5, "café tables outside the restaurants, people at some", str(counts))
+	_expect(plaza.get_node_or_null("PlazaFurniture/JuiceKiosk") != null and plaza.get_node_or_null("JuiceSeller") != null, "a juice kiosk with a seller")
+	_expect(counts["bulbs"] >= 150 and counts["strollers"] == GameConfig.PLAZA_STROLLERS, "string lights and more people strolling", str(counts))
+	# The lights come on at sunset.
+	var lights: SunsetLights = plaza.get_node("SunsetLights")
+	_expect(SunsetLights.amount_at(12.0) == 0.0 and SunsetLights.amount_at(18.0) > 0.95, "lights are off at noon and on at sunset")
+	lights.apply_hour(17.9)
+	var glow := SunsetLights.bulb_material().emission_energy_multiplier
+	var lamp := SunsetLights.lamp_material().emission_energy_multiplier
+	var real_light := (plaza.get_node("StringGlow0") as Light3D).visible
+	lights.apply_hour(10.0)
+	_expect(glow > 1.0 and lamp > 1.0 and real_light, "at sunset the bulbs, street lamps and Plaza lights are on", "%.2f %.2f" % [glow, lamp])
+	_expect(SunsetLights.bulb_material().emission_energy_multiplier == 0.0 and not (plaza.get_node("StringGlow0") as Light3D).visible,
+			"in the daytime they're off")
+	var streets: Node = world.get_node("PlazaBuilder/StreetDetails")
+	var street_counts: Dictionary = streets.get_meta("counts")
+	_expect(street_counts["lamps"] >= 40 and street_counts["bins"] >= 10 and street_counts["signs"] >= 6 and street_counts["racks"] >= 5,
+			"street lamps, bins, street signs and bike racks", str(street_counts))
+	var sign: Node = streets.find_child("StreetSign0", true, false)
+	var faces: Array = sign.find_children("*", "Label3D", true, false) if sign != null else []
+	_expect(faces.size() >= 2 and faces.any(func(l): return (l as Label3D).text.unicode_at(0) > 0x0600), "street signs are Arabic and English")
+	var on_road: Array = []
+	var spec: Dictionary = map["SPINE_TRACKS"]
+	var band: float = spec["road_half"] + spec["planter"]
+	for holder: Node3D in streets.get_node("StreetFurniture").get_children():
+		var p := Vector2(holder.global_position.x, holder.global_position.z)
+		for road: Dictionary in map["ROADS"]:
+			var half: float = road.get("width", 10.0) * 0.5
+			if Geometry2D.get_closest_point_to_segment(p, road["from"], road["to"]).distance_to(p) < half + 0.3:
+				on_road.append(holder.name + " on " + road["name"])
+				break
+		if p.x > spec["from_x"] and p.x < spec["to_x"] and absf(p.y) > band - 0.2 and absf(p.y) < band + spec["track"] + 0.3:
+			on_road.append(holder.name + " on a red track")
+	_expect(on_road.is_empty(), "nothing stands on a road or a red track", str(on_road.slice(0, 5)))
+	# The spine: grass blades, flowers, rocks and trees, clear of the road, planters and tracks.
+	var green: SpineGreenery = world.get_node("SpineBuilder/SpineGreenery")
+	var spine_counts: Dictionary = green.get_meta("counts")
+	_expect(spine_counts["grass"] >= 15000 and spine_counts["flowers"] >= 500 and spine_counts["rocks"] >= 150 and spine_counts["trees"] >= 30,
+			"grass blades, flowers, rocks and more trees in the spine", str(spine_counts))
+	var clear_band: float = band + spec["track"]
+	var wrong := 0
+	for group in ["GrassBlades", "FlowerHeads", "Rocks", "ShadeTrees0", "ShadeTrees1"]:
+		for view: MultiMeshInstance3D in green.get_node(group).get_children():
+			for i in view.multimesh.instance_count:
+				var at := view.position + view.multimesh.get_instance_transform(i).origin
+				if absf(at.z) < clear_band + 0.2:
+					wrong += 1
+	_expect(wrong == 0, "no grass, flowers, rocks or trees on the spine road, planters or red tracks", str(wrong))
+	var grass: MultiMeshInstance3D = green.get_node("GrassBlades").get_child(0)
+	var before := Settings.graphics
+	Settings.graphics = 0
+	green.apply_graphics()
+	var low := grass.multimesh.visible_instance_count
+	Settings.graphics = 1
+	green.apply_graphics()
+	var medium := grass.multimesh.visible_instance_count
+	Settings.graphics = before
+	green.apply_graphics()
+	_expect(low > 0 and low < medium * 0.4 and medium == grass.multimesh.instance_count, "Low draws a sparser grass, Medium all of it", "%d / %d" % [low, medium])

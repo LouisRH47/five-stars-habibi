@@ -1,5 +1,53 @@
 # Progress
 
+## Session 58: Plaza, streets and the spine — 5 November 2026
+
+What works:
+- **The Plaza** (scripts/plaza_life.gd): 18 café tables with chairs, a drink and a parasol
+  outside the restaurants (8 with someone sitting at them), a juice kiosk on the west side
+  of the paving with a green and white striped canopy, bottles and oranges, a bilingual
+  "Fresh Juice · عصير طازج" sign, the juice seller and a customer, 12 poles round the sunken
+  square with strings of 228 bulbs hanging between them, and 6 more people strolling slowly
+  round the Plaza (they only move while you're near, to keep Low fast).
+- **Lights at sunset** (scripts/sunset_lights.gd): from about 17:00 the string light bulbs,
+  the kiosk bulbs and every street lamp head glow, fading in over half an hour (GameConfig
+  LIGHTS_*). On Medium and High four real warm lights also come on over the sunken square.
+- **Streets and lanes** (scripts/street_details.gd): 169 street lamps every ~30 m along the
+  inside roads and cluster lanes and in the spine planters (the ring road keeps its own
+  light posts), 87 green bins beside them, 21 blue bilingual street name signs (for example
+  "Spine Road · طريق الحديقة", "C1 Lane · ممر المجموعة ١") and 9 bike racks (Plaza, gym,
+  C Institute, farm stall, bee farm, school). Every spot is checked against the map
+  (scripts/clear_spots.gd) so nothing stands on a road, a red track, a doorstep or a home.
+  The poles, bins, signs and racks are solid. Road markings and kerbs are Session 61's.
+- **The spine** (scripts/spine_greenery.gd): 22,000 clumps of real grass blades (thin
+  tapered blades, dark at the root and light at the tip), drawn in 40 m chunks up to 90 m
+  away; Low draws only a quarter of them, up to 63 m. Plus 140 flower patches (1,239 flowers
+  in groups of one colour on stems), 271 rocks, and 40 more round shade trees with solid
+  trunks. All of it keeps clear of the spine road, the planters, the red tracks, the path
+  crossings, the stream, the domes, beds, pools, court, playground, pen, hives, gym and stalls.
+- Checked: smoke test PASS (new Session 58 checks). tests/venue_looks_test.gd PASS (96 checks:
+  counts, lights off at noon and on at sunset, Arabic + English signs, nothing on a road or
+  red track, nothing growing on the spine road, planters or tracks, Low draws sparser grass).
+  Coplanar, navigation, detail world, static batch, road mesh, district traffic, bus
+  recovery, housing camera, mini-map cache, lifecycle, interiors, shop, reception, touch,
+  phone refresh, kit props and crash impact tests PASS. Play-test bot: 5 deliveries,
+  5.0 stars, 0 crashes, never stuck. The frame-rate check on Low and Medium needs a real
+  graphics card (Session 59 on the Mac); headless Godot can't take screenshots either.
+
+**Louis's turn:** press F5 and ride into the Plaza: café tables with parasols outside the
+restaurants and people sitting at some, the juice kiosk on the west side, people strolling
+round, strings of bulbs round the sunken square. Keep playing until about 17:00 on the clock
+(or ride round till late in the shift): the bulbs and the street lamps start to glow. Ride
+down a cluster lane: lamps, green bins and a blue street sign with Arabic and English. Then
+ride along the spine and look at the grass between the red track and the domes: thin blades,
+flower patches, rocks and new trees. Press Esc, Settings, Graphics Low: the grass gets
+sparser. Back to Medium or High.
+
+Known bugs / to do:
+- The street lamps only glow (no real light on the road) to keep it fast; only the Plaza has
+  real lights at sunset.
+- The kiosk is for looks: you can't buy a juice there.
+
 ## Session 57: Bike shop, clothes shop, stable office, farm stall and school booth — 5 November 2026
 
 What works:
