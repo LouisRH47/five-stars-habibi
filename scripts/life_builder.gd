@@ -44,6 +44,7 @@ func _ready() -> void:
 		var horse := _add("Horse_%d" % i, "horse", list[i], GameConfig.HORSE_WALK_SPEED, Vector3(0.9, 2.4, 3.0), look[0], look[1])
 		_set_animal_name(horse, list[i])
 	list = _map.get("PEOPLE_ROUTES", [])
+	var strollers := 0  # walkers who aren't jogging take turns: dog walker, then buggy
 	for i in list.size():
 		# Session 68: joggers in sports kit, then dog walkers and parents with buggies.
 		var walker: Person
@@ -52,11 +53,13 @@ func _ready() -> void:
 		if list[i]["jog"]:
 			walker = PlaceLooks.jogger(i)
 			holder = _holder(walker)
-		elif i % 2 == 1:
+		elif strollers % 2 == 0:
+			strollers += 1
 			walker = PlaceLooks.neighbour(list[i]["look"])
 			walker.set_meta("outfit", "dog walker")
 			holder = LifeLooks.with_dog(walker)
 		else:
+			strollers += 1
 			walker = PlaceLooks.neighbour(list[i]["look"] + 1)
 			walker.set_meta("outfit", "buggy")
 			holder = LifeLooks.with_buggy(walker)
