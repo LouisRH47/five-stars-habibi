@@ -2474,6 +2474,7 @@ func _check_world_polish() -> void:
 	await _check_session67()
 	_check_session68()
 	_check_session69()
+	_check_session70()  # Sessions 70 to 73: the Blender models (see the block at the end)
 
 
 ## Session 67: the full map on M, the resolution settings and the school pool shade posts.
@@ -2592,3 +2593,48 @@ func _check_session69() -> void:
 	_close_card()
 	_check("a honey order can be picked up at the beekeeper and delivered", done and gs.money > money
 			and order.food in ["honey jars", "wax candles"], order.describe())
+
+
+# --- Sessions 70 to 73 (Blender models, playgrounds, school pitch, stables) -----------
+
+## Session 70: horses and donkeys are the Blender models; the new textures are there.
+func _check_session70() -> void:
+	var life := _main.get_node_or_null("LifeBuilder")
+	var rider: Node3D = life.get_node_or_null("Horse_0") if life != null else null
+	var model: Node3D = rider.get("model") if rider != null else null
+	var tack := model.get_node_or_null("Tack") as Node3D if model != null else null
+	_check("the riders' horses are the Blender horse with a saddle", model != null and model.has_meta("coat")
+			and (model.get_meta("legs") as Array).size() == 4 and tack != null and tack.visible, "")
+	var stables := _main.get_node_or_null("LandmarkBuilder/Stables")
+	var horses := 0
+	var standing: Node3D = null
+	for node in stables.find_children("*", "Node3D", true, false) if stables != null else []:
+		if node.get_meta("animal", "") == "horse":
+			horses += 1
+			standing = node
+	_check("the stable and paddock horses are Blender horses", horses >= 7, "%d" % horses)
+	var ambient: Node = life.get("ambient") if life != null else null
+	var donkey: Node3D = ambient._donkeys[0]["node"] if ambient != null and not ambient._donkeys.is_empty() else null
+	_check("the donkeys are Blender donkeys, smaller than a horse", donkey != null
+			and donkey.get_meta("animal", "") == "donkey" and _height(donkey) < _height(standing) * 0.85,
+			"%.2f vs %.2f" % [_height(donkey), _height(standing)])
+	var missing := []
+	for texture in ["blue_track", "red_track", "horse_sand", "pavers", "play_surface"]:
+		if not ResourceLoader.exists("res://assets/textures/%s.png" % texture):
+			missing.append(texture)
+	_check("the new track, sand, paver and playground textures are there", missing.is_empty(), str(missing))
+
+
+## How tall the meshes under a node are (metres).
+func _height(node: Node3D) -> float:
+	if node == null:
+		return 0.0
+	var top := -INF
+	var bottom := INF
+	for view: MeshInstance3D in node.find_children("*", "MeshInstance3D", true, false):
+		if view.get_parent().name == "Tack" or view.name == "Tack":
+			continue
+		var box: AABB = view.global_transform * view.get_aabb()
+		top = maxf(top, box.end.y)
+		bottom = minf(bottom, box.position.y)
+	return top - bottom if top > bottom else 0.0

@@ -115,7 +115,7 @@ func _build_stables(stables: Dictionary) -> void:
 		LowPoly.box(body, Vector3(2.0, 2.6, 0.1), WOOD, Vector3(x, 1.3, front + 0.05))
 		LowPoly.box(body, Vector3(1.6, 1.0, 0.12), DARK, Vector3(x, 2.1, front + 0.06))
 		if i % 2 == 1:
-			Props.animal(body, Vector3(x, -0.4, front - 1.0), 0.0, HORSES[i % HORSES.size()], true)
+			HorseModels.standing(body, Vector3(x, -0.4, front - 1.0), 0.0, HORSES[i % HORSES.size()], true)  # Session 70
 	LowPoly.box(body, Vector3(9.0, 1.4, 0.15), TEAL, Vector3(0, size.y + 0.9, front + 0.6))
 	_faces(body, stables["arabic"], stables["name"], Vector3(0, size.y + 0.9, front + 0.6), 0.0, 8.4, 0.15)
 	var paddock: Rect2 = stables["paddock"]
@@ -124,7 +124,7 @@ func _build_stables(stables: Dictionary) -> void:
 	_fence_box(holder, paddock, RAIL, 1.3)
 	for i in stables["horses"]:
 		var spot := Vector3(paddock.position.x + (i + 0.5) * paddock.size.x / stables["horses"], 0, paddock.get_center().y)
-		Props.animal(holder, spot, i * 75.0 + 20.0, HORSES[i % HORSES.size()], true)
+		HorseModels.standing(holder, spot, i * 75.0 + 20.0, HORSES[i % HORSES.size()], true)  # Session 70
 
 
 ## The building site: a tall fence all round (you can't get in), a crane, containers, sand

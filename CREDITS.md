@@ -72,3 +72,5 @@ Exact download URLs and SHA-256 checksums: assets/textures/sources.json.
 The riding wind loop (assets/audio/wind_loop.wav) is original generated CC0 audio; reproduce it with tools/make_wind.py.
 
 The PERFECT and tip jingles (assets/audio/perfect.wav and tip.wav) are original generated CC0 audio, reproduced by tools/make_sounds.py.
+
+- Horses, donkeys and playground models (assets/models/horse_*, donkey_*, play_*) and the textures blue_track, red_track, horse_sand, pavers and play_surface (assets/textures/): original work, made by the scripts in tools/blender/ (Sessions 70 and 71).

@@ -1542,7 +1542,7 @@ Done when:
 
 - [ ] A honey order can be picked up at the beekeeper and delivered
 
-### Session 70: Blender models and textures
+### Session 70: Blender models and textures (built, needs testing)
 
 ```text
 Session 70. Blender is installed on Louis's Mac. Run it from the command line (headless)

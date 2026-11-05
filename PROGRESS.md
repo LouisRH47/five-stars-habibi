@@ -1,5 +1,40 @@
 # Progress
 
+## Session 70: Blender horses, donkeys and textures — 5 November 2026
+
+What works:
+- **Blender scripts** in tools/blender/ build every new model and texture from code (see
+  tools/blender/README.md). They run with `blender --background --python tools/blender/<script>.py`
+  on the Mac, or plain `python3 tools/blender/<script>.py` with the Blender module installed.
+- **New horses** (make_horse.py): a proper horse shape (deep chest, arched neck, long head,
+  slim legs with hooves), a mane and a long tail, in five coats: bay, chestnut, grey (dappled),
+  black and palomino. About 1,300 triangles each. The saddle, saddle cloth, stirrups and reins
+  are a separate part that only shows when someone rides. The legs still swing when they walk
+  and trot, and the rider sits in the same seat as before. Used by the two horses on the track,
+  the jumping arena horse, the horses in the stable doors and the paddock, and the horses
+  crossing the road (their legs now walk too).
+- **New donkeys** (make_donkey.py): shorter, long ears, grey-brown or brown with a pale muzzle
+  and belly, a dark stripe down the back, a short upright mane and a tufted tail. The two
+  donkeys in the pen walk with their legs moving.
+- **New textures** (make_textures.py, assets/textures/): blue_track.png (blue cycle track),
+  red_track.png (red walking track), horse_sand.png (sand with hoof prints), pavers.png
+  (20 x 10 cm blocks) and play_surface.png (soft rubber playground floor). They all tile with
+  no seams. scripts/surface_textures.gd makes a material from any of them. The tracks and
+  pavers are being rebuilt by the roads work right now, so they're **not applied here** — the
+  road/track builder just needs `SurfaceTextures.make("blue_track")` etc. (sizes in
+  tools/blender/README.md). The playground floor is applied in Session 71.
+- Checked: smoke test PASS (new checks: the riders' horses are the Blender horse with a saddle,
+  the 7 stable/paddock horses are Blender horses, the donkeys are Blender donkeys and smaller,
+  the five textures are there), district traffic test PASS (the arena horse still clears its
+  jump), static batch test PASS. Headless Godot can't take screenshots, so I checked the models
+  with test renders in Blender instead.
+
+**Louis's turn:** press F5, ride to the stables in the south-west and look at the horses in
+the stable doors and the paddock, and the riders on the edge track. They should look like
+horses (long neck and head, mane, tail), not donkeys. Then ride to the donkey pen in the
+middle of the green spine: the donkeys are smaller with long ears.
+Rebuild a model on your Mac: `blender --background --python tools/blender/make_horse.py`.
+
 ## Session 69: The beekeeper as a pickup — 5 November 2026
 
 What works:

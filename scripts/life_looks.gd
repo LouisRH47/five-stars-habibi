@@ -37,31 +37,10 @@ static func buggy(colour: Color) -> Array:
 
 
 ## A horse with a rider in a riding helmet. Returns [model, rider]. The legs are kept
-## (model meta "legs") so animate() can swing them.
+## (model meta "legs") so animate() can swing them. Session 70: the horse is the Blender
+## model (scripts/horse_models.gd), in the coat nearest `colour`, with its saddle on.
 static func horse(colour: Color) -> Array:
-	var dark := colour.darkened(0.35)
-	var kit := MeshKit.new()
-	kit.box(Vector3(0.6, 0.7, 1.7), colour, Vector3(0, 1.35, 0))                         # body
-	kit.box(Vector3(0.3, 0.9, 0.35), colour, Vector3(0, 1.9, -0.85), Basis(Vector3.RIGHT, -0.5))  # neck
-	kit.box(Vector3(0.3, 0.3, 0.7), colour, Vector3(0, 2.25, -1.3))                      # head
-	kit.box(Vector3(0.08, 0.5, 0.5), dark, Vector3(0, 2.05, -0.75), Basis(Vector3.RIGHT, -0.5))   # mane
-	for x in [-0.1, 0.1]:
-		kit.box(Vector3(0.06, 0.18, 0.06), dark, Vector3(x, 2.5, -1.05))                 # ears
-	kit.box(Vector3(0.1, 0.8, 0.1), dark, Vector3(0, 1.2, 0.9), Basis(Vector3.RIGHT, 0.35))      # tail
-	kit.box(Vector3(0.64, 0.1, 0.6), SADDLE, Vector3(0, 1.73, 0.0))                      # saddle
-	kit.box(Vector3(0.66, 0.3, 0.7), Color(0.9, 0.9, 0.85), Vector3(0, 1.6, 0.02))       # saddle cloth
-	var model := Node3D.new()
-	model.add_child(kit.finish())
-	var legs: Array[Node3D] = []
-	for z in [-0.65, 0.65]:
-		for x in [-0.22, 0.22]:
-			var hip := Node3D.new()
-			hip.position = Vector3(x, 1.05, z)
-			model.add_child(hip)
-			LowPoly.box(hip, Vector3(0.14, 1.05, 0.14), colour, Vector3(0, -0.52, 0))
-			LowPoly.box(hip, Vector3(0.15, 0.12, 0.16), dark, Vector3(0, -0.99, 0))      # hoof
-			legs.append(hip)
-	model.set_meta("legs", legs)
+	var model := HorseModels.horse(colour, true)
 	var rider := PeopleLooks.horse_rider()
 	_sit(rider, model, Vector3(0, 1.8, 0.05), [Vector3(-0.36, 1.05, -0.1), Vector3(0.36, 1.05, -0.1)],
 			[Vector3(-0.12, 1.95, -0.5), Vector3(0.12, 1.95, -0.5)], 8.0)
