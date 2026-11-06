@@ -1,5 +1,26 @@
 # Progress
 
+## Smoothness and GitHub check fixes — 6 November 2026
+
+What works now:
+- **No more stutter from people walking home.** Each time someone left a restaurant, the game
+  worked out their route across the whole map in one go and froze for 0.1-0.25 s. On High
+  this snowballed down to about 9-20 fps. They now walk to one of the 12 homes nearest the
+  restaurant (HOME_WALKER_HOME_CHOICES in game_config.gd). Worst frame over 40 s: 115 ms before,
+  18 ms after. Smoke test checks the route is found quickly.
+- **Frame rate on this Mac (M5, 1600x900 window, riding the spine):** Low about 67 fps, Medium
+  about 104, High about 100.
+- **GitHub's check on the PR passes again.** It failed because the shade trees and edge trees
+  left 5 unused copies in memory at exit. They're now freed (spine_greenery.gd, edge_builder.gd).
+- **The browser version no longer updates by itself** when something is merged into main
+  (Louis paused it). The build and tests still run on every PR; publishing is a manual
+  "Run workflow" in GitHub Actions. Logged in PRD.md.
+
+Known bugs:
+- When the map scan finishes, about 4 s into a shift, there's one short freeze (about 0.25 s).
+- Accepting an order works out the GPS route across the whole map in one go, so it may cause a
+  short pause. This hasn't been measured; the GPS code didn't change in the fix pass.
+
 ## Session 84: play-test of the fix pass — 6 November 2026
 
 Sessions 75 to 83 were built by six helpers in parallel (roads, Plaza and car parks, buildings,
@@ -28,7 +49,7 @@ Known bugs:
   the doorway (it walks into the glass beside the 2.6 m door). A player walks out fine.
 - Standing people have a wide, mid-step stance (the model's own idle pose).
 - The red walking track looks fairly plain up close.
-- Not checked yet: the frame rate on Low, Medium and High during real play on the Mac.
+- Frame rate: checked after the fix below (see "Smoothness and GitHub check fixes").
 
 **Louis's turn:** play a full shift (see "How to test the fix pass" in the pull request or the
 list below) and write down anything that looks wrong or feels off.

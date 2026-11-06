@@ -335,7 +335,9 @@ func _palm_mesh() -> Mesh:
 	for f in 8:
 		var turn := Basis(Vector3.UP, f * TAU / 8.0) * Basis(Vector3.RIGHT, deg_to_rad(28))
 		kit.box(Vector3(0.5, 0.05, 2.8), FROND, top + turn * Vector3(0, 0, 1.3), turn)
-	var mesh: Mesh = kit.finish().mesh
+	var view := kit.finish()
+	var mesh: Mesh = view.mesh
+	view.free()  # only the mesh is kept; the node would leak otherwise
 	mesh.surface_set_material(0, MeshKit.material())
 	return mesh
 
@@ -345,6 +347,8 @@ func _tree_mesh(leaves: Color) -> Mesh:
 	var kit := MeshKit.new()
 	kit.cylinder(0.25, 0.35, 4.0, TRUNK, Vector3(0, 2.0, 0))
 	kit.ball(2.6, leaves, Vector3(0, 5.6, 0), 0.85)
-	var mesh: Mesh = kit.finish().mesh
+	var view := kit.finish()
+	var mesh: Mesh = view.mesh
+	view.free()  # only the mesh is kept; the node would leak otherwise
 	mesh.surface_set_material(0, MeshKit.material())
 	return mesh

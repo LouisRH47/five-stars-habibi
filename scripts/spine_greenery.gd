@@ -218,7 +218,9 @@ func _tree_mesh(leaves: Color) -> Mesh:
 	kit.cylinder(0.25, 0.35, 4.0, TRUNK, Vector3(0, 2.0, 0))
 	kit.ball(2.4, leaves, Vector3(0, 5.3, 0), 0.85)
 	kit.ball(1.5, leaves.lightened(0.08), Vector3(1.1, 4.8, 0.6), 0.85)
-	var mesh: Mesh = kit.finish().mesh
+	var view := kit.finish()
+	var mesh: Mesh = view.mesh
+	view.free()  # only the mesh is kept; the node would leak otherwise
 	mesh.surface_set_material(0, MeshKit.material())
 	return mesh
 

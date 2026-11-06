@@ -349,6 +349,7 @@ const HOME_WALKER_EVERY := 9.0         # s between people leaving a restaurant t
 const HOME_WALKER_MAX := 4             # at most this many walking home at once
 const HOME_WALKER_NEAR := 160.0        # m: only restaurants this close to you send people home
 const HOME_WALKER_DOOR_FADE := 0.8     # m they walk in through the door before they're gone
+const HOME_WALKER_HOME_CHOICES := 12   # they walk to one of this many homes nearest the restaurant (short routes: no stutter)
 const BIRD_SPEED := 8.0               # m/s, birds circling over the community
 const PALM_SWAY_DEG := 2.5            # how far the palm tops sway in the breeze
 const PALM_SWAY_SPEED := 0.9          # how fast they sway

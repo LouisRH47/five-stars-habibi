@@ -1,7 +1,7 @@
 class_name HomeWalkers
 extends Node3D
 ## Session 68: now and then someone walks out of a restaurant near you, walks along the
-## paths to a home in one of the clusters and goes in through the front door
+## paths to a nearby home in one of the clusters and goes in through the front door
 ## (scripts/home_walker.gd). Nobody vanishes in plain sight. The route comes from the same
 ## map scan the GPS uses (scripts/navigation_grid.gd), shared, scanned a bit each frame.
 ## Only walkers near the camera are fully animated; further away they slide along holding
@@ -48,8 +48,17 @@ func _process(delta: float) -> void:
 		return r["position"].distance_to(camera.global_position) < GameConfig.HOME_WALKER_NEAR)
 	if near.is_empty():
 		return
+	var shop: Dictionary = near.pick_random()
+	spawn_from(shop["id"], nearby_home(shop["position"]))
+
+
+## A home near `spot` (one of the HOME_WALKER_HOME_CHOICES closest). Short walks keep the
+## route search small, so working it out never makes the game stutter.
+func nearby_home(spot: Vector3) -> int:
 	var homes: Array = place_builder.villas.filter(func(v: Dictionary) -> bool: return v.get("kind", "") != "spot")
-	spawn_from(near.pick_random()["id"], homes.pick_random()["number"])
+	homes.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return a["position"].distance_squared_to(spot) < b["position"].distance_squared_to(spot))
+	return homes.slice(0, GameConfig.HOME_WALKER_HOME_CHOICES).pick_random()["number"]
 
 
 ## Sends someone out of restaurant `id` to walk home to villa `number`. Null if there's

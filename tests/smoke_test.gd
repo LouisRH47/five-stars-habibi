@@ -2575,6 +2575,19 @@ func _check_session68() -> void:
 	var into_house: bool = Vector2(end.x, end.z).distance_to(Vector2(villa["position"].x, villa["position"].z)) < villa["size"].z * 0.5
 	_check("they walk home along the paths and go in the front door", walker.inside and into_house
 			and door.distance_to(places.villa_door(home)) > 0.1, "%d steps, %.0f m walked" % [steps, steps * 0.25 * walker.speed])
+	# Fix pass: they walk to a nearby home, so the route search is quick (no stutter).
+	var shop_at: Vector3 = places.restaurant_approach("pizza")
+	var near_home: int = walkers.nearby_home(shop_at)
+	var near_spot := Vector3.ZERO
+	for v in places.villas:
+		if v["number"] == near_home:
+			near_spot = v["position"]
+	var started := Time.get_ticks_usec()
+	var near_route: Array = walkers.route_for("pizza", near_home)
+	var took := (Time.get_ticks_usec() - started) / 1000.0
+	_check("people walk home to a nearby house, and finding the way is quick",
+			near_spot.distance_to(shop_at) < 350.0 and not near_route.is_empty() and took < 60.0,
+			"home %d, %.0f m away, route in %.1f ms" % [near_home, near_spot.distance_to(shop_at), took])
 
 
 ## Session 69: the beekeeper's stall is a pickup: phone, mini-map and full map show it.
