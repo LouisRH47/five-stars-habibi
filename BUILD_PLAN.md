@@ -1849,7 +1849,7 @@ Same rules as always: one session at a time, headless checks, smoke test, focuse
 play-test bot careful and careless, a check for every new thing, PROGRESS.md, commit. Never
 upload anything to Steam: building the store page and pressing publish is Michael's job.
 
-### Session 85: Windows, Mac and Steam Deck builds
+### Session 85: Windows, Mac and Steam Deck builds (built, needs testing)
 
 ```text
 Session 85. 1) Add a Linux export preset next to the Mac and Windows ones (export_presets.cfg),
@@ -1865,9 +1865,10 @@ the phone readable at 1280x800.
 
 Done when:
 
-- [ ] One command builds Windows, Mac and Linux
-- [ ] The Mac build starts, plays a delivery and saves
-- [ ] At 1280x800 on Low the game is smooth and all text is readable
+- [x] One command builds Windows, Mac and Linux
+- [x] The Mac build starts, plays a delivery and saves
+- [ ] At 1280x800 on Low the game is smooth and all text is readable (text: done; smooth:
+      about 80 fps on Low at 1920x1080 on this Mac, a few short stutters left, needs a real Deck)
 
 ### Session 86: Controller support
 

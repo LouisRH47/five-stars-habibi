@@ -52,6 +52,9 @@ static func load_once() -> void:
 	if OS.has_feature("web"):
 		fullscreen = false
 	apply()
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree != null and not tree.root.size_changed.is_connected(apply_ui_scale):
+		tree.root.size_changed.connect(apply_ui_scale)
 
 
 ## Saves the settings and applies them.
@@ -113,6 +116,21 @@ static func apply() -> void:
 	if DisplayServer.window_get_mode() != mode:
 		DisplayServer.window_set_mode(mode)
 	apply_window_size()
+	apply_ui_scale()
+
+
+## Session 85: on small screens (the Steam Deck is 1280x800) the menus and HUD are drawn
+## bigger, so the smallest text stays readable. Runs again whenever the window changes size.
+static func apply_ui_scale() -> void:
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree == null:
+		return
+	tree.root.content_scale_factor = ui_scale_for(tree.root.size.x)
+
+
+## The menu/HUD size for a window `width` pixels wide (1.0 = as designed for 1920x1080).
+static func ui_scale_for(width: int) -> float:
+	return GameConfig.SMALL_SCREEN_UI_SCALE if width > 0 and width < GameConfig.SMALL_SCREEN_WIDTH else 1.0
 
 
 ## True where you can pick a window size: desktop only (not the browser or phones).

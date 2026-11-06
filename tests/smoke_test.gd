@@ -1352,6 +1352,7 @@ func _finish() -> void:
 	load("res://tests/smoke_signs.gd").new().run(self)  # Sessions 64 to 66 (bus stop, signs, Majlis Gardens)
 	_check_looks_venues()  # looks pass Sessions 56 to 58
 	await _check_fix_pass()  # fix pass Sessions 75 to 83 (blocks at the end)
+	_check_session85()  # Steam pass: desktop builds and the Steam Deck
 	# --- Looks pass (Sessions 54-55): walk into every restaurant room, queue, hold E, walk out ---
 	await preload("res://tests/smoke_rooms.gd").new().run(self)
 	_check_saving()
@@ -2835,8 +2836,10 @@ func _check_session72() -> void:
 	for pupil: Person in pupil_list(pitch):
 		playing += 1 if turf.grow(2.0).has_point(Vector2(pupil.global_position.x, pupil.global_position.z)) else 0
 	var ball_from: Vector3 = pitch.ball.position
-	for i in 30:
+	for i in 200:  # the ball can be between kicks: watch it for up to 20 s of play
 		pitch.play(0.1)
+		if pitch.ball.position.distance_to(ball_from) > 1.0:
+			break
 	_check("pupils play football on the pitch in the day", playing == GameConfig.PITCH_PUPILS
 			and pitch.ball.position.distance_to(ball_from) > 1.0, "%d pupils" % playing)
 	var courts := 0
@@ -3789,3 +3792,24 @@ func _bone_on_map(person: Person, bone: String) -> Vector3:
 	return person.global_transform * (person.skeleton_to_me * at)
 
 # --- end of Session 81 (people) checks ---
+
+
+## Session 85: the Linux (Steam Deck) build is set up, small screens get bigger menus, and
+## the exported game's self-test is there.
+func _check_session85() -> void:
+	var presets := ConfigFile.new()
+	var names: Array = []
+	if presets.load("res://export_presets.cfg") == OK:
+		for section in presets.get_sections():
+			if presets.has_section_key(section, "platform"):
+				names.append(presets.get_value(section, "platform"))
+	_check("there are Windows, Mac and Linux builds", names.has("Windows Desktop") and names.has("macOS") and names.has("Linux"), str(names))
+	_check("on the Steam Deck (1280 px wide) menus and HUD are bigger; on a big screen they aren't",
+			is_equal_approx(Settings.ui_scale_for(1280), GameConfig.SMALL_SCREEN_UI_SCALE)
+			and is_equal_approx(Settings.ui_scale_for(1920), 1.0) and GameConfig.SMALL_SCREEN_UI_SCALE > 1.0,
+			"%.2f / %.2f" % [Settings.ui_scale_for(1280), Settings.ui_scale_for(1920)])
+	_check("the smallest text stays at least 9 px on the Steam Deck",
+			13.0 * (1280.0 / 1920.0) * Settings.ui_scale_for(1280) >= 9.0, "")
+	_check("the exported game has its build self-test (and it's off in normal play)",
+			load("res://scripts/build_check.gd") != null and not BuildCheck.wanted(), "")
+

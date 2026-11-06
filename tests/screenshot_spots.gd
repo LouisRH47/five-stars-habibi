@@ -4,7 +4,8 @@ extends SceneTree
 ##   Godot --path . -s tests/screenshot_spots.gd -- out=/tmp/shots graphics=1 only=plaza,gym
 ## out: folder for the PNGs (default: user://screenshots). graphics: 0 Low, 1 Medium, 2 High.
 ## only: comma list of spot names (default: all). hour: time of day (default 11.0).
-## ui=1 keeps the HUD and phone on screen. Your real save is never touched.
+## ui=1 keeps the HUD and phone on screen. size=1280x800 sets the window size in pixels (the
+## Steam Deck screen, Session 85). Your real save is never touched.
 
 ## name: [eye, look-at point]. Heights are metres above the ground.
 const SPOTS := {
@@ -114,6 +115,7 @@ const SPOTS := {
 var _main: Node
 var _out := "user://screenshots"
 var _graphics := 1
+var _size := Vector2i.ZERO
 var _hour := 11.0
 var _ui := false
 var _names: Array = []
@@ -136,6 +138,9 @@ func _initialize() -> void:
 			"hour": _hour = float(parts[1])
 			"only": only = parts[1]
 			"ui": _ui = parts[1] == "1"
+			"size":
+				var wh := parts[1].split("x")
+				_size = Vector2i(int(wh[0]), int(wh[1]))
 	_names = SPOTS.keys() if only == "" else Array(only.split(","))
 	DirAccess.make_dir_recursive_absolute(_out)
 	var state := root.get_node("GameState")
@@ -165,7 +170,11 @@ func _process(_delta: float) -> bool:
 	if _index == -1:
 		Settings.graphics = _graphics
 		Settings.fullscreen = false
+		if _size != Vector2i.ZERO:
+			Settings.window_size = 0  # don't let the saved window size override it
 		Settings.apply()
+		if _size != Vector2i.ZERO:
+			DisplayServer.window_set_size(_size)
 		_set_hour(_hour)
 	if not _ui:
 		for child in _main.get_children():

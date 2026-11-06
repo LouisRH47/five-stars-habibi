@@ -683,3 +683,7 @@ const LIFEGUARD_LOOK_DEG := 55.0      # degrees he looks left and right
 const LIFEGUARD_STAND_EVERY := Vector2(12.0, 22.0)  # s between standing up to whistle
 const LIFEGUARD_STAND_TIME := 3.0     # s standing with the whistle
 const LIFEGUARD_WHISTLE_HEARD := 45.0 # m, how far away you hear the whistle
+
+# --- Steam pass (Session 85): desktop builds and the Steam Deck ---
+const SMALL_SCREEN_WIDTH := 1600       # px: windows narrower than this (Steam Deck 1280x800) get bigger menus and HUD
+const SMALL_SCREEN_UI_SCALE := 1.15    # how much bigger (13 px text becomes 10 px on the Deck, not 9; more makes the phone cover the speed panel)

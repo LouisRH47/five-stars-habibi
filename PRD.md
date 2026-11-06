@@ -584,7 +584,7 @@ Decided 6 Nov 2026: Five Stars Habibi is a game for **Steam**. The browser versi
 
 **Engine:** it stays in Godot 4 (GDScript). Steam doesn't need a different engine, and many Steam games are made in Godot. Porting to Unreal would mean rebuilding the whole game.
 
-**Platforms:** Windows first (most Steam players), then Mac and Linux / Steam Deck. On the Steam Deck (1280x800) the Low graphics setting must run smoothly.
+**Platforms:** Windows first (most Steam players), then Mac and Linux / Steam Deck. On the Steam Deck (1280x800) the Low graphics setting must run smoothly. On small screens (narrower than 1600 pixels, like the Deck) the menus and HUD are drawn 15% bigger so text stays readable.
 
 **What the game needs for Steam:**
 - **Controller:** every action works on a controller (Xbox and PlayStation layouts, Steam Deck buttons), including menus, the phone and the shops. On-screen hints show keyboard keys or controller buttons, whichever you used last.

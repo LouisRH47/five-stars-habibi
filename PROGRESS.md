@@ -1,5 +1,41 @@
 # Progress
 
+## Session 85: Windows, Mac and Steam Deck builds — 6 November 2026
+
+What works now:
+- **One command builds all three games:** Windows, Mac and Linux (the Steam Deck runs Linux).
+  First, once per Mac, make the private Godot copy with the export templates (downloads Godot's
+  official 1.28 GB templates file and checks its fingerprint):
+  `python3 tools/setup_export_sdk.py --download`
+  Then:
+  `python3 tools/build_desktop.py --godot /private/tmp/habibi-export-sdk/Godot.app/Contents/MacOS/Godot --output /private/tmp/habibi-desktop-review --verify-mac`
+  (add `--mode distribution` and a fresh output folder for builds that save to the normal user folder).
+  Sizes: Mac 88 MB, Windows 65 MB, Linux 56 MB. New Linux preset in export_presets.cfg.
+- **The exported Mac game tests itself:** started with `-- --build-check`, it opens the map,
+  plays one delivery (27 Dh), saves to its own test file, loads it back, prints
+  "BUILD CHECK: PASS" and quits (scripts/build_check.gd). The build tool runs this on the Mac
+  build. Your real save is never touched.
+- **Bigger menus and HUD on small screens:** windows narrower than 1600 pixels (the Deck is
+  1280x800) draw the menus and HUD 15% bigger, so the smallest text is about 10 px instead of
+  under 9. Checked with a 1280x800 screenshot: phone, clock, mini-map and speed panel all fit
+  without touching. Numbers in game_config.gd (SMALL_SCREEN_WIDTH, SMALL_SCREEN_UI_SCALE).
+- **Frame rate at Steam Deck size:** on Low at 1920x1080 (more pixels than the Deck), about
+  80 fps on this Mac, measured on battery with Low Power Mode on. Earlier measurements jumped
+  between 31 and 114 fps because of Low Power Mode and other apps, so treat these as rough.
+  The game's scripts take only about 2 ms per frame; almost all the time is drawing.
+- Smoke test checks: the three builds are set up, small-screen scaling, the self-test exists.
+- The screenshot tool takes `size=1280x800` for Steam Deck-size pictures.
+- The smoke test's football check now watches the ball for up to 20 s of play (it sometimes
+  sat still between kicks and failed for no real reason).
+
+Not checked (no machine for it):
+- The Windows and Linux builds weren't run, only built and checked to be real Windows and
+  Linux programs. A real Steam Deck test needs a Steam Deck.
+
+Known bugs:
+- A few short stutters remain while riding (1% of frames under about 20 fps), probably the
+  graphics card preparing new things the first time they appear. Worth a look before launch.
+
 ## Smoothness and GitHub check fixes — 6 November 2026
 
 What works now:

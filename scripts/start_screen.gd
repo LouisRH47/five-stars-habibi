@@ -45,6 +45,11 @@ var _time := 0.0
 
 
 func _ready() -> void:
+	if BuildCheck.wanted():  # Session 85: self-test of an exported build, then quit
+		BuildCheck.run.call_deferred(get_tree())
+		set_process(false)
+		queue_free()
+		return
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(_build_desert())
 	add_child(_build_title())
