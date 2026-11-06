@@ -14,6 +14,9 @@ What works now:
   left 5 unused copies in memory at exit. They're now freed (spine_greenery.gd, edge_builder.gd).
   The smoke test and two other tests also stop every sound and wait a moment before quitting
   (tests/clean_exit.gd), because a restaurant sound still playing at exit counts as an error.
+- The browser package is now 27.7 MB, over the website's 25 MB per-file limit. Normal GitHub
+  checks only warn about that now (nothing is published from them). A hand-started publish
+  still fails until the game is made smaller for the browser.
 - **The browser version no longer updates by itself** when something is merged into main
   (Louis paused it). The build and tests still run on every PR; publishing is a manual
   "Run workflow" in GitHub Actions. Logged in PRD.md.
