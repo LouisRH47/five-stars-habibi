@@ -29,6 +29,8 @@ signal order_redirected(order: Order)
 ## Replay progress is independent of the rating's rolling delivery history.
 signal collection_changed
 signal offers_changed
+## Session 89: a chat in the phone's Messages app changed (a new line, or one was read).
+signal messages_changed
 
 var streak := 0
 var day_kind := "normal"
@@ -119,6 +121,13 @@ var offered_order: Order = null
 var current_order: Order = null
 var stage: Stage = Stage.NONE
 
+## Session 89: the phone's chats (see scripts/messages.gd for what's in one), newest first.
+## Change them only with add_message(), send_reply(), read_chat(), set_replies(), post_news().
+var chats: Array = []
+## Session 89: which kinds of order the Jobs app asks for. A kind that's off is offered less
+## (see OrderMaker.kind_of()). At least one always stays on (set_order_filter()).
+var order_filters := {"normal": true, "fragile": true, "vip": true, "far": true}
+
 # Your last accept (true) / skip (false) choices, newest at the end.
 var _choices: Array[bool] = []
 
@@ -131,8 +140,11 @@ func _ready() -> void:
 	Settings.load_once()
 	load_game()
 	# Save by itself whenever something worth keeping changes.
-	for changed in [money_changed, stats_changed, insurance_changed, shift_ended]:
+	for changed in [money_changed, stats_changed, insurance_changed, shift_ended, messages_changed]:
 		changed.connect(func(_a = null): save_soon())
+	# Session 89: regulars say thanks in Messages, and the boss sums up each shift.
+	order_delivered.connect(func(order): ChatFeed.after_delivery(self, order))
+	shift_ended.connect(func(summary): ChatFeed.after_shift(self, summary))
 
 
 ## Saves at the end of this frame (several changes at once only save once).
@@ -205,6 +217,9 @@ func reset() -> void:
 	collection_claims.clear()
 	owned_collection_rewards.clear()
 	offered_orders.clear()
+	chats.clear()
+	order_filters = Messages.filters_from_save({})
+	messages_changed.emit()
 	shift_number = 0
 	history.clear()
 	start_shift()
@@ -496,6 +511,7 @@ func hire(rider: String, country: String, look: int, company_id := "snackaroo") 
 	company = company_id if Companies.find(company_id) != {} else "snackaroo"
 	hired = true
 	tutorial_done = false
+	ChatFeed.welcome(self)  # Session 89: your new boss says hello in Messages
 	save_soon()
 
 
@@ -818,3 +834,63 @@ func buy_shop_cart(total: int, levels: Dictionary, owned: Dictionary, equipped: 
 	stats_changed.emit()
 	save_soon()
 	return true
+
+
+# --- Session 89: the phone's Messages and Jobs apps ---
+
+## Someone writes to you. Makes the chat if it's new (face: the letter in its round
+## picture, colour: the picture's colour), moves it to the top and counts the line as unread.
+func add_message(chat_id: String, chat_name: String, text: String, face := "", colour := Color()) -> void:
+	Messages.add_line(chats, chat_id, chat_name, "them", text, face, colour)
+	messages_changed.emit()
+
+
+## You tap a reply button: your line goes into the chat and the buttons go away.
+func send_reply(chat_id: String, text: String) -> void:
+	if Messages.index_of(chats, chat_id) < 0:
+		return
+	Messages.add_line(chats, chat_id, "", "me", text)
+	set_replies(chat_id, [])
+
+
+## You opened the chat: everything in it is read.
+func read_chat(chat_id: String) -> void:
+	var chat := Messages.find(chats, chat_id)
+	if not chat.is_empty() and int(chat["unread"]) > 0:
+		chat["unread"] = 0
+		messages_changed.emit()
+
+
+## The reply buttons you can tap in a chat ([] = none).
+func set_replies(chat_id: String, replies: Array) -> void:
+	var chat := Messages.find(chats, chat_id)
+	if not chat.is_empty():
+		chat["replies"] = replies.duplicate()
+		messages_changed.emit()
+
+
+## How many lines you haven't read yet, in all chats (the red badge on the Messages icon).
+func unread_messages() -> int:
+	return Messages.unread_total(chats)
+
+
+## A line in the Plaza news chat (Session 94 posts the flea market here).
+func post_news(text: String) -> void:
+	add_message(GameConfig.CHAT_NEWS_ID, ChatLines.NEWS_NAME, text, ChatLines.NEWS_FACE, ChatLines.NEWS_COLOUR)
+
+
+## Turns one kind of order on or off in the Jobs app ("normal", "fragile", "vip", "far").
+## Returns false (and changes nothing) for an unknown kind, or when it's the last one on.
+func set_order_filter(kind: String, on: bool) -> bool:
+	if not order_filters.has(kind):
+		return false
+	if not on and order_filters.values().count(true) == 1 and order_filters[kind]:
+		return false
+	order_filters[kind] = on
+	save_soon()
+	return true
+
+
+## True if the Jobs app says yes to this kind of order.
+func wants_order_kind(kind: String) -> bool:
+	return bool(order_filters.get(kind, true))

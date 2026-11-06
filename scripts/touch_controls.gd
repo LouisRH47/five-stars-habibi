@@ -18,6 +18,7 @@ const MIN_WIDGET_TEXT := 16.0
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	layer = 9  # normal HUD above the world; pause and results stay above us
+	PhoneApp.ensure_action()  # Session 89: the Phone button sends "open_phone"
 	touch_enabled = DisplayServer.is_touchscreen_available()
 	if OS.has_feature("web"):
 		touch_enabled = touch_enabled or JavaScriptBridge.eval("('ontouchstart' in window) || navigator.maxTouchPoints > 0") == true
@@ -146,9 +147,9 @@ func _layout() -> void:
 	_buttons[-1]["visible"] = false
 	_buttons[-1]["enabled"] = false
 	var extras := [["skip_order", "Skip"], ["ring_bell", "Bell"],
-		["reset_bike", "Reset"], ["toggle_insurance", "Insure"], ["pause", "Pause"]]
+		["reset_bike", "Reset"], ["toggle_insurance", "Insure"], ["open_phone", "Phone"], ["pause", "Pause"]]
 	for i in extras.size():
-		_add(extras[i][0], extras[i][1], Rect2(w / 2 - 325 + i * 132, h - 136, 122, 112))
+		_add(extras[i][0], extras[i][1], Rect2(w / 2 - extras.size() * 66 + 5 + i * 132, h - 136, 122, 112))
 	_surface.queue_redraw()
 
 

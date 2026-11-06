@@ -1,8 +1,9 @@
 class_name SaveGame
 ## Saves and loads your progress (Session 15) to one small file, as JSON text:
 ## money, delivery history (your rating comes from it), XP, your name, country and look,
-## the insurance setting, how often you've delivered to each regular, and whether you're hired / did the tutorial / the boss paid a
-## crash. GameState calls these; it saves by itself whenever something changes.
+## the insurance setting, how often you've delivered to each regular, whether you're hired /
+## did the tutorial / the boss paid a crash, and (Session 89) the phone's chats and which kinds
+## of order you want. GameState calls these; it saves by itself whenever something changes.
 ## On a Mac the file is in ~/Library/Application Support/Godot/app_userdata/Five Stars Habibi/.
 
 ## Bump this if the save format changes, so old saves can be read differently.
@@ -33,6 +34,9 @@ static func save(state: Node, path: String) -> bool:
 		"choices": state._choices,
 		"crash_shifts": state.crash_shifts,
 		"regular_visits": state.regular_visits,
+		# Session 89: the phone's chats and the Jobs app's choices.
+		"chats": state.chats,
+		"order_filters": state.order_filters,
 	}
 	for field in ["streak", "day_kind", "tomorrow_kind", "personal_bests", "visited_homes", "visited_venues",
 			"animals_met", "lines_heard", "collection_claims", "owned_collection_rewards", "upgrade_levels", "owned_items", "equipped_cosmetics"]:
@@ -94,6 +98,9 @@ static func load_into(state: Node, path: String) -> bool:
 			"upgrade_levels", "owned_items", "equipped_cosmetics"]:
 		var saved = data.get(field, {})
 		state.set(field, saved.duplicate(true) if saved is Dictionary else {})
+	# Session 89: the phone's chats and Jobs choices (old saves: no chats, every kind on).
+	state.chats = Messages.from_save(data.get("chats", []))
+	state.order_filters = Messages.filters_from_save(data.get("order_filters", {}))
 	var records = data.get("personal_bests", {})
 	state.personal_bests = records.duplicate(true) if records is Dictionary else {}
 	for field in ["earnings", "streak", "deliveries"]:

@@ -53,6 +53,7 @@ var _this_walk := 0.0   # seconds this walk has taken (to say when one takes too
 var _door_when_parked := Vector2.ZERO  # where the door was when we got off (did it move?)
 var _walk_best := INF    # closest we've got to where we're walking on this walk (metres)
 var _walk_no_gain := 0.0  # seconds without getting closer
+var _exit_left := 0.0  # seconds left following the way out of a building by its door
 var _repark_left := 0.0  # seconds of rolling back after parking in our own way
 var _walk_goal := Vector2.INF  # what _walk_best is measured to
 var _trail: Array[Vector2] = []  # the way we walked to the door (to walk back out the same way)
@@ -208,12 +209,23 @@ func _walk(delta: float) -> void:
 		_walk_route.reverse()
 		_walk_route.append(goal)
 		_trail.clear()
+	elif not going_to_door and _walk_no_gain > 12.0:
+		# Still stuck and no trail left (inside a restaurant, behind its glass front): walk to
+		# the nearest restaurant's own door first, then out to the bike, like a player would.
+		_walk_no_gain = 0.0
+		var exit := _nearest_restaurant_exit(here)
+		if not exit.is_empty():
+			_walk_route.assign(exit)
+			_walk_route.append(goal)
+			_exit_left = 15.0  # follow it; don't plan a new route through the glass straight away
+			print("  stuck inside at %s: walking out by the door" % here)
 	if int(_this_walk / 20.0) != int((_this_walk - delta) / 20.0):
 		_say_walk_trouble(here, goal, going_to_door)
 	# Walk round things too: a route from the grid, found again if we stop moving.
 	_walk_stuck = _walk_stuck + delta if here.distance_to(_walk_last) < 0.01 else 0.0
 	_walk_last = here
-	if _walk_route.is_empty() or _walk_route[_walk_route.size() - 1].distance_to(goal) > 0.5 or _walk_stuck > 1.0:
+	_exit_left = maxf(_exit_left - delta, 0.0)
+	if _walk_route.is_empty() or _walk_route[_walk_route.size() - 1].distance_to(goal) > 0.5 or (_walk_stuck > 1.0 and _exit_left <= 0.0):
 		var from := _reachable_start(here)
 		if _walk_stuck > 1.0:
 			# Bumped into something the map scan doesn't know (like the parked bike):
@@ -654,6 +666,32 @@ func _say_walk_trouble(here: Vector2, goal: Vector2, to_door: bool) -> void:
 	print("  walk taking long: %.0f s at %s, going to %s (%s, %.1f m away), near: %s" % [_this_walk, here,
 			"the door" if to_door else "the bike", goal, here.distance_to(goal), ", ".join(near)])
 
+
+
+## The inside and outside of the nearest walk-in building's door (a restaurant, the gym or the
+## C Institute), for walking out of it.
+func _nearest_restaurant_exit(here: Vector2) -> Array:
+	var places: Node = _dm.place_builder
+	var best: Array = []
+	var best_gap := 40.0
+	for place: Dictionary in places.restaurants:
+		var inside := _flat(places.restaurant_entrance(place["id"]))
+		var outside := _flat(places.restaurant_approach(place["id"]))
+		var gap := here.distance_to(inside)
+		if gap < best_gap:
+			best_gap = gap
+			best = [inside + (inside - outside).normalized() * 1.5, inside, outside]
+	for place: Dictionary in places.villas:
+		if not place.get("interior", false):
+			continue
+		var outside := _flat(places.villa_approach(place["number"]))
+		var middle := _flat(place["position"])
+		var gap := here.distance_to(middle)
+		if gap < best_gap:
+			best_gap = gap
+			var inward := (middle - outside).normalized()
+			best = [outside + inward * 4.0, outside + inward * 1.0, outside]
+	return best
 
 
 ## Where to plan a walk from. Pressed against a wall (like the C Institute's glass front), the

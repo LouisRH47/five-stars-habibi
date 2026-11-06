@@ -39,7 +39,7 @@ func _ready() -> void:
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
 	var close_button := Button.new()
-	close_button.text = "Back to riding  ·  P / Esc"
+	close_button.text = "Back to riding  ·  Esc"
 	close_button.pressed.connect(close)
 	header.add_child(close_button)
 	var scroll := ScrollContainer.new()
@@ -52,14 +52,13 @@ func _ready() -> void:
 	scroll.add_child(_content)
 
 
+## Esc closes the page. (Session 89: P opens the big phone now, scripts/phone_app.gd;
+## this page opens from its Profile app.)
 func _input(event: InputEvent) -> void:
 	if not event is InputEventKey or not event.pressed or event.echo:
 		return
-	if showing and event.physical_keycode in [KEY_P, KEY_ESCAPE]:
+	if showing and event.physical_keycode == KEY_ESCAPE:
 		close()
-		get_viewport().set_input_as_handled()
-	elif event.physical_keycode == KEY_P and not get_tree().paused:
-		open()
 		get_viewport().set_input_as_handled()
 
 

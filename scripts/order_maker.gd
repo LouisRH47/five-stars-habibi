@@ -111,6 +111,19 @@ static func is_lunch(clock_hour: float) -> bool:
 	return clock_hour >= GameConfig.LUNCH_START_HOUR and clock_hour < GameConfig.LUNCH_END_HOUR
 
 
+## Session 89: the kind of order for the phone's Jobs app: "fragile" (a fragile cake),
+## "vip" (a regular or a big family order: bigger pay or tips), "far" (the drop-off is more
+## than ORDER_FAR_METRES from the shop) or "normal" (everything else). First match wins.
+func kind_of(order: Order) -> String:
+	if order.special == "fragile":
+		return "fragile"
+	if order.regular_id != "" or order.special == "family":
+		return "vip"
+	if places.restaurant_door(order.restaurant_id).distance_to(places.villa_door(order.villa_number)) > GameConfig.ORDER_FAR_METRES:
+		return "far"
+	return "normal"
+
+
 ## Pay for a ride of `metres` (straight line, shop to home), 8 to 15 Dh.
 static func pay_for(metres: float) -> int:
 	var pay := roundi(GameConfig.ORDER_PAY_BASE + metres * GameConfig.ORDER_PAY_PER_METRE)

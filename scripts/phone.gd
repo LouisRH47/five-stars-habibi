@@ -64,6 +64,9 @@ func _ready() -> void:
 	var profile := ProfilePage.new()
 	profile.name = "ProfilePage"
 	add_child(profile)
+	var big_phone := PhoneApp.new()  # Session 89: the big phone on P
+	big_phone.name = "PhoneApp"
+	add_child(big_phone)
 	var observer := preload("res://scripts/collection_observer.gd").new()
 	observer.delivery_manager = delivery_manager
 	add_child(observer)
@@ -358,9 +361,9 @@ func _make_profile_link() -> void:
 	rows.add_child(_streak)
 	rows.move_child(_streak, _xp_bar.get_index() + 1)
 	var profile := Button.new()
-	profile.text = "Profile & collections  ·  P"
+	profile.text = "Phone  ·  P"
 	profile.add_theme_font_size_override("font_size", 14)
-	profile.pressed.connect(func(): $ProfilePage.open())
+	profile.pressed.connect(func(): $PhoneApp.open())
 	rows.add_child(profile)
 	_gear_goal = Label.new()
 	_gear_goal.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

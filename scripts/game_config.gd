@@ -722,3 +722,18 @@ const CRASH_THROW_SPIN := 4.0          # rad/s forward roll going over the handl
 const CRASH_BIKE_SLIDE_SHARE := 0.6    # share of the impact speed the bike slides on with
 const CRASH_GET_UP_TIME := 0.5         # s to blend from lying on the ground back onto the bike
 const CRASH_FALL_HOSPITAL := 20        # Dh of the fall bill that's the clinic (the rest, 10 Dh, is the bike repair)
+
+# --- Life pass Session 89 (jobs and messages): the phone's Jobs and Messages apps ---
+const ORDER_FAR_METRES := 360.0        # m, shop door to drop-off door: more than this is a "far" order (about 1 in 3)
+const ORDER_FILTER_TRIES := 5          # times a new order is made again when its kind is switched off in Jobs
+const CHAT_MAX_LINES := 30             # each chat keeps only its last 30 lines
+const CHAT_BOSS_ID := "boss"           # the chat with your company's boss
+const CHAT_NEWS_ID := "plaza_news"     # the Plaza news chat (Session 94 posts the flea market there)
+
+# --- Life pass Session 89: the big phone on P (scripts/phone_app.gd) ---
+const PHONE_APP_SIZE := Vector2(420, 860)  # px, the big phone at 1920x1080 (it shrinks on short screens)
+const PHONE_APP_MARGIN := 70.0             # px kept free above and below the phone (the keys hint sits there)
+const PHONE_APP_SHADE := 0.55              # how dark the see-through shade behind the phone is (0 to 1)
+const CAREER_TIER2_STARS := 4.0            # Profile app: stars Tier 2 (Dune Express) needs (PRD career ladder)
+const CAREER_TIER2_DELIVERIES := 20        # Profile app: deliveries Tier 2 needs
+const MOTORBIKE_TEST_PRICE := 200          # Dh, the motorbike test's first try (PRD; the test isn't built yet)
