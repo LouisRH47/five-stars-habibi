@@ -738,6 +738,8 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 6 Nov 2026 | Session 82: ground textures are real CC0 photos with their sizes in one table; lawns mix aerial grass with leafy grass; no grass clumps; bins are grey; sign text uses MSDF |
 | 6 Nov 2026 | Session 83: people near the rider breathe, look round, shift their weight and talk in pairs with hand gestures; faces have eyes and a smile; every outfit stays on the body (tested) |
 | 6 Nov 2026 | The game is for Steam (Windows first, then Mac and Steam Deck). It stays in Godot 4; no Unreal port. Steam pass planned as Sessions 85 to 90: desktop builds, controller, key settings, Steam achievements and cloud saves, store page kit, play-test. Michael sets up the Steamworks account and App ID |
+| 6 Nov 2026 | Life pass planned (Sessions 86 to 97) before the rest of the Steam pass (now 98 to 102): loading screen, three crash levels with a ragdoll, three delivery companies with logos and perks (Snackaroo, Zoomaroo, Deliverooz), a full phone app on P, flea market Fridays, the mansion by Cluster 5 (25,000 Dh, Tier 3, DJ Salad's tasks), C Institute second floor, and look fixes |
+| 6 Nov 2026 | DJ Salad owns the mansion until you buy it: a bit overweight, DJ look, orders from day one; once sold he moves to Cluster 5 and keeps ordering |
 
 ## Sources
 
