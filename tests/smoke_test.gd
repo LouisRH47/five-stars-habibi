@@ -1359,6 +1359,7 @@ func _finish() -> void:
 		Input.action_release(action)
 	_phase = "done"
 	print("RESULT: ", "FAIL" if _failed else "PASS")
+	await preload("res://tests/clean_exit.gd").run(self, _main)  # no sound still playing at exit
 	quit(1 if _failed else 0)
 
 

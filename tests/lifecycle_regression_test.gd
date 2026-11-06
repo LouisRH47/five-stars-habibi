@@ -18,6 +18,7 @@ func _run() -> void:
 	await _check_insurance_snapshot()
 	_state._save_waiting = false
 	SaveGame.delete(_state.save_path)
+	await preload("res://tests/clean_exit.gd").run(self, current_scene)  # no sound still playing at exit
 	print("RESULT: %s lifecycle regressions (%d checks)" % ["FAIL" if _failed else "PASS", _checks])
 	quit(1 if _failed else 0)
 

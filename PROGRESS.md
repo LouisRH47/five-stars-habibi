@@ -12,6 +12,8 @@ What works now:
   about 104, High about 100.
 - **GitHub's check on the PR passes again.** It failed because the shade trees and edge trees
   left 5 unused copies in memory at exit. They're now freed (spine_greenery.gd, edge_builder.gd).
+  The smoke test and two other tests also stop every sound and wait a moment before quitting
+  (tests/clean_exit.gd), because a restaurant sound still playing at exit counts as an error.
 - **The browser version no longer updates by itself** when something is merged into main
   (Louis paused it). The build and tests still run on every PR; publishing is a manual
   "Run workflow" in GitHub Actions. Logged in PRD.md.
