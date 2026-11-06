@@ -22,6 +22,9 @@ signal hard_braked
 signal crashed(big: bool)
 ## The visible fall has finished. The clinic waits for this instead of cutting away at impact.
 signal fall_completed(big: bool, impact: Dictionary)
+## Session 87: a bump (slow, or into something soft): you stay on, the bike wobbles. impact
+## is the CrashImpact record ("kmh", "bill", "what"...).
+signal knocked(impact: Dictionary)
 ## Sent when you ring the bell with B (Session 29). Sounds plays the ring.
 signal bell_rung
 
@@ -74,6 +77,9 @@ var _fall_elapsed := 0.0
 var _fall_duration := 0.0
 var _rider_home := Transform3D.IDENTITY
 var _fall_rider_start := Transform3D.IDENTITY
+var _ragdoll: RiderRagdoll   # Session 87: the rider's floppy body for falls
+var _tumble: BikeTumble      # Session 87: the bike sliding and tipping over (while falling)
+var _model_home := Transform3D.IDENTITY
 var _safe_transform := Transform3D.IDENTITY
 
 # Where the wheels meet a speed bump, in metres ridden after the bike's collision box
@@ -92,6 +98,10 @@ var _extra_bag: Node3D       # the second bag, on the handlebars (big family ord
 var _braking := false        # true while a brake key is held (so a long press counts once)
 var _bump_cooldown := 0.0
 var _crash_grace := 0.0  # Session 52: no new fall right after getting back up
+var _knock_cooldown := 0.0  # Session 87: no second bump bill while sliding along a wall
+var _wobble_left := 0.0     # Session 87: seconds of wobble left after a bump
+## The last bump (Session 87), for the message and the tests.
+var last_bump: Dictionary = {}
 var _start_transform: Transform3D
 var _hop_active := false     # true while the bike is going over a speed bump
 var _hop_dist := 0.0         # metres ridden since the bike touched the bump
@@ -127,6 +137,13 @@ func _ready() -> void:
 	_rider.play("pedal")
 	# Dress the rider in the look picked on the application (Session 14).
 	RiderLook.apply(_rider, GameState.rider_look)
+	_model_home = _model.transform
+	_ragdoll = RiderRagdoll.attach(_rider)  # Session 87: a real tumble when you fall off
+	_ragdoll.exclude(self)
+	GameState.company_changed.connect(func(_id: String):  # Session 88: new colours and logo
+		BikeModel.brand_box(_model, Companies.current())
+		Wardrobe.apply_bike(_model, GameState.equipped_cosmetics)
+		RiderLook.apply(_rider, GameState.rider_look))
 	# Dust puffs from the back tyre on sand and when braking hard (Session 31).
 	var dust := preload("res://scripts/tyre_dust.gd").new()
 	dust.name = "TyreDust"
@@ -145,6 +162,7 @@ func _physics_process(delta: float) -> void:
 	boost_cooldown_left = maxf(boost_cooldown_left - delta, 0.0)
 	_boost_left = maxf(_boost_left - delta, 0.0)
 	_crash_grace = maxf(_crash_grace - delta, 0.0)
+	_knock_cooldown = maxf(_knock_cooldown - delta, 0.0)
 	if _flames != null:
 		_flames.visible = boost_active
 		_flames.scale = Vector3.ONE * (0.9 + sin(Time.get_ticks_msec() * 0.04) * 0.1)
@@ -175,6 +193,7 @@ func _physics_process(delta: float) -> void:
 
 ## Puts the bike back where it started for a new shift or clinic recovery.
 func reset_to_start() -> void:
+	_end_physics_fall()
 	global_transform = _start_transform
 	_safe_transform = _start_transform
 	_restore_rider()
@@ -194,6 +213,15 @@ func reset_to_start() -> void:
 	_fall_active = false
 	fall_progress = 0.0
 	fall_kind = ""
+
+
+## Session 87: puts the bike model back and switches the ragdoll off at once (clinic, reset).
+func _end_physics_fall() -> void:
+	if _tumble != null and is_instance_valid(_tumble):
+		_tumble.put_back(self, _model_home)
+	_tumble = null
+	if _ragdoll != null and _ragdoll.active():
+		_ragdoll.get_up(0.0)
 
 
 ## R recovers locally instead of teleporting a completed job back to the shops.
@@ -485,6 +513,9 @@ func _check_crash(head_on: float, thing: Object, incoming := Vector3.ZERO,
 		var side := Vector3.UP.cross(forward)
 		normal = -forward * head_on + side * sqrt(maxf(1.0 - head_on * head_on, 0.0))
 	var impact := CrashImpact.capture(incoming, normal, thing, other_velocity, boost_active)
+	if impact["level"] == "bump":
+		_knock(impact)
+		return false  # you stay on: the normal slow-down still happens
 	if not impact["crash"]:
 		return false
 	# Just got back up: small knocks don't make you fall again (a big hit still does).
@@ -494,6 +525,18 @@ func _check_crash(head_on: float, thing: Object, incoming := Vector3.ZERO,
 	bumped.emit(clampf(float(impact["score"]) / GameConfig.CRASH_CRITICAL_SCORE, 0.0, 1.0))
 	_begin_fall(impact)
 	return true
+
+
+## Session 87: a bump. You stay on, the bike wobbles, a small bill and a small knock to the
+## food (Meters). Not right after getting up, and only once per CRASH_BUMP_COOLDOWN.
+func _knock(impact: Dictionary) -> void:
+	if _crash_grace > 0.0 or _knock_cooldown > 0.0:
+		return
+	_knock_cooldown = GameConfig.CRASH_BUMP_COOLDOWN
+	_wobble_left = GameConfig.CRASH_WOBBLE_TIME
+	last_bump = impact.duplicate(true)
+	bumped.emit(clampf(float(impact["score"]) / GameConfig.CRASH_FALL_KMH, 0.2, 0.6))
+	knocked.emit(last_bump)
 
 
 func _begin_fall(impact: Dictionary) -> void:
@@ -519,69 +562,61 @@ func _begin_fall(impact: Dictionary) -> void:
 	_fall_rider_start = _rider.transform
 	_rider.reparent(self, true)
 	_fall_rider_start = _rider.transform
-	_rider.play("lie")
+	# Session 87: the rider becomes a ragdoll thrown with the real speed, and the bike slides
+	# and tips over on its own. Harder hits throw you up and forward more.
+	var throw: Vector3 = impact.get("direction", -global_basis.z) * float(impact.get("kmh", 0.0)) / 3.6
+	var lift := GameConfig.CRASH_THROW_LIFT * (1.5 if fall_kind == "tumble" else 1.0)
+	var side: float = impact.get("side", 1.0)
+	if is_inside_tree():
+		_ragdoll.start(throw * GameConfig.CRASH_THROW_SHARE + Vector3.UP * lift,
+				-global_basis.x * (GameConfig.CRASH_THROW_SPIN if fall_kind == "tumble" else GameConfig.CRASH_THROW_SPIN * 0.3))  # head forward: over the handlebars
+		_tumble = BikeTumble.start(_model, throw * GameConfig.CRASH_BIKE_SLIDE_SHARE, side)
 	crashed.emit(_fall_big)
 
 
-## A bounded authored trajectory: visibly separate rider/bike, then recover or clinic.
+## Session 87: the fall plays out with physics (the ragdoll and the sliding bike). It ends once
+## both lie still and the fall's minimum time has passed, or after CRASH_FALL_MAX_TIME anyway.
 ## Nothing here calls move_and_slide, so tumbling contacts cannot create another accident.
 func _step_fall(delta: float) -> void:
 	speed = 0.0
 	velocity = Vector3.ZERO
 	_fall_elapsed += delta
-	fallen_left = maxf(_fall_duration - _fall_elapsed, 0.0)
-	fall_progress = clampf(_fall_elapsed / _fall_duration, 0.0, 1.0)
-	var landing := fall_progress if _fall_big else minf(fall_progress / 0.8, 1.0)
-	var ease := 1.0 - pow(1.0 - landing, 3.0)
-	var side: float = last_crash["side"]
-	var local_normal: Vector3 = global_basis.inverse() * (last_crash["normal"] as Vector3)
-	var local_direction: Vector3 = global_basis.inverse() * (last_crash["direction"] as Vector3)
-	var slide := local_direction.slide(local_normal)
-	var intensity := clampf(float(last_crash["score"]) / GameConfig.CRASH_SEVERE_SCORE,
-			GameConfig.CRASH_FORCE_SCALE.x, GameConfig.CRASH_FORCE_SCALE.y)
-	var travel := (local_normal * 0.55 + slide.normalized() * 0.8) * intensity
-	var destination := _fall_rider_start.origin + travel
-	destination.y = 0.35
-	var rider_rotation := Vector3.ZERO
-	var lift := 0.0
-	if fall_kind == "tip":
-		destination = _fall_rider_start.origin + Vector3(side * 0.55 * intensity, 0, 0)
-		destination.y = 0.4
-		rider_rotation.z = deg_to_rad(70.0) * side * ease
-		lift = sin(landing * PI) * 0.18 * intensity
-	elif fall_kind == "skid":
-		destination += Vector3(side * 0.8 * intensity, 0, 0)
-		rider_rotation = Vector3(0, side * ease * 0.45, side * PI * 0.5 * ease)
-		lift = sin(landing * PI) * 0.35 * intensity
-	else:
-		# One forward somersault and a quarter turn to a horizontal landing.
-		rider_rotation = Vector3(PI * 2.5 * ease, side * 0.35 * ease, side * 0.2 * ease)
-		lift = sin(landing * PI) * intensity
-	_rider.position = _fall_rider_start.origin.lerp(destination, ease) + Vector3.UP * lift
-	_rider.rotation = rider_rotation
-	_keep_above_ground(_rider)
-	_model.position = Vector3(side * 0.2 * ease, 0, 0) + travel * ease * 0.2
-	_model.rotation = Vector3(sin(landing * PI) * (0.6 if fall_kind == "tumble" else 0.1), 0, side * deg_to_rad(82.0) * ease)
-	_keep_above_ground(_model)
-	# A small final portion of a recoverable fall is a readable getting-up motion.
-	if not _fall_big and fall_progress > 0.8:
-		var get_up := smoothstep(0.8, 1.0, fall_progress)
-		_rider.position = _rider.position.lerp(_rider_home.origin, get_up)
-		_rider.rotation *= 1.0 - get_up
-		_keep_above_ground(_rider)
-		_model.position *= 1.0 - get_up
-		_model.rotation *= 1.0 - get_up
-		_keep_above_ground(_model)
-	if fall_progress >= 1.0:
-		_fall_active = false
-		fallen_left = 0.0
-		if not _fall_big:
-			_restore_rider()
-			_model.position = Vector3.ZERO
-			_model.rotation = Vector3.ZERO
-			_bump_cooldown = GameConfig.BUMP_COOLDOWN
-			_step_back_after_fall()
-		fall_completed.emit(_fall_big, last_crash.duplicate(true))
+	var still := (_ragdoll == null or _ragdoll.resting()) and (_tumble == null or _tumble.resting())
+	var done := (_fall_elapsed >= _fall_duration and still) or _fall_elapsed >= GameConfig.CRASH_FALL_MAX_TIME
+	fall_progress = clampf(_fall_elapsed / GameConfig.CRASH_FALL_MAX_TIME, 0.0, 0.99) if not done else 1.0
+	fallen_left = 0.0 if done else maxf(_fall_duration - _fall_elapsed, 0.05)
+	if not done:
+		return
+	_fall_active = false
+	fallen_left = 0.0
+	if not _fall_big:
+		_get_back_on()
+		_bump_cooldown = GameConfig.BUMP_COOLDOWN
+		_step_back_after_fall()
+	fall_completed.emit(_fall_big, last_crash.duplicate(true))
+
+
+## Session 87: after a fall, the bike is picked up where it slid to and you climb back on
+## (the ragdoll blends back to riding over CRASH_GET_UP_TIME).
+func _get_back_on() -> void:
+	if _tumble != null and is_instance_valid(_tumble):
+		var slid := _tumble.global_position - global_position
+		slid.y = 0.0
+		if slid.length() > 0.05 and is_inside_tree():
+			move_and_collide(slid)  # follow the bike, but never through a wall
+		_tumble.put_back(self, _model_home)
+	_tumble = null
+	_model.transform = _model_home
+	_restore_rider()
+	if _ragdoll != null and _ragdoll.active():
+		_ragdoll.get_up(GameConfig.CRASH_GET_UP_TIME)
+
+
+## Session 87: where the camera should look while you're down (the body), INF when riding.
+func fallen_body_position() -> Vector3:
+	if _fall_active and _ragdoll != null and _ragdoll.active():
+		return _ragdoll.body_position()
+	return Vector3.INF
 
 
 ## Session 52: after a small fall, move the bike a little away from what it hit and give a
@@ -678,6 +713,10 @@ func _update_lean(delta: float) -> void:
 	var target_lean := deg_to_rad(GameConfig.BIKE_LEAN_MAX_DEG) * _steer * speed_ratio
 	var follow := 1.0 - exp(-GameConfig.BIKE_LEAN_SMOOTHING * delta)
 	_model.rotation.z = lerpf(_model.rotation.z, target_lean, follow)
+	if _wobble_left > 0.0:  # Session 87: the wobble after a bump, dying away
+		_wobble_left = maxf(_wobble_left - delta, 0.0)
+		var fade := _wobble_left / GameConfig.CRASH_WOBBLE_TIME
+		_model.rotation.z += deg_to_rad(GameConfig.CRASH_WOBBLE_DEG) * sin(_wobble_left * 26.0) * fade
 
 
 func _update_hop(delta: float) -> void:

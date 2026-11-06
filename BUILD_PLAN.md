@@ -1907,7 +1907,7 @@ Done when:
 
 - [x] A moving bar with step names, a riding bike and tips, no frozen frame, no half-built world
 
-### Session 87: Crash physics and the three crash levels
+### Session 87: Crash physics and the three crash levels (built, needs testing)
 
 ```text
 Session 87. 1) Three crash levels in CrashImpact and game_config.gd: bump (speed under
@@ -1926,10 +1926,10 @@ impact test gets the three levels; the careless bot still finishes a shift.
 
 Done when:
 
-- [ ] Bumps don't knock you off, falls look like a real tumble, and the toast shows the real speed
-- [ ] Three different bills, all in game_config.gd
+- [x] Bumps don't knock you off, falls look like a real tumble, and the toast shows the real speed
+- [x] Three different bills, all in game_config.gd
 
-### Session 88: Three companies and their logos
+### Session 88: Three companies and their logos (built, needs testing)
 
 ```text
 Session 88. 1) Logos: one drawn logo per company (vector made by a script in tools/logos/,
@@ -1947,7 +1947,7 @@ from each company, the perk numbers, the logo on the box.
 
 Done when:
 
-- [ ] You pick a company at the start and see its logo on your box, shirt and phone
+- [x] You pick a company at the start and see its logo on your box, shirt and phone
 - [ ] Each perk works and you can switch in the phone
 
 ### Session 89: The phone app

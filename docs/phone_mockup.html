@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Five Stars Habibi · Phone app mock-up (Session 89)</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@400;600;800&family=Noto+Sans+Arabic:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root { --teal:#0F4C5C; --orange:#F28C28; --sun:#F2B230; --sand:#F3E3C3; --ink:#1B1D22; --soft:#5C6B70; --green:#2FA84F; --red:#CC4033; --card:#fff; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:32px 40px 60px; font-family:Nunito, sans-serif; color:var(--ink);
+         background: linear-gradient(#FBEFD6, #EBD3A6); }
+  h1 { font-family:"Baloo 2"; font-weight:800; color:var(--teal); margin:0; font-size:40px; }
+  .intro { max-width:980px; color:var(--soft); font-size:17px; line-height:1.5; }
+  .section { margin-top:34px; font-family:"Baloo 2"; font-size:24px; color:var(--teal); font-weight:800; }
+  .row { display:flex; flex-wrap:wrap; gap:34px; margin-top:16px; align-items:flex-start; }
+  .shot { width:300px; }
+  .caption { margin-top:10px; font-size:14px; color:var(--soft); line-height:1.4; }
+  .caption b { color:var(--ink); }
+  /* The phone */
+  .phone { width:300px; height:610px; border-radius:42px; background:#11181B; padding:12px; box-shadow:0 18px 40px rgba(15,32,38,.35); }
+  .screen { width:100%; height:100%; border-radius:32px; background:var(--card); overflow:hidden; position:relative; display:flex; flex-direction:column; }
+  .status { display:flex; justify-content:space-between; padding:12px 22px 4px; font-size:12px; font-weight:800; color:var(--ink); }
+  .notch { position:absolute; top:8px; left:50%; width:84px; height:20px; margin-left:-42px; background:#11181B; border-radius:12px; }
+  .top { display:flex; align-items:center; gap:10px; padding:8px 18px 10px; border-bottom:1px solid #EFE6D4; }
+  .back { font-size:20px; color:var(--teal); font-weight:800; }
+  .title { font-family:"Baloo 2"; font-weight:800; font-size:22px; color:var(--teal); }
+  .body { padding:14px 18px; overflow:hidden; flex:1; font-size:14px; }
+  .home-bar { height:5px; width:110px; background:#222; border-radius:3px; margin:8px auto 10px; opacity:.8; }
+  .hint { text-align:center; font-size:11px; color:var(--soft); padding-bottom:4px; }
+  /* Home screen */
+  .wall { background: linear-gradient(160deg, #13606F 0%, #0F4C5C 55%, #F28C28 140%); color:#fff; }
+  .wall .status { color:#fff; }
+  .clock { text-align:center; font-family:"Baloo 2"; font-size:46px; font-weight:800; margin-top:16px; line-height:1; }
+  .date { text-align:center; font-size:13px; opacity:.85; }
+  .apps { display:grid; grid-template-columns:repeat(3, 1fr); gap:18px 8px; padding:26px 18px 0; }
+  .app { text-align:center; font-size:12px; font-weight:700; position:relative; }
+  .icon { width:62px; height:62px; border-radius:18px; margin:0 auto 6px; display:flex; align-items:center; justify-content:center; font-size:30px; box-shadow:0 4px 10px rgba(0,0,0,.18); }
+  .badge { position:absolute; top:-6px; right:16px; background:var(--red); color:#fff; font-size:12px; font-weight:800; border-radius:11px; min-width:22px; height:22px; line-height:22px; border:2px solid #fff; }
+  .dock { margin-top:auto; padding:12px 18px; background:rgba(255,255,255,.14); display:flex; justify-content:space-between; align-items:center; font-size:12px; }
+  /* Common bits */
+  .card { background:#FBF6EC; border-radius:16px; padding:12px 14px; margin-bottom:10px; }
+  .label { font-size:11px; font-weight:800; color:var(--soft); letter-spacing:.06em; text-transform:uppercase; }
+  .big { font-family:"Baloo 2"; font-size:24px; font-weight:800; }
+  .pill { display:inline-block; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:800; color:#fff; margin:2px 3px 2px 0; }
+  .toggle { display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid #EFE6D4; }
+  .sw { width:40px; height:22px; border-radius:11px; background:#CFC6B6; position:relative; }
+  .sw::after { content:""; position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:50%; background:#fff; }
+  .sw.on { background:var(--green); } .sw.on::after { left:21px; }
+  .bar { height:10px; border-radius:5px; background:#EDE3D0; overflow:hidden; margin:6px 0 4px; }
+  .bar i { display:block; height:100%; background:var(--orange); border-radius:5px; }
+  .stars { color:var(--sun); font-size:18px; letter-spacing:2px; }
+  .grid3 { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; }
+  .tile { background:#FBF6EC; border-radius:12px; padding:8px 4px; text-align:center; font-size:11px; font-weight:700; }
+  .tile .em { font-size:26px; display:block; }
+  .tile.locked { opacity:.45; }
+  .tabs { display:flex; gap:6px; margin-bottom:10px; }
+  .tab { padding:5px 10px; border-radius:12px; background:#EFE6D4; font-size:12px; font-weight:800; color:var(--soft); }
+  .tab.on { background:var(--teal); color:#fff; }
+  .chat { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid #EFE6D4; }
+  .face { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; flex:none; }
+  .chat .who { font-weight:800; } .chat .last { font-size:12px; color:var(--soft); }
+  .dot { margin-left:auto; background:var(--red); color:#fff; font-size:11px; font-weight:800; border-radius:10px; padding:1px 7px; }
+  .bubble { max-width:82%; padding:8px 12px; border-radius:16px; margin:6px 0; font-size:13px; line-height:1.35; }
+  .them { background:#EFE6D4; border-bottom-left-radius:4px; }
+  .me { background:var(--teal); color:#fff; margin-left:auto; border-bottom-right-radius:4px; }
+  .check { font-size:13px; margin:3px 0; }
+  .company { border-radius:16px; padding:10px 12px; margin-bottom:9px; color:#fff; display:flex; gap:10px; align-items:center; }
+  .company .logo { width:44px; height:44px; border-radius:12px; background:rgba(255,255,255,.95); display:flex; align-items:center; justify-content:center; font-size:22px; flex:none; }
+  .company .name { font-family:"Baloo 2"; font-size:19px; font-weight:800; line-height:1; }
+  .company .ar { font-family:"Noto Sans Arabic"; font-size:12px; opacity:.9; }
+  .company .perk { font-size:12px; }
+  .btn { display:block; text-align:center; padding:11px; border-radius:14px; font-weight:800; color:#fff; background:var(--teal); margin-top:8px; }
+  .btn.orange { background:var(--orange); }
+  .mapbox { height:330px; border-radius:16px; background:#E9D9B5; position:relative; overflow:hidden; }
+  .road { position:absolute; background:#5A5E63; }
+  .pin { position:absolute; font-size:20px; }
+  .legend { font-size:11px; color:var(--soft); margin-top:6px; }
+  /* In-game frame */
+  .game { width:980px; height:520px; border-radius:22px; position:relative; overflow:hidden;
+          background: linear-gradient(#9FD0E6 0%, #D9EDF2 45%, #C9B88E 46%, #8FA86A 100%); box-shadow:0 18px 40px rgba(15,32,38,.3); }
+  .game .shade { position:absolute; inset:0; background:rgba(2,6,7,.55); }
+  .game .phone { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%) scale(.78); }
+  .game .paused { position:absolute; top:18px; left:22px; color:#fff; font-weight:800; font-size:15px; background:rgba(15,32,38,.86); padding:8px 14px; border-radius:12px; }
+  .game .corner { position:absolute; right:18px; top:18px; width:170px; height:250px; border-radius:22px; background:#fff; opacity:.35; }
+  .game .keys { position:absolute; bottom:18px; left:50%; transform:translateX(-50%); color:#fff; font-size:14px; font-weight:700; background:rgba(15,32,38,.86); padding:8px 16px; border-radius:12px; }
+</style>
+</head>
+<body>
+<h1>The phone app · mock-up</h1>
+<p class="intro">Session 89. Press <b>P</b> and a big phone opens in the middle of the screen. The game pauses. <b>Esc</b> or <b>P</b> closes it. The small phone in the corner stays as it is for new orders. On a touch screen there is a phone button on the HUD. The colours and fonts are the game's own: teal, orange, sand, Baloo 2 and Nunito. Below: how it looks in the game, then every screen.</p>
+
+<div class="section">In the game</div>
+<div class="row">
+  <div class="game">
+    <div class="corner"></div>
+    <div class="shade"></div>
+    <div class="paused">⏸ Paused</div>
+    <div class="phone"><div class="screen wall">
+      <div class="notch"></div>
+      <div class="status"><span>8:42</span><span>●●● 5G 🔋</span></div>
+      <div class="clock">8:42 AM</div><div class="date">Shift 4 · A sunny day</div>
+      <div class="apps">
+        <div class="app"><div class="icon" style="background:#F28C28">🛵</div>Jobs</div>
+        <div class="app"><div class="icon" style="background:#0F4C5C;border:2px solid #fff">⭐</div>Profile</div>
+        <div class="app"><div class="icon" style="background:#F2B230">🎒</div>Collection</div>
+        <div class="app"><div class="icon" style="background:#2FA84F">💬</div><span class="badge">2</span>Messages</div>
+        <div class="app"><div class="icon" style="background:#fff">🍔</div>Company</div>
+        <div class="app"><div class="icon" style="background:#E9D9B5">🗺️</div>Map</div>
+        <div class="app"><div class="icon" style="background:#5C6B70">⚙️</div>Settings</div>
+      </div>
+    </div></div>
+    <div class="keys">Click an app (or arrow keys + E) · Esc or P to close</div>
+  </div>
+</div>
+
+<div class="section">Every screen</div>
+<div class="row">
+
+  <!-- Home -->
+  <div class="shot">
+    <div class="phone"><div class="screen wall">
+      <div class="notch"></div>
+      <div class="status"><span>8:42</span><span>●●● 5G 🔋</span></div>
+      <div class="clock">8:42 AM</div><div class="date">Shift 4 · A sunny day</div>
+      <div class="apps">
+        <div class="app"><div class="icon" style="background:#F28C28">🛵</div>Jobs</div>
+        <div class="app"><div class="icon" style="background:#0F4C5C;border:2px solid #fff">⭐</div>Profile</div>
+        <div class="app"><div class="icon" style="background:#F2B230">🎒</div>Collection</div>
+        <div class="app"><div class="icon" style="background:#2FA84F">💬</div><span class="badge">2</span>Messages</div>
+        <div class="app"><div class="icon" style="background:#fff">🍔</div>Company</div>
+        <div class="app"><div class="icon" style="background:#E9D9B5">🗺️</div>Map</div>
+        <div class="app"><div class="icon" style="background:#5C6B70">⚙️</div>Settings</div>
+      </div>
+      <div class="dock"><span>Dh 214</span><span>★ 4.86</span><span>Lv 6</span></div>
+      <div class="home-bar" style="background:#fff"></div>
+    </div></div>
+    <div class="caption"><b>Home.</b> The time and the shift at the top, then 7 app icons. The red badge shows unread messages. Your money, stars and level sit at the bottom. The Company icon is your company's logo.</div>
+  </div>
+
+  <!-- Jobs -->
+  <div class="shot">
+    <div class="phone"><div class="screen">
+      <div class="notch"></div><div class="status"><span>8:42</span><span>🔋</span></div>
+      <div class="top"><span class="back">‹</span><span class="title">Jobs</span></div>
+      <div class="body">
+        <div class="label">Offer me these orders</div>
+        <div class="toggle"><span>🍕 Normal orders</span><span class="sw on"></span></div>
+        <div class="toggle"><span>🎂 Fragile (cakes, drinks)</span><span class="sw on"></span></div>
+        <div class="toggle"><span>👑 VIP (bigger tips)</span><span class="sw on"></span></div>
+        <div class="toggle"><span>📍 Far (other side of the map)</span><span class="sw"></span></div>
+        <div style="font-size:11px;color:var(--soft);margin:6px 0 12px">At least one kind stays on. Turning one off just means you see fewer of them.</div>
+        <div class="label">Today's shift goals · +15 Dh each</div>
+        <div class="card"><div class="check">✓ Make 6 deliveries <b style="float:right">6/6</b></div>
+        <div class="check">• A fragile cake with 5 stars <b style="float:right">0/1</b></div></div>
+        <div class="label">Now</div>
+        <div class="card"><b>Bread &amp; Zaatar → Villa 78</b><br><span class="pill" style="background:var(--green)">15 Dh</span><span class="pill" style="background:var(--orange)">0:24</span></div>
+      </div>
+      <div class="home-bar"></div>
+    </div></div>
+    <div class="caption"><b>Jobs.</b> Choose which kinds of order you want offered next (normal, fragile, VIP, far). Today's shift goals and your current order are shown below.</div>
+  </div>
+
+  <!-- Profile -->
+  <div class="shot">
+    <div class="phone"><div class="screen">
+      <div class="notch"></div><div class="status"><span>8:42</span><span>🔋</span></div>
+      <div class="top"><span class="back">‹</span><span class="title">Profile</span></div>
+      <div class="body">
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px">
+          <div class="face" style="background:#F28C28;width:56px;height:56px;font-size:28px">🧢</div>
+          <div><div class="big" style="line-height:1">Lina</div><div style="font-size:12px;color:var(--soft)">Snackaroo · from Oman · Home: Cluster 2</div><div class="stars">★★★★★ <span style="font-size:13px;color:var(--ink)">4.86</span></div></div>
+        </div>
+        <div class="card"><div class="label">Rider Level 6</div><div class="bar"><i style="width:64%"></i></div><div style="font-size:12px">72 XP to level 7</div></div>
+        <div class="card"><div class="label">Career · Tier 1 · Food rider</div>
+          <div style="font-size:12px;margin-top:4px">Next: <b>Tier 2 · Dune Express</b></div>
+          <div class="check">✓ 4.0+ stars</div><div class="check">• 20 deliveries <b style="float:right">14/20</b></div><div class="check">• Motorbike test (500 Dh)</div></div>
+        <div class="grid3">
+          <div class="tile"><span class="big" style="font-size:18px">143</span>deliveries</div>
+          <div class="tile"><span class="big" style="font-size:18px">2,310</span>Dh earned</div>
+          <div class="tile"><span class="big" style="font-size:18px">12</span>best streak</div>
+        </div>
+        <div class="btn" style="margin-top:10px">Stamp card &amp; neighbours ›</div>
+      </div>
+      <div class="home-bar"></div>
+    </div></div>
+    <div class="caption"><b>Profile.</b> Name, company, stars, Rider Level with the XP bar, your career tier with what the next tier needs, and lifetime numbers. The old stamp-card page opens from the button.</div>
+  </div>
+
+  <!-- Collection -->
+  <div class="shot">
+    <div class="phone"><div class="screen">
+      <div class="notch"></div><div class="status"><span>8:42</span><span>🔋</span></div>
+      <div class="top"><span class="back">‹</span><span class="title">Collection</span></div>
+      <div class="body">
+        <div class="tabs"><span class="tab on">Bikes</span><span class="tab">Looks</span><span class="tab">Gear</span></div>
+        <div class="grid3">
+          <div class="tile"><span class="em">🚲</span>Starter<br><span style="color:var(--green)">Riding</span></div>
+          <div class="tile"><span class="em">🚴</span>Road bike<br><span style="color:var(--green)">Owned</span></div>
+          <div class="tile locked"><span class="em">🔒</span>E-bike<br>450 Dh</div>
+          <div class="tile locked"><span class="em">🔒</span>Cargo bike<br>Lv 8</div>
+          <div class="tile locked"><span class="em">🔒</span>Gold box<br>Fill Cluster 3</div>
+          <div class="tile locked"><span class="em">🔒</span>Motorbike<br>Tier 2</div>
+        </div>
+        <div class="label" style="margin-top:14px">Gear you have</div>
+        <div class="card" style="font-size:13px">🛞 Comfy tyres · 🔔 Loud bell<br>🧭 GPS route (Lv 2) · 🚀 Rocket (Lv 1)</div>
+        <div style="font-size:12px;color:var(--soft)">Buy things at Pedal Point Bikes in the Plaza.</div>
+      </div>
+      <div class="home-bar"></div>
+    </div></div>
+    <div class="caption"><b>Collection.</b> Bikes, looks and gear. Owned items show in colour. Locked items are grey and say what unlocks them (price, level or a stamp card).</div>
+  </div>
+
+  <!-- Messages list -->
+  <div class="shot">
+    <div class="phone"><div class="screen">
+      <div class="notch"></div><div class="status"><span>8:42</span><span>🔋</span></div>
+      <div class="top"><span class="back">‹</span><span class="title">Messages</span></div>
+      <div class="body">
+        <div class="chat"><div class="face" style="background:#FFD54A">🎧</div><div><div class="who">DJ Salad</div><div class="last">Habibi, the beats don't drop without…</div></div><span class="dot">1</span></div>
+        <div class="chat"><div class="face" style="background:#F28C28">📣</div><div><div class="who">Plaza news</div><div class="last">Flea market tomorrow in the Plaza!</div></div><span class="dot">1</span></div>
+        <div class="chat"><div class="face" style="background:#B9E4C9">🧋</div><div><div class="who">Auntie Mariam</div><div class="last">Thank you dear, still cold!</div></div></div>
+        <div class="chat"><div class="face" style="background:#E7D3B0">🥙</div><div><div class="who">Mr Rashid</div><div class="last">Extra garlic next time 😄</div></div></div>
+        <div class="chat"><div class="face" style="background:#F6C9D5">🎂</div><div><div class="who">Ms Dana</div><div class="last">The class loved the cake</div></div></div>
+        <div class="chat"><div class="face" style="background:#D9E7EE">🐴</div><div><div class="who">Hamdan</div><div class="last">Bring juice for the horses ride</div></div></div>
+        <div class="chat"><div class="face" style="background:#0F4C5C;color:#fff">🍔</div><div><div class="who">Snackaroo boss</div><div class="last">Great week, keep it up!</div></div></div>
+      </div>
+      <div class="home-bar"></div>
+    </div></div>
+    <div class="caption"><b>Messages.</b> Chats with the regulars, DJ Salad, Plaza news (the flea market comes the day before) and your boss. Unread chats have a red dot, and their count is the badge on the home icon.</div>
+  </div>
+
+  <!-- Chat with DJ Salad -->
+  <div class="shot">
+    <div class="phone"><div class="screen">
+      <div class="notch"></div><div class="status"><span>8:42</span><span>🔋</span></div>
+      <div class="top"><span class="back">‹</span><div class="face" style="background:#FFD54A;width:32px;height:32px;font-size:16px">🎧</div><span class="title" style="font-size:19px">DJ Salad</span></div>
+      <div class="body">
+        <div class="bubble them">Habibi! The beats don't drop without my shawarma 🎶</div>
+        <div class="bubble me">Is the house for sale?</div>
+        <div class="bubble them">Maybe… if you prove you're the real deal. Do these for me:</div>
+        <div class="card" style="margin-top:6px">
+          <div class="check">✓ 10 five-star deliveries to me <b style="float:right">10/10</b></div>
+          <div class="check">• A special package from the bee farm</div>
+          <div class="check" style="color:var(--soft)">🔒 A timed airport run (taxi driver)</div>
+        </div>
+        <div class="btn orange">Ask about the bee farm package</div>
+      </div>
+      <div class="home-bar"></div>
+    </div></div>
+    <div class="caption"><b>A chat.</b> The DJ Salad chat from Session 96 is shown here. You tap a reply button; you never type. His three tasks appear as a checklist.</div>
+  </div>
+
+  <!-- Company -->
+  <div class="shot">
+    <div class="phone"><div class="screen">
+      <div class="notch"></div><div class="status"><span>8:42</span><span>🔋</span></div>
+      <div class="top"><span class="back">‹</span><span class="title">Company</span></div>
+      <div class="body">
+        <div class="company" style="background:#F28C28"><div class="logo">🛍️</div><div><div class="name">Snackaroo</div><div class="ar">سناكارو</div><div class="perk">+10% tips · <b>you work here</b></div></div></div>
+        <div class="company" style="background:#2FA84F"><div class="logo">😉</div><div><div class="name">Zoomaroo</div><div class="ar">زوماروو</div><div class="perk">Customers wait 20% longer</div></div></div>
+        <div class="company" style="background:#14A3A3"><div class="logo">📦</div><div><div class="name">Deliverooz</div><div class="ar">ديليفيروز</div><div class="perk">Bigger box: 25% less food damage</div></div></div>
+        <div style="font-size:12px;color:var(--soft);margin:4px 0">Switching costs 50 Dh. You keep your stars, level and everything you own. Your box, shirt and phone change colour.</div>
+        <div class="btn">Switch to Zoomaroo · 50 Dh</div>
+      </div>
+      <div class="home-bar"></div>
+    </div></div>
+    <div class="caption"><b>Company.</b> The three companies with their logo, colour and perk. Pick one and press Switch (50 Dh).</div>
+  </div>
+
+  <!-- Map -->
+  <div class="shot">
+    <div class="phone"><div class="screen">
+      <div class="notch"></div><div class="status"><span>8:42</span><span>🔋</span></div>
+      <div class="top"><span class="back">‹</span><span class="title">Map</span></div>
+      <div class="body">
+        <div class="mapbox">
+          <div class="road" style="left:20px;right:20px;top:30px;height:8px"></div>
+          <div class="road" style="left:20px;right:20px;bottom:30px;height:8px"></div>
+          <div class="road" style="left:20px;top:30px;bottom:30px;width:8px"></div>
+          <div class="road" style="right:20px;top:30px;bottom:30px;width:8px"></div>
+          <div class="road" style="left:20px;right:20px;top:160px;height:6px;background:#7FB069"></div>
+          <div class="pin" style="left:120px;top:140px">⭐</div>
+          <div class="pin" style="left:60px;top:70px">🍕</div>
+          <div class="pin" style="left:190px;top:230px">🏠</div>
+          <div class="pin" style="left:200px;top:62px">🏛️</div>
+        </div>
+        <div class="legend">⭐ you · 🍕 pick-up · 🏠 drop-off · 🏛️ the mansion. Drag to move, scroll to zoom. The same map as M.</div>
+      </div>
+      <div class="home-bar"></div>
+    </div></div>
+    <div class="caption"><b>Map.</b> The full map you get with M, shown inside the phone.</div>
+  </div>
+
+  <!-- Settings -->
+  <div class="shot">
+    <div class="phone"><div class="screen">
+      <div class="notch"></div><div class="status"><span>8:42</span><span>🔋</span></div>
+      <div class="top"><span class="back">‹</span><span class="title">Settings</span></div>
+      <div class="body">
+        <div class="toggle"><span>Graphics</span><b>Medium ›</b></div>
+        <div class="toggle"><span>Window size</span><b>1920 × 1080 ›</b></div>
+        <div class="toggle"><span>Full screen</span><span class="sw on"></span></div>
+        <div class="toggle"><span>Music</span><b>70% ›</b></div>
+        <div class="toggle"><span>Sounds</span><b>90% ›</b></div>
+        <div class="toggle"><span>Insurance (2 Dh a job)</span><span class="sw on"></span></div>
+        <div class="toggle"><span>Camera shake</span><span class="sw on"></span></div>
+        <div style="font-size:12px;color:var(--soft);margin-top:8px">The same settings as the pause menu. Key settings come in the Steam pass.</div>
+      </div>
+      <div class="home-bar"></div>
+    </div></div>
+    <div class="caption"><b>Settings.</b> The game's settings panel, inside the phone.</div>
+  </div>
+
+</div>
+</body>
+</html>

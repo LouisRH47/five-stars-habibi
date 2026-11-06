@@ -64,5 +64,5 @@ static func apply_bike(model: Node3D, equipped: Dictionary) -> void:
 		if slot == "":
 			continue
 		var item := GearCatalog.find(str(equipped.get(slot, "")))
-		var colour: Color = item.get("colour", BikeModel.FRAME if slot == "paint" else BikeModel.BOX)
+		var colour: Color = item.get("colour", BikeModel.FRAME if slot == "paint" else Companies.current().get("colour", BikeModel.BOX))
 		mesh.material_override = LowPoly.material(colour)

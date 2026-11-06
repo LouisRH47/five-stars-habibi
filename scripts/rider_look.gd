@@ -26,7 +26,8 @@ static func make_rider() -> Person:
 
 
 ## Changes `model` (a rider from make_rider()) to look number `look`.
-static func apply(model: Node3D, look: int) -> void:
+## Session 88: the shirt is in your company's colour (company_id "" = the one you ride for).
+static func apply(model: Node3D, look: int, company_id := "") -> void:
 	var rider := model as Person
 	var old := rider.get_node_or_null("Look")
 	if old != null:
@@ -70,6 +71,9 @@ static func apply(model: Node3D, look: int) -> void:
 				leg.basis = Basis(Quaternion(Vector3.UP, (knee - ankle).normalized()))
 	# This kit is also loaded while GameState itself is being compiled through the
 	# map builders. Resolve the autoload at runtime to keep that dependency acyclic.
+	var company := Companies.find(company_id) if company_id != "" else Companies.current()
+	if not company.is_empty():
+		rider.repaint({"shirt": company["colour"]})
 	var tree := Engine.get_main_loop() as SceneTree
 	var state := tree.root.get_node_or_null("GameState") if tree != null else null
 	if state != null:

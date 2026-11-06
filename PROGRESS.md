@@ -1,5 +1,64 @@
 # Progress
 
+## Session 88: three companies and their logos — 6 November 2026
+
+What works now:
+- **Three made-up companies** (data/companies.gd, scripts/companies.gd), each with a logo drawn
+  by a script (tools/logos/make_logos.gd makes assets/logos/*.png at 1024 and 256 px, plus a
+  word mark with the Arabic name): **Snackaroo** (orange bag with a lightning bolt, +10% tips),
+  **Zoomaroo** (green winking speech bubble, customers wait 20% longer), **Deliverooz** (teal
+  bouncing parcel with a heart, 25% less food damage). Numbers in game_config.gd (COMPANY_...).
+- **The application form** has three company cards (logo, name, perk). Picking one turns the
+  phone's title and the riders' shirts that colour. The choice is saved; old saves are Snackaroo.
+- **Your company shows** on the delivery box (its colour, and the logo on both sides and the
+  back), your shirt, the phone app's name and colour, the bag you hand over, the clinic's repair
+  line, the tutorial's welcome and the profile.
+- **Switching company** costs 50 Dh and keeps your stars, level and everything you own
+  (GameState.switch_company). The button for it is in the phone's Company app (Session 89).
+- New test tests/companies_test.gd (19 checks): the list and logos, each perk's number, hiring
+  with a company, switching (needs 50 Dh, keeps XP), save and load, old saves, the box logo.
+
+How to test: F5, then New game on the start screen (careful: this wipes your save). On the
+form pick Zoomaroo: the title turns green, the riders get green shirts.
+Submit, start riding: the box is green with the speech-bubble logo, the phone says Zoomaroo.
+
+Note for Louis: "Deliverooz" in teal is very close to the real company Deliveroo (whose logo
+is a teal kangaroo). The logo is a parcel, not a kangaroo, but for Steam a more different
+name and colour would be safer. Your call.
+
+## Session 87: crash physics and the three crash levels — 6 November 2026
+
+What works now:
+- **Three crash levels** (scripts/crash_impact.gd, numbers in game_config.gd):
+  - **Bump:** under 12 km/h, or anything soft (hedges, bins, cones, cats, people, horses) at
+    any speed. You stay on, the bike wobbles, 10 Dh, 8% off the food. Under 6 km/h nothing
+    happens. Only one bump bill every 1.5 s, so sliding along a wall doesn't bill twice.
+  - **Fall:** 12 to 22 km/h into something hard. You fall off for real, then the clinic
+    screen shows a "FALL" visit: 20 Dh clinic + 10 Dh bike repair = 30 Dh. "Back to riding"
+    puts you back on the bike where you fell; your order and your shift go on (Louis's
+    decision during this session).
+  - **Big crash:** over 22 km/h into something hard (about 19 km/h into a car): the clinic,
+    150 Dh hospital + 80 Dh repair (220 + 140 for very hard hits), order cancelled, shift over.
+- **A message under the clock** with the real speed: "Bump! 9 km/h · -10 Dh" (teal),
+  "You fell off! 17 km/h · -30 Dh" (orange), "Big crash! 30 km/h" (red).
+- **A real ragdoll** (scripts/rider_ragdoll.gd, ragdoll_bones.gd, ragdoll_pose.gd): the rider
+  becomes 11 floppy body parts with proper joints (knees and elbows only bend one way), thrown
+  with the real speed; going over the handlebars rolls you forward. The bike becomes a physics
+  body that slides and tips over on its side (scripts/bike_tumble.gd). You lie still, then blend
+  back onto the bike in half a second, picked up where it slid to. The camera follows your body
+  while you're down. Godot's own ragdoll bones exploded on this character (its skeleton is
+  scaled about 23 times), so the helper built it from plain physics parts instead.
+- New test tests/ragdoll_test.gd (22 checks); the crash test checks the three levels, the bills,
+  the soft rule and the no-double-bill rule; the smoke test checks the fall clinic.
+
+How to test: F5, ride slowly (under 12 km/h) into a wall: "Bump!", you stay on. Ride into a
+wall at about 15 km/h: you tumble, then the clinic says FALL, 30 Dh; press E to ride on.
+Sprint into a wall: you fly over the handlebars, then the big-crash clinic.
+
+Known bugs:
+- While you tumble the camera can get very close to your legs for a moment.
+- The rider and the sliding bike can pass through each other while falling.
+
 ## Session 86: the loading screen — 6 November 2026
 
 What works now:

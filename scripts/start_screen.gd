@@ -27,6 +27,8 @@ const WHITE := Color(1, 1, 1, 1)
 var name_box: LineEdit
 var country_box: OptionButton
 var look := 0
+## Session 88: the company picked on the form ("snackaroo", "zoomaroo" or "deliverooz").
+var company := "snackaroo"
 ## Which page the phone shows: "menu", "form", "reviewing" or "hired".
 var page := "menu"
 var play_button: Button
@@ -35,6 +37,8 @@ var settings_panel: SettingsPanel
 
 var _pages: Dictionary = {}       # page name -> Control
 var _look_cards: Array[Button] = []
+var _company_cards: Array[Button] = []
+var _brand: Label  # the company name at the top of the phone
 var _look_riders: Array[Node3D] = []
 var _submit: Button
 var _hired_text: Label
@@ -59,6 +63,8 @@ func _ready() -> void:
 	settings_panel.set_meta("phone", phone)
 	_show_page(start_page)
 	_pick_look(GameState.rider_look)
+	if not GameState.hired:
+		_pick_company(Companies.LIST.DEFAULT)
 
 
 func _process(delta: float) -> void:
@@ -109,7 +115,7 @@ func submit() -> bool:
 	var rider := name_box.text.strip_edges()
 	if rider == "" or page != "form":
 		return false
-	GameState.hire(rider, country_box.get_item_text(country_box.selected), look)
+	GameState.hire(rider, country_box.get_item_text(country_box.selected), look, company)
 	_show_page("reviewing")
 	get_tree().create_timer(GameConfig.APPLICATION_REVIEW_TIME).timeout.connect(finish_review)
 	return true
@@ -126,6 +132,70 @@ func finish_review() -> void:
 ## "Start riding": off to Wahat Al Shams (the tutorial starts there).
 func start_riding() -> void:
 	WorldLoader.open(get_tree(), GAME_SCENE)  # Session 86: behind the loading screen
+
+
+## Session 88: one company card: its logo, name in its colour, and its perk.
+func _build_company_card(entry: Dictionary) -> Button:
+	var card := Button.new()
+	card.toggle_mode = true
+	card.custom_minimum_size = Vector2(140, 104)
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	for state in ["normal", "hover", "focus"]:
+		var plain := StyleBoxFlat.new()
+		plain.bg_color = SAND
+		plain.set_corner_radius_all(18)
+		if state == "focus":
+			plain.draw_center = false
+		card.add_theme_stylebox_override(state, plain)
+	var picked := StyleBoxFlat.new()
+	picked.bg_color = Color(1, 0.97, 0.92)
+	picked.border_color = entry["colour"]
+	picked.set_border_width_all(5)
+	picked.set_corner_radius_all(18)
+	card.add_theme_stylebox_override("pressed", picked)
+	card.add_theme_stylebox_override("hover_pressed", picked)
+	card.pressed.connect(_pick_company.bind(entry["id"]))
+	var inside := VBoxContainer.new()
+	inside.set_anchors_preset(Control.PRESET_FULL_RECT)
+	inside.offset_left = 6
+	inside.offset_right = -6
+	inside.offset_top = 6
+	inside.offset_bottom = -6
+	inside.add_theme_constant_override("separation", 0)
+	inside.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(inside)
+	var logo := TextureRect.new()
+	logo.texture = Companies.logo(entry)
+	logo.custom_minimum_size = Vector2(0, 34)
+	logo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	logo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	inside.add_child(logo)
+	var title := _label(entry["name"], 16, entry["dark"], "Heading")
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	inside.add_child(title)
+	var perk := _label(entry["perk"], 12, SOFT)
+	perk.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	inside.add_child(perk)
+	card.tooltip_text = entry["perk_long"]
+	card.set_meta("company", entry["id"])
+	_company_cards.append(card)
+	return card
+
+
+## Session 88: picks a company on the form: the phone's name and colour and the riders'
+## shirts change to match.
+func _pick_company(id: String) -> void:
+	var entry := Companies.find(id)
+	if entry.is_empty():
+		return
+	company = id
+	for card in _company_cards:
+		card.button_pressed = card.get_meta("company") == id
+	_brand.text = entry["name"]
+	_brand.add_theme_color_override("font_color", entry["colour"])
+	for i in _look_riders.size():
+		RiderLook.apply(_look_riders[i], i, id)
 
 
 func _pick_look(number: int) -> void:
@@ -201,7 +271,9 @@ func _build_phone() -> Control:
 	rows.add_theme_constant_override("separation", 6)
 	phone.add_child(rows)
 	var header := HBoxContainer.new()
-	header.add_child(_label("Snackaroo", 40, ORANGE, "Heading"))
+	var current := Companies.current()
+	_brand = _label(current["name"], 40, current["colour"], "Heading")
+	header.add_child(_brand)
 	rows.add_child(header)
 	_spinner = Control.new()  # made here so _show_page can always reach it
 	_pages["menu"] = _build_menu()
@@ -244,6 +316,13 @@ func _build_form() -> VBoxContainer:
 	for country in LIST.COUNTRIES:
 		country_box.add_item(country)
 	form.add_child(country_box)
+	# Session 88: the three companies, each with its logo, colour and perk.
+	form.add_child(_label("Who do you want to ride for?", 18, INK))
+	var companies := HBoxContainer.new()
+	companies.add_theme_constant_override("separation", 8)
+	for entry: Dictionary in Companies.all():
+		companies.add_child(_build_company_card(entry))
+	form.add_child(companies)
 	form.add_child(_label("Pick your look", 18, INK))
 	var cards := HBoxContainer.new()
 	cards.add_theme_constant_override("separation", 8)

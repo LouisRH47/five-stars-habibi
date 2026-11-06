@@ -349,10 +349,14 @@ Also bike paint and delivery box colours (no level needed, 15 to 40 Dh, looks on
 
 Crashing costs you, and insurance is an optional bet. Prices are scaled down from real Dubai costs so they fit game pay.
 
-**Small crash vs big crash**
+**Three crash levels (Session 87)**
 
-- **Small crash:** a low-speed hit or wipeout. You fall off, the damage meter takes a big hit (bad for your rating), and you get back on after about 2 seconds.
-- **Big crash:** hitting a car, wall or pole above about 20 km/h on the bicycle (higher limits for faster vehicles). The screen fades out and you wake up at the clinic. The order is cancelled (0 stars, no pay), the bills pop up, and your shift ends.
+The impact speed counts the speed straight into the thing (a scrape counts a fifth), times how hard it is (a car 1.15, a wall 1, a palm 0.8). A message under the clock always shows the real speed: "Bump! 9 km/h · -10 Dh".
+
+- **Bump:** under 12 km/h, or anything soft (hedges, bins, cones, cats, people, horses) at any speed. You stay on, the bike wobbles, 10 Dh repair and a small knock to the food (8% damage, a small rating hit). Under 6 km/h it's just a nudge: nothing happens. One bump bill per 1.5 s, so sliding along a wall doesn't bill twice.
+- **Fall:** 12 to 22 km/h into something hard. You fall off (a real ragdoll tumble; the bike slides and tips over), the food takes a big knock (40%) and the order loses its tip. Louis (6 Nov): you still go to the clinic screen, just with a smaller bill: a "FALL" label, 20 Dh clinic + 10 Dh bike repair = 30 Dh (insurance only covers big crashes). Your order stays in the box and your shift goes on: "Back to riding" puts you back on the bike where you fell. A 2-second grace time after getting up stops you falling straight off again.
+- **Big crash:** over 22 km/h into something hard (about 19 km/h into a car). The screen fades out and you wake up at the clinic: 150 Dh hospital and 80 Dh repair (very hard hits: 220 + 140). The order is cancelled (0 stars, no pay), and your shift ends. Insurance and the boss's first-crash cover work as below.
+- The rocket boost still makes any hit a big crash. All the numbers are in game_config.gd.
 
 **Crash reactions and severity billing (Sessions 44A–44B)**
 
@@ -741,6 +745,9 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 6 Nov 2026 | Session 83: people near the rider breathe, look round, shift their weight and talk in pairs with hand gestures; faces have eyes and a smile; every outfit stays on the body (tested) |
 | 6 Nov 2026 | The game is for Steam (Windows first, then Mac and Steam Deck). It stays in Godot 4; no Unreal port. Steam pass planned as Sessions 85 to 90: desktop builds, controller, key settings, Steam achievements and cloud saves, store page kit, play-test. Michael sets up the Steamworks account and App ID |
 | 6 Nov 2026 | Life pass planned (Sessions 86 to 97) before the rest of the Steam pass (now 98 to 102): loading screen, three crash levels with a ragdoll, three delivery companies with logos and perks (Snackaroo, Zoomaroo, Deliverooz), a full phone app on P, flea market Fridays, the mansion by Cluster 5 (25,000 Dh, Tier 3, DJ Salad's tasks), C Institute second floor, and look fixes |
+| 6 Nov 2026 | Session 87: three crash levels replace small/big: bump (under 12 km/h or soft, stay on, 10 Dh), fall (12 to 22 km/h, 30 Dh), big (over 22 km/h into hard things, clinic, 150 Dh hospital). Big crashes use only the severe and critical bands now |
+| 6 Nov 2026 | Louis approved the phone app mock-up (docs/phone_mockup.html): P opens a big phone with Jobs, Profile, Collection, Messages, Company, Map and Settings; the game pauses |
+| 6 Nov 2026 | Louis: a fall also goes to the clinic screen, with a smaller bill (30 Dh). The order and the shift go on; only a big crash cancels the order and ends the shift |
 | 6 Nov 2026 | DJ Salad owns the mansion until you buy it: a bit overweight, DJ look, orders from day one; once sold he moves to Cluster 5 and keeps ordering |
 
 ## Sources

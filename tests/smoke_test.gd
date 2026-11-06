@@ -284,6 +284,13 @@ func _physics_process(_delta: float) -> bool:
 		"fallen":
 			if _frame >= STEPS.fallen:
 				_check("back on the bike after the small crash", _bike.fallen_left == 0.0, "")
+				var clinic: Node = _main.get_node("ClinicScreen")
+				_check("Session 87: a fall ends at the clinic with the small 30 Dh bill, and you ride on from there",
+						clinic.showing and clinic.light_visit and clinic.last_bills["paid"] == GameConfig.CRASH_FALL_BILL
+						and not clinic.last_bills["lost_order"], str(clinic.last_bills.get("paid", "-")))
+				var spot := _bike.global_position
+				clinic.close()
+				_check("after a fall's clinic visit the bike stays where you fell", _bike.global_position.distance_to(spot) < 0.01 and not paused, "")
 				_start_crash(true)
 		"crash_big":
 			if _bike.fallen_left > 0.0 and _bike.wrecked and not _main.get_node("ClinicScreen").showing:
@@ -1163,8 +1170,8 @@ func _check_scoring() -> void:
 		var job := _quick_delivery(100.0, false)
 		if job["tip"] > 0:
 			tips += 1
-			tips_ok = tips_ok and job["tip"] >= GameConfig.TIP_MIN and job["tip"] <= GameConfig.TIP_MAX
-	_check("streak-boosted tips sometimes come on 5-star jobs, 2 to 15 Dh", tips > 100 and tips < 180 and tips_ok, "%d of 200" % tips)
+			tips_ok = tips_ok and job["tip"] >= GameConfig.TIP_MIN and job["tip"] <= Companies.tip_with_perk(GameConfig.TIP_MAX, gs.company)  # Session 88: Snackaroo +10%
+	_check("streak-boosted tips sometimes come on 5-star jobs, 2 to 15 Dh (+10% at Snackaroo)", tips > 100 and tips < 180 and tips_ok, "%d of 200" % tips)
 	var low_tips := 0
 	for i in 100:
 		low_tips += _quick_delivery(50.0, false)["tip"] + _quick_delivery(100.0, true)["tip"]
@@ -2150,8 +2157,10 @@ func _check_session33() -> void:
 	events.tick(0.0)
 	if events.crossing != null:
 		_bike.speed = (GameConfig.CRASH_BIG_KMH + 5.0) / 3.6
+		_bike._knock_cooldown = 0.0
 		var crashed: bool = _bike._check_crash(1.0, events.crossing.get_node("Groom"))
-		_check("riding fast into the horses is a small crash", crashed and not _bike.wrecked and _bike.fallen_left > 0.0, "")
+		_check("Session 87: riding fast into the horses is only a bump (you stay on)", not crashed and not _bike.wrecked
+				and _bike.fallen_left <= 0.0 and _bike.last_bump.get("level", "") == "bump", str(_bike.last_bump.get("kmh", 0)))
 		_bike.fallen_left = 0.0
 		_bike.speed = 0.0
 	events.clear_all()

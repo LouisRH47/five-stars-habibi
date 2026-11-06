@@ -196,7 +196,7 @@ const CRASH_MAJOR_SCORE := 18.0
 const CRASH_SEVERE_SCORE := 25.0
 const CRASH_CRITICAL_SCORE := 35.0
 const CRASH_GLANCE_WEIGHT := 0.2
-const CRASH_TIP_SCORE := 12.0
+const CRASH_TIP_SCORE := 15.0  # Session 87: falls from 12 to 15 are a gentle tip-over
 const CRASH_TUMBLE_HEAD_ON := 0.65
 const CRASH_MATERIAL_HARDNESS := {"soft": 0.35, "wood": 0.8, "vehicle": 1.15, "rigid": 1.0}
 const CRASH_FALL_DURATIONS := {"tip": 1.4, "skid": 1.8, "tumble": 2.2}
@@ -695,3 +695,30 @@ const LOADING_TIP_SECONDS := 3.0       # s each tip shows before the next one
 const LOADING_FADE_SECONDS := 0.4      # s the screen takes to fade out at the end
 const LOADING_FRAME_BUDGET_MS := 25    # ms of building per frame before the screen gets to draw again
 const LOADING_WARM_FRAMES := 3         # frames the finished world draws behind the screen (warms the shaders)
+
+# --- Life pass Session 87: three crash levels ---
+# The impact "score" is the speed into the thing in km/h (a scrape counts a fifth of its speed),
+# times how hard the thing is (CRASH_MATERIAL_HARDNESS: a car 1.15, a wall 1, a palm 0.8).
+const CRASH_BUMP_MIN_KMH := 6.0        # slower than this: just a nudge (no bill, no message)
+const CRASH_BUMP_KMH := 12.0           # under this (or anything soft, at any speed): a bump, you stay on
+const CRASH_FALL_KMH := 22.0           # 12 to 22: you fall off; over 22 into something hard: big crash
+const CRASH_BUMP_BILL := 10            # Dh, a bump (small repair)
+const CRASH_FALL_BILL := 30            # Dh, a fall (bike repair)
+const CRASH_BUMP_DAMAGE := 8.0         # % off the food's damage meter for a bump (a small rating hit)
+const CRASH_BUMP_COOLDOWN := 1.5       # s before another bump can count (sliding along a wall)
+const CRASH_WOBBLE_TIME := 0.7         # s the bike wobbles after a bump
+const CRASH_WOBBLE_DEG := 14.0         # degrees the bike leans side to side in the wobble
+const CRASH_TOAST_SECONDS := 2.2       # s the "Bump! 9 km/h" message stays up
+
+# --- Life pass Session 88: three delivery companies (data/companies.gd) ---
+const COMPANY_SNACKAROO_TIP_BONUS := 0.10    # Snackaroo: tips 10% bigger (rounded up)
+const COMPANY_ZOOMAROO_WAIT_BONUS := 0.20    # Zoomaroo: customers wait 20% longer (the time target)
+const COMPANY_DELIVEROOZ_DAMAGE_CUT := 0.25  # Deliverooz: the bigger box, 25% less food damage
+const COMPANY_SWITCH_PRICE := 50             # Dh to switch company in the phone (keeps stars and level)
+const CRASH_FALL_MAX_TIME := 4.0       # s: a fall always ends by now, even if something still wobbles
+const CRASH_THROW_SHARE := 0.85        # share of the impact speed the rider is thrown with
+const CRASH_THROW_LIFT := 1.2          # m/s upwards when thrown (x1.5 going over the handlebars)
+const CRASH_THROW_SPIN := 4.0          # rad/s forward roll going over the handlebars
+const CRASH_BIKE_SLIDE_SHARE := 0.6    # share of the impact speed the bike slides on with
+const CRASH_GET_UP_TIME := 0.5         # s to blend from lying on the ground back onto the bike
+const CRASH_FALL_HOSPITAL := 20        # Dh of the fall bill that's the clinic (the rest, 10 Dh, is the bike repair)

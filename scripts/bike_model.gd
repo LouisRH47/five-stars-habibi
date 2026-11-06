@@ -43,6 +43,7 @@ static func build(model: Node3D) -> void:
 		tube(model, Vector3(x, 0.76, 0.7), rear + Vector3(x, 0, 0), 0.01, METAL)
 	var box := LowPoly.box(model, Vector3(0.45, 0.42, 0.45), BOX, Vector3(0, 1.0, 0.55))
 	box.name = "DeliveryBox"
+	brand_box(model, Companies.current())  # Session 88: your company's colour and logo
 	_fork(model)
 	_crank(model)
 	_kickstand(model)
@@ -54,6 +55,31 @@ static func build(model: Node3D) -> void:
 
 
 ## A round tube from a to b.
+## Session 88: paints the delivery box in the company's colour and puts its logo on both
+## sides and the back. Called again when you switch company.
+static func brand_box(model: Node3D, company: Dictionary) -> void:
+	var box := model.get_node_or_null("DeliveryBox") as MeshInstance3D
+	if box == null or company.is_empty():
+		return
+	box.material_override = LowPoly.material(company["colour"])
+	var logo := Companies.logo(company)
+	# Each logo sits just off one face of the 0.45 m box: right, left, back.
+	var faces := [[Vector3(0.227, 0, 0), 90.0], [Vector3(-0.227, 0, 0), -90.0], [Vector3(0, 0, 0.227), 0.0]]
+	for i in faces.size():
+		var sticker := box.get_node_or_null("BoxLogo%d" % i) as Sprite3D
+		if sticker == null:
+			sticker = Sprite3D.new()
+			sticker.name = "BoxLogo%d" % i
+			sticker.pixel_size = 0.3 / 256.0  # the 256 px logo is 30 cm wide
+			sticker.shaded = true
+			sticker.double_sided = false
+			sticker.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
+			sticker.position = faces[i][0]
+			sticker.rotation_degrees.y = faces[i][1]
+			box.add_child(sticker)
+		sticker.texture = logo
+
+
 static func tube(parent: Node3D, a: Vector3, b: Vector3, radius: float, colour: Color) -> MeshInstance3D:
 	var part := LowPoly.cylinder(parent, radius, radius, a.distance_to(b), colour, (a + b) * 0.5)
 	part.basis = Basis(Quaternion(Vector3.UP, (b - a).normalized()))

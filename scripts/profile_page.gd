@@ -84,7 +84,7 @@ func _rebuild() -> void:
 	for child in _content.get_children():
 		_content.remove_child(child)
 		child.queue_free()
-	_content.add_child(_label("%s  ·  Level %d  ·  %d Dh" % [GameState.rider_name if GameState.rider_name != "" else "Snackaroo rider", GameState.level(), GameState.money], 22))
+	_content.add_child(_label("%s  ·  Level %d  ·  %d Dh" % [GameState.rider_name if GameState.rider_name != "" else Companies.current()["name"] + " rider", GameState.level(), GameState.money], 22))
 	_content.add_child(_label("Wahat Al Shams stamp card  ·  %d / %d homes  ·  %d / %d venues" % [GameState.visited_homes.size(), GameState.home_catalog.size(), GameState.visited_venues.size(), GameState.venue_catalog.size()], 22))
 	_content.add_child(_label("Every 25 different homes in a cluster earns 20 Dh. Fill a cluster to unlock its gold delivery box colour. A + marks a visited home.", 16))
 	var clusters: Array[String] = []

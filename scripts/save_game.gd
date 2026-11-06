@@ -23,6 +23,7 @@ static func save(state: Node, path: String) -> bool:
 		"rider_name": state.rider_name,
 		"rider_country": state.rider_country,
 		"rider_look": state.rider_look,
+		"company": state.company,
 		"hired": state.hired,
 		"tutorial_done": state.tutorial_done,
 		"insurance_on": state.insurance_on,
@@ -64,6 +65,7 @@ static func load_into(state: Node, path: String) -> bool:
 	state.rider_name = str(data.get("rider_name", ""))
 	state.rider_country = str(data.get("rider_country", ""))
 	state.rider_look = int(data.get("rider_look", 0))
+	state.company = str(data.get("company", "snackaroo"))  # Session 88: old saves are Snackaroo
 	state.hired = bool(data.get("hired", false))
 	state.tutorial_done = bool(data.get("tutorial_done", false))
 	state.insurance_on = bool(data.get("insurance_on", true))

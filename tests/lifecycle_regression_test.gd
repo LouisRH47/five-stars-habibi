@@ -50,7 +50,7 @@ func _check_tutorial_recovery(stage: String) -> void:
 	world.add_child(wall)
 	bike.speed = 8.0
 	_check(bike._check_crash(1.0, wall), "%s: major fall starts" % stage)
-	bike._step_fall(GameConfig.CRASH_FALL_DURATIONS["tumble"] + 0.1)
+	bike._step_fall(GameConfig.CRASH_FALL_MAX_TIME)
 	_check(clinic.showing and _state.boss_paid_crash, "%s: clinic follows fall and first cover is consumed" % stage)
 	clinic.close()
 	_check(summary.showing, "%s: clinic closes into shift summary" % stage)
@@ -132,7 +132,7 @@ func _check_insurance_snapshot() -> void:
 		key = key.duplicate()
 		key.pressed = false
 		root.push_input(key)
-		bike._step_fall(GameConfig.CRASH_FALL_DURATIONS["tumble"] + 0.1)
+		bike._step_fall(GameConfig.CRASH_FALL_MAX_TIME)
 		_check(clinic.showing and clinic.last_bills["paid"] == expected and _state.money == 500 - expected,
 				"coverage %s: changing insurance during fall cannot change this accident's charge" % initially_insured)
 		_check(clinic.last_bills["insured"] == initially_insured, "clinic explains the coverage held at impact")
@@ -145,7 +145,7 @@ func _check_insurance_snapshot() -> void:
 	bike.speed = 8.0
 	bike._check_crash(1.0, wall)
 	_state.set_insurance(true)
-	bike._step_fall(GameConfig.CRASH_FALL_DURATIONS["tumble"] + 0.1)
+	bike._step_fall(GameConfig.CRASH_FALL_MAX_TIME)
 	_check(clinic.last_bills["boss"] and clinic.last_bills["paid"] == 0 and _state.money == 500,
 			"collision-time coverage preserves the boss's first-crash payment")
 	clinic.close()

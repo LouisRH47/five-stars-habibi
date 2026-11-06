@@ -79,7 +79,7 @@ func _leave_bag(spot: Vector3) -> Node3D:
 	bag.name = "LeftBag"
 	bag.position = spot
 	add_child(bag)
-	LowPoly.box(bag, Vector3(0.4, 0.35, 0.3), BAG_COLOUR, Vector3(0, 0.175, 0))
+	LowPoly.box(bag, Vector3(0.4, 0.35, 0.3), Companies.current().get("colour", BAG_COLOUR), Vector3(0, 0.175, 0))  # Session 88: the company bag
 	LowPoly.box(bag, Vector3(0.3, 0.12, 0.03), Color(1, 1, 1, 1), Vector3(0, 0.42, 0))  # handle
 	get_tree().create_timer(GameConfig.PARCEL_STAYS_TIME, false).timeout.connect(bag.queue_free)
 	return bag

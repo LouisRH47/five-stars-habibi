@@ -106,7 +106,13 @@ func _comfy_tyres() -> bool:
 
 func _target_transform() -> Transform3D:
 	# The smoothed position of the bike between physics steps, so nothing shakes by accident.
-	return target.get_global_transform_interpolated()
+	var spot: Transform3D = target.get_global_transform_interpolated()
+	# Session 87: while you're lying on the ground after a fall, follow your body, not the bike.
+	if target.has_method("fallen_body_position"):
+		var body: Vector3 = target.fallen_body_position()
+		if body.is_finite():
+			spot.origin = Vector3(body.x, spot.origin.y, body.z)
+	return spot
 
 
 func _wanted_position() -> Vector3:

@@ -35,6 +35,10 @@ var _room: Control
 var _left: VBoxContainer
 var _card: PanelContainer
 var _story: Label
+var _level_pill: Label     # "BIG CRASH" or "FALL" (Session 87)
+var _summary_button: Button
+## True while the clinic shows a fall (Session 87): smaller bill, you ride on afterwards.
+var light_visit := false
 var _tag: Label
 var _rows: GridContainer
 var _total: Label
@@ -104,8 +108,9 @@ func close() -> void:
 		_transition.kill()
 	_fade.color.a = 0.0
 	_set_visible(false)
-	if bike != null:
-		bike.reset_to_start()
+	if bike != null and not light_visit:
+		bike.reset_to_start()  # after a fall you ride on from where you fell (Session 87)
+	light_visit = false
 	get_tree().paused = false
 	closed.emit()
 
@@ -124,8 +129,14 @@ func _on_crashed(big: bool) -> void:
 
 ## One clinic visit is resolved only after the rider and bike have completed their fall.
 func _on_fall_completed(big: bool, impact: Dictionary) -> void:
-	if big and not showing:
+	if showing:
+		return
+	if big:
+		light_visit = false
 		open(GameState.big_crash(impact))
+	elif impact.get("level", "") == "fall":
+		light_visit = true  # Session 87: a fall also ends at the clinic, with a smaller bill
+		open(GameState.fall_clinic(impact))
 
 
 func _set_visible(on: bool) -> void:
@@ -144,7 +155,11 @@ func _fill(bills: Dictionary) -> void:
 		hit = bike.last_crash if bike != null else {"what": "a wall", "kmh": 25.0}
 	var food: String = bills.get("food", "")
 	var story := "You hit %s at %d km/h." % [hit["what"], roundi(hit["kmh"])]
-	if food != "":
+	_level_pill.text = "FALL" if light_visit else "BIG CRASH"
+	_summary_button.text = ("Back to riding  ·  E" if light_visit else "Shift summary  ·  E")
+	if light_visit:
+		story += " Just bruises: the nurse patched you up, and your order is still in the box."
+	elif food != "":
 		story += " The %s didn't make it, and your shift is over for today." % food
 	else:
 		story += " Your shift is over for today."
@@ -155,8 +170,10 @@ func _fill(bills: Dictionary) -> void:
 	var full: int = bills["hospital"] + bills["repair"]
 	_row("Impact severity", str(bills.get("severity", hit.get("severity", "severe"))).capitalize(), INK)
 	_row("Clinic bill", "%d Dh" % bills["hospital"], INK)
-	_row("Bike repair (Snackaroo)", "%d Dh" % bills["repair"], INK)
-	if bills["boss"]:
+	_row("Bike repair (%s)" % Companies.current()["name"], "%d Dh" % bills["repair"], INK)
+	if light_visit:
+		_row("A fall: insurance only covers big crashes", "", SOFT)
+	elif bills["boss"]:
 		_row("Your boss covered it", "-%d Dh" % full, TEAL)
 	elif bills["insured"]:
 		_row("Insurance", "-%d Dh" % (full - bills["paid"]), TEAL)
@@ -164,7 +181,7 @@ func _fill(bills: Dictionary) -> void:
 	else:
 		_row("Insurance", "off", RED)
 	_total.text = "%d Dh" % bills["paid"]
-	_tip_box.visible = not bills["insured"] and not bills["boss"]
+	_tip_box.visible = not bills["insured"] and not bills["boss"] and not light_visit
 	_insure_button.visible = not GameState.insurance_on
 	var week := GameState.crashes_this_week()
 	_week_bar.max_value = GameConfig.CRASH_WEEK_WARNING
@@ -249,6 +266,7 @@ func _build_left() -> VBoxContainer:
 	column.offset_right = 860
 	column.add_theme_constant_override("separation", 14)
 	var label := _label("BIG CRASH", 18, Color(1, 1, 1, 1), "Heading")
+	_level_pill = label
 	label.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	var pill := StyleBoxFlat.new()
 	pill.bg_color = RED
@@ -364,6 +382,7 @@ func _build_card() -> PanelContainer:
 	_insure_button.pressed.connect(turn_on_insurance)
 	buttons.add_child(_insure_button)
 	var summary := Button.new()
+	_summary_button = summary
 	summary.text = "Shift summary  ·  E"
 	summary.add_theme_font_size_override("font_size", 20)
 	summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL

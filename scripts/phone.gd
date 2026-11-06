@@ -53,6 +53,8 @@ var _goals: Label  # Session 32: this shift's 2 goals, shown while you wait for 
 
 
 func _ready() -> void:
+	_brand()
+	GameState.company_changed.connect(func(_id: String): _brand())
 	for key in ["food", "pay", "time", "special", "regular"]:
 		_chips[key] = _make_chip()
 	_make_event_banner()
@@ -438,3 +440,12 @@ func _show_choices(on: bool) -> void:
 		var metres := roundi(places.restaurant_approach(order.restaurant_id).distance_to(places.villa_approach(order.villa_number)))
 		var customer := "  ·  ♥ " + order.regular if order.regular != "" else ("  ·  Tip-friendly" if order.special == "fragile" else "")
 		_choice_info[index].text = "%s%s\n%s  ·  %d Dh\nTo %s\n%d m route%s\n%s\n%s" % [order.restaurant_name, "  ·  Better offer" if index == 1 else "", order.food.capitalize(), order.pay, order.address, metres, customer, kind, order.requirement_text()]
+
+
+## Session 88: the app's name and colour are your company's.
+func _brand() -> void:
+	var company := Companies.current()
+	var title := get_node_or_null("Panel/Margin/Rows/Header/Title") as Label
+	if title != null and not company.is_empty():
+		title.text = company["name"]
+		title.add_theme_color_override("font_color", company["colour"])

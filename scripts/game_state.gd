@@ -64,6 +64,11 @@ var rider_name := ""
 var rider_country := ""
 ## Your look: 0 Classic, 1 Sporty, 2 Chill (data/application.gd LOOKS).
 var rider_look := 0
+## Session 88: which delivery company you ride for: "snackaroo", "zoomaroo" or "deliverooz"
+## (data/companies.gd). Old saves are Snackaroo.
+var company := "snackaroo"
+## Sent when you switch company (the box, shirt and phone change colour).
+signal company_changed(id: String)
 ## True once you've been hired (the application is done).
 var hired := false
 ## True once the first-order tutorial is finished (it only runs once).
@@ -165,6 +170,7 @@ func new_game() -> void:
 	rider_name = ""
 	rider_country = ""
 	rider_look = 0
+	company = "snackaroo"
 	hired = false
 	tutorial_done = false
 	tutorial_running = false
@@ -279,6 +285,7 @@ func deliver() -> bool:
 	var tip := 0
 	if stars >= 5.0 and not done.boring and not done.crashed and randf() < tip_chance(done):
 		tip = randi_range(GameConfig.TIP_MIN, GameConfig.TIP_MAX)
+		tip = Companies.tip_with_perk(tip, company)  # Session 88: Snackaroo tips 10% bigger
 	var goals_before := goals_done()
 	var earned_xp := GameConfig.XP_PER_DELIVERY + roundi(GameConfig.XP_PER_STAR * stars)
 	var insurance := GameConfig.INSURANCE_PER_DELIVERY if insurance_on else 0
@@ -409,6 +416,30 @@ func set_insurance(on: bool) -> void:
 	insurance_changed.emit(on)
 
 
+## Session 87: the small bill for a bump (10 Dh) or a fall (30 Dh): the "bill" in the impact.
+func pay_crash_bill(impact: Dictionary) -> int:
+	var bill := int(impact.get("bill", 0))
+	if bill <= 0:
+		return 0
+	money -= bill
+	shift_bills += bill
+	money_changed.emit(money)
+	stats_changed.emit()
+	return bill
+
+
+## Session 87: a fall (12 to 22 km/h) ends at the clinic too, with a small bill (the
+## "bill" in the impact, 30 Dh: CRASH_FALL_HOSPITAL + CRASH_FALL_REPAIR). Your order and your
+## shift go on. Returns the bills for the clinic screen (same keys as big_crash()).
+func fall_clinic(impact: Dictionary) -> Dictionary:
+	var paid := pay_crash_bill(impact)
+	return {
+		"hospital": GameConfig.CRASH_FALL_HOSPITAL, "repair": paid - GameConfig.CRASH_FALL_HOSPITAL,
+		"severity": "a fall", "impact": impact.duplicate(true), "boss": false, "insured": false,
+		"insured_cap": 0, "lost_order": false, "food": "", "paid": paid, "big": false,
+	}
+
+
 ## A big crash (PRD "Crashes, bills and insurance"): an accepted order is cancelled
 ## (0 stars, no pay) and the bills come in. The boss pays for the first big crash.
 ## After that, insurance caps your share based on the impact severity.
@@ -458,13 +489,29 @@ func big_crash(impact: Dictionary = {}) -> Dictionary:
 
 
 ## The application was sent in: you're hired. The tutorial runs on your first order.
-func hire(rider: String, country: String, look: int) -> void:
+func hire(rider: String, country: String, look: int, company_id := "snackaroo") -> void:
 	rider_name = rider.strip_edges()
 	rider_country = country
 	rider_look = look
+	company = company_id if Companies.find(company_id) != {} else "snackaroo"
 	hired = true
 	tutorial_done = false
 	save_soon()
+
+
+## Session 88: switch to another company in the phone's Company app. Costs
+## COMPANY_SWITCH_PRICE; you keep your stars, level and everything you own. False if you
+## can't (same company, unknown company, not enough money, or while carrying an order).
+func switch_company(id: String) -> bool:
+	if id == company or Companies.find(id) == {} or money < GameConfig.COMPANY_SWITCH_PRICE or current_order != null:
+		return false
+	money -= GameConfig.COMPANY_SWITCH_PRICE
+	company = id
+	money_changed.emit(money)
+	stats_changed.emit()
+	company_changed.emit(id)
+	save_soon()
+	return true
 
 
 ## Big crashes in the last CRASH_WEEK_SHIFTS shifts (a "week"), for the clinic screen.

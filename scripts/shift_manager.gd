@@ -25,6 +25,8 @@ func _ready() -> void:
 	GameState.big_crashed.connect(func(_bills): _end_after_clinic = true)
 	if bike != null and bike.has_signal("crashed"):
 		bike.crashed.connect(func(_big): GameState.note_crash())  # the "No crashes" goal
+	if bike != null and bike.has_signal("knocked"):
+		bike.knocked.connect(GameState.pay_crash_bill)  # and for a bump
 	if bike != null and bike.has_signal("fall_completed"):
 		bike.fall_completed.connect(_on_fall_completed)
 	if clinic != null:
@@ -89,4 +91,7 @@ func _fall_in_progress() -> bool:
 
 func _on_fall_completed(big: bool, _impact: Dictionary) -> void:
 	if not big and GameState.shift_clock_out and GameState.current_order == null:
-		end_shift()
+		if clinic != null and clinic.get("showing") == true:
+			_end_after_clinic = true  # Session 87: a fall's clinic visit first, then the summary
+		else:
+			end_shift()

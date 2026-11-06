@@ -22,6 +22,7 @@ func _ready() -> void:
 	full_map.name = "FullMap"
 	full_map.minimap = get_parent().get_node_or_null("Minimap") if get_parent() != null else null
 	add_child(full_map)
+	add_child(CrashToast.make(bike))  # Session 87: "Bump! 9 km/h · -10 Dh"
 
 
 func _process(_delta: float) -> void:
