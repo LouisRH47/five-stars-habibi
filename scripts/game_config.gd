@@ -122,15 +122,20 @@ const TIME_EMPTY_AT := 2.0
 # Session 27 foods: shawarma goes cold (medium), cake keeps but breaks on bumps, groceries are
 # slow to spoil and a bit heavy, farm juice and salad spoil in the sun.
 const FRESHNESS_DRAIN := {"pizza": 0.25, "bubble tea": 0.4, "ice cream": 0.55,  # Session 17: was 0.35/0.6/1.0
-		"shawarma": 0.35, "cake": 0.2, "groceries": 0.1, "farm juice": 0.5, "salad box": 0.45, "pad thai": 0.35, "sushi": 0.5, "tacos": 0.3, "burgers": 0.3, "coffee": 0.4, "manakish": 0.25}  # Session 27
+		"shawarma": 0.35, "cake": 0.2, "groceries": 0.1, "farm juice": 0.5, "salad box": 0.45, "pad thai": 0.35, "sushi": 0.5, "tacos": 0.3, "burgers": 0.3, "coffee": 0.4, "manakish": 0.25,
+		"honey jars": 0.08, "wax candles": 0.3}  # Session 27
+# Session 69: honey jars keep (glass, a bit breakable), wax candles go soft in the sun.
 # Damage lost per knock, per food. Bubble tea hates speed bumps.
 const DAMAGE_SPEED_BUMP := {"pizza": 3.0, "bubble tea": 14.0, "ice cream": 5.0,  # at full speed
-		"shawarma": 4.0, "cake": 16.0, "groceries": 6.0, "farm juice": 10.0, "salad box": 6.0, "pad thai": 7, "sushi": 9, "tacos": 14, "burgers": 5, "coffee": 14, "manakish": 4}  # cake breaks on bumps
+		"shawarma": 4.0, "cake": 16.0, "groceries": 6.0, "farm juice": 10.0, "salad box": 6.0, "pad thai": 7, "sushi": 9, "tacos": 14, "burgers": 5, "coffee": 14, "manakish": 4,
+		"honey jars": 9, "wax candles": 4}  # cake breaks on bumps
 const DAMAGE_SPEED_BUMP_SLOW_SHARE := 0.25  # at or under SPEED_BUMP_SAFE_KMH a bump costs a quarter of that
 const DAMAGE_HARD_BRAKE := {"pizza": 3.0, "bubble tea": 8.0, "ice cream": 4.0,
-		"shawarma": 3.0, "cake": 9.0, "groceries": 5.0, "farm juice": 7.0, "salad box": 4.0, "pad thai": 5, "sushi": 5, "tacos": 8, "burgers": 3, "coffee": 8, "manakish": 3}
+		"shawarma": 3.0, "cake": 9.0, "groceries": 5.0, "farm juice": 7.0, "salad box": 4.0, "pad thai": 5, "sushi": 5, "tacos": 8, "burgers": 3, "coffee": 8, "manakish": 3,
+		"honey jars": 6, "wax candles": 3}
 const DAMAGE_COLLISION := {"pizza": 15.0, "bubble tea": 25.0, "ice cream": 18.0,  # a full-speed head-on hit
-		"shawarma": 15.0, "cake": 30.0, "groceries": 20.0, "farm juice": 25.0, "salad box": 18.0, "pad thai": 18, "sushi": 22, "tacos": 25, "burgers": 15, "coffee": 25, "manakish": 15}
+		"shawarma": 15.0, "cake": 30.0, "groceries": 20.0, "farm juice": 25.0, "salad box": 18.0, "pad thai": 18, "sushi": 22, "tacos": 25, "burgers": 15, "coffee": 25, "manakish": 15,
+		"honey jars": 24, "wax candles": 12}
 # Hard braking: braking (S or Space) while going faster than this counts once per press.
 const HARD_BRAKE_MIN_KMH := 22.0       # Session 17: was 18, then normal braking counted too
 
@@ -145,7 +150,8 @@ const SCOOTER_GIVE_WAY_TIME := 2.0    # seconds a kid waits for you before turni
 const CRITTER_SCARED_TIME := 1.5      # seconds a bumped cat runs / a bumped kid stops
 # Extra food damage when you bump a cat or a kid (on top of the crash itself).
 const DAMAGE_CRITTER := {"pizza": 10.0, "bubble tea": 15.0, "ice cream": 12.0,
-		"shawarma": 10.0, "cake": 16.0, "groceries": 12.0, "farm juice": 15.0, "salad box": 12.0, "pad thai": 12, "sushi": 14, "tacos": 15, "burgers": 10, "coffee": 15, "manakish": 10}
+		"shawarma": 10.0, "cake": 16.0, "groceries": 12.0, "farm juice": 15.0, "salad box": 12.0, "pad thai": 12, "sushi": 14, "tacos": 15, "burgers": 10, "coffee": 15, "manakish": 10,
+		"honey jars": 13, "wax candles": 8}
 
 # --- Stars, tips, XP and rating (Session 10) ---
 # Stars: start at 5, each orange meter takes off 0.5, each red one 1.5. Never below 1 (PRD).
@@ -175,7 +181,9 @@ const CRASH_HEAD_ON := 0.6
 const CRASH_SMALL_KMH := 10.0         # hitting anything at this speed or more: you fall off
 const CRASH_BIG_KMH := 20.0           # hitting a car, wall or pole faster than this: clinic (PRD)
 const CRASH_FALLEN_TIME := 2.0        # seconds on the ground after a small crash
-const CRASH_SMALL_DAMAGE := 30.0      # % off the damage meter for a small crash
+const CRASH_SMALL_DAMAGE := 40.0      # % off the damage meter for a small crash (was 30, Session 52)
+const CRASH_GRACE_TIME := 2.0         # seconds after getting back up when you can't fall off again
+const CRASH_PUSH_BACK := 0.8          # metres the bike is moved away from what you hit, after a small fall
 const HOSPITAL_BILL := 150            # Dh, big crash on the bicycle (PRD)
 const REPAIR_BILL := 80               # Dh
 const INSURED_CRASH_COST := 20        # Dh, all you pay for a big crash with insurance
@@ -188,7 +196,7 @@ const CRASH_MAJOR_SCORE := 18.0
 const CRASH_SEVERE_SCORE := 25.0
 const CRASH_CRITICAL_SCORE := 35.0
 const CRASH_GLANCE_WEIGHT := 0.2
-const CRASH_TIP_SCORE := 12.0
+const CRASH_TIP_SCORE := 15.0  # Session 87: falls from 12 to 15 are a gentle tip-over
 const CRASH_TUMBLE_HEAD_ON := 0.65
 const CRASH_MATERIAL_HARDNESS := {"soft": 0.35, "wood": 0.8, "vehicle": 1.15, "rigid": 1.0}
 const CRASH_FALL_DURATIONS := {"tip": 1.4, "skid": 1.8, "tumble": 2.2}
@@ -252,6 +260,11 @@ const SHIMMER_FULL := 55.0         # metres: full shimmer from here on
 const SHIMMER_AMOUNT := 0.0018     # how far the picture wobbles (part of the screen width)
 # The Graphics setting (0 Low, 1 Medium, 2 High): how far away shadows are still drawn (metres).
 const SHADOW_DISTANCE := [60.0, 150.0, 260.0]
+# Session 52: the sun turns in steps this long (in game hours), so shadows don't shimmer.
+const SUN_STEP_HOURS := 2.0 / 60.0
+const SHADOW_MAP_SIZE := [2048, 4096, 8192]  # sun shadow map size on Low, Medium, High (Session 52)
+const CAMERA_NEAR := 0.1              # metres: a little further than Godot's 0.05 stops far-off flicker
+const CAMERA_FAR := 1500.0            # metres: the whole map fits, nothing past it is drawn
 # --- Houses (Session 26) ---
 const HOUSE_STOREY := 2.6             # metres per floor (homes have 2 floors)
 const HOUSE_PARAPET := 0.5            # the low wall round the roof terrace
@@ -262,8 +275,6 @@ const HOUSE_FRONT_STRIP := 0.8        # pot plants may stand this far in front o
 const SIGNATURE_EXTRA_DEPTH := 3.0    # signature villas are this much deeper (at the back)...
 const SIGNATURE_EXTRA_WIDTH := 2.0    # ...and this much wider on the courtyard side
 const HOUSE_NUMBER_FONT := 130        # size of the house number by the door
-const CLUSTER_SIGN_INSET := 5.0       # cluster signs stand this far in from the lane's end...
-const CLUSTER_SIGN_SIDE := 3.4        # ...and this far to the side of the lane's middle line
 # How likely each extra is (0 = never, 1 = always). Picked from the home's number, so the
 # same home always looks the same.
 const HOUSE_BUGGY_CHANCE := 0.45      # a golf buggy beside the house
@@ -295,6 +306,14 @@ const DUST_LIFETIME := 0.7            # seconds one puff lasts
 const DUST_MIN_KMH := 6.0             # slower than this on sand: no dust
 const DUST_BRAKE_TIME := 0.45         # seconds of extra dust after you brake hard
 const DUST_PUFF_SIZE := 0.22          # metres across a puff when it starts (it grows)
+
+# Session 61: skid marks after a hard brake (scripts/skid_marks.gd).
+const SKID_MARK_TIME := 0.45          # seconds of braking that leave a mark (so they stay short)
+const SKID_MARK_HOLD := 5.0           # seconds a mark stays before it starts to fade
+const SKID_MARK_FADE := 5.0           # seconds it takes to fade away
+const SKID_MARK_ALPHA := 0.32         # how dark a fresh mark is (0 to 1): faint
+const SKID_MARK_WIDTH := 0.06         # metres
+const SKID_MARK_MAX := 6              # older marks go first
 # Sprinting: a slightly wider camera and speed lines at the screen edges.
 const SPRINT_FOV_EXTRA := 12.0         # degrees wider while sprinting
 const SPRINT_FOV_SPEED := 4.0         # how quickly the camera widens and comes back
@@ -324,6 +343,13 @@ const LIFE_GIVE_UP_TIME := 5.0        # seconds one waits for you to move before
 const LIFE_TURN_SPEED := 4.0          # how quickly they turn to face where they're going
 ## Low / Medium / High: further away than this, people stop animating and are hidden (faster).
 const LIFE_VIEW_DISTANCE := [70.0, 100.0, 140.0]
+# --- Session 68: people who live here ---
+const PEOPLE_ANIMATE_DISTANCE := 45.0  # m: closer people are fully animated, further hold their pose
+const HOME_WALKER_EVERY := 9.0         # s between people leaving a restaurant to walk home
+const HOME_WALKER_MAX := 4             # at most this many walking home at once
+const HOME_WALKER_NEAR := 160.0        # m: only restaurants this close to you send people home
+const HOME_WALKER_DOOR_FADE := 0.8     # m they walk in through the door before they're gone
+const HOME_WALKER_HOME_CHOICES := 12   # they walk to one of this many homes nearest the restaurant (short routes: no stutter)
 const BIRD_SPEED := 8.0               # m/s, birds circling over the community
 const PALM_SWAY_DEG := 2.5            # how far the palm tops sway in the breeze
 const PALM_SWAY_SPEED := 0.9          # how fast they sway
@@ -464,3 +490,316 @@ const WIND_SMOOTHING := 6.0
 const GPS_GROUND_SAMPLE_METRES := 2.0
 const COMFY_TYRES_CAMERA_VERTICAL_SHARE := 0.5
 const COMFY_TYRES_SHAKE_SHARE := 0.65
+
+# --- Looks pass interiors (Sessions 54 and 55) ---
+const QUEUE_NONE_CHANCE := 0.5        # half the time nobody is in front of you
+const QUEUE_TWO_CHANCE := 0.15        # sometimes two people (otherwise one)
+const QUEUE_WAIT_MIN := 2.0           # seconds you wait for them to be served
+const QUEUE_WAIT_MAX := 4.0           # never longer than this
+const CAMERA_INDOOR_DISTANCE := 2.9   # metres behind you inside a walk-in place (outside: CAMERA_DISTANCE)
+const CAMERA_INDOOR_HEIGHT := 2.7     # metres up inside (a little higher, under the 4.5 m ceiling)
+const CAMERA_INDOOR_BLEND := 3.0      # how fast the camera moves in and out (higher = faster)
+const ROOM_SOUND_DB := -8.0           # each place's background sound
+const ROOM_SOUND_UNIT_SIZE := 4.0     # metres at full volume
+const ROOM_SOUND_MAX_DISTANCE := 13.0 # silent further away than this
+const SUSHI_BELT_SPEED := 0.35        # metres per second the sushi plates travel
+const ROOM_PEOPLE_DRAW_DISTANCE := 80.0  # people inside the shops are hidden further away (metres)
+# --- Session 72: the school football pitch (scripts/school_pitch.gd) ---
+const FLOODLIGHT_ON_HOUR := 17.25      # the floodlights come on at 17:15, as the light goes
+const FLOODLIGHT_ENERGY := 6.0
+const FLOODLIGHT_RANGE := 48.0         # metres: each beam only reaches its quarter of the pitch
+const FLOODLIGHT_ANGLE := 32.0         # degrees: half the width of each beam
+const PITCH_PLAY_END_HOUR := 16.5      # pupils play football until 16:30
+const PITCH_PUPILS := 8
+const PITCH_BALL_SPEED := 5.0          # m/s
+const PITCH_PUPIL_SPEED := 3.0         # m/s
+
+# --- Session 73: more life at the stables (scripts/stable_life.gd) ---
+const ARENA_RIDERS_OUT := 2            # riders on the jumping course at once (the rest wait their turn)
+const GROOM_WALK_SPEED := 1.1          # m/s, a groom leading a horse round the yard
+
+# --- World polish pass Sessions 64 to 66 (bus stop, signs, Majlis Gardens) ---
+const BUS_STOP_START_PEOPLE := 4      # people waiting at the bus station when the game starts
+const BUS_STOP_MAX_PEOPLE := 5        # never more than this many waiting
+const BUS_STOP_SPAWN_EVERY := 10.0    # seconds between new people arriving at the stop
+const BUS_STOP_WALK_SPEED := 1.4      # m/s walking to their spot and to the bus door
+const BUS_STOP_BOARD_GAP := 0.8       # seconds between one person and the next getting on
+
+# --- Looks pass Session 56: the gym and the C Institute ---
+const GYM_PEDAL_TURNS := 1.2          # exercise bike pedal turns per second
+const GYM_ROW_STROKES := 0.45         # rowing strokes per second
+const GYM_ROW_SLIDE := 0.45           # metres the rower slides back on each stroke
+const GYM_SQUATS := 0.3               # squats per second
+const GYM_SQUAT_DEPTH := 0.32         # metres the lifter goes down
+const TALK_SCREEN_TIMES := [12.0, 16.0]  # the talk screen: "Welcome" until 12:00, "Talk today" until 16:00, then the talk
+
+# --- Looks pass Session 58: Plaza, streets and spine ---
+const LIGHTS_ON_HOUR := 17.25         # street lamps and string lights are half on at this time (sunset)...
+const LIGHTS_FADE_HOURS := 0.5        # ...fading in over this long
+const LIGHTS_BULB_ENERGY := 4.0       # how bright the string light bulbs glow
+const LIGHTS_LAMP_ENERGY := 3.0       # how bright the street lamp heads glow
+const STREET_LAMP_HEIGHT := 5.0       # metres
+const STRING_LIGHT_SAG := 0.45        # metres the string lights hang down between poles
+const PLAZA_STROLLERS := 6            # extra people strolling round the Plaza
+const SPINE_FLOWER_PATCHES := 140
+const SPINE_ROCKS := 160
+const SPINE_TREES := 45
+
+# --- Fixes after the careless play-test (5 Nov) ---
+const KERB_IMPACT_HARDNESS := 0.35     # the spine kerbs count as a soft bump (rigid walls are 1.0)
+
+# --- Fix pass Session 75: ride freely, jump on foot, buggies on roads ---
+const KERB_SPEED_KEEP := 0.9          # share of speed kept riding over a kerb (a little lost)
+const KERB_SHAKE := 0.2               # camera shake riding over a kerb at full speed (0 to 1)
+const KERB_BUMP_COOLDOWN := 0.25      # seconds before the next kerb counts (two kerbs close together)
+const BUGGY_JUNCTION_SPEED_SHARE := 0.45  # buggies slow to this share of their speed at junctions
+const BUGGY_SLOW_RAMP := 5.0          # metres over which a buggy slows down before a junction
+
+
+# --- Fix pass Session 76: kerbs that join up and curved corners ---
+const KERB_HEIGHT := 0.12             # metres a kerb stands above the road
+const KERB_WIDTH := 0.25              # metres across the top of a kerb
+
+
+# --- Fix pass Session 77: square Plaza floor and the Dune Drip buggy park ---
+const PLAZA_PAVER_TILE := 6.0             # metres of floor one square_concrete_pavers photo covers (squares about 1 m)
+const PLAZA_PAVER_TINT := Color(1.3, 1.36, 1.38)  # lightens the brown photo to a warm sandy stone
+const PARKED_BUGGY_COLOUR := Color(0.92, 0.91, 0.84)  # the buggies parked behind Dune Drip
+
+
+# --- Fix pass Session 78: bike shop and Dune Drip buildings ---
+# The outside of the two shops (scripts/shop_exterior.gd) and the dressed walls round the
+# Plaza (scripts/plaza_walls.gd). All in metres.
+const SHOP_ARCADE_DEPTH := 3.0      # how far the shaded arcade sticks out in front of a shop
+const SHOP_ARCADE_TOP := 4.0        # top of the arcade roof (it stays under the shop sign)
+const SHOP_ARCH_SPRING := 2.6       # where the arches start to curve, on top of the columns
+const SHOP_ARCH_TOP := 3.3          # the top of each arch (under the arcade beam)
+const SHOP_COLUMN_XS := [2.9, 6.4, 9.85]  # columns each side of the door, from the middle
+const SHOP_PARAPET := 1.0           # the low wall round the edge of the roof
+const SHOP_CROWN_STEPS := [0.8, 1.6]  # how much higher each step over the sign goes
+const SHOP_UPPER_HEIGHT := 3.2      # the raised back part of the roof (the step up)
+const SHOP_TOWER_HEIGHT := 3.6      # the wind tower on top of that
+
+
+# --- Fix pass Session 79: car parks and the mosque car park ---
+# (Bay sizes and where each car park goes are map data: tools/build_wahat_data.py.)
+const CAR_PARK_ROOF_HEIGHT := 3.1         # metres from the ground to the solar panels
+const CAR_PARK_ROOF_TILT := 0.07          # how much the panels lean (radians, about 4 degrees)
+const CAR_PARK_POST_EVERY := 3            # one roof post every 3 bays
+const CAR_PARK_LINE_WIDTH := 0.12         # the painted bay lines (metres)
+const PARKED_CARS_BATCHED := true         # draw parked cars with ParkedCarBatch (much faster)
+const PARKED_CAR_BATCH_CELL := 96.0       # metres: cars in one square of this size share a draw
+const PARKED_CAR_DRAW_DISTANCE := 280.0   # metres: parked cars further away aren't drawn
+
+
+# --- Fix pass Session 80: C Institute front, seats and the basketball court ---
+# (Session 80 numbers go here)
+# The 5-a-side pitch in front of the C Institute (scripts/institute_pitch.gd)
+const INSTITUTE_PITCH_PLAYERS := 10       # 5 a side, the two goalkeepers included
+const INSTITUTE_PITCH_PLAY_END_HOUR := 17.0  # people play football until 17:00
+const INSTITUTE_PITCH_BALL_SPEED := 4.5   # m/s
+const INSTITUTE_PITCH_RUN_SPEED := 2.8    # m/s
+# The basketball court in the spine (scripts/basketball_court.gd)
+const COURT_PLAYERS := 3                  # two play one-on-one, one practises shots
+const COURT_PLAY_END_HOUR := 17.5         # players go home at 17:30
+const COURT_RUN_SPEED := 2.2              # m/s
+const COURT_SHOT_EVERY := 4.0             # seconds of dribbling before a shot
+const COURT_SHOT_TIME := 1.1              # seconds the ball flies to the hoop
+const COURT_FENCE_HEIGHT := 3.0           # metres
+
+
+# --- Fix pass Session 81: gym, stream and pools ---
+# (Session 81 numbers go here)
+# Pools (scripts/pool_deck.gd): heights in metres above the ground.
+const POOL_WATER_Y := 0.08                # the water's surface (swimmers float here)
+const POOL_DECK_Y := 0.16                 # the tiled deck round the pool
+const POOL_COPING_Y := 0.2                # the stone edge (coping) round the water
+const POOL_TILE_SIZE := 0.6               # metres, one deck tile
+const POOL_FLOOR_DEPTH := 1.2             # how deep the pool floor looks through the water
+# Water colours and ripples (scripts/water_look.gd, assets/shaders/water.gdshader)
+const POOL_WATER_COLOUR := Color(0.24, 0.7, 0.86)
+const STREAM_WATER_COLOUR := Color(0.3, 0.6, 0.85)
+const POND_WATER_COLOUR := Color(0.22, 0.52, 0.62)
+const WATER_WAVE_TILT := 0.5              # how much the ripples catch the sun (0 = none)
+# Ponds at the stream's ends (scripts/stream_pond.gd)
+const POND_STONE_GAP := 0.55              # metres between the stones round the edge
+
+
+# --- Fix pass Session 82: textures ---
+# (The ground pictures' sizes and tints are in one table: SURFACES in scripts/surface_textures.gd.)
+const BIN_GREY := Color(0.5, 0.52, 0.53)          # street, bus stop and cluster bins (were green)
+
+
+# --- Fix pass Session 83: people who look alive ---
+# (Session 80 seats) the sitting pose keeps feet on top of the floor or step below them
+const SIT_FEET_CLEARANCE := 0.03      # m the soles stay above the floor (paving is a little raised)
+const SIT_ANKLE_HEIGHT := 0.08        # m from the sole up to the ankle
+# Faces: simple eyes and a smile (scripts/face.gd), measured on a grown-up's head
+const FACE_SHOW_DISTANCE := 25.0      # m, faces are only drawn this close
+const FACE_FRONT := 0.135             # m from the middle of the head to the face
+const FACE_EYE_HEIGHT := 0.014        # m above the middle of the head
+const FACE_EYE_GAP := 0.1             # m between the two eyes
+const FACE_MOUTH_HEIGHT := -0.075     # m, the smile below the middle of the head
+# Looking alive (scripts/alive_pose.gd), only for people near the rider
+const ALIVE_DISTANCE := 30.0          # m, people closer than this breathe, look round and talk
+const ALIVE_BREATH_SECONDS := 4.0     # s for one breath in and out
+const ALIVE_BREATH_DEG := 2.0         # degrees the chest lifts
+const ALIVE_LOOK_EVERY := Vector2(2.0, 6.0)  # s between looking somewhere new
+const ALIVE_LOOK_DEG := 50.0          # degrees the head turns at most
+const ALIVE_LOOK_SPEED := 60.0        # degrees per second the head turns
+const ALIVE_SWAY_SECONDS := 7.0       # s to shift the weight over and back
+const ALIVE_SWAY := 0.035             # m the hips move to the side
+const ALIVE_TALK_TURN_SECONDS := 4.0  # s one person in a pair talks before the other does
+
+
+# --- Fix pass Session 75 (people): jumping on foot ---
+const JUMP_HEIGHT := 0.6              # m, how high Space lifts the rider on foot
+const JUMP_COOLDOWN := 0.6            # s before you can jump again (counted from take-off)
+const JUMP_LAND_TIME := 0.3           # s the knees bend when you land
+const JUMP_LAND_SQUAT := 0.16         # m the hips drop in that landing bend
+const JUMP_TUCK := 0.22               # m the feet lift towards the body in the air
+
+# --- Fix pass Session 81 (people): swimmers and the lifeguard ---
+const SWIM_WATER_Y := 0.12            # m, the pools' water surface if a pool doesn't say (meta "water_y")
+const SWIM_EDGE_ABOVE_WATER := 0.08   # m, the pool edge above the water, where resting swimmers fold their arms
+const SWIM_SPEED := 0.8               # m/s, a lap swimmer (each one a little faster or slower)
+const SWIM_STROKE_RATE := 0.6         # whole arm strokes per second
+const SWIM_BODY_TILT_DEG := 16.0      # degrees the swimmer's head end is higher than the feet
+const SWIM_NECK_ABOVE_WATER := 0.07   # m, the neck sits just above the water (head well above)
+const SWIM_CHIN_UP_DEG := 80.0        # degrees the head lifts to look ahead out of the water
+const SWIM_TURN_TIME := 1.8           # s to turn round at the end of the pool
+const SWIM_TURN_GAP := 1.6            # m before the wall where they start turning
+const SWIM_REST_GAP := 0.35           # m from the edge for people resting at the side
+const SWIM_SHOULDERS_ABOVE_WATER := 0.12  # m, people resting at the side
+const SWIM_COMMUNITY_LAPS := 4        # lap swimmers in the community pool
+const SWIM_COMMUNITY_RESTING := 2     # people resting at its edge
+const SWIM_KIDS_AREA := 8.0           # m at the community pool's east end kept for the kids' splash area
+const SWIM_LAP_POOL_LAPS := 3         # lap swimmers in the gym's lap pool (one per lane)
+const SWIM_SCHOOL_LAPS := 2           # lap swimmers in each school pool
+const SWIM_SCHOOL_RESTING := 1        # resting at the edge of each school pool
+const LIFEGUARD_SEAT_HEIGHT := 1.6    # m, the seat of the tall lifeguard chair
+const LIFEGUARD_FOOTREST_HEIGHT := 1.12  # m, where his feet rest (and where he stands up)
+const LIFEGUARD_LOOK_DEG := 55.0      # degrees he looks left and right
+const LIFEGUARD_STAND_EVERY := Vector2(12.0, 22.0)  # s between standing up to whistle
+const LIFEGUARD_STAND_TIME := 3.0     # s standing with the whistle
+const LIFEGUARD_WHISTLE_HEARD := 45.0 # m, how far away you hear the whistle
+
+# --- Steam pass (Session 85): desktop builds and the Steam Deck ---
+const SMALL_SCREEN_WIDTH := 1600       # px: windows narrower than this (Steam Deck 1280x800) get bigger menus and HUD
+const SMALL_SCREEN_UI_SCALE := 1.15    # how much bigger (13 px text becomes 10 px on the Deck, not 9; more makes the phone cover the speed panel)
+
+# --- Life pass Session 86: the loading screen ---
+const LOADING_MIN_SECONDS := 1.0       # s the loading screen stays up at least (even if the world builds faster)
+const LOADING_SHIFT_SECONDS := 1.2     # s the short loading screen shows at the start of each new shift
+const LOADING_TIP_SECONDS := 3.0       # s each tip shows before the next one
+const LOADING_FADE_SECONDS := 0.4      # s the screen takes to fade out at the end
+const LOADING_FRAME_BUDGET_MS := 25    # ms of building per frame before the screen gets to draw again
+const LOADING_WARM_FRAMES := 3         # frames the finished world draws behind the screen (warms the shaders)
+
+# --- Life pass Session 87: three crash levels ---
+# The impact "score" is the speed into the thing in km/h (a scrape counts a fifth of its speed),
+# times how hard the thing is (CRASH_MATERIAL_HARDNESS: a car 1.15, a wall 1, a palm 0.8).
+const CRASH_BUMP_MIN_KMH := 6.0        # an impact score under this: just a nudge or a scrape (no bill, no message)
+const CRASH_BUMP_KMH := 12.0           # under this (or anything soft, at any speed): a bump, you stay on
+const CRASH_FALL_KMH := 22.0           # 12 to 22: you fall off; over 22 into something hard: big crash
+const CRASH_BUMP_BILL := 10            # Dh, a bump (small repair)
+const CRASH_FALL_BILL := 30            # Dh, a fall (bike repair)
+const CRASH_BUMP_DAMAGE := 8.0         # % off the food's damage meter for a bump (a small rating hit)
+const CRASH_BUMP_COOLDOWN := 3.0       # s before another bump can count (pushing against a wall; was 1.5)
+const CRASH_WOBBLE_TIME := 0.7         # s the bike wobbles after a bump
+const CRASH_WOBBLE_DEG := 14.0         # degrees the bike leans side to side in the wobble
+const CRASH_TOAST_SECONDS := 2.2       # s the "Bump! 9 km/h" message stays up
+
+# --- Life pass Session 88: three delivery companies (data/companies.gd) ---
+const COMPANY_SNACKAROO_TIP_BONUS := 0.10    # Snackaroo: tips 10% bigger (rounded up)
+const COMPANY_ZOOMAROO_WAIT_BONUS := 0.20    # Zoomaroo: customers wait 20% longer (the time target)
+const COMPANY_DELIVEROOZ_DAMAGE_CUT := 0.25  # Deliverooz: the bigger box, 25% less food damage
+const COMPANY_SWITCH_PRICE := 50             # Dh to switch company in the phone (keeps stars and level)
+const CRASH_FALL_MAX_TIME := 4.0       # s: a fall always ends by now, even if something still wobbles
+const CRASH_THROW_SHARE := 0.85        # share of the impact speed the rider is thrown with
+const CRASH_THROW_LIFT := 1.2          # m/s upwards when thrown (x1.5 going over the handlebars)
+const CRASH_THROW_SPIN := 4.0          # rad/s forward roll going over the handlebars
+const CRASH_BIKE_SLIDE_SHARE := 0.6    # share of the impact speed the bike slides on with
+const CRASH_GET_UP_TIME := 0.5         # s to blend from lying on the ground back onto the bike
+const CRASH_FALL_HOSPITAL := 20        # Dh of the fall bill that's the clinic (the rest, 10 Dh, is the bike repair)
+
+# --- Life pass Session 89 (jobs and messages): the phone's Jobs and Messages apps ---
+const ORDER_FAR_METRES := 360.0        # m, shop door to drop-off door: more than this is a "far" order (about 1 in 3)
+const ORDER_FILTER_TRIES := 5          # times a new order is made again when its kind is switched off in Jobs
+const CHAT_MAX_LINES := 30             # each chat keeps only its last 30 lines
+const CHAT_BOSS_ID := "boss"           # the chat with your company's boss
+const CHAT_NEWS_ID := "plaza_news"     # the Plaza news chat (Session 94 posts the flea market there)
+
+# --- Life pass Session 89: the big phone on P (scripts/phone_app.gd) ---
+const PHONE_APP_SIZE := Vector2(420, 860)  # px, the big phone at 1920x1080 (it shrinks on short screens)
+const PHONE_APP_MARGIN := 70.0             # px kept free above and below the phone (the keys hint sits there)
+const PHONE_APP_SHADE := 0.55              # how dark the see-through shade behind the phone is (0 to 1)
+const CAREER_TIER2_STARS := 4.0            # Profile app: stars Tier 2 (Dune Express) needs (PRD career ladder)
+const CAREER_TIER2_DELIVERIES := 20        # Profile app: deliveries Tier 2 needs
+const MOTORBIKE_TEST_PRICE := 200          # Dh, the motorbike test's first try (PRD; the test isn't built yet)
+
+# --- Session 90 (restaurants): the homes above the Plaza restaurants, and the waiters ---
+const PLAZA_HOME_BAY := 6.2             # m, how wide one flat is along the row
+const PLAZA_HOME_STOREY := 3.0          # m per floor of the homes (two floors, 8 m to 14 m up)
+const PLAZA_HOME_BASE_TOP := 8.42       # m, top of the thick band that sits on the shop fronts
+const PLAZA_HOME_BASE_STICK := 0.36     # m the bottom band stands out from the wall (covers the join)
+const PLAZA_HOME_CORNICE := 13.72       # m, bottom of the cornice under the roof edge
+const PLAZA_HOME_BALCONY_DEPTH := 1.2   # m a balcony sticks out
+const PLAZA_HOME_BALCONY_WIDTH := 2.8   # m, how wide a balcony is
+const WAITER_WALK_SPEED := 1.2          # m/s, a waiter walking between the tables and the door
+const WAITER_WIPE_SECONDS := 4.5        # s spent wiping a table
+const WAITER_CHAT_SECONDS := 5.0        # s chatting to a diner at a table
+const WAITER_INSIDE_SECONDS := 2.5      # s inside the restaurant (fetching plates)
+const WAITER_SERVE_SECONDS := 2.0       # s putting plates down at a table
+const WAITER_PAUSE_SECONDS := 1.0       # s a waiter stops at the door before going on (never longer)
+const WAITER_TRAY_HEIGHT := 1.05        # m, how high a waiter holds the tray
+
+# --- Session 90 (layout): Plaza paving, buggy park, gym, Majlis crossing ---
+const ZEBRA_STRIPE := 0.5              # m, how wide one white bar of a zebra crossing is (gaps are the same)
+const GYM_DOOR_PLANTER := 2.1          # m from a gym door's middle to the planter on each side of it
+const GYM_SIDE_DOOR_Z := 3.3           # m, where the gym's second door (on the lap pool side) is, front to back
+
+# --- Session 92 (people): strollers, chatting pairs, sunbeds, site workers, the player's kit ---
+const STROLLER_HANDLE_REACH := 0.36    # m in front of the parent's feet that the handle is
+const STROLLER_HAND_GAP := 0.36        # m between the two hands on the handle
+const STROLLER_LEAN_DEG := 6.0         # degrees a parent leans forward to push
+
+# --- Session 91: the C Institute's second floor, lift, new outside, and the big pond ---
+const LIFT_RIDE_SECONDS := 3.5         # s the lift car takes between the two floors
+const LIFT_DOOR_SECONDS := 0.7         # s the lift doors take to open or close
+const LIFT_CALL_DISTANCE := 1.4        # m from the call spot in front of a lift door where E works
+const LIFT_STEP_OUT := 0.9             # m in front of the lift door where you stand (and come out)
+const TYPING_AWAKE_DISTANCE := 45.0    # m, further away the office people don't move their hands
+const TYPING_TAPS_PER_SECOND := 5.0    # how fast the fingers tap on the laptop
+const TYPING_TAP_HEIGHT := 0.03        # m the hands lift when typing
+const TYPING_BURST_SECONDS := 4.0      # s per burst of typing (the last quarter is a pause to read)
+const INSTITUTE_SHADE_DEPTH := 3.0     # m the flat roof and its sun shade reach out over the glass front
+const INSTITUTE_FIN_DEPTH := 0.9       # m the sun fins stand out from the south end wall
+const INSTITUTE_FIN_GAP := 1.6         # m between the sun fins
+const INSTITUTE_SIGN_GLOW := 1.6       # how bright the lit signs' light boxes glow
+const POND_DECK_TOP := 0.22            # m, the height of the pond deck's planks
+const POND_DECK_STEPPING_STONES := 3   # flat stones from the deck back towards the spine road
+const POND_DUCK_SPEED := 0.3           # m/s, ducks paddling round the pond
+const POND_DUCKS_AWAKE_DISTANCE := 70.0  # m, further away the pond ducks stay still
+const TALK_GAP := 1.1                  # m between two people chatting (face to face)
+const TALK_FEET_APART := 0.2           # m between the feet of someone standing at ease
+const TALK_NOD_DEG := 7.0              # degrees a listener nods
+const SHOE_WIDTH := 0.135              # m, how wide a shoe is (a grown-up's)
+const SHOE_HEIGHT := 0.125             # m, how tall the back of a shoe is
+const LOUNGE_HIP_DEG := 40.0           # degrees the hips bend lying on a sun lounger (its back is 40 up)
+const LOUNGE_BOOK_UP := 0.1            # m above the chest that a sunbather holds a book
+const LOUNGE_BOOK_OUT := 0.34          # m in front of the chest that a sunbather holds a book
+const SUNBATHERS := 4                  # people lying on loungers at the community pool
+const SUNBATHER_HIPS := Vector3(0.3, 0.47, 0.0)  # m from a lounger's middle to a sunbather's hips (at the bend)
+const SITE_WORKERS := 3                # workers at each building site (and a foreman by the crane)
+const WORKER_JOB_SECONDS := 14.0       # s before the site workers swap jobs
+const WORKER_WALK_SPEED := 1.1         # m/s, a worker walking to a job (or carrying a block)
+const WORKER_PICK_SECONDS := 1.6       # s to bend down and pick a block up (or put it down)
+const WORKER_BLOCK_HEIGHT := 0.92      # m, how high a worker carries a block
+const WORKER_HAMMER_RATE := 1.6        # hammer blows a second
+const WORKER_SHOVEL_SECONDS := 2.6     # s for one shovelful into the mixer
+const COURT_PLAYER_GAP := 0.8          # m, the closest two players on a court or pitch ever get
+const PITCH_SECOND_CHASER_GAP := 1.6   # m from the ball the second-nearest football player waits
+const RIDER_CHEST_LOGO := Vector3(-0.08, -0.03, -0.14)  # m from the chest bone to the logo on the shirt (left chest)
+const RIDER_BACK_LOGO := Vector3(0.0, -0.05, 0.13)      # m from the chest bone to the name across the back
+const PERSON_DRAW_BOX := AABB(Vector3(-1.2, -0.6, -1.2), Vector3(2.4, 2.9, 2.4))  # m round a person (any pose) that's on screen if they are

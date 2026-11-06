@@ -39,7 +39,7 @@ func _ready() -> void:
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
 	var close_button := Button.new()
-	close_button.text = "Back to riding  ·  P / Esc"
+	close_button.text = "Back to riding  ·  Esc"
 	close_button.pressed.connect(close)
 	header.add_child(close_button)
 	var scroll := ScrollContainer.new()
@@ -52,14 +52,13 @@ func _ready() -> void:
 	scroll.add_child(_content)
 
 
+## Esc closes the page. (Session 89: P opens the big phone now, scripts/phone_app.gd;
+## this page opens from its Profile app.)
 func _input(event: InputEvent) -> void:
 	if not event is InputEventKey or not event.pressed or event.echo:
 		return
-	if showing and event.physical_keycode in [KEY_P, KEY_ESCAPE]:
+	if showing and event.physical_keycode == KEY_ESCAPE:
 		close()
-		get_viewport().set_input_as_handled()
-	elif event.physical_keycode == KEY_P and not get_tree().paused:
-		open()
 		get_viewport().set_input_as_handled()
 
 
@@ -84,7 +83,7 @@ func _rebuild() -> void:
 	for child in _content.get_children():
 		_content.remove_child(child)
 		child.queue_free()
-	_content.add_child(_label("%s  ·  Level %d  ·  %d Dh" % [GameState.rider_name if GameState.rider_name != "" else "Snackaroo rider", GameState.level(), GameState.money], 22))
+	_content.add_child(_label("%s  ·  Level %d  ·  %d Dh" % [GameState.rider_name if GameState.rider_name != "" else Companies.current()["name"] + " rider", GameState.level(), GameState.money], 22))
 	_content.add_child(_label("Wahat Al Shams stamp card  ·  %d / %d homes  ·  %d / %d venues" % [GameState.visited_homes.size(), GameState.home_catalog.size(), GameState.visited_venues.size(), GameState.venue_catalog.size()], 22))
 	_content.add_child(_label("Every 25 different homes in a cluster earns 20 Dh. Fill a cluster to unlock its gold delivery box colour. A + marks a visited home.", 16))
 	var clusters: Array[String] = []

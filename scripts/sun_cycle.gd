@@ -37,9 +37,15 @@ func hour_now() -> float:
 
 ## Puts the sun and sky where they should be at `hour`.
 func apply_hour(hour: float) -> void:
-	var look := light_at(hour)
+	var look := light_at(hour).duplicate()
+	# Session 52: the sun's direction moves in small steps (every few game minutes), not
+	# every frame. A sun that moves every frame makes shadow edges on the ground crawl
+	# and shimmer; a tiny step now and then is not noticeable.
+	var step := GameConfig.SUN_STEP_HOURS
+	var sun_hour := floorf(hour / step) * step if step > 0.0 else hour
+	look["height"] = light_at(sun_hour)["height"]
 	var turn := lerpf(GameConfig.SUN_TURN_MORNING, GameConfig.SUN_TURN_EVENING,
-			inverse_lerp(GameConfig.SHIFT_START_HOUR, GameConfig.SHIFT_END_HOUR, hour))
+			inverse_lerp(GameConfig.SHIFT_START_HOUR, GameConfig.SHIFT_END_HOUR, sun_hour))
 	sun.rotation = Vector3(-deg_to_rad(look["height"]), deg_to_rad(turn + GameConfig.SUN_TURN_TILT), 0.0)
 	sun.light_color = look["sun"]
 	sun.light_energy = look["energy"]
@@ -97,6 +103,13 @@ func apply_graphics() -> void:
 	env.glow_hdr_threshold = GameConfig.GLOW_THRESHOLD
 	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_SOFTLIGHT
 	sun.directional_shadow_max_distance = GameConfig.SHADOW_DISTANCE[level]
+	# Session 52: 4 shadow cascades on Medium and High keep shadows near the rider sharp.
+	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS if level >= 1 \
+			else DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
+	sun.directional_shadow_blend_splits = level == 2
+	# A bigger shadow map on Medium and High (not in the browser, which keeps it small).
+	if not OS.has_feature("web"):
+		RenderingServer.directional_shadow_atlas_set_size(GameConfig.SHADOW_MAP_SIZE[level], true)
 	sun.shadow_blur = 1.0 if level == 0 else 1.5
 	RenderingServer.directional_soft_shadow_filter_set_quality(
 			RenderingServer.SHADOW_QUALITY_SOFT_HIGH if level == 2 else RenderingServer.SHADOW_QUALITY_SOFT_LOW)

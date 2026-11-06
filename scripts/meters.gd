@@ -23,6 +23,8 @@ func _ready() -> void:
 		bike.went_over_bump.connect(_on_speed_bump)
 		bike.hard_braked.connect(_on_hard_brake)
 		bike.crashed.connect(_on_crashed)
+		if bike.has_signal("knocked"):  # Session 87: a bump knocks the food a little
+			bike.knocked.connect(func(_impact: Dictionary): hurt_food(GameConfig.CRASH_BUMP_DAMAGE))
 
 
 func _physics_process(delta: float) -> void:
@@ -73,6 +75,7 @@ func hurt_food(amount: float) -> void:
 			amount *= GameConfig.BOOST_FOOD_DAMAGE_TIMES
 		if GameState.current_order.special == "fragile":
 			amount *= GameConfig.FRAGILE_DAMAGE_TIMES  # a fragile cake: every knock counts double
+		amount *= Companies.damage_share(GameState.company)  # Session 88: Deliverooz's bigger box
 		GameState.set_meters(GameState.meter_time, GameState.meter_freshness, GameState.meter_damage - amount)
 
 
@@ -100,6 +103,7 @@ func _on_stage_changed(stage: int) -> void:
 	var target := target_time_for(places.restaurant_door(order.restaurant_id), places.villa_door(order.villa_number))
 	if order.special == "rush":
 		target *= GameConfig.RUSH_TIME_SHARE  # rush order: less time (Session 32)
+	target *= Companies.wait_share(GameState.company)  # Session 88: Zoomaroo customers wait longer
 	GameState.start_meters(target)
 
 

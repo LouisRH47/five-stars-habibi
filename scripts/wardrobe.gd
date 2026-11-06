@@ -49,7 +49,8 @@ static func apply(person: Person, equipped: Dictionary) -> void:
 			"tops":
 				person.repaint({"shirt": colour})
 			"shoes":
-				for side in ["LeftFoot", "RightFoot"]:
+				person.repaint({"shoes": colour})  # Session 92: the feet are painted too
+				for side in ["LeftFoot", "RightFoot", "LeftToeBase", "RightToeBase"]:  # Session 92: shoes have toes
 					var foot := person.get_node_or_null(side)
 					if foot != null:
 						for mesh: MeshInstance3D in foot.find_children("*", "MeshInstance3D", true, false):
@@ -64,5 +65,5 @@ static func apply_bike(model: Node3D, equipped: Dictionary) -> void:
 		if slot == "":
 			continue
 		var item := GearCatalog.find(str(equipped.get(slot, "")))
-		var colour: Color = item.get("colour", BikeModel.FRAME if slot == "paint" else BikeModel.BOX)
+		var colour: Color = item.get("colour", BikeModel.FRAME if slot == "paint" else Companies.current().get("colour", BikeModel.BOX))
 		mesh.material_override = LowPoly.material(colour)

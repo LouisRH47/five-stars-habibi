@@ -15,12 +15,19 @@ static func capture(incoming_velocity: Vector3, normal: Vector3, obstacle: Objec
 	var category := category_for(obstacle)
 	var hardness := hardness_for(obstacle, category)
 	var score := (normal_kmh + tangent_kmh * GameConfig.CRASH_GLANCE_WEIGHT) * hardness
-	var severity := severity_for(score)
 	var soft := category == "soft"
-	var big := (score >= GameConfig.CRASH_MAJOR_SCORE and not soft) or force_major
-	if force_major and severity == "minor":
-		severity = "moderate"
+	var level := level_for(kmh, head_on, score, soft, force_major)
+	var big := level == "big"
+	# Session 87: a big crash is billed as severe (150 Dh hospital) or, very hard, critical.
+	var severity := "minor"
+	if big:
+		severity = "critical" if score >= GameConfig.CRASH_CRITICAL_SCORE else "severe"
 	var kind := "tip" if score < GameConfig.CRASH_TIP_SCORE or soft else ("skid" if head_on < GameConfig.CRASH_TUMBLE_HEAD_ON else "tumble")
+	var bill := 0
+	if level == "bump":
+		bill = GameConfig.CRASH_BUMP_BILL
+	elif level == "fall":
+		bill = GameConfig.CRASH_FALL_BILL
 	return {
 		"what": label_for(obstacle), "kmh": kmh, "riding_kmh": incoming_velocity.length() * 3.6,
 		"normal_kmh": normal_kmh, "head_on": head_on,
@@ -29,9 +36,27 @@ static func capture(incoming_velocity: Vector3, normal: Vector3, obstacle: Objec
 		"side": -1.0 if relative.cross(wall_normal).y < 0.0 else 1.0,
 		"category": category, "hardness": hardness, "score": score,
 		"severity": severity, "big": big, "fall": kind,
-		"crash": force_major or (kmh >= GameConfig.CRASH_SMALL_KMH and head_on >= GameConfig.CRASH_GLANCING_MIN),
+		"level": level, "bill": bill,
+		"crash": level == "fall" or level == "big",  # you come off the bike
 		"boosted": force_major,
 	}
+
+
+## Session 87: which of the three crash levels an impact is. "" is just a nudge (too slow, or
+## only a scrape along the side). "bump": under CRASH_BUMP_KMH, or anything soft (a hedge, a
+## bin, a cat): you stay on. "fall": up to CRASH_FALL_KMH: you fall off. "big": faster, into
+## something hard: the clinic. The rocket boost makes any hit big (the old rule).
+static func level_for(kmh: float, head_on: float, score: float, soft: bool, boosted := false) -> String:
+	if boosted:
+		return "big"
+	# A scrape along a wall counts a fifth of its speed (the score), so it's rarely a bump.
+	if score < GameConfig.CRASH_BUMP_MIN_KMH or head_on < GameConfig.CRASH_GLANCING_MIN:
+		return ""
+	if soft or score < GameConfig.CRASH_BUMP_KMH:
+		return "bump"
+	if score <= GameConfig.CRASH_FALL_KMH:
+		return "fall"
+	return "big"
 
 
 static func severity_for(score: float) -> String:

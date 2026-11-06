@@ -76,6 +76,12 @@ class PrepareWebTest(unittest.TestCase):
         self.assertEqual((self.site / "previous.txt").read_text(), "previous release")
         self.assertFalse((self.site / "index.html").exists())
 
+    def test_limit_only_warns_when_nothing_is_published(self):
+        with (self.source / "index.pck").open("wb") as file:
+            file.truncate(MODULE.MAX_FILE_SIZE)
+        self.prepare(size_limit_warns_only=True)
+        self.assertTrue((self.site / "index.pck").exists())
+
     def test_success_cleans_stale_output(self):
         self.site.mkdir()
         (self.site / "old-service-worker.js").write_text("stale")

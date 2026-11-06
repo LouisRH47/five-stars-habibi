@@ -98,7 +98,7 @@ func offer_now() -> Order:
 		return null  # also no new orders once the shift clock has run out
 	var order := _goal_order()
 	if order == null:
-		order = make_order()
+		order = _wanted_order()
 	if not GameState.tutorial_running and not order.boring and GameState.rating() >= GameConfig.ORDER_CHOICE_RATING and randf() < GameConfig.ORDER_CHOICE_CHANCE:
 		var better := order_maker().better_than(order)
 		if better != null:
@@ -119,6 +119,20 @@ func offer_now() -> Order:
 func make_order(restaurant_id := "", villa_number := 0, special := "") -> Order:
 	var boring := GameState.acceptance_rate() < GameConfig.ORDER_LOW_ACCEPTANCE and villa_number == 0 and special == ""
 	return order_maker().make(restaurant_id, villa_number, special, boring)
+
+
+## Session 89: a new order of a kind the Jobs app says yes to. If its kind is switched off,
+## it's made again (up to ORDER_FILTER_TRIES times), so you see fewer of that kind, not none.
+## Boring orders (you skipped too much) are never swapped. Goal, tutorial and exact orders
+## don't come through here, so they're never blocked.
+func _wanted_order() -> Order:
+	var maker := order_maker()
+	var order := make_order()
+	for attempt in GameConfig.ORDER_FILTER_TRIES:
+		if order.boring or GameState.wants_order_kind(maker.kind_of(order)):
+			break
+		order = make_order()
+	return order
 
 
 ## An OrderMaker for this map at the time on the shift clock now.
@@ -165,6 +179,11 @@ func _update_hold(delta: float) -> void:
 		_hold = 0.0
 		return
 	if _need_release or not is_near_target() or not _slow_enough() or (needs_walking and not on_foot):
+		_hold = 0.0
+		return
+	# Looks pass: wait your turn while someone in the queue is being served (venue_queue.gd).
+	var queue := get_parent().get_node_or_null("VenueQueue")
+	if queue != null and queue.waiting():
 		_hold = 0.0
 		return
 	_hold += delta

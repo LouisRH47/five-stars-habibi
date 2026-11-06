@@ -29,6 +29,8 @@ signal order_redirected(order: Order)
 ## Replay progress is independent of the rating's rolling delivery history.
 signal collection_changed
 signal offers_changed
+## Session 89: a chat in the phone's Messages app changed (a new line, or one was read).
+signal messages_changed
 
 var streak := 0
 var day_kind := "normal"
@@ -64,6 +66,11 @@ var rider_name := ""
 var rider_country := ""
 ## Your look: 0 Classic, 1 Sporty, 2 Chill (data/application.gd LOOKS).
 var rider_look := 0
+## Session 88: which delivery company you ride for: "snackaroo", "zoomaroo" or "deliverooz"
+## (data/companies.gd). Old saves are Snackaroo.
+var company := "snackaroo"
+## Sent when you switch company (the box, shirt and phone change colour).
+signal company_changed(id: String)
 ## True once you've been hired (the application is done).
 var hired := false
 ## True once the first-order tutorial is finished (it only runs once).
@@ -114,6 +121,13 @@ var offered_order: Order = null
 var current_order: Order = null
 var stage: Stage = Stage.NONE
 
+## Session 89: the phone's chats (see scripts/messages.gd for what's in one), newest first.
+## Change them only with add_message(), send_reply(), read_chat(), set_replies(), post_news().
+var chats: Array = []
+## Session 89: which kinds of order the Jobs app asks for. A kind that's off is offered less
+## (see OrderMaker.kind_of()). At least one always stays on (set_order_filter()).
+var order_filters := {"normal": true, "fragile": true, "vip": true, "far": true}
+
 # Your last accept (true) / skip (false) choices, newest at the end.
 var _choices: Array[bool] = []
 
@@ -126,8 +140,11 @@ func _ready() -> void:
 	Settings.load_once()
 	load_game()
 	# Save by itself whenever something worth keeping changes.
-	for changed in [money_changed, stats_changed, insurance_changed, shift_ended]:
+	for changed in [money_changed, stats_changed, insurance_changed, shift_ended, messages_changed]:
 		changed.connect(func(_a = null): save_soon())
+	# Session 89: regulars say thanks in Messages, and the boss sums up each shift.
+	order_delivered.connect(func(order): ChatFeed.after_delivery(self, order))
+	shift_ended.connect(func(summary): ChatFeed.after_shift(self, summary))
 
 
 ## Saves at the end of this frame (several changes at once only save once).
@@ -165,6 +182,7 @@ func new_game() -> void:
 	rider_name = ""
 	rider_country = ""
 	rider_look = 0
+	company = "snackaroo"
 	hired = false
 	tutorial_done = false
 	tutorial_running = false
@@ -199,6 +217,9 @@ func reset() -> void:
 	collection_claims.clear()
 	owned_collection_rewards.clear()
 	offered_orders.clear()
+	chats.clear()
+	order_filters = Messages.filters_from_save({})
+	messages_changed.emit()
 	shift_number = 0
 	history.clear()
 	start_shift()
@@ -277,8 +298,9 @@ func deliver() -> bool:
 		regular_visits[done.regular_id] = int(regular_visits.get(done.regular_id, 0)) + 1
 	# Tips only on 5-star jobs, and not every time. Boring orders never tip (PRD).
 	var tip := 0
-	if stars >= 5.0 and not done.boring and randf() < tip_chance(done):
+	if stars >= 5.0 and not done.boring and not done.crashed and randf() < tip_chance(done):
 		tip = randi_range(GameConfig.TIP_MIN, GameConfig.TIP_MAX)
+		tip = Companies.tip_with_perk(tip, company)  # Session 88: Snackaroo tips 10% bigger
 	var goals_before := goals_done()
 	var earned_xp := GameConfig.XP_PER_DELIVERY + roundi(GameConfig.XP_PER_STAR * stars)
 	var insurance := GameConfig.INSURANCE_PER_DELIVERY if insurance_on else 0
@@ -298,6 +320,7 @@ func deliver() -> bool:
 		"stars": stars,
 		"xp": earned_xp,
 		"left_at_door": done.leave_at_door,
+		"crashed": done.crashed,
 		"insurance": insurance,
 		"cancelled": false,
 		# Session 32: special orders, regulars, school lunch orders and clusters (for the goals).
@@ -358,6 +381,9 @@ func send_to_neighbour(number: int, address: String, cluster: String, compact_ad
 ## You crashed (small or big). "No crashes" goal (Session 32). The ShiftManager calls this.
 func note_crash() -> void:
 	shift_crashes += 1
+	# Session 52: a crash with food on board costs that order its tip.
+	if current_order != null:
+		current_order.crashed = true
 	streak = 0
 	stats_changed.emit()
 
@@ -403,6 +429,30 @@ func set_meters(time: float, freshness: float, damage: float) -> void:
 func set_insurance(on: bool) -> void:
 	insurance_on = on
 	insurance_changed.emit(on)
+
+
+## Session 87: the small bill for a bump (10 Dh) or a fall (30 Dh): the "bill" in the impact.
+func pay_crash_bill(impact: Dictionary) -> int:
+	var bill := int(impact.get("bill", 0))
+	if bill <= 0:
+		return 0
+	money -= bill
+	shift_bills += bill
+	money_changed.emit(money)
+	stats_changed.emit()
+	return bill
+
+
+## Session 87: a fall (12 to 22 km/h) ends at the clinic too, with a small bill (the
+## "bill" in the impact, 30 Dh: CRASH_FALL_HOSPITAL + CRASH_FALL_REPAIR). Your order and your
+## shift go on. Returns the bills for the clinic screen (same keys as big_crash()).
+func fall_clinic(impact: Dictionary) -> Dictionary:
+	var paid := pay_crash_bill(impact)
+	return {
+		"hospital": GameConfig.CRASH_FALL_HOSPITAL, "repair": paid - GameConfig.CRASH_FALL_HOSPITAL,
+		"severity": "a fall", "impact": impact.duplicate(true), "boss": false, "insured": false,
+		"insured_cap": 0, "lost_order": false, "food": "", "paid": paid, "big": false,
+	}
 
 
 ## A big crash (PRD "Crashes, bills and insurance"): an accepted order is cancelled
@@ -454,13 +504,30 @@ func big_crash(impact: Dictionary = {}) -> Dictionary:
 
 
 ## The application was sent in: you're hired. The tutorial runs on your first order.
-func hire(rider: String, country: String, look: int) -> void:
+func hire(rider: String, country: String, look: int, company_id := "snackaroo") -> void:
 	rider_name = rider.strip_edges()
 	rider_country = country
 	rider_look = look
+	company = company_id if Companies.find(company_id) != {} else "snackaroo"
 	hired = true
 	tutorial_done = false
+	ChatFeed.welcome(self)  # Session 89: your new boss says hello in Messages
 	save_soon()
+
+
+## Session 88: switch to another company in the phone's Company app. Costs
+## COMPANY_SWITCH_PRICE; you keep your stars, level and everything you own. False if you
+## can't (same company, unknown company, not enough money, or while carrying an order).
+func switch_company(id: String) -> bool:
+	if id == company or Companies.find(id) == {} or money < GameConfig.COMPANY_SWITCH_PRICE or current_order != null:
+		return false
+	money -= GameConfig.COMPANY_SWITCH_PRICE
+	company = id
+	money_changed.emit(money)
+	stats_changed.emit()
+	company_changed.emit(id)
+	save_soon()
+	return true
 
 
 ## Big crashes in the last CRASH_WEEK_SHIFTS shifts (a "week"), for the clinic screen.
@@ -767,3 +834,63 @@ func buy_shop_cart(total: int, levels: Dictionary, owned: Dictionary, equipped: 
 	stats_changed.emit()
 	save_soon()
 	return true
+
+
+# --- Session 89: the phone's Messages and Jobs apps ---
+
+## Someone writes to you. Makes the chat if it's new (face: the letter in its round
+## picture, colour: the picture's colour), moves it to the top and counts the line as unread.
+func add_message(chat_id: String, chat_name: String, text: String, face := "", colour := Color()) -> void:
+	Messages.add_line(chats, chat_id, chat_name, "them", text, face, colour)
+	messages_changed.emit()
+
+
+## You tap a reply button: your line goes into the chat and the buttons go away.
+func send_reply(chat_id: String, text: String) -> void:
+	if Messages.index_of(chats, chat_id) < 0:
+		return
+	Messages.add_line(chats, chat_id, "", "me", text)
+	set_replies(chat_id, [])
+
+
+## You opened the chat: everything in it is read.
+func read_chat(chat_id: String) -> void:
+	var chat := Messages.find(chats, chat_id)
+	if not chat.is_empty() and int(chat["unread"]) > 0:
+		chat["unread"] = 0
+		messages_changed.emit()
+
+
+## The reply buttons you can tap in a chat ([] = none).
+func set_replies(chat_id: String, replies: Array) -> void:
+	var chat := Messages.find(chats, chat_id)
+	if not chat.is_empty():
+		chat["replies"] = replies.duplicate()
+		messages_changed.emit()
+
+
+## How many lines you haven't read yet, in all chats (the red badge on the Messages icon).
+func unread_messages() -> int:
+	return Messages.unread_total(chats)
+
+
+## A line in the Plaza news chat (Session 94 posts the flea market here).
+func post_news(text: String) -> void:
+	add_message(GameConfig.CHAT_NEWS_ID, ChatLines.NEWS_NAME, text, ChatLines.NEWS_FACE, ChatLines.NEWS_COLOUR)
+
+
+## Turns one kind of order on or off in the Jobs app ("normal", "fragile", "vip", "far").
+## Returns false (and changes nothing) for an unknown kind, or when it's the last one on.
+func set_order_filter(kind: String, on: bool) -> bool:
+	if not order_filters.has(kind):
+		return false
+	if not on and order_filters.values().count(true) == 1 and order_filters[kind]:
+		return false
+	order_filters[kind] = on
+	save_soon()
+	return true
+
+
+## True if the Jobs app says yes to this kind of order.
+func wants_order_kind(kind: String) -> bool:
+	return bool(order_filters.get(kind, true))

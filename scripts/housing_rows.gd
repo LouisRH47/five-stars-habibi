@@ -13,6 +13,15 @@ var far_meshes: Array[MeshInstance3D] = []
 static func build(homes: Array, villa_size: Vector3) -> HousingRows:
 	var result := HousingRows.new()
 	result.name = "HousingRows"
+	var groups := row_groups(homes)
+	for row: String in groups:
+		result.build_row(row, groups[row], villa_size)
+	return result
+
+
+## The homes sorted into their rows: row name -> homes (Session 86: the loading screen
+## builds one row per step).
+static func row_groups(homes: Array) -> Dictionary:
 	var groups := {}
 	for home: Dictionary in homes:
 		if home.get("kind", "") == "spot":
@@ -21,11 +30,14 @@ static func build(homes: Array, villa_size: Vector3) -> HousingRows:
 		if not groups.has(row):
 			groups[row] = []
 		groups[row].append(home)
-	for row: String in groups:
-		result._build_row(row, groups[row], villa_size)
-	result.set_meta("home_count", result.home_count)
-	result.set_meta("row_count", result.row_count)
-	return result
+	return groups
+
+
+## Builds one row and keeps the home and row counts up to date.
+func build_row(row_id: String, homes: Array, villa_size: Vector3) -> void:
+	_build_row(row_id, homes, villa_size)
+	set_meta("home_count", home_count)
+	set_meta("row_count", row_count)
 
 
 func _build_row(row_id: String, homes: Array, villa_size: Vector3) -> void:

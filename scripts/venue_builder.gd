@@ -16,15 +16,44 @@ static func world_point(place: Dictionary, local: Vector3) -> Vector3:
 	return place["position"] + local.rotated(Vector3.UP, deg_to_rad(place.get("facing", 0.0)))
 
 
+## Where you stand to hand over the food at a reception (the gym and the C Institute have
+## their own rooms since looks pass Session 56).
+static func reception_spot(kind: String, size: Vector3) -> Vector3:
+	match kind:
+		"gym":
+			return GymRoom.COUNTER_SPOT
+		"institute":
+			return InstituteRoom.COUNTER_SPOT
+	return counter_local(size)
+
+
 static func build(place: Dictionary, size: Vector3) -> StaticBody3D:
+	match place.get("venue_type", ""):
+		"gym":
+			return GymRoom.build(place, size)  # looks pass Session 56: a real gym
+		"institute":
+			return InstituteRoom.build(place, size)  # looks pass Session 56: the two-storey lobby
 	var body := StaticBody3D.new()
 	body.set_meta("walk_in", true)
 	body.set_meta("venue_type", place.get("venue_type", "reception"))
 	var tint: Color = place.get("colour", Color(0.16, 0.56, 0.61))
 	var rounded: bool = place.get("venue_type", "") == "gym"
 	# Solid shell with a four-metre doorway; no invisible box filling the room.
+	var see_through: bool = place.get("venue_type", "") == "institute"
 	if rounded:
 		_rounded_back(body, size)
+	elif see_through:
+		# Session 52: the C Institute has big windows on the back too, so you see right through.
+		for side in [-1.0, 1.0]:
+			var wing := size.x * 0.5 - 2.0
+			var back_window := _block(body, Vector3(wing, size.y, 0.25), GLASS,
+				Vector3(side * (2.0 + wing * 0.5), size.y * 0.5, -size.z * 0.5))
+			var clear := LowPoly.material(GLASS).duplicate() as StandardMaterial3D
+			clear.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			clear.albedo_color.a = 0.24
+			back_window.material_override = clear
+			back_window.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		_block(body, Vector3(4, size.y, 0.25), CREAM, Vector3(0, size.y * 0.5, -size.z * 0.5))
 	else:
 		_block(body, Vector3(size.x, size.y, 0.25), CREAM, Vector3(0, size.y * 0.5, -size.z * 0.5))
 	for side in [-1.0, 1.0]:
@@ -61,11 +90,12 @@ static func build(place: Dictionary, size: Vector3) -> StaticBody3D:
 		LowPoly.box(body, Vector3(minf(size.x - 1, 14), 1.5, 0.16), tint.darkened(0.15), Vector3(0, 4.5, size.z * 0.5 + 0.03))
 	var awning := LowPoly.box(body, Vector3(size.x + 0.5, 0.18, 2.2), tint, Vector3(0, 3.25, size.z * 0.5 + 0.8))
 	awning.rotation.x = 0.12
-	LowPoly.box(body, Vector3(5.4, 2.1, 0.12), DARK, Vector3(0, 3.0, -size.z * 0.5 + 0.1))
-	var menu := SignText.make_face("القائمة", place.get("food", "Welcome").capitalize(), 70, Color.WHITE)
-	menu.name = "MenuBoard"
-	menu.position = Vector3(0, 2.8, -size.z * 0.5 + 0.2)
-	body.add_child(menu)
+	if not see_through:
+		LowPoly.box(body, Vector3(5.4, 2.1, 0.12), DARK, Vector3(0, 3.0, -size.z * 0.5 + 0.1))
+		var menu := SignText.make_face("القائمة", place.get("food", "Welcome").capitalize(), 70, Color.WHITE)
+		menu.name = "MenuBoard"
+		menu.position = Vector3(0, 2.8, -size.z * 0.5 + 0.2)
+		body.add_child(menu)
 	var light := OmniLight3D.new()
 	light.name = "InteriorLight"
 	light.position = Vector3(0, 4, 0)

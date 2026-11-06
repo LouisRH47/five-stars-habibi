@@ -10,6 +10,9 @@ const FONT := preload("res://assets/fonts/NotoSansArabic.ttf")
 const PIXEL_SIZE := 0.005
 ## The Arabic line is a little bigger than the English one.
 const ARABIC_SCALE := 1.15
+## Session 52: letters are drawn this many times bigger and shown that many times smaller,
+## so the sign is the same size in the world but much sharper in full screen.
+const SHARPNESS := 2
 ## How bold the letters are (400 = normal, 700 = bold).
 const WEIGHT := 700
 
@@ -17,10 +20,19 @@ static var _bold: Font = null
 
 
 ## The sign font, made bold. Made once, then shared by every sign.
+## Session 82: why sign text used to shimmer and flicker: the font was drawn into its letter
+## pictures with no smaller copies (mipmaps), so a sign further away showed a few random
+## pixels of each big letter, different ones every frame as you moved. Now the sign font has
+## its own copy that stores letters as distance fields (MSDF: sharp at any size) with
+## mipmaps, and each label writes its depth like a solid object (no flicker with the
+## board behind it, and High's TAA smoothing keeps it steady).
 static func font() -> Font:
 	if _bold == null:
+		var sharp := FONT.duplicate() as FontFile
+		sharp.multichannel_signed_distance_field = true
+		sharp.generate_mipmaps = true
 		var bold := FontVariation.new()
-		bold.base_font = FONT
+		bold.base_font = sharp
 		var wght: int = TextServerManager.get_primary_interface().name_to_tag("wght")
 		bold.variation_opentype = {wght: WEIGHT}
 		_bold = bold
@@ -33,13 +45,15 @@ static func make_label(text: String, font_size: int, colour: Color,
 	var label := Label3D.new()
 	label.text = text
 	label.font = font()
-	label.font_size = font_size
-	label.pixel_size = PIXEL_SIZE
+	label.font_size = font_size * SHARPNESS
+	label.pixel_size = PIXEL_SIZE / SHARPNESS
 	label.modulate = colour
 	label.outline_modulate = outline_colour
-	label.outline_size = outline_size
+	label.outline_size = outline_size * SHARPNESS
 	label.billboard = BaseMaterial3D.BILLBOARD_DISABLED
 	label.double_sided = false
+	label.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+	label.alpha_cut = Label3D.ALPHA_CUT_OPAQUE_PREPASS
 	return label
 
 

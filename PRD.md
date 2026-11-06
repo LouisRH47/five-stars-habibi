@@ -195,7 +195,7 @@ These stop deliveries from feeling the same after a few. All numbers are startin
 
 ## Controls (Tier 1, keyboard)
 
-Keys are placeholders until the controls are tested. Controller support comes later.
+Keys are placeholders until the controls are tested. Controller support comes in the Steam pass (see "Release on Steam").
 
 | Key | What it does |
 | --- | --- |
@@ -203,11 +203,11 @@ Keys are placeholders until the controls are tested. Controller support comes la
 | S or Down arrow | Brake, then roll slowly backwards |
 | A / D or Left / Right | Steer (only while moving) |
 | Shift | Sprint (uses stamina) |
-| Space | Handbrake |
+| Space | Handbrake on the bike. On foot: jump (about 0.6 m, short wait between jumps) |
 | B | Bike bell (people and kids look up and wave, cats move aside) |
 | E | Tap: accept order, Next order on the Delivered card. Hold 1.5 s at the door (on foot): pick up, drop off |
 | F | Get off the bike / get back on (only when nearly stopped) |
-| W A S D (on foot) | Walk. Shift to jog |
+| W A S D (on foot) | Walk. Shift to jog, Space to jump |
 | Q | Skip order |
 | I | Switch crash insurance on or off (shown on the phone) |
 | X | Rocket booster (once you own it, see "Shops and upgrades") |
@@ -222,6 +222,10 @@ The mockup (link at the top) is the look to copy. The game world stays 3D; the c
 **Fonts and colours (every screen):** Baloo 2 for big titles and numbers, Nunito for everything else, Noto Sans Arabic for Arabic. All three are free under the SIL Open Font License. Colours: deep teal #0F4C5C, orange #F28C28, sun yellow #F2B230, sand #F3E3C3, ink #1B1D22, white cards with rounded corners (about 28 px), dark see-through HUD panels (#0F2026 at 86%).
 
 **Start screen (main menu + rider application):** one layout, like the mockup's "Start: rider application". Left: "AL SARAB · السراب" label, big "Five Stars Habibi" title, orange "Rider to Driver" subtitle and one line about the game, in front of a low-poly 3D desert (sand dunes, a big pale sun, one palm). Right: a phone. On the main menu the phone shows Play (or Continue if you have a save), New game, Settings and Quit. The first time you play, the phone turns into the Snackaroo rider application: name, where you're from, "Pick your look" with 3 cards (Classic, Sporty, Chill), each with its own little 3D rider, and a Submit application button. Then "Reviewing..." and "Congrats, you're hired!" on the same phone.
+
+**Loading screen (Session 86):** the start-screen desert with the title at the top left, a tip in the middle that changes every 3 seconds (keys, facts about Al Sarab, Snackaroo jokes), an orange progress bar with the name of what's being built under it ("Laying the roads...") and "step X of N", and your rider on the bike riding along the bottom as the bar fills. The world is built a few steps per frame behind it, so nothing freezes and you never see a half-built map; it stays up at least 1 second and fades out. Shown on Play, Continue and Start riding, and a short version (about 1.2 s) at the start of each new shift.
+
+**The big phone (Session 89, P):** built to the approved mock-up (docs/phone_mockup.html). P opens a big phone in the middle of the screen and pauses the game; Esc goes back, P closes. Home: the time and shift, 7 apps (Jobs, Profile, Collection, Messages, Company, Map, Settings) with a red unread badge on Messages, and money, stars and level at the bottom. Jobs lets you choose which orders you're offered (normal, fragile, VIP = regulars and big family orders, far = over 360 m); at least one stays on. Messages are chats with the regulars, your company's boss and Plaza news; you tap replies, you never type. The small corner phone stays for orders.
 
 **Delivered card (after every delivery):** the game pauses (the shift clock too). The camera cuts to a 3D shot of your rider and the customer at the villa door (or the bag on the doorstep for leave-at-the-door orders), with the customer's line in a white speech bubble. On the right, a white card like the mockup: "Delivered!", 1 to 5 stars, the food, villa and ride time, three tiles (Time, Freshness, Damage) each with a word and a colour, then Delivery pay, 5-star tip, Insurance, a bold "You earned" total and XP. A dark teal "Next order · E" button closes it.
 
@@ -259,6 +263,59 @@ Research on games like Crazy Taxi, PowerWash Simulator, Stardew Valley, Euro Tru
 
 **Collections.** A Wahat Al Shams stamp card: a stamp for every home you've delivered to (500 homes in 5 clusters, plus the school gate, the stable office, the C Institute and the gym). Every 25 homes in a cluster pays a small 20 Dh bonus; a full cluster unlocks a gold delivery box colour. Also the cats and horses you've met (each gets a name) and the customer lines you've heard. All on a Profile page on the phone.
 
+## Looks pass (Sessions 52 to 59)
+
+Louis played the detail pass on 4 November. The map and gameplay are good. What's wrong: full screen looks low-res and jaggy, roads and overlapping surfaces flicker, interiors are too big and too plain, the gym is just a restaurant room, the C Institute's glass faces the wrong way, and the Plaza, streets and spine need more detail. The designs below were drawn in chat with Louis and approved one by one.
+
+**Sharper graphics**
+- Anti-aliasing (smooths jagged edges) on every level: Low uses FXAA, Medium uses MSAA 4x, High uses MSAA 4x plus TAA. The game draws at full screen resolution on desktop (the browser keeps its 0.75 scale).
+- Sharper shadows near the rider: 4 shadow cascades and a bigger shadow map on Medium and High.
+- Crisp signs and 3D text (bigger font size or MSDF fonts) so they don't blur in full screen.
+- The first time the game starts it tests the computer and picks Low, Medium or High (a Mac like Louis's should get High, an iPad Low). Settings can still change it.
+
+**No more flicker:** roads, lanes, paths, lawns, paving, courts and plazas are laid only 1 to 4 cm apart today, so from a distance they fight (z-fighting) and flicker. Merge the ground into one mesh with painted areas, or give each layer a real height step and a render priority, and check the camera's near and far planes. Fix the dome doors the same way. Louis saw flicker on roads and ground, and where surfaces overlap.
+
+**Interiors (all walk-in places)**
+- Smaller inside: about 12 × 10 m with a 4.5 m ceiling (they were 18 × 16 × 8 m). The outside of the Plaza stays the same; the leftover space is a storeroom you can't enter.
+- Built from free CC0 kits found online, not our own boxes: KayKit Restaurant Bits (220+ restaurant and kitchen models), KayKit Furniture Bits, Kenney Furniture Kit, Kenney Food Kit (200 food models), a CC0 supermarket pack, and CC0 gym models from Poly Pizza (check each model's licence says CC0). All credited in CREDITS.md.
+- Same layout everywhere: a menu board and the kitchen with a cook at the back, the counter with staff in the middle, tables with people eating at the front, plus a drinks fridge, a bin, plants, hanging lamps and a tiled floor in the shop's own colours.
+- People move: diners eat, cooks cook, chefs slice, gym people run, row and lift, institute people type on laptops.
+- A short queue: sometimes 1 or 2 people are in front of you at the counter and you wait 2 to 4 seconds. Never more.
+- Big glass fronts so you can see inside from the Plaza, sliding glass doors that open as you walk up (the stable office has a wooden door), warm light from the lamps with soft shadows.
+- The camera moves closer and a little higher indoors, so walls don't block the view, and moves back out when you leave.
+- Each place has its own background sound (made by tools/make_sounds.py): oven crackle, grill sizzle, the sushi belt, gym music, quiet chatter, the till beep.
+
+| Place | What's inside (from the approved designs) |
+| --- | --- |
+| 1000 Pizza | Brick dome oven with flames, pizza on a peel, stacked pizza boxes, black-and-white checker floor, red accents |
+| Brain Freeze Gelato | Glass freezer of 8 colourful tubs, cone jar, pink-and-white stripes, pastel floor |
+| Spill the Tea | 4 tea taps, cup sealing machine, cups with pearls, plant wall |
+| Shawarma Supreme | Two spinning shawarma grills, stack of bread, Arabic patterned tiles |
+| Bread & Zaatar | Bread oven, glass cake display (the fragile cake orders), bread baskets |
+| Grand Groceries | A real supermarket: wall of drinks fridges at the back, 3 shelf units with hanging bilingual aisle signs (1 Snacks, 2 Rice and pasta, 3 Home) and yellow price strips, a fruit and veg stand, a bread shelf, a sweets rack, 2 checkouts with belts, a cashier, baskets and shoppers with trolleys. Pick up at checkout 1 |
+| Tok Tok Thai | Woks over flames, red lanterns, dark wood floor |
+| Sushi You | Sushi bar with a conveyor belt of coloured plates and diners on stools, glass fish case, two chefs, paper lanterns, navy curtain over the kitchen, a booth table, bamboo, a pick-up counter |
+| Mario Bonito | Colourful tile band, paper bunting, cactus pots, taco counter |
+| Burgerology | Flat grill with patties, fryer, pink neon "Burgerology" sign, white metro tiles |
+| Wahat Gym | A real gym: glass wall onto the spine with the lap pool outside, 4 treadmills facing the glass, exercise bikes, a squat rack with a loaded barbell on a wooden platform, a dumbbell rack, 2 rowing machines, yoga mats and kettlebells, a mirror wall with "Train hard · تمرّن بقوة", rubber floor tiles, a water fountain and towel stand, reception with a smoothie cooler (drop-off) |
+| C Institute | Two storeys tall: glass on both long sides (one faces the spine, so you see the domes and palms; the other faces the opposite way), a balcony walkway with a glass railing, a staircase, wide wooden stepped seats with cushions and people on laptops facing a talk screen (it changes during the shift: "Talk today · 4 PM", "Solar cities of tomorrow", "Welcome · أهلاً"), hanging plants, a wood-slat ceiling, a curved white reception desk with a big "C" logo wall (drop-off) |
+| Pedal Point Bikes | Bikes hanging on the wall, tool pegboard, tyre rack, a repair stand with a bike, the mechanic at the workbench |
+| Dune Drip | Caps and sunglasses wall, clothes rails, folded hoodies on a table, a rug and a big mirror, the cashier |
+| Stable office | Wood walls, saddles on stands, rosettes and horse photos, riding helmets on hooks, a hay bale, a window onto the paddock with a horse, the groom at the desk |
+| Wahat Farm Stall | Open stall by the domes with a striped awning, fruit and veg crates, a juice press and cooler, chalkboard menu, the farmer |
+| Fair Grade school gate | Glass security booth with the guard, barrier, the school wall and sign behind, a teacher waiting |
+
+**C Institute fix:** turn the building so one long glass side faces the spine (east) with the stepped seats in front of it, and add the same big windows on the opposite side, so you can see right through the lobby.
+
+**More detail outside**
+- Plaza: café tables outside the restaurants, a juice kiosk, string lights that come on at sunset, more people walking.
+- Streets and lanes: street lamps that light up at sunset, white road markings and kerbs, bins, bilingual street signs, bike racks.
+- Spine: real grass blades instead of the little green cubes on Medium and High; Low keeps a lighter, sparser version. Plus flowers, rocks and more trees.
+
+**Bugs found in testing**
+- Crash loop: a gardener standing still near the Cluster 4 playground (data/wahat_al_shams.gd GARDENERS, x 125, z 53) got hit, and the rider crashed into him again and again (162 times) after each fall; with an order still on, the shift never ended. Fix: after a small crash the bike is pushed back and gets a short grace period, and standing people step aside when you ring or come close.
+- Crashing costs too little: a careless bot earned 89 Dh against 95 Dh for a careful one. Small crashes should cost more (rating, food damage or a small fee) so a careful shift clearly pays better.
+
 ## Shops and upgrades (detail pass)
 
 Money and Rider Level finally buy things. Two shops in the Plaza, both walk-in like the restaurants.
@@ -294,10 +351,14 @@ Also bike paint and delivery box colours (no level needed, 15 to 40 Dh, looks on
 
 Crashing costs you, and insurance is an optional bet. Prices are scaled down from real Dubai costs so they fit game pay.
 
-**Small crash vs big crash**
+**Three crash levels (Session 87)**
 
-- **Small crash:** a low-speed hit or wipeout. You fall off, the damage meter takes a big hit (bad for your rating), and you get back on after about 2 seconds.
-- **Big crash:** hitting a car, wall or pole above about 20 km/h on the bicycle (higher limits for faster vehicles). The screen fades out and you wake up at the clinic. The order is cancelled (0 stars, no pay), the bills pop up, and your shift ends.
+The impact speed counts the speed straight into the thing (a scrape counts a fifth), times how hard it is (a car 1.15, a wall 1, a palm 0.8). A message under the clock always shows the real speed: "Bump! 9 km/h · -10 Dh".
+
+- **Bump:** under 12 km/h, or anything soft (hedges, bins, cones, cats, people, horses) at any speed. You stay on, the bike wobbles, 10 Dh repair and a small knock to the food (8% damage, a small rating hit). Under 6 km/h (a scrape counts a fifth of its speed) it's just a nudge: nothing happens. One bump bill per 3 s, so pushing against a wall doesn't keep billing.
+- **Fall:** 12 to 22 km/h into something hard. You fall off (a real ragdoll tumble; the bike slides and tips over), the food takes a big knock (40%) and the order loses its tip. Louis (6 Nov): you still go to the clinic screen, just with a smaller bill: a "FALL" label, 20 Dh clinic + 10 Dh bike repair = 30 Dh (insurance only covers big crashes). Your order stays in the box and your shift goes on: "Back to riding" puts you back on the bike where you fell. A 2-second grace time after getting up stops you falling straight off again.
+- **Big crash:** over 22 km/h into something hard (about 19 km/h into a car). The screen fades out and you wake up at the clinic: 150 Dh hospital and 80 Dh repair (very hard hits: 220 + 140). The order is cancelled (0 stars, no pay), and your shift ends. Insurance and the boss's first-crash cover work as below.
+- The rocket boost still makes any hit a big crash. All the numbers are in game_config.gd.
 
 **Crash reactions and severity billing (Sessions 44A–44B)**
 
@@ -469,27 +530,27 @@ Wahat Al Shams (واحة الشمس, "Sun Oasis") is a made-up eco community. It
 | Horse track | Just inside the tree belt, all the way round | Dirt and sand, white horse rails on both sides. **Horses only**: nobody else goes on it. Gaps in the rails where the gate roads cross it |
 | Run and cycle track | Right beside the horse track, all the way round | A **blue** rubber track for runners, cyclists and you. No buggies, no cars |
 | Ring road | Inside the tracks, all the way round | The only road for cars. Cars drive slowly round it on set routes and pull in and out of the car parks. **No buggies on the ring road** |
-| Mosque | North-west, just inside the north checkpoint, in front of the Plaza | A mosque with a minaret. Scenery only: no orders ever go there |
+| Mosque | North-west, just inside the north checkpoint, in front of the Plaza | A mosque with a minaret. Its own small solar car park (about 12 bays) in front of it, reached by a short road from the north ring road that passes the mosque's front. Scenery only: no orders ever go there |
 | Bus station | North-west, between the mosque and the Plaza | A bus bay with a shelter and a parked bus, joined to the ring road by its own short road so it looks real. A bus drives round the ring road and into the bay every in-game hour. A sign says "Coming soon: travel to other districts". **Each shift starts in front of the bus station.** Later (Tier 2) it becomes the way to travel to Downtown and other districts |
-| The Plaza | North-west, from the bus station to Cluster 1 (a bigger area than before) | The hub: five low-rise blocks (flats and offices above, shops below) round a sunken square with a fountain, date palms, shade sails and benches. 10 restaurants, the bike shop and the clothes shop (see "Shops and upgrades"). A solar car park in the gap between the Plaza and Cluster 1 |
+| The Plaza | North-west, from the bus station to Cluster 1 (a bigger area than before) | The hub: five low-rise blocks (flats and offices above, shops below) round a sunken square with a fountain, date palms, shade sails and benches, all on one square paved floor (concrete pavers) that reaches every restaurant door and both shops. 10 restaurants, the bike shop and the clothes shop (see "Shops and upgrades"). The Plaza road from the roundabout ends in a small buggy park behind the clothes shop, with footpaths into the Plaza. A solar car park in the gap between the Plaza and Cluster 1 |
 | Fair Grade International School | South-west | Copies the real school next door (photos Louis sent, described below). Orders only go to the security booth at the school gate |
 | Horse jumping arena | Next to the school, south-west | A sand arena with white horse rails and jumps. Horses with riders jump now and then. Scenery |
 | C Institute | Beside the school, between the school and the spine | A modern institute building (see below). Its big glass front and stepped seats face the spine. A small car park behind it. Drop-off: the receptionist inside |
 | Stables | South-west, by the jumping arena | Stable block, a paddock with horses you can watch, and the stable office (drop-off spot) |
 | Green spine | Through the middle, west to east | The long park (see below) with the domes, the farm, the gym, the lap pool and the community pool. Its paths are the main bike shortcut |
 | 5 clusters | 3 north of the spine (C1, C2, C3), 2 south (C4, C5) | **100 homes each, 500 in total**, in joined rows (see below). No cars inside |
-| Solar car parks | **In the gaps between clusters** (Plaza and C1, C1 and C2, C2 and C3, C4 and C5) | A short road off the ring road with car bays, every bay under a **solar panel roof**. Parked cars. Not behind the houses: homes go there instead |
+| Solar car parks | **In the gaps between clusters** (Plaza and C1, C1 and C2, C2 and C3, C4 and C5) | A short road off the ring road with car bays, every bay under a **solar panel roof**. Every car park (these, the stables, the school and the mosque) has the same layout: a row along one side, two rows in the middle parked nose to nose, a row across the far end, aisles between, painted bay lines and arrows, and cars in most bays. Not behind the houses: homes go there instead |
 | Building sites | Where there's nothing yet: south of the spine's west end (where the horse ring was), the south-east block where a sixth cluster could go, and any other empty patch | Fence with a bilingual "Coming soon" banner, a crane, sand piles, a site cabin and a couple of workers. Later we can swap them for real buildings |
 
-*Who drives where:* cars only on the ring road and in the car parks, never in the lanes. Golf buggies only on the lanes inside the clusters and the spine paths, never on the ring road. People walk, and kids ride bikes and scooters, on the lanes and paths. Your bike can go everywhere except the horse track.
+*Who drives where:* cars only on the ring road and in the car parks, never in the lanes. Golf buggies only on the asphalt roads inside the ring road (the cluster lanes, the spine road, the spine loop, the roundabout and the road behind the C Institute), keeping to the right of the yellow line and slowing at junctions; never on the ring road. People walk, and kids ride bikes and scooters, on the lanes and paths. Your bike can go everywhere except the horse track.
 
 *The homes (joined rows, like the real ones):* homes are joined side by side in long rows with no gaps. Two rows sit back to back with just a wall between them, so each double row has a lane on both sides and every front door faces a lane. Now and then a small alley cuts through a row. Each cluster has 4 of these double rows of about 12 to 13 homes a side. Same 3 types as the real place: **90 courtyard villas, 8 garden villas and 2 signature villas per cluster** (the house kit from Session 26 stays: Louis likes the houses). Each double row is built as one merged mesh, and far-away rows use a simpler version, so 500 homes stay fast. The cluster mini-plazas (cooling tower, playground, benches) stay.
 
 *Addresses:* homes are numbered 1 to 100 inside each cluster, like the real ones, so an address reads "Villa 45, Cluster 1" (phone and mini-map: "C1 · Villa 45").
 
-*Fair Grade International School (from Louis's photos of the real school):* a 3-storey sand-coloured building whose wings curve in and out, with white rounded balcony bands on every floor, flat white roofs with AC boxes and white railings, and a rooftop garden. A big boxy sports hall at one end, sand-coloured with a dark strip of windows and the bilingual sign "FAIR GRADE INTERNATIONAL SCHOOL · مدرسة فير جريد الدولية" along the top, with tall flags at the entrance. Long solar panel roofs over the school car park. A fenced football pitch with green turf, two shaded pools, basketball and tennis courts, two shaded playgrounds. A low white wall round it all and a security booth at the gate. Big enough that you see it from far away.
+*Fair Grade International School (from Louis's photos of the real school):* a 3-storey sand-coloured building whose wings curve in and out, with white rounded balcony bands on every floor, flat white roofs with AC boxes and white railings, and a rooftop garden. A big boxy sports hall at one end, sand-coloured with a dark strip of windows and the bilingual sign "FAIR GRADE INTERNATIONAL SCHOOL · مدرسة فير جريد الدولية" along the top, with tall flags at the entrance. Long solar panel roofs over the school car park. A full football pitch with markings, two goals with nets and a running track along one side, fenced with tall posts and netting, with four floodlights that light only the pitch and come on at dusk (pupils play football in the day); two shaded pools and two shaded playgrounds (no tennis or basketball courts). A low white wall round it all and a security booth at the gate. Big enough that you see it from far away.
 
-*C Institute:* a modern low building with a huge glass front and wide stepped seats in front of it, like big stairs you can sit on, with a few people sitting there. Inside: one tall open lobby up to the roof, very modern (light wood, plants, glass), with a reception desk and a receptionist. You walk in and hold E at reception to hand over the food. A small car park behind it.
+*C Institute:* a modern low building with a huge glass front and wide stepped seats in front of it, like big stairs you can sit on, with a few people sitting there. Inside: one tall open lobby up to the roof, very modern (light wood, plants, glass), with a reception desk and a receptionist. You walk in and hold E at reception to hand over the food. A small car park behind it. In front, on the grass beside its path, a small 5-a-side football pitch with white lines, low boards, two small goals with nets and ball-stop nets, where people play in the day.
 
 *The green spine:* grass with a real grass texture, tufts and flowers, gentle hills between 0.5 and 1.5 m high that you roll over, more trees, the stream, the farm beds, beehives, donkeys, the basketball court and the playground. One path links all the domes, evenly spaced along the spine, with no big gaps. In the middle: the **gym**, a small box that's rounded at the back with a glass front (treadmills you can see inside), with a **lap pool** along its side; a little way off, the **community pool**, a chill place with sunbeds, umbrellas, a kids' area and people swimming. The gym reception is a drop-off spot.
 
@@ -525,6 +586,25 @@ The names are made-up spoofs of the real Plaza's restaurants (Louis's picks), so
 
 **Music:** chill Arabic-style background music, the kind you'd hear in a cafe or a taxi here. Only music that's free to use (CC0 or properly credited).
 
+## Release on Steam
+
+Decided 6 Nov 2026: Five Stars Habibi is a game for **Steam**. The browser version is paused and isn't the goal any more.
+
+**Engine:** it stays in Godot 4 (GDScript). Steam doesn't need a different engine, and many Steam games are made in Godot. Porting to Unreal would mean rebuilding the whole game.
+
+**Platforms:** Windows first (most Steam players), then Mac and Linux / Steam Deck. On the Steam Deck (1280x800) the Low graphics setting must run smoothly. On small screens (narrower than 1600 pixels, like the Deck) the menus and HUD are drawn 15% bigger so text stays readable.
+
+**What the game needs for Steam:**
+- **Controller:** every action works on a controller (Xbox and PlayStation layouts, Steam Deck buttons), including menus, the phone and the shops. On-screen hints show keyboard keys or controller buttons, whichever you used last.
+- **Settings:** change keys and controller buttons, screen size or fullscreen, graphics level, and volume, all saved.
+- **Steam achievements:** about 10 to 12, for example first delivery, first 5-star delivery, a perfect shift, 100 deliveries, every restaurant, buy the carbon frame. All based on things the game already counts.
+- **Steam Cloud:** the save file follows you to another computer.
+- **Works without Steam too:** the same game still runs as a normal download (for example for play-testers), just without achievements.
+- **Store page kit:** capsule images (the store's box art), at least 5 screenshots, a short trailer, a short and a long description. All English.
+- **Licences:** every asset is CC0 or credited in CREDITS.md. No real company names or logos, as always.
+
+**Things only a grown-up can do (Michael):** create the Steamworks developer account (bank and tax details), pay the $100 Steam Direct fee for the game (paid back after the game earns $1,000), and get the game's Steam App ID. Until then we test with Steam's free test App ID (480).
+
 ## Milestones
 
 Build it in milestones and play-test at the end of each one. Only move on when the current milestone feels good. The exact sessions are in BUILD_PLAN.md.
@@ -538,19 +618,34 @@ Build it in milestones and play-test at the end of each one. Only move on when t
 7. **Start screen and polish:** application form and the 3 presets, menu, saving, sounds and music, then the polish pass (hold E, get off the bike, screens like the mockup).
 8. **Graphics pass:** the Wahat Al Shams community, the house kit, light and weather, animated people, the real bike, juice, life on the map, special orders, goals and events.
 9. **Detail pass:** real-size Wahat Al Shams with joined rows of homes, walk-in restaurants, Fair Grade School, the C Institute, gym and pools, horse tracks, textures, the bike shop and the clothes shop.
-10. **Reasons to come back:** streaks, choosing orders, tomorrow's special, collections, then release on itch.io and the browser site.
-11. **Motorbike test:** yard course, instructor, theory quiz, fail and retake rules.
-12. **Tier 2 and beyond:** motorbike, Old Town, then the next tiers one by one.
+10. **Reasons to come back:** streaks, choosing orders, tomorrow's special, collections, then release on itch.io (the browser site was paused on 6 Nov 2026).
+11. **Steam pass:** Windows, Mac and Steam Deck builds, controller, key settings, Steam achievements and cloud saves, store page kit (see "Release on Steam").
+12. **Motorbike test:** yard course, instructor, theory quiz, fail and retake rules.
+13. **Tier 2 and beyond:** motorbike, Old Town, then the next tiers one by one.
 
 ## Still open
 
-- Final name (Five Stars Habibi for now, might change later)
+- When to launch on Steam: Early Access with the bicycle tier, or wait for more tiers. And the price (or free).
+- Final name (Five Stars Habibi for now, might change later). It must be picked before the Steam store page goes up.
 - Tuning all pay, bills and insurance numbers once Tier 1 is playable
 - Whether the motorbike can carry several orders at once, later on
 - Exact keys for the taxi requests
 - Pay for the new foods, special orders and goal bonuses: starting ideas are in the PRD, tune them after the graphics pass play-test
 - Upgrade prices and how much a shift pays at real size and 8 minutes: tune in the detail pass play-test
 - What goes on the building sites later (a sixth cluster, a hotel, something else)
+
+### Road network (World polish pass, from 5 Nov 2026)
+
+The approved top-down plan is docs/road_plan_2026-11-05.svg. The ring road is the only main
+road and connects to just four things: the two gate roads, the bus station loop and the
+stables car park (plus the car park entrances, and from Session 79 the mosque car park road). The car parks between the clusters keep their entrances from the ring road.
+Everything inside is one connected network with rounded corners and no dead ends: the spine
+road (the only road that gets red walking tracks, both sides), the loop round the spine (the
+cluster front road, the south road and the school road), the road behind the C Institute, and
+a roundabout east of the C Institute whose north exit curves into the Plaza. Each cluster has
+a front and a back cross road joining its five lanes; only the front one links out, and no
+cluster road touches the ring road. Buses only use the ring road and the bus loop. Each shift
+starts beside the bus station, facing the Plaza.
 
 ## Decisions log
 
@@ -623,6 +718,42 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 4 Nov 2026 | The old Palm Grove map is removed (scene, data, and the road, street-sign and park builders only it used). Wahat Al Shams is the only map; the flat test area stays for tests |
 | 4 Nov 2026 | The game is released both on itch.io (Mac and Windows downloads) and in the browser at fivestarshabibi.middleleap.com. A crash "week" is 7 shifts, as the clinic screen already counts (CRASH_WEEK_SHIFTS) |
 | 4 Nov 2026 | Opening the game no longer counts as a new shift: a shift you quit halfway through is played again (same number, same kind of day); only a finished shift counts. Your last accept / skip choices are saved, so the acceptance rate survives a restart |
+| 4 Nov 2026 | Looks pass planned (Sessions 52 to 59) after Louis's play-test of the detail pass: anti-aliasing on every level, sharper shadows, auto-picked graphics level, no ground flicker, smaller and fuller interiors from free CC0 kits (KayKit, Kenney, Poly Pizza), a short queue of 1 or 2 people, glass shop fronts, sliding doors, indoor camera, sounds per place, a real gym, the C Institute turned to face the spine with glass on both sides and a changing talk screen, every walk-in place rebuilt from the approved designs, more detail in the Plaza, streets and spine (grass blades, sparser on Low), and fixes for the crash loop and crashes costing too little |
+| 5 Nov 2026 | Road plan approved (docs/road_plan_2026-11-05.svg): the ring road is the only main road and connects only to the two gates, the bus station loop and the stables car park (plus the car park entrances); the inside roads form one connected, rounded network with a roundabout east of the C Institute and no dead ends |
+| 5 Nov 2026 | Red walking tracks only along the spine road, both sides behind a planter; buggies can't use them |
+| 5 Nov 2026 | Cluster lanes are asphalt with a front and back cross road; only the front links out; Cluster 3 moves 10 m west and Clusters 4 and 5 move 6 m north to keep a margin from the ring road |
+| 5 Nov 2026 | All roads get a yellow dashed centre line and direction arrows (drive on the right); tyre marks removed |
+| 5 Nov 2026 | New: stables car park, school car park, Majlis Gardens, football pitch with floodlights replacing the tennis and basketball courts |
+| 5 Nov 2026 | Cluster signs copy the real green SIKKA signs ("Cluster N"); a made-up "5-Star Habibi Police" sign; people dressed for each place; customers walk home instead of vanishing |
+| 5 Nov 2026 | Beekeeper becomes a pickup (honey jars, candles); new horses and donkeys and rounded playgrounds made with Blender scripts; full map on M; resolution setting |
+| 5 Nov 2026 | World polish pass numbered Sessions 60 to 74; Session 60 (roads) built before looks Sessions 53 to 59 |
+| 5 Nov 2026 | Parked for later: a delivery robot upgrade, and whether the desktop download becomes the main version |
+| 5 Nov 2026 | Session 61: the ring road's corners are rounded (12 m) and traffic follows them; the roundabout is one-way anticlockwise; kerbs are low and only for looks (except the spine's red-track kerb); a hard brake leaves a short faint skid mark that fades after about 10 s |
+| 5 Nov 2026 | Session 62: the spine road has a planter and a red walking track on both sides with crossing gaps; the Domes Path is removed (the north red track passes the domes); the C Institute's stepped seats face outwards |
+| 5 Nov 2026 | Session 63: the ground is grass and the clusters are paved; sand only at the stables, jumping arena and horse track. The blue and horse tracks have rounded corners matching the ring road; greenery between the ring road and the blue track; dunes and far-off towers past the fence |
+| 5 Nov 2026 | Session 64: the bus station platform is a raised island inside the bus loop with two glass shelters facing the bay; 3 to 5 people wait and get on when a bus stops (the bus waits for them) |
+| 5 Nov 2026 | Session 65: one cluster sign per cluster at its entrance (green board, pale blue frame, ranges "Villa 1–50" / "Villa 51–100" with arrows, EXIT), a made-up "5-Star Habibi Police" sign there and along the red tracks, small STOP (قف) signs; bins at the back of each cluster; the community pool is fenced with its gate on the red-track side and the pool sign beside the gate; big end houses where rows stop 10 m short of a road are scenery, not addresses |
+| 5 Nov 2026 | Session 66: Majlis Gardens fills the strip between the C1-west car park and Cluster 1 (fountain plaza, palms, a shaded majlis with low sofas, benches, a community garden bed, paver paths to the lanes, car park and spine loop road, people using it); the phase 3 site south of the mosque has the same fence, crane, containers, workers and a "Phase 3 coming soon" sign as phase 2 |
+| 5 Nov 2026 | Fix pass planned (Sessions 75 to 84): no invisible walls (red tracks can be ridden across), speed bumps only on the ring road, Space jumps on foot, buggies stay on roads, kerbs join up and corners are curved |
+| 5 Nov 2026 | Plaza gets one square paved floor touching every door (fountain stays); the Plaza road ends in a small buggy park behind Dune Drip; the mosque gets its own car park off the ring road |
+| 5 Nov 2026 | Textures: real CC0 photo textures from Poly Haven (running track blue and red, brick pavers, square concrete pavers), old grass, sand and water looks restored, new asphalt kept |
+| 5 Nov 2026 | Session 75: kerbs have no invisible walls; riding over one is a small bump (you keep 90% of your speed, never a crash). Speed bumps only on the ring road. Buggies drive only on roads, keep right of the yellow line and slow at junctions. Space jumps on foot (about 0.6 m) |
+| 5 Nov 2026 | Session 76: kerbs are raised (12 cm) and continuous, with gaps only at paths, crossings and car parks. Road corners are curved (about 6 m for lanes, 10 m for bigger roads); each cluster's lanes form a rounded loop; the C Institute road is one smooth curve |
+| 5 Nov 2026 | Session 78: Pedal Point Bikes and Dune Drip get an arcade on the Plaza side, a stepped parapet, a wind tower and outdoor details (bike rack and pump; planters and benches); Plaza-facing restaurant walls get the same trim |
+| 6 Nov 2026 | Session 79: every car park uses one layout (side row, two middle rows, end row, solar roofs, mostly full); the mosque has a 13-space car park off the north ring road; the school car park sits in front of the gate |
+| 6 Nov 2026 | Session 80: the C Institute front is grass with a 5-a-side pitch where people play by day; the basketball court gets full lines, hoops with nets, a fence, benches and players; seated people's feet always rest on the floor or step |
+| 6 Nov 2026 | Session 81: the stream ends in a stone-ringed pond before the gym and restarts from a spring pond after the lap pool; pools get tiled decks, coping, ladders and lane ropes; one water look for all water; swimmers swim laps with their heads up and some rest at the edge; lifeguards sit on tall chairs and whistle |
+| 6 Nov 2026 | Session 82: ground textures are real CC0 photos with their sizes in one table; lawns mix aerial grass with leafy grass; no grass clumps; bins are grey; sign text uses MSDF |
+| 6 Nov 2026 | Session 83: people near the rider breathe, look round, shift their weight and talk in pairs with hand gestures; faces have eyes and a smile; every outfit stays on the body (tested) |
+| 6 Nov 2026 | The game is for Steam (Windows first, then Mac and Steam Deck). It stays in Godot 4; no Unreal port. Steam pass planned as Sessions 85 to 90: desktop builds, controller, key settings, Steam achievements and cloud saves, store page kit, play-test. Michael sets up the Steamworks account and App ID |
+| 6 Nov 2026 | Life pass planned (Sessions 86 to 97) before the rest of the Steam pass (now 98 to 102): loading screen, three crash levels with a ragdoll, three delivery companies with logos and perks (Snackaroo, Zoomaroo, Deliverooz), a full phone app on P, flea market Fridays, the mansion by Cluster 5 (25,000 Dh, Tier 3, DJ Salad's tasks), C Institute second floor, and look fixes |
+| 6 Nov 2026 | Session 87: three crash levels replace small/big: bump (under 12 km/h or soft, stay on, 10 Dh), fall (12 to 22 km/h, 30 Dh), big (over 22 km/h into hard things, clinic, 150 Dh hospital). Big crashes use only the severe and critical bands now |
+| 6 Nov 2026 | Louis approved the phone app mock-up (docs/phone_mockup.html): P opens a big phone with Jobs, Profile, Collection, Messages, Company, Map and Settings; the game pauses |
+| 6 Nov 2026 | Louis: a fall also goes to the clinic screen, with a smaller bill (30 Dh). The order and the shift go on; only a big crash cancels the order and ends the shift |
+| 6 Nov 2026 | Session 90: Plaza paving runs to the roundabout on the Dune Drip side only; the buggy park has 16 bays behind Dune Drip; the gym is 15% smaller (30.6 x 18.7 m) with a second door on the lap-pool side; zebra crossings are a data list (ZEBRA_CROSSINGS) |
+| 6 Nov 2026 | Session 91: the C Institute gets a second floor (offices, a meeting room, stairs and a lift on E) and a modern outside; the stream now ends in a big pond with a deck and ducks across the spine road from the basketball court |
+| 6 Nov 2026 | Session 92: strollers from Blender pushed with both hands, talking pairs take turns, sunbathers at the community pool, building-site crews with job loops, and the player wears the company logo on cap/helmet, chest and back |
+| 6 Nov 2026 | DJ Salad owns the mansion until you buy it: a bit overweight, DJ look, orders from day one; once sold he moves to Cluster 5 and keeps ordering |
 
 ## Sources
 
@@ -641,6 +772,15 @@ Detail pass (the real community, the school and the restaurants; every name in t
 - [Sanad Village, Gulf News](https://gulfnews.com/uae/sanad-village-in-dubai-sets-new-global-standard-for-people-of-determination-1.78778336)
 - [Inside Dubai's Sustainable City: facilities list, Gulf News](https://gulfnews.com/uae/inside-dubais-sustainable-city-community-what-makes-it-different-1.91842975)
 - Louis's own Google Earth measurements and photos of the community, the school and the gym (not stored in the repo)
+
+Looks pass (free CC0 kits and interior ideas):
+
+- [KayKit Restaurant Bits (CC0)](https://kaylousberg.itch.io/restaurant-bits)
+- [KayKit Furniture Bits (CC0)](https://kaylousberg.itch.io/furniture-bits)
+- [Kenney Furniture Kit (CC0)](https://kenney.nl/assets/furniture-kit)
+- [Kenney Food Kit (CC0)](https://kenney.nl/assets/food-kit)
+- [Low poly Supermarket pack (CC0)](https://pensamientoazul.itch.io/supermarket-3d-assets)
+- [Small café layout ideas, Bellwether Coffee](https://bellwethercoffee.com/blog/small-cafe-layout-design-guide)
 
 Licence tests:
 

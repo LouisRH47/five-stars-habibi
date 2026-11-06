@@ -71,8 +71,11 @@ func _run() -> void:
 	_check("hospital and billing wait for the fall", not clinic.showing and gs.money == 500 and not gs.boss_paid_crash)
 	_check("bounce contacts cannot create another accident", not bike._check_crash(1.0, wall) and _crashes == 1)
 	bike._step_fall(GameConfig.CRASH_FALL_DURATIONS["tumble"] * 0.5)
-	_check("the tumble has a visible moving pose before the clinic", bike._rider.rotation.length() > 0.5 and bike.fall_progress > 0.0 and not clinic.showing)
-	bike._step_fall(GameConfig.CRASH_FALL_DURATIONS["tumble"])
+	_check("Session 87: the rider is a ragdoll and the bike tumbles on its own before the clinic",
+			bike._ragdoll.active() and bike._tumble != null and bike._model.get_parent() == bike._tumble
+			and bike.fall_progress > 0.0 and not clinic.showing)
+	_check("Session 87: the camera follows the body while you're down", bike.fallen_body_position().is_finite())
+	bike._step_fall(GameConfig.CRASH_FALL_MAX_TIME)
 	_check("one completed fall opens one clinic visit", clinic.showing and paused and _completed == 1 and _crashes == 1)
 	_check("the clinic explains impact severity", clinic.last_bills.has("severity") and "km/h" in clinic._story.text)
 	_check("the clinic hides the cancellation badge when the rider has only an offer", not clinic._tag.visible)
@@ -89,14 +92,51 @@ func _run() -> void:
 			gs.history.size() == 1 and gs.history[0]["cancelled"] and gs.history[0]["stars"] == 0.0)
 	clinic.close()
 	gs.reset()
-	bike.speed = 3.0
+	# Session 87: the three crash levels.
+	var knocks := []
+	bike.knocked.connect(func(impact: Dictionary): knocks.append(impact))
+	bike.speed = 9.0 / 3.6
+	var money_before: int = gs.money
+	_check("a bump (9 km/h): you stay on", not bike._check_crash(1.0, wall) and bike.fallen_left <= 0.0 and not bike.wrecked)
+	_check("a bump sends one knock with the real speed and a 10 Dh bill", knocks.size() == 1
+			and roundi(knocks[0]["kmh"]) == 9 and knocks[0]["bill"] == GameConfig.CRASH_BUMP_BILL and knocks[0]["level"] == "bump")
+	gs.pay_crash_bill(knocks[0])
+	_check("the bump bill comes off your money", gs.money == money_before - GameConfig.CRASH_BUMP_BILL)
+	bike.speed = 9.0 / 3.6
+	bike._check_crash(1.0, wall)
+	_check("sliding along the wall doesn't bill the bump twice", knocks.size() == 1)
+	bike._knock_cooldown = 0.0
+	var cat := Node3D.new()
+	cat.set_meta("impact_category", "soft")
+	_check("something soft is a bump even at 25 km/h", CrashImpact.capture(Vector3(0, 0, -25.0 / 3.6), Vector3(0, 0, 1), cat)["level"] == "bump")
+	cat.free()
+	_check("too slow (4 km/h) is just a nudge", CrashImpact.capture(Vector3(0, 0, -4.0 / 3.6), Vector3(0, 0, 1), wall)["level"] == "")
+	var fall := CrashImpact.capture(Vector3(0, 0, -17.0 / 3.6), Vector3(0, 0, 1), wall)
+	_check("17 km/h into a wall: you fall off, 30 Dh", fall["level"] == "fall" and fall["crash"] and not fall["big"] and fall["bill"] == GameConfig.CRASH_FALL_BILL)
+	var hard := CrashImpact.capture(Vector3(0, 0, -25.0 / 3.6), Vector3(0, 0, 1), wall)
+	_check("25 km/h into a wall: big crash, 150 Dh at the clinic", hard["level"] == "big" and CrashImpact.quote(hard)["hospital"] == 150)
+	_check("the three bills are different", GameConfig.CRASH_BUMP_BILL < GameConfig.CRASH_FALL_BILL and GameConfig.CRASH_FALL_BILL < CrashImpact.quote(hard)["hospital"])
+	bike.speed = 13.5 / 3.6
 	_check("a low-speed collision selects a gentle fall", bike._check_crash(1.0, wall) and bike.fall_kind == "tip" and not bike.wrecked)
-	bike._step_fall(GameConfig.CRASH_FALL_DURATIONS["tip"] + 0.1)
-	_check("minor falls return control without a clinic bill", bike.fallen_left == 0.0 and not clinic.showing and not gs.boss_paid_crash)
+	bike._step_fall(GameConfig.CRASH_FALL_MAX_TIME)
+	_check("Session 87: a fall gives control back and opens the light clinic (30 Dh, no boss cover used)",
+			bike.fallen_left == 0.0 and clinic.showing and clinic.light_visit
+			and clinic.last_bills["paid"] == GameConfig.CRASH_FALL_BILL and not gs.boss_paid_crash)
+	var spot: Vector3 = bike.global_position
+	clinic.close()
+	_check("Session 87: after the fall's clinic you ride on from where you fell", bike.global_position.distance_to(spot) < 0.01 and not paused)
+	bike.speed = 3.0
+	_check("Session 52: right after getting up, a small knock doesn't knock you off again", not bike._check_crash(1.0, wall))
+	bike.speed = 0.0
+	gs.offer_order(pizza)
+	gs.accept_offer()
+	gs.note_crash()
+	_check("Session 52: a crash marks the order you carry (so it gets no tip)", gs.current_order != null and gs.current_order.crashed)
+	gs.reset()
 	var scrape_hit := CrashImpact.capture(Vector3(0, 0, -8), Vector3(1, 0, 0.5).normalized(), wall)
 	bike._begin_fall(scrape_hit)
 	_check("an oblique impact selects the sideways skid", bike.fall_kind == "skid")
-	bike._step_fall(GameConfig.CRASH_FALL_DURATIONS["skid"] + 0.1)
+	bike._step_fall(GameConfig.CRASH_FALL_MAX_TIME)
 	if clinic.showing:
 		clinic.close()
 	gs.reset()

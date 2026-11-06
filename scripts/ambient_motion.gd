@@ -6,7 +6,6 @@ extends Node3D
 ## fountain's jet bubbling with a spray of drops, and the donkeys strolling round their pen
 ## (DONKEY_PEN). LifeBuilder makes this and calls build().
 
-const WATER_SHADER := preload("res://assets/shaders/water.gdshader")
 const BIRD := Color(0.25, 0.25, 0.28)
 const DONKEY := Color(0.55, 0.52, 0.5)
 
@@ -25,9 +24,7 @@ func build(life: Node3D, map: Dictionary) -> void:
 		var crown := palm.get_node_or_null("Crown") as Node3D
 		if crown != null:
 			_crowns.append([crown, crown.rotation])
-	var water := ShaderMaterial.new()
-	water.shader = WATER_SHADER
-	water.set_shader_parameter("flow_speed", GameConfig.WATER_FLOW_SPEED)
+	var water := WaterLook.stream()  # Session 81: the same water look everywhere (scripts/water_look.gd)
 	var stream := main.get_node_or_null("WahatBuilder/Stream")
 	if stream != null:
 		for piece: MeshInstance3D in stream.get_children():
@@ -47,7 +44,8 @@ func build(life: Node3D, map: Dictionary) -> void:
 		_pen = (map["DONKEY_PEN"]["area"] as Rect2).grow(-1.3)
 		for i in map["DONKEY_PEN"]["donkeys"]:
 			var spot := Vector3(_pen.get_center().x - 3.0 + i * 6.0, 0, _pen.get_center().y)
-			var donkey := Props.animal(self, spot, 90.0, DONKEY.darkened(i * 0.15), false)
+			# Session 70: the Blender donkey, grey and brown in turn (scripts/horse_models.gd).
+			var donkey := HorseModels.standing(self, spot, 90.0, HorseModels.DONKEY_COATS.values()[i % 2], false)
 			donkey.name = "Donkey_%d" % i
 			_donkeys.append({"node": donkey, "target": spot, "pause": randf_range(0.5, 3.0)})
 
@@ -90,6 +88,7 @@ func _stroll(donkey: Dictionary, delta: float) -> void:
 	if donkey["pause"] > 0.0:
 		donkey["pause"] -= delta
 		node.position.y = 0.0
+		_swing_legs(node, 0.0)
 		return
 	var gap: Vector3 = donkey["target"] - node.position
 	gap.y = 0.0
@@ -100,7 +99,15 @@ func _stroll(donkey: Dictionary, delta: float) -> void:
 		return
 	node.position += gap.normalized() * step
 	node.rotation.y = lerp_angle(node.rotation.y, atan2(gap.x, gap.z), minf(1.0, delta * 3.0))  # its head is +Z
-	node.position.y = absf(sin(_clock * 6.0)) * 0.04
+	node.position.y = absf(sin(_clock * 6.0)) * 0.02
+	_swing_legs(node, sin(_clock * 6.0) * 0.3)
+
+
+## Session 70: a walking donkey swings its legs in diagonal pairs (0 = standing).
+func _swing_legs(node: Node3D, swing: float) -> void:
+	var legs: Array = node.get_meta("legs", [])
+	for i in legs.size():
+		(legs[i] as Node3D).rotation.x = swing * (1.0 if i == 0 or i == 3 else -1.0)
 
 
 func _add_flock(flock: Dictionary, life: Node3D) -> void:

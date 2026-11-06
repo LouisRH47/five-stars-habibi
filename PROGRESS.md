@@ -1,5 +1,1333 @@
 # Progress
 
+## Session 92: people fixes and the player's look — 6 November 2026
+
+What works now:
+- **Strollers** made in Blender (tools/blender/make_stroller.py → assets/models/stroller_*.glb,
+  three colours): hood, frame, a child with a blanket, four wheels that turn. The parent pushes
+  it with both hands on the handle (scripts/stroller.gd, push_arms.gd).
+- **Talking pairs** stand at ease, face each other 1.1 m apart and take turns: the talker
+  gestures and nods, the listener nods. Only one talks at a time.
+- **Sunbeds** at the community pool: four people in swimwear lying back, one reading a book
+  (scripts/sunbathers.gd, lounge_pose.gd).
+- **Joggers' clothes** no longer stretch down the legs (the shirt was tied to the thigh bones);
+  shorts, shins and shoes are painted on the body so they bend with it. The outfits test now
+  checks stretching at walking and running speed.
+- **Building site crews** (scripts/site_crew.gd): a foreman with a clipboard by the crane and
+  three workers who swap jobs every 14 s (carry blocks, hammer the frame, shovel into the mixer
+  with its turning drum, talk to the foreman), in hi-vis vests, hard hats and boots.
+- **Your rider:** rounder trainers with soles and laces; your company's logo on the cap, helmet
+  or hat, on the chest, and the company name and logo on the back. The three looks still differ.
+- **Flicker at the courts:** two players could end up on the same spot (now kept 0.8 m apart),
+  and moving people's bodies could vanish while their hats stayed (fixed draw box).
+- New test tests/people_life_test.gd (22 checks).
+
+How to test: F5, ride along the spine's red track (strollers), past the community pool
+(sunbeds) and the building sites (workers). Look at your rider from behind for the logo.
+
+Known bugs (older ones, still there):
+- Things that follow a bone (hats, vests) are drawn one frame behind the body.
+- Some residents walk through the building sites in normal clothes.
+
+## Session 91: the C Institute inside and out, and the pond — 6 November 2026
+
+What works now:
+- **A second floor** inside the C Institute: a balcony with glass railings round the lobby,
+  four glass offices with 6 people typing on laptops, a meeting room with a screen and 6 people,
+  a lounge corner and plants (scripts/institute_upstairs.gd, institute_offices.gd).
+- **Stairs** you can walk up, and **a lift:** press E at the lift door, the doors close, a short
+  ride, and you step out on the other floor (scripts/institute_lift.gd). The talk screen stays.
+- **A more modern outside:** slim white frames on the glass, a thin flat roof with a slatted sun
+  shade, 21 white fins on the sunny side, and two lit bilingual signs that glow at dusk
+  (scripts/institute_outside.gd).
+- **The pond:** the stream now runs into a new big pond across the spine road from the basketball
+  court, with 56 stones, reeds, lily pads, a wooden deck with two benches, stepping stones from the
+  crossing, three palms and four ducks paddling about (scripts/pond_deck.gd, pond_ducks.gd).
+- Nothing overlaps the pitch, roads, tracks or the Institute steps (checked).
+- New test tests/institute_upstairs_test.gd (25 checks: walks up the stairs, rides the lift).
+
+How to test: F5, ride to the C Institute, get off (F), walk in, take the stairs or press E at
+the lift. Then look across the spine road for the pond and the ducks.
+
+Known bugs:
+- From the Institute steps the pond is mostly hidden behind the spine road's hedges.
+- On the stairs your feet can sink a little into the steps (you walk on a smooth slope).
+
+## Session 90: Plaza and gym fixes — 6 November 2026
+
+What works now:
+- **Paving to the roundabout:** the Plaza floor now carries on along the Plaza road on the Dune
+  Drip side only, round the bend and up to about 12 m from the roundabout's middle, so the walk
+  from the roundabout is paved. The other side stays grass. It's part of the same floor, so
+  nothing overlaps (scripts/plaza_floor.gd; it also shows on the minimap).
+- **Buggy park:** 16 bays (two rows of 8) with 6 buggies under solar roofs, right behind
+  Dune Drip; the Plaza road goes 5 m further to reach it.
+- **The homes above the restaurants** (new scripts/plaza_homes.gd) look like the house kit:
+  framed windows, trim between floors, a cornice, balconies with plants and glass doors, AC units,
+  a roof with a parapet and water tanks. One long block per row, sitting right on the shop
+  fronts with no gap.
+- **Benches** outside the restaurants face out to the Plaza. **The pizza oven's flue** goes from
+  the dome up into the ceiling.
+- **Waiters** (new scripts/restaurant_waiter.gd, one per restaurant, 9 in all) wipe a table,
+  chat to a diner, carry a tray inside (the doors slide open), come back out and serve.
+  They never stand still for more than a second.
+- **The gym** is 15% smaller (30.6 x 18.7 m) and clears the road; a second door with sliding
+  glass on the lap-pool side (the spine side), a colour band all round, a second bilingual
+  sign, canopies and planters by both doors.
+- **Majlis Gardens:** the last path piece ends square on the road edge with a zebra crossing
+  (zebra crossings are now a list in the map data, ZEBRA_CROSSINGS).
+- New tests: tests/plaza_layout_test.gd (29 checks) and tests/restaurant_fronts_test.gd
+  (32 checks).
+
+How to test: F5 and ride to the Plaza. Look up at the flats above the shops, watch a waiter
+for half a minute, ride from the roundabout to Dune Drip on the paving, check the buggy park
+behind Dune Drip, then ride to the gym on the spine and walk in through either door.
+
+Not sure: the gym's second door is on the lap-pool side (east). If "the spine side" meant
+the west wall (towards the pond), it needs to move.
+
+Known bugs:
+- The new paved square between Dune Drip, the bend and the buggy park is plain; it could use
+  benches or planters.
+
+## Session 89: the phone app — 6 November 2026
+
+What works now (built to the mock-up Louis approved, docs/phone_mockup.html):
+- **P opens a big phone** in the middle of the screen and the game pauses
+  (scripts/phone_app.gd). P closes it; Esc goes back, then closes. Arrow keys + E or the mouse
+  pick an app. The small corner phone stays for orders; its button now says "Phone · P". On
+  touch screens there's a Phone button.
+- **Home screen:** the time, "Shift N · kind of day", 7 app icons drawn as shapes (no emoji,
+  so they look the same on Windows and the Steam Deck), a red unread badge on Messages, and
+  your money, stars and level at the bottom. The Company icon is your company's logo.
+- **Jobs:** switch which kinds of order you're offered (normal, fragile, VIP = regulars and big
+  family orders, far = over 360 m from shop to door); at least one stays on. Today's shift
+  goals and your current order. Turning a kind off makes the game re-roll those orders, but
+  never the tutorial, goal orders or special stall orders.
+- **Profile:** name, company, stars, Rider Level with the XP bar, the career card (what Tier 2,
+  Dune Express, needs), lifetime numbers, and a button to the old stamp card page.
+- **Collection:** Bikes, Looks and Gear tabs; owned things in colour, locked ones grey with
+  what unlocks them.
+- **Messages:** chats with the regulars (they thank you after a delivery, and you can tap a
+  reply), your company's boss (a welcome, then a note after every shift), and Plaza news
+  (Session 94 will post the flea market there). Unread chats have a red dot. Saved.
+- **Company:** the three companies; switch for 50 Dh (keeps your stars and level).
+- **Map:** opens the big map (same as M). **Settings:** the settings panel inside the phone.
+- New tests: tests/phone_app_test.gd (44 checks: every app opens and closes, the badge, keys,
+  switching company) and tests/messages_test.gd (38 checks: chats, unread, saving, the order
+  filters really change which orders you get).
+- The play-test bot now walks out of a restaurant by its door when it gets stuck behind the
+  glass (it once stood inside Spill the Tea for 12 minutes).
+- The smoke test waits long enough for a ragdoll fall to finish, and times the walkers' route
+  search three times (a busy Mac made it fail by chance).
+
+How to test: F5, start riding, press P. Try each app. Esc goes back. Deliver to a regular
+(Auntie Mariam, Mr Rashid...) and a red 1 appears on Messages.
+
+Known bugs:
+- "Lifetime" numbers on the Profile come from the last 200 jobs the save keeps.
+- The Map app is a button that opens the big map, not a map drawn inside the phone.
+
+## Session 88: three companies and their logos — 6 November 2026
+
+What works now:
+- **Three made-up companies** (data/companies.gd, scripts/companies.gd), each with a logo drawn
+  by a script (tools/logos/make_logos.gd makes assets/logos/*.png at 1024 and 256 px, plus a
+  word mark with the Arabic name): **Snackaroo** (orange bag with a lightning bolt, +10% tips),
+  **Zoomaroo** (green winking speech bubble, customers wait 20% longer), **Deliverooz** (teal
+  bouncing parcel with a heart, 25% less food damage). Numbers in game_config.gd (COMPANY_...).
+- **The application form** has three company cards (logo, name, perk). Picking one turns the
+  phone's title and the riders' shirts that colour. The choice is saved; old saves are Snackaroo.
+- **Your company shows** on the delivery box (its colour, and the logo on both sides and the
+  back), your shirt, the phone app's name and colour, the bag you hand over, the clinic's repair
+  line, the tutorial's welcome and the profile.
+- **Switching company** costs 50 Dh and keeps your stars, level and everything you own
+  (GameState.switch_company). The button for it is in the phone's Company app (Session 89).
+- New test tests/companies_test.gd (19 checks): the list and logos, each perk's number, hiring
+  with a company, switching (needs 50 Dh, keeps XP), save and load, old saves, the box logo.
+
+How to test: F5, then New game on the start screen (careful: this wipes your save). On the
+form pick Zoomaroo: the title turns green, the riders get green shirts.
+Submit, start riding: the box is green with the speech-bubble logo, the phone says Zoomaroo.
+
+Note for Louis: "Deliverooz" in teal is very close to the real company Deliveroo (whose logo
+is a teal kangaroo). The logo is a parcel, not a kangaroo, but for Steam a more different
+name and colour would be safer. Your call.
+
+## Session 87: crash physics and the three crash levels — 6 November 2026
+
+What works now:
+- **Three crash levels** (scripts/crash_impact.gd, numbers in game_config.gd):
+  - **Bump:** under 12 km/h, or anything soft (hedges, bins, cones, cats, people, horses) at
+    any speed. You stay on, the bike wobbles, 10 Dh, 8% off the food. Under 6 km/h nothing
+    happens. Only one bump bill every 1.5 s, so sliding along a wall doesn't bill twice.
+  - **Fall:** 12 to 22 km/h into something hard. You fall off for real, then the clinic
+    screen shows a "FALL" visit: 20 Dh clinic + 10 Dh bike repair = 30 Dh. "Back to riding"
+    puts you back on the bike where you fell; your order and your shift go on (Louis's
+    decision during this session).
+  - **Big crash:** over 22 km/h into something hard (about 19 km/h into a car): the clinic,
+    150 Dh hospital + 80 Dh repair (220 + 140 for very hard hits), order cancelled, shift over.
+- **A message under the clock** with the real speed: "Bump! 9 km/h · -10 Dh" (teal),
+  "You fell off! 17 km/h · -30 Dh" (orange), "Big crash! 30 km/h" (red).
+- **A real ragdoll** (scripts/rider_ragdoll.gd, ragdoll_bones.gd, ragdoll_pose.gd): the rider
+  becomes 11 floppy body parts with proper joints (knees and elbows only bend one way), thrown
+  with the real speed; going over the handlebars rolls you forward. The bike becomes a physics
+  body that slides and tips over on its side (scripts/bike_tumble.gd). You lie still, then blend
+  back onto the bike in half a second, picked up where it slid to. The camera follows your body
+  while you're down. Godot's own ragdoll bones exploded on this character (its skeleton is
+  scaled about 23 times), so the helper built it from plain physics parts instead.
+- New test tests/ragdoll_test.gd (22 checks); the crash test checks the three levels, the bills,
+  the soft rule and the no-double-bill rule; the smoke test checks the fall clinic.
+
+How to test: F5, ride slowly (under 12 km/h) into a wall: "Bump!", you stay on. Ride into a
+wall at about 15 km/h: you tumble, then the clinic says FALL, 30 Dh; press E to ride on.
+Sprint into a wall: you fly over the handlebars, then the big-crash clinic.
+
+Known bugs:
+- While you tumble the camera can get very close to your legs for a moment.
+- The rider and the sliding bike can pass through each other while falling.
+
+## Session 86: the loading screen — 6 November 2026
+
+What works now:
+- **A real loading screen** when you press Play, Continue or Start riding: the start-screen
+  desert, the name of what's being built ("Laying the roads...", "Opening 1000 Pizza..."),
+  "step 30 of 104", an orange bar, a tip that changes every 3 s (25 tips: keys, facts about
+  Wahat Al Shams, Snackaroo jokes) and your rider on the bike riding along the bottom as the
+  bar fills. It fades out when the world is ready (scripts/loading_screen.gd,
+  scripts/loading_bike.gd, scripts/desert_backdrop.gd, data/loading_tips.gd).
+- **The world builds in about 100 small steps** instead of one long freeze
+  (scripts/world_loader.gd). The big builders list their work as named steps (WahatBuilder,
+  PlazaBuilder, PlaceBuilder one restaurant and one row of homes per step, DistrictDetail),
+  a few steps run per frame, then the scenery is merged one builder per step. The game is
+  paused while building, Esc does nothing, and the clock only starts once the screen is gone.
+  The finished world draws 3 frames behind the screen first, so it's ready when you see it.
+- **A short version (about 1.2 s) at the start of every new shift.**
+- Tests and the exported game's self-test still build the world in one go, exactly as before.
+- New test tests/loading_screen_test.gd: builds the map normally and through the loading
+  screen and checks they come out the same (same number of parts in each builder), the
+  steps are in order and all counted, the shops get set up, the screen closes, the game is
+  paused while building, and the new-shift screen shows and closes. Smoke test checks too.
+- Tuning numbers in game_config.gd (LOADING_...). The start screen looks the same as before.
+
+How to test: open the project, press F5, press Continue (or Play). You should see the desert,
+the bar filling with step names, a tip, and the bike riding to the right. Then the game.
+Finish a shift (or wait for 6 PM) and press "Start next shift": the short screen shows.
+
+Known bugs:
+- Two steps still take about half a second each on this Mac (laying the roads, and one
+  round of the flicker fix), so the bike on the loading screen stops for a moment there.
+- While the short new-shift screen shows, the game runs slowly behind it (about 14 fps in my
+  test) because the world still draws under the screen.
+
+## Session 85: Windows, Mac and Steam Deck builds — 6 November 2026
+
+What works now:
+- **One command builds all three games:** Windows, Mac and Linux (the Steam Deck runs Linux).
+  First, once per Mac, make the private Godot copy with the export templates (downloads Godot's
+  official 1.28 GB templates file and checks its fingerprint):
+  `python3 tools/setup_export_sdk.py --download`
+  Then:
+  `python3 tools/build_desktop.py --godot /private/tmp/habibi-export-sdk/Godot.app/Contents/MacOS/Godot --output /private/tmp/habibi-desktop-review --verify-mac`
+  (add `--mode distribution` and a fresh output folder for builds that save to the normal user folder).
+  Sizes: Mac 88 MB, Windows 65 MB, Linux 56 MB. New Linux preset in export_presets.cfg.
+- **The exported Mac game tests itself:** started with `-- --build-check`, it opens the map,
+  plays one delivery (27 Dh), saves to its own test file, loads it back, prints
+  "BUILD CHECK: PASS" and quits (scripts/build_check.gd). The build tool runs this on the Mac
+  build. Your real save is never touched.
+- **Bigger menus and HUD on small screens:** windows narrower than 1600 pixels (the Deck is
+  1280x800) draw the menus and HUD 15% bigger, so the smallest text is about 10 px instead of
+  under 9. Checked with a 1280x800 screenshot: phone, clock, mini-map and speed panel all fit
+  without touching. Numbers in game_config.gd (SMALL_SCREEN_WIDTH, SMALL_SCREEN_UI_SCALE).
+- **Frame rate at Steam Deck size:** on Low at 1920x1080 (more pixels than the Deck), about
+  80 fps on this Mac, measured on battery with Low Power Mode on. Earlier measurements jumped
+  between 31 and 114 fps because of Low Power Mode and other apps, so treat these as rough.
+  The game's scripts take only about 2 ms per frame; almost all the time is drawing.
+- Smoke test checks: the three builds are set up, small-screen scaling, the self-test exists.
+- The screenshot tool takes `size=1280x800` for Steam Deck-size pictures.
+- The smoke test's football check now watches the ball for up to 20 s of play (it sometimes
+  sat still between kicks and failed for no real reason).
+
+Not checked (no machine for it):
+- The Windows and Linux builds weren't run, only built and checked to be real Windows and
+  Linux programs. A real Steam Deck test needs a Steam Deck.
+
+Known bugs:
+- A few short stutters remain while riding (1% of frames under about 20 fps), probably the
+  graphics card preparing new things the first time they appear. Worth a look before launch.
+
+## Smoothness and GitHub check fixes — 6 November 2026
+
+What works now:
+- **No more stutter from people walking home.** Each time someone left a restaurant, the game
+  worked out their route across the whole map in one go and froze for 0.1-0.25 s. On High
+  this snowballed down to about 9-20 fps. They now walk to one of the 12 homes nearest the
+  restaurant (HOME_WALKER_HOME_CHOICES in game_config.gd). Worst frame over 40 s: 115 ms before,
+  18 ms after. Smoke test checks the route is found quickly.
+- **Frame rate on this Mac (M5, 1600x900 window, riding the spine):** Low about 67 fps, Medium
+  about 104, High about 100.
+- **GitHub's check on the PR passes again.** It failed because the shade trees and edge trees
+  left 5 unused copies in memory at exit. They're now freed (spine_greenery.gd, edge_builder.gd).
+  The smoke test and two other tests also stop every sound and wait a moment before quitting
+  (tests/clean_exit.gd), because a restaurant sound still playing at exit counts as an error.
+- The browser package is now 27.7 MB, over the website's 25 MB per-file limit. Normal GitHub
+  checks only warn about that now (nothing is published from them). A hand-started publish
+  still fails until the game is made smaller for the browser.
+- **The browser version no longer updates by itself** when something is merged into main
+  (Louis paused it). The build and tests still run on every PR; publishing is a manual
+  "Run workflow" in GitHub Actions. Logged in PRD.md.
+
+Known bugs:
+- When the map scan finishes, about 4 s into a shift, there's one short freeze (about 0.25 s).
+- Accepting an order works out the GPS route across the whole map in one go, so it may cause a
+  short pause. This hasn't been measured; the GPS code didn't change in the fix pass.
+
+## Session 84: play-test of the fix pass — 6 November 2026
+
+Sessions 75 to 83 were built by six helpers in parallel (roads, Plaza and car parks, buildings,
+places and water, people, textures), then merged into `world-roads` one session at a time, with
+the checks and screenshots after each one.
+
+- **All checks pass:** headless import and quit, the smoke test and all 25 focused test suites
+  (new this pass: ride_edges, buggy_roads, outfits). One command runs them all on a temporary
+  copy, so your saves are never touched: `tools/run_checks.sh` (add `--bots` for the play-test bot).
+- **Play-test bot:** careful 4 to 6 deliveries, 4.5 to 5 stars, no crashes; careless 3 to 5
+  deliveries with small crashes. The bot itself got four fixes: it got stuck on foot (parked in
+  the gym's doorway, flipped between walking and riding at the C Institute, planned routes through
+  glass, couldn't get out of restaurant doorways). It got stuck in the same places before the fix
+  pass too, so these were bot problems, not game problems.
+- **Screenshots in a real window on the Mac (Forward+):** every spot from Louis's screenshots
+  01 to 09, plus the Plaza, shops, car parks, roundabout, cluster entrances, pools, gym and
+  stream, C Institute front, tracks, signs and people close up. Fixed from the screenshots:
+  bigger and warmer Plaza tiles, the planter strip by the spine road uses the grass photo,
+  the car parks use the asphalt photo, the cluster recycling bins are grey, the rider and groom
+  at the stables face each other.
+- New tool: `tests/screenshot_spots.gd` opens the game in a window and saves pictures of named
+  spots (see the top of the file for how to run it).
+
+Known bugs:
+- The play-test bot can still get stuck now and then when it comes out of a restaurant next to
+  the doorway (it walks into the glass beside the 2.6 m door). A player walks out fine.
+- Standing people have a wide, mid-step stance (the model's own idle pose).
+- The red walking track looks fairly plain up close.
+- Frame rate: checked after the fix below (see "Smoothness and GitHub check fixes").
+
+**Louis's turn:** play a full shift (see "How to test the fix pass" in the pull request or the
+list below) and write down anything that looks wrong or feels off.
+
+## Session 83: people who look alive — 6 November 2026
+
+What works:
+- **Nobody stands frozen** (scripts/alive_pose.gd): people near the rider (within 30 m) breathe,
+  turn their heads to look around and shift their weight; pairs (neighbours, majlis guests, the
+  Plaza family, gym-goers, the rider and groom at the stables) take turns talking with hand
+  gestures while the other nods. Far away they hold still, so it stays cheap.
+- **Faces have simple eyes and a smile** (scripts/face.gd; one shared mesh, only drawn up close).
+- **Clothes stay on the body.** The cause of the crooked clothes: the model's resting skeleton is
+  turned about 43 degrees, so caps, scarves, vests and anything held sat at an angle. People are
+  now built standing straight: caps face forward, shorts are tubes round the legs, the waiter's
+  apron moves with the legs, boots follow the shin, bags and the rescue float hang from the hand,
+  the gym towel drapes over the shoulder. The new focused test tests/outfits_test.gd builds every
+  outfit (swimwear, gym kit, uniforms, jodhpurs, hi-vis, bee suit, waiters, commuters...) and
+  checks the clothes stay on the body (99 checks).
+- Fixed while merging: the rider and the groom chatting at the stables faced away from each other.
+- Checked: smoke test, outfits test and every focused suite PASS. Close-up screenshots on the
+  Mac: talking pairs, the majlis sofa, diners, the lifeguard, swimmers resting, the stables pair.
+
+Known bugs:
+- Standing people have a wide, mid-step stance (it's the model's own idle pose, the same as
+  before this session), so two people chatting can look a bit like they're squaring up.
+
+**Louis's turn:** press F5, get off the bike near a cluster's mini plaza or the majlis and walk
+up close: people breathe, look around, and pairs take turns talking with their hands. Look at
+the faces, and at the caps, aprons and bags.
+
+## Session 82: textures — 6 November 2026
+
+What works:
+- **Real photo textures** (Poly Haven, CC0, credited in CREDITS.md), all set in one table:
+  SURFACES in scripts/surface_textures.gd (picture, size in metres, tint for each surface).
+  - Lawns: the old aerial_grass_rock mixed with leafy_grass in big soft patches through a new
+    shader (assets/shaders/ground_photo.gdshader) that hides the repeats. Sand: the old sand_01.
+  - Pavers and footpaths: brick_pavement_02 recoloured warm sandy grey.
+  - Blue track: running_track with its lane lines. Red walking tracks: running_track recoloured
+    red, one lane, no line. (tools/make_photo_textures.gd makes these from the photos.)
+  - Roads keep the new asphalt; the car parks now use the same asphalt photo instead of flat grey.
+- **Mipmaps** (smaller copies for far away) on every ground texture, so the ground doesn't shimmer.
+- **No rectangle grass clumps** any more (flowers, rocks and trees stay).
+- **Signs don't shimmer:** the cause was the sign font having no mipmaps. Signs now use their own
+  copy of the font with MSDF (sharp at any size) and mipmaps, drawn solid.
+- **Bins are grey** (GameConfig.BIN_GREY), including the cluster recycling bins.
+- **No grass gap by the cluster playgrounds:** the paving reaches the road in front of every
+  cluster (made by the map generator, so the data file is never edited by hand).
+- Checked: smoke test and every focused suite PASS. Screenshots on the Mac on Low, Medium and
+  High: the spine grass, the blue and red tracks, footpaths, stables sand, a cluster sign close
+  up, the playground paving from above, a car park.
+
+Known bugs:
+- The red walking track looks fairly plain up close (the source photo has little detail).
+
+**Louis's turn:** press F5 and look at the grass, sand, footpaths and the blue and red tracks.
+Ride past a cluster sign and a police sign: the letters should stay sharp, no flicker. Try
+Settings > Graphics on Low, Medium and High.
+
+## Session 81: gym, stream and pools — 6 November 2026
+
+What works:
+- **Flat ground round the gym and the community pool**: no hill dips into water or a building
+  (the hill by the lap pool moved to x -60).
+- **The stream ends in a pond** with stones round the edge before the gym instead of running
+  under it, and starts again from a spring pond after the lap pool (scripts/stream_pond.gd).
+- **The community pool looks finished** (scripts/pool_deck.gd): tiled deck, proper edge and
+  coping, ladders, lane ropes, loungers and umbrellas, a shower post and plants.
+- **Swimmers really swim** in all the pools (scripts/pool_swimmers.gd, pool_poses.gd): front crawl
+  or breaststroke laps with arm strokes and kicking, heads out of the water, turning at each end;
+  a few rest with their arms on the edge and look round; all in swimwear. Each pool says how high
+  its water is and the swimmers float there.
+- **The lifeguard sits on a tall chair** (scripts/lifeguard_chair.gd), looks around, now and then
+  stands up, blows the whistle and points at the water.
+- **One water look for all water** (scripts/water_look.gd, the water shader from before 5 Nov,
+  improved): pools, the lap pool, the stream and the ponds.
+- Smoke test checks: flat ground, the pond before the gym, nothing under the gym, the pool
+  details, the water shader everywhere, swimmers moving with their heads up, the lifeguard.
+  Two checks were made fair: the swimmers' heads are measured from their own pool's water,
+  and the basketball check watches long enough to see a shot. Smoke test PASS three times in a
+  row; every focused suite PASS.
+- Screenshots on the Mac: the community pool (Louis's 06), the deck, the lap pool, a swimmer
+  resting at the edge, the lifeguard, the ponds and the gym.
+
+**Louis's turn:** press F5 and ride to the community pool (screenshot 06): swimmers swim laps
+and the lifeguard sits on his tall chair. Follow the stream towards the gym: it ends in a pond.
+
+## Session 80: the C Institute front, seats and the basketball court — 6 November 2026
+
+What works:
+- **No blue patch** in front of the C Institute (Louis's screenshots 01 and 08): it's grass now,
+  with a fenced 5-a-side football pitch (lines, two small goals with nets) and people playing
+  during the day (scripts/institute_pitch.gd).
+- **A finished basketball court** (scripts/basketball_court.gd): proper lines, hoops with nets and
+  backboards, a fence, benches and two players.
+- **Nobody's feet sink into a seat.** The sitting pose keeps the thighs level and slopes the shins
+  until the feet rest on the floor; people on the C Institute steps (outside and inside) rest
+  their feet on their step (scripts/person_pose.gd).
+- Smoke test checks: no blue patch, the pitch with goals, nets and players, the court's hoops,
+  fence, benches and players, and a chair, a low seat and a step sitter. Every suite PASS.
+- Screenshots on the Mac: the C Institute front and road, the pitch, the court, a step sitter,
+  a café sitter.
+
+**Louis's turn:** press F5 and ride to the C Institute (screenshots 01 and 08): grass and a
+football pitch with players instead of the blue patch. Look at the people sitting on the steps
+and at the café tables. Ride past the basketball court by the roundabout.
+
+## Session 79: car parks laid out properly, and a mosque car park — 6 November 2026
+
+What works:
+- **Every car park uses one layout** (scripts/car_park_builder.gd, data PARKING_LOTS): a row of
+  spaces along one side, two middle rows nose to nose, a row across the end, aisles, painted
+  bay lines and arrows, solar roofs over every row and cars in most spaces (318 parked cars).
+  The car parks are 50 to 90 m long instead of 135 m, so there's no big empty asphalt any more
+  (Louis's screenshot 03). The gap between Clusters 2 and 3 is only 15 m wide, so that one has
+  a single middle row.
+- **Mosque car park** (13 spaces, same style) in front of the mosque, joined to the ring road.
+- The school car park moved in front of the school gate, with its own short road.
+- Parked cars are drawn in batches (scripts/parked_car_batch.gd: one MultiMesh per car model
+  per map square), so 300 cars cost a few dozen draws. Each car keeps its own solid box.
+- Every car park entrance is in the data, and the kerbs leave a gap there.
+- Checked: smoke test and every focused suite PASS. The invisible-wall test now reads where
+  the batched cars are drawn (headless Godot can't). Play-test bot careful: 5 deliveries,
+  4.6 stars, no crashes.
+- Screenshots on the Mac: the car parks between the clusters from above, a car park from
+  the ground, the mosque and school car parks.
+
+Known bugs:
+- The car park asphalt is still a flat grey colour (check again after Session 82).
+
+**Louis's turn:** press F5 and ride into the car park next to Cluster 1 (where screenshot 03
+was) and the one between Clusters 4 and 5. Then ride to the mosque: its car park is off the
+ring road.
+
+## Session 78: the bike shop and Dune Drip look like real buildings — 5 November 2026
+
+What works:
+- **Both shops keep their glass fronts and insides** but aren't boxes any more
+  (scripts/shop_exterior.gd, shop_roof.gd, shop_arcade.gd, shop_yard.gd):
+  - a shaded arcade with pointed arches along the Plaza side (6 solid columns; the gaps and
+    both ends are open to walk or ride through)
+  - a stepped parapet with a crown over the sign
+  - a raised back storey with battlements and a wind tower; solar panels and AC units on the roof
+  - window bays, awnings, mashrabiya screens, a shop-colour band and a back door on the side
+    and back walls
+  - Pedal Point: a bike rack with bikes and a pump stand. Dune Drip: planters and two benches.
+- **The restaurants' walls that face the Plaza** have the same trim (scripts/wall_trim.gd,
+  plaza_walls.gd).
+- Plaza tables, lamps and planters keep out of the arcades (scripts/clear_spots.gd).
+- Smoke test checks the parts, solid columns, open gaps, the shop doors reachable on foot,
+  and 28 dressed walls. Smoke test and every focused suite PASS.
+- Screenshots on the Mac: both shops from the front, back and sides, and from above.
+
+**Louis's turn:** press F5, ride to Pedal Point Bikes (Louis's screenshot 09) and Dune Drip and
+ride all the way round each one, then ride through the arcade.
+
+## Session 77: a square Plaza floor and the Dune Drip buggy park — 5 November 2026
+
+What works:
+- **One square paved Plaza floor** (scripts/plaza_floor.gd) using the CC0 square_concrete_pavers
+  photo (Poly Haven, in CREDITS.md), about 1 m squares, tinted warm sandy stone
+  (PLAZA_PAVER_TILE and PLAZA_PAVER_TINT in game_config.gd). It runs from the bike shop to
+  Dune Drip and from the north restaurant row to the south row, so every restaurant door,
+  both shop doors and the café tables stand on paving. The fountain and sunken square stay.
+- **The Plaza road now ends in a buggy park** behind Dune Drip: 4 to 6 spaces with markings,
+  a solar roof, two buggies parked, and a footpath into the Plaza.
+- Smoke test checks the ground at every restaurant entrance is paving.
+- Checked: smoke test and every focused suite PASS. Screenshots on the Mac: the Plaza floor
+  from above and from the ground, the buggy park, the Plaza corner by the bike shop.
+
+Known bugs:
+- The play-test bot sometimes can't find its way through a narrow doorway next to a wall
+  (it got stuck outside the C Institute and the gym) and then the shift never ends. Walking
+  there by hand works (checked with a test walk). To look at in Session 84.
+
+**Louis's turn:** press F5, ride into the Plaza and look around: the whole square is paving,
+nothing stands on grass. Ride from the roundabout up the Plaza road: it ends in the little buggy
+park behind Dune Drip.
+
+## Sessions 75 and 76: ride freely, jump on foot, buggies on roads, kerbs that join up — 5 November 2026
+
+Built by two helpers in parallel (roads, and people for the jump), then merged and re-tested.
+75 and 76 go in as one commit because the roads helper built them as one piece: the
+75 part uses the new kerbs from 76.
+
+What works:
+- **No invisible walls.** Kerbs have no collision any more. Riding over one is a small bump
+  and you keep 90% of your speed, never a crash (scripts/kerb_bumps.gd, `Bike.hit_kerb()`).
+  The new focused test tests/ride_edges_test.gd walks the bike's shape along every road edge,
+  the red and blue tracks and the car parks: 0 invisible walls (it does find a hidden test wall).
+- **Speed bumps only on the ring road.**
+- **Space jumps on foot** (about 0.6 m, short wait, knees up in the air, knee bend on landing).
+  On the bike Space is still the handbrake. PRD Controls table and the pause menu key list updated.
+- **Buggies only drive on roads.** Their routes are found on the road network, they keep 1.5 m
+  right of the yellow line and slow down at junctions and the roundabout. The new focused test
+  tests/buggy_roads_test.gd drives every buggy for a whole shift: 0 steps off the asphalt.
+- **Raised kerbs that join up** (12 cm high) along every road edge, closed at junctions, all the
+  way round the roundabout (island and outside), gaps only at paths, crossings and car parks
+  (scripts/road_kerbs.gd, road_area.gd).
+- **Curved corners** wherever roads meet: about 6 m for lanes, 10 m for bigger roads
+  (scripts/road_corners.gd). Each cluster's lanes are one rounded loop; the cluster entrance
+  islands have rounded ends; the C Institute road is one smooth curve.
+- road_mesh_test finds 0 kerb ends in mid-air and 0 kerbs lying on a road.
+- Checked: smoke test PASS, all focused suites PASS (ride_edges, buggy_roads and road_mesh
+  three times in a row). Play-test bot careful: 5 deliveries, 4.9 stars, no crashes.
+- Screenshots on the Mac (Forward+): the roundabout, cluster entrances (Louis's 05 and 07) and
+  spine junctions now have continuous curved kerbs.
+
+Known bugs:
+- The careless play-test bot can park its bike right in its own path and then walk into it
+  (it got stuck by the C Institute). That's the bot, not the game: walking round works.
+- After a buggy turns round because something blocks it, it drives over to its own side of the
+  road by the next turn point, so for a few seconds it's on the wrong side.
+
+**Louis's turn:** press F5 and ride over a kerb and across the red track (small wobble, no crash),
+round the roundabout and into a cluster (curved kerbs all the way). Press F to get off and Space
+to jump. Watch a buggy: it stays on the road on its own side.
+
+## Fixes after the careless play-test — 5 November 2026
+
+The careless play-test bot found three things that could end a shift unfairly:
+- **Spine kerbs** counted as a hard wall, so riding into one at speed was a big crash (hospital,
+  shift over). They now count as a bump (`KERB_IMPACT_HARDNESS` in game_config.gd).
+- **Crossings through the spine planters** were only 1.6 m wide. They're 3 m now, and the one by
+  the gym lines up with its door (x 115).
+- **Big end houses** were 1.4 m deeper than the other homes and stuck out into the gap beside the
+  lanes. They're now 8.4 m deep (still bigger than a normal home).
+- Results: careful bot 5 deliveries, 5.0 stars, no crashes. Careless bot 4 and 5 deliveries;
+  its big crashes are now into real things in the Plaza (a shop front, a light pole), which is
+  what careless riding should cost. Smoke test PASS.
+
+**Louis's turn:** ride along the spine road and bump the kerb: you should wobble, not go to
+hospital. Ride from the spine road to the gym door through the crossing.
+
+## Sessions 59 and 74: play-test of the looks pass and the world polish pass — 5 November 2026
+
+Everything from looks Sessions 53 to 58 and World Sessions 61 to 73 is built and merged on
+`world-roads` (they were built by several agents in parallel, then merged and re-tested together).
+- Smoke test PASS, and all 22 focused test suites PASS on the merged code.
+- Play-test bot, careful: 6 deliveries, 5.0 stars, no crashes, never stuck. Careless: one run
+  had a big crash into a Plaza wall early and made no deliveries; earlier careless runs made
+  3 deliveries. Worth a look if careless riding feels too punishing.
+- Screenshots were rendered on a Linux machine with the simpler Compatibility renderer, so the
+  frame-rate check on Low/Medium/High still needs doing on the Mac.
+- Fixes found from the screenshots: the stream no longer runs through the gym (it stops at the
+  gym and carries on after it), grass no longer grows in the stream, and the start spot moved
+  12 m north so you face the Plaza instead of the bike shop's back wall.
+
+**Louis's turn:** open the project in Godot and press F5, then play a full shift. Check each
+place: the restaurants and supermarket inside, the gym and C Institute, the two shops, the
+Plaza at sunset (string lights), the spine road and red tracks, the cluster signs and police
+signs, Majlis Gardens, the bus station (people get on the bus), the school pitch (floodlights
+at 5:15 PM), the arena jumps and the new horses and donkeys. Press M for the full map. In
+Settings, try the Resolution options. Write down anything that looks wrong or feels off.
+
+## Session 73: More life at the stables — 5 November 2026
+
+What works:
+- **Six jumps** in the jumping arena (was two), one on each short side and two on each long
+  side, in different kinds: striped poles in red, blue, green and yellow, wide doubles
+  (oxers) and a low painted wall, with flower boxes by the wings. The arena floor uses the
+  new horse_sand.png texture (sand with hoof prints).
+- **Five riders take turns** on the new horses (chestnut, grey, black, palomino, bay). Each
+  waits at its own spot by the arena gate, facing the course, then rides one round over
+  all six jumps and comes back to wait again. Two are out at once at most, the next one
+  setting off once the one before is on the far straight, so three are always waiting.
+  (scripts/stable_life.gd; ArenaHorse now knows how to wait its turn.)
+- **Grooms walk horses** up and down the stable yard on a red lead rope (two of them), the
+  horse's legs stepping as they go. Riding into them is a small bump, like the other horses.
+- The arena and its life are built by scripts/stable_life.gd; district_traffic.gd only
+  builds the arena rails now and hands over to it (a small change in _build_arena).
+- New numbers in scripts/game_config.gd (Session 73 block): ARENA_RIDERS_OUT, GROOM_WALK_SPEED.
+- Checked: smoke test PASS (new checks: six jumps and five riders with some waiting, 160
+  seconds of arena time: 3 riders cleared 4+ jumps, 4 rounds finished, never more than 2 out;
+  grooms walk horses), district traffic test PASS (the first rider still clears a jump),
+  bus recovery, static batch and lifecycle tests PASS. A 200-second real-physics run showed
+  the riders going round in turns with nobody turning back. No screenshots (headless).
+
+**Louis's turn:** press F5 and ride to the jumping arena (south-west, next to the school).
+Watch from the rail: a rider or two trot round and jump the six jumps while the others wait
+by the gate; when one comes back, the next one goes. Then ride round to the stable yard
+south of the stable block: grooms are walking horses up and down.
+
+## Session 72: The school football pitch — 5 November 2026
+
+What works:
+- **A full football pitch** in front of the school (scripts/school_pitch.gd, built by
+  LandmarkBuilder instead of the old small green pitch): striped turf, all the white lines
+  (touchlines, halfway line, centre circle and spot, penalty and goal areas, penalty spots and
+  arcs, corner arcs) and two goals with white posts and see-through nets.
+- **A red 4-lane running track** along the north side (the new red_track.png texture) with
+  lane lines and start/finish lines.
+- **A tall fence**: green posts 6.5 m high every 5 m with see-through netting (new
+  net.png texture, made by make_textures.py) and a low kick board. It's solid. There's a gap
+  in the north side by the school gate so the pupils can get in.
+- **Four floodlights** (16 m masts at the turf corners). Each beam aims at its own quarter
+  of the pitch, with a narrow cone, so they light only the pitch. They come on by themselves
+  at 17:15 on the shift clock (GameConfig.FLOODLIGHT_ON_HOUR) and their lamps glow.
+- **Pupils play football** in the day: 8 pupils in uniform chase a ball round the pitch (the
+  two nearest run for it, the rest keep their spots). They go home at 16:30. They only move
+  while you're near.
+- **The tennis and basketball courts are gone** (only that block in district_detail.gd).
+  The gate, the booth (villa 901) and the school car park bays are clear of the pitch.
+- New tuning numbers in scripts/game_config.gd (the Session 72 block at the end).
+- PRD.md: the school description now says football pitch with floodlights, no courts.
+- Checked: smoke test PASS (new checks: the pitch, two goals, track and markings, tall fence,
+  gate and booth clear, floodlights off in the day and on at dusk, all four aim at the pitch,
+  8 pupils playing and the ball moving, the courts are gone), navigation, coplanar and detail
+  world tests PASS. No screenshots (headless).
+
+**Louis's turn:** press F5 and ride to the school gate (west side). Look through the gate:
+the pitch with its goals and the red running track, behind the tall green netting. Pupils
+are playing football. To see the floodlights, keep playing until after 17:15 on the clock
+(or ride there near the end of a shift): the four lights come on and light just the pitch.
+
+## Session 71: New rounded playgrounds — 5 November 2026
+
+What works:
+- **Playground pieces made in Blender** (tools/blender/make_playground.py, assets/models/play_*.glb):
+  a slide tower with round posts, a cone roof, a ladder and a curved half-pipe slide; an
+  arched swing frame with two seats on chains; a climbing dome of curved bars; a little
+  roundabout with hoop handles; and a spring rider shaped like a small camel. Soft coral,
+  sunny yellow, mint, sky blue and lilac. Each piece is one draw (the colours are painted on
+  the mesh), 500 to 1,250 triangles.
+- **scripts/playground_kit.gd** builds every playground now: a soft rubber floor with rounded
+  corners (the new play_surface.png texture) and a mint edge, then the pieces that fit:
+  - the 5 cluster plazas (small): a small slide, the roundabout and a spring rider, kept to
+    the far side so the running kids (PLAY_KIDS) still have room
+  - the 2 school playgrounds (in DistrictDetail): slide, swings, roundabout, climbing dome and
+    a spring rider
+  - the big one in the green spine: all of them, with two spring riders
+- **Kids play on them**: one on a swing (swinging), one on the roundabout (turning) and one on
+  a spring rider (rocking). They only move while you're near, and the far ones are hidden,
+  like the other people. The kids running beside the cluster playgrounds are still there.
+- Only the call sites changed in spine_builder.gd and district_detail.gd; the old
+  Props.playground is left in props.gd (not used any more).
+- Checked: smoke test PASS (new checks: all 8 playgrounds are the new kit on the rubber floor,
+  19 kids on them, the swings/roundabouts/spring riders move), navigation, static batch,
+  coplanar and detail world tests PASS. No screenshots (headless).
+
+**Louis's turn:** press F5 and ride to the playground at the middle of the green spine (west
+of the gym), then to the little one at any cluster plaza. You should see the rounded slide,
+the swings going, the roundabout turning with a kid on it, and the soft coral rubber floor.
+The school has two more inside its fence.
+
+## Session 70: Blender horses, donkeys and textures — 5 November 2026
+
+What works:
+- **Blender scripts** in tools/blender/ build every new model and texture from code (see
+  tools/blender/README.md). They run with `blender --background --python tools/blender/<script>.py`
+  on the Mac, or plain `python3 tools/blender/<script>.py` with the Blender module installed.
+- **New horses** (make_horse.py): a proper horse shape (deep chest, arched neck, long head,
+  slim legs with hooves), a mane and a long tail, in five coats: bay, chestnut, grey (dappled),
+  black and palomino. About 1,300 triangles each. The saddle, saddle cloth, stirrups and reins
+  are a separate part that only shows when someone rides. The legs still swing when they walk
+  and trot, and the rider sits in the same seat as before. Used by the two horses on the track,
+  the jumping arena horse, the horses in the stable doors and the paddock, and the horses
+  crossing the road (their legs now walk too).
+- **New donkeys** (make_donkey.py): shorter, long ears, grey-brown or brown with a pale muzzle
+  and belly, a dark stripe down the back, a short upright mane and a tufted tail. The two
+  donkeys in the pen walk with their legs moving.
+- **New textures** (make_textures.py, assets/textures/): blue_track.png (blue cycle track),
+  red_track.png (red walking track), horse_sand.png (sand with hoof prints), pavers.png
+  (20 x 10 cm blocks) and play_surface.png (soft rubber playground floor). They all tile with
+  no seams. scripts/surface_textures.gd makes a material from any of them. The tracks and
+  pavers are being rebuilt by the roads work right now, so they're **not applied here** — the
+  road/track builder just needs `SurfaceTextures.make("blue_track")` etc. (sizes in
+  tools/blender/README.md). The playground floor is applied in Session 71.
+- Checked: smoke test PASS (new checks: the riders' horses are the Blender horse with a saddle,
+  the 7 stable/paddock horses are Blender horses, the donkeys are Blender donkeys and smaller,
+  the five textures are there), district traffic test PASS (the arena horse still clears its
+  jump), static batch test PASS. Headless Godot can't take screenshots, so I checked the models
+  with test renders in Blender instead.
+
+**Louis's turn:** press F5, ride to the stables in the south-west and look at the horses in
+the stable doors and the paddock, and the riders on the edge track. They should look like
+horses (long neck and head, mane, tail), not donkeys. Then ride to the donkey pen in the
+middle of the green spine: the donkeys are smaller with long ears.
+Rebuild a model on your Mac: `blender --background --python tools/blender/make_horse.py`.
+## Session 66: Majlis Gardens and the phase 3 building site — 5 November 2026
+
+What works:
+- **Majlis Gardens (حدائق المجلس)** in the empty strip between the C1-west car park and
+  Cluster 1 (scripts/majlis_gardens.gd, layout in MAJLIS_GARDENS in the data):
+  - a fountain on a round paved plaza (stone basin, pedestal, bowl and little jets; solid)
+  - curving paver paths (about 220 m) that join the Cluster 1 lanes (by the alley, the cross
+    row alley and the back road), the car park (two places) and the spine loop road
+  - palms round the plaza and along the paths, low clipped hedges along both sides with gaps
+    where the paths go through
+  - a shaded majlis: a cloth roof on wooden posts over low sofas with cushions, a rug and a
+    coffee table with a dallah and cups
+  - six benches, a community garden bed (raised wooden bed with rows of vegetables, tomatoes,
+    marigolds, a watering can, a tap and a "Community garden / حديقة المجتمع" sign)
+  - a stone sign at the entrance from the spine loop road
+  - people (PlaceCrowds): neighbours on three benches and two in the majlis, a child and a
+    parent at the fountain, two people walking round the paths and a gardener at the bed
+  - "Majlis Gardens" is named on the full map (M)
+- **Phase 3 building site** south of the mosque: dressed exactly like phase 2 (LandmarkBuilder):
+  tall hoarding all round, a lattice crane, three containers, sand piles, two workers in hi-vis
+  and hard hats, and the orange "Phase 3 coming soon / المرحلة الثالثة قريباً" sign facing the spine.
+  The plain "Coming soon" version that stood there before is gone.
+- Checked: smoke test PASS (new Session 66 checks in tests/smoke_signs.gd: everything in the
+  gardens, they're in the free strip, every path end joins a road, lane or the car park, nothing
+  stands on a path, people sit, walk and garden there, the phase 3 site matches phase 2 and its
+  sign is bilingual), tests/signs_wave_test.gd, coplanar, navigation, detail world, static batch,
+  mini-map cache, lifecycle, district traffic and bus recovery tests PASS. Play-test bot: 4
+  deliveries, 5.0 stars, no crashes, never stuck. No screenshots (headless).
+
+**Louis's turn:** press F5 and ride east along the north spine loop road to just before Cluster 1.
+On the left: the stone "Majlis Gardens" sign and a paver path. Ride in (slowly): the fountain on
+its round plaza with palms and benches, people sitting, someone walking round, the shaded majlis
+with sofas and a coffee pot, and at the far end the garden bed with a gardener. Follow a path to
+the car park and one into Cluster 1. Then ride to the mosque and south of it: the phase 3 site
+with its crane and the "Phase 3 coming soon" sign. Press M: Majlis Gardens is on the full map.
+
+## Session 65: Cluster entrances and signs — 5 November 2026
+
+What works (scripts/cluster_signs.gd, scripts/police_sign.gd, scripts/end_houses.gd; layout in
+CLUSTER_ENTRANCES, POLICE_SIGNS, END_HOUSES and POOL_GATE in the data):
+- **The real-style cluster sign** at each cluster's entrance (where the middle lane meets the
+  front road), on the verge beside the lane: a dark green board with a white border on a pale
+  blue metal frame and pole. "Cluster 3" with المجموعة ٣ under it, then two lines with arrows
+  ("Villa 1–50 ←", "Villa 51–100 →", with the Arabic under each) pointing the way to those
+  houses for a rider coming in, and an "EXIT خروج" line with a down arrow. The back shows the
+  cluster name. The 50 old teal lane-end signs are gone.
+- **Police sign** (made up, no real badge): white board on a grey pole, red "Attention / تنبيه"
+  header with a camera icon, an emblem (gold star over a little dhow on a navy disc), and
+  "5-Star Habibi Police: Area is monitored by Habibi Smart Home Security" in English and Arabic.
+  One at each cluster entrance and five beside the spine's red tracks.
+- **STOP signs:** a small red octagon with قف above STOP where each cluster entrance meets the road.
+- **Bins** moved to the back of each cluster, beside the back cross road.
+- **Community pool:** it now has a white fence with a gate on the red-track side (where the
+  crossing from the spine road comes in), and the "Community Pool / المسبح المجتمعي" sign stands
+  outside the fence beside the gate. The pool moved 2 m north and is a little shorter so it's
+  off the red track, and the sunbeds (umbrellas now on poles) are along the north side.
+- **Big end houses:** 36 bigger homes from the same house kit (9.6 x 9.4 m instead of 9 x 8,
+  a bit taller) where a row stops 10 m short of a road (12 in each of Clusters 4 and 5, 4 in each
+  of Clusters 1 to 3). They're scenery: no number, no address. All 500 homes keep their numbers.
+  Each cluster's end houses are one joined mesh (cheap on Low).
+- The Arabic on the signs is checked by a test: the letters join up and run right to left.
+- Checked: smoke test PASS (the cluster sign check now expects one sign per cluster; new Session
+  65 checks in tests/smoke_signs.gd: all three signs at every entrance in both languages, the
+  arrows point at the right villas, no sign in the road or on the track, police signs on the
+  tracks, joined right-to-left Arabic, bins at the back, pool sign outside the gate, end houses
+  bigger and clear of roads and homes), tests/signs_wave_test.gd, coplanar, navigation, housing
+  camera and static batch tests PASS. No screenshots (headless).
+
+Known bugs / to do:
+- The end houses don't show on the mini-map or full map (they aren't addresses).
+
+**Louis's turn:** press F5 and ride along the spine loop road to a cluster entrance (e.g.
+Cluster 1, north of the spine). On the right, beside the lane: the green sign with "Cluster 1",
+the Arabic, "Villa 1–50 ←" and "Villa 51–100 →" and EXIT. Ride left: the houses there are 1 to 50.
+On the other side: the police sign with the red Attention header, the camera and the star and
+dhow emblem. Ride out again: a little STOP sign where the lane meets the road. Ride along the red
+tracks: a few more police signs. Look at the end of the house rows next to the little plaza:
+a bigger house. Ride round the back road: the bins are there now. Go to the community pool from
+the spine road: the gate and the pool sign next to it.
+
+## Session 64: Bus stop and car parks — 5 November 2026
+
+What works:
+- **A real platform at the bus station.** Inside the bus loop there's a raised paved island
+  (with a kerb and a yellow line at the edge) right beside the lane where the bus stops. On it
+  stand **two shelters** facing the bus: a teal roof on metal posts, a glass back panel with a
+  **route map** (three coloured lines and a red "you are here" dot), two benches, a green bin and
+  a small bilingual sign on the front of the roof ("Wahat Bus Station / محطة حافلات الواحة" and
+  "Coming soon: travel to other districts"). It replaces the old single shelter
+  (scripts/bus_stop.gd, layout in BUS_PLATFORM in the data).
+- **People get on the bus.** 4 people wait in front of the shelters when you start (never more
+  than 5). When a bus stops at the bay they walk to its door one after another and get on (they
+  disappear into the bus); the bus waits until the last one is in. New people walk onto the
+  platform every 10 seconds or so. One traveller with a suitcase stays in the first shelter,
+  reading the route map. Numbers: BUS_STOP_* in scripts/game_config.gd.
+- **Stables car park** now has four marked bays with parked cars and solar roofs, like the others.
+- **School car park** now has the same dark asphalt under its ten cars and solar roofs (it was on
+  grass) and a pay machine.
+- Checked: smoke test PASS (new Session 64 checks in tests/smoke_signs.gd: two shelters with
+  glass, route map, sign; platform right beside the bay lane; 3 to 5 waiting; they get on; new
+  people arrive; stables and school car parks), new focused test tests/signs_wave_test.gd PASS,
+  district traffic, bus recovery, coplanar and detail world tests PASS. Headless Godot can't
+  take screenshots, so the screenshot step was skipped.
+
+**Louis's turn:** press F5 and ride to the bus station (north side, next to the mosque, the loop
+off the ring road). On the island: two glass shelters with benches, a bin and a route map. Wait
+for a bus (one comes every game hour): when it stops beside the shelters, the people walk to its
+door and get on, and it waits for them. Wait a bit longer: new people walk up to the shelters.
+Then ride to the stables car park (south, by the stables) and the school car park (in front of
+the school): cars in marked bays under solar roofs, on dark asphalt.
+## Session 58: Plaza, streets and the spine — 5 November 2026
+
+What works:
+- **The Plaza** (scripts/plaza_life.gd): 18 café tables with chairs, a drink and a parasol
+  outside the restaurants (8 with someone sitting at them), a juice kiosk on the west side
+  of the paving with a green and white striped canopy, bottles and oranges, a bilingual
+  "Fresh Juice · عصير طازج" sign, the juice seller and a customer, 12 poles round the sunken
+  square with strings of 228 bulbs hanging between them, and 6 more people strolling slowly
+  round the Plaza (they only move while you're near, to keep Low fast).
+- **Lights at sunset** (scripts/sunset_lights.gd): from about 17:00 the string light bulbs,
+  the kiosk bulbs and every street lamp head glow, fading in over half an hour (GameConfig
+  LIGHTS_*). On Medium and High four real warm lights also come on over the sunken square.
+- **Streets and lanes** (scripts/street_details.gd): 169 street lamps every ~30 m along the
+  inside roads and cluster lanes and in the spine planters (the ring road keeps its own
+  light posts), 87 green bins beside them, 21 blue bilingual street name signs (for example
+  "Spine Road · طريق الحديقة", "C1 Lane · ممر المجموعة ١") and 9 bike racks (Plaza, gym,
+  C Institute, farm stall, bee farm, school). Every spot is checked against the map
+  (scripts/clear_spots.gd) so nothing stands on a road, a red track, a doorstep or a home.
+  The poles, bins, signs and racks are solid. Road markings and kerbs are Session 61's.
+- **The spine** (scripts/spine_greenery.gd): 22,000 clumps of real grass blades (thin
+  tapered blades, dark at the root and light at the tip), drawn in 40 m chunks up to 90 m
+  away; Low draws only a quarter of them, up to 63 m. Plus 140 flower patches (1,239 flowers
+  in groups of one colour on stems), 271 rocks, and 40 more round shade trees with solid
+  trunks. All of it keeps clear of the spine road, the planters, the red tracks, the path
+  crossings, the stream, the domes, beds, pools, court, playground, pen, hives, gym and stalls.
+- Checked: smoke test PASS (new Session 58 checks). tests/venue_looks_test.gd PASS (96 checks:
+  counts, lights off at noon and on at sunset, Arabic + English signs, nothing on a road or
+  red track, nothing growing on the spine road, planters or tracks, Low draws sparser grass).
+  Coplanar, navigation, detail world, static batch, road mesh, district traffic, bus
+  recovery, housing camera, mini-map cache, lifecycle, interiors, shop, reception, touch,
+  phone refresh, kit props and crash impact tests PASS. Play-test bot: 5 deliveries,
+  5.0 stars, 0 crashes, never stuck. The frame-rate check on Low and Medium needs a real
+  graphics card (Session 59 on the Mac); headless Godot can't take screenshots either.
+
+**Louis's turn:** press F5 and ride into the Plaza: café tables with parasols outside the
+restaurants and people sitting at some, the juice kiosk on the west side, people strolling
+round, strings of bulbs round the sunken square. Keep playing until about 17:00 on the clock
+(or ride round till late in the shift): the bulbs and the street lamps start to glow. Ride
+down a cluster lane: lamps, green bins and a blue street sign with Arabic and English. Then
+ride along the spine and look at the grass between the red track and the domes: thin blades,
+flower patches, rocks and new trees. Press Esc, Settings, Graphics Low: the grass gets
+sparser. Back to Medium or High.
+
+Known bugs / to do:
+- The street lamps only glow (no real light on the road) to keep it fast; only the Plaza has
+  real lights at sunset.
+- The kiosk is for looks: you can't buy a juice there.
+
+## Session 57: Bike shop, clothes shop, stable office, farm stall and school booth — 5 November 2026
+
+What works:
+- **Both shops are rebuilt like the restaurants** (scripts/shop_interior.gd for the room,
+  scripts/shop_recipes.gd for each shop's things): a glass front with sliding glass doors, a
+  5 m ceiling with hanging lamps and a light with soft shadows, a tiled floor, plants and a
+  bin. The indoor camera comes closer inside them too.
+  - **Pedal Point Bikes:** five bikes in different colours hanging by their front wheels on
+    the left wall, a tool pegboard full of spanners, screwdrivers and pliers over a workbench
+    with a vice, parts boxes and a wheel, a tyre rack of 16 tyres, a repair stand with a bike
+    clamped on it, two bikes on show by the window, a floor pump, a shelf of helmets, a
+    "Ride safe · قُد بأمان" poster, and the mechanic in overalls at the counter.
+  - **Dune Drip:** a caps and sunglasses wall ("Caps & shades · قبعات ونظارات"), two clothes
+    rails of shirts and hoodies, a table of folded hoodies, shelves of T-shirts behind the
+    till, a patterned rug and a big framed mirror where you try things on, two mannequins in
+    hoodies and caps in the window, and the cashier.
+  - The shop screens (side panel, cart, checkout, mirror) work as before: the counter, the
+    try-on spot and the shop camera didn't move.
+- **The stable office** (scripts/spot_buildings.gd) has plank walls, a wooden door standing
+  open under a little porch roof, a big front window so you can see in, and a back window
+  onto the stable block. Inside: the groom sitting at his desk (papers, ledger, mug), two
+  saddles on wooden stands with stirrups, four prize rosettes and three horse photos, three
+  riding helmets on hooks, a hay bale and a warm lamp.
+- **The school gate booth** is a glass security booth with white posts and a teal roof, the
+  guard (navy uniform and cap) at a desk with a glowing screen and a phone, and a red and white
+  barrier arm beside it, raised so the gate stays open.
+- **The Wahat Farm Stall** has a striped awning over the front, the farmer in a straw sun hat
+  behind the counter, a juice press with a jug and fruit, a glass cooler of juice, five crates
+  of veg from the kit in front, and a chalkboard menu ("Farm juice 12 Dh", "Salad box 18 Dh",
+  "Dates 10 Dh"). The Bee Farm stall keeps its own honey look.
+- Checked: smoke test PASS (new Session 57 checks; the school, stables, institute and gym
+  drop-offs still work). tests/shop_test.gd PASS (both shops still sell). The focused test
+  tests/venue_looks_test.gd now has 84 checks (every new thing in each place) and PASS.
+  Coplanar and detail world tests PASS. No screenshots (headless Godot can't draw).
+
+**Louis's turn:** press F5. Ride to Pedal Point Bikes, get off (F), walk in through the
+sliding doors: bikes hanging on the left, the pegboard and workbench behind the mechanic, the
+tyre rack on the right. Hold E at the counter: the shop screen opens like before; buy
+something to check it still works, then Esc. Do the same in Dune Drip and try a cap in the
+mirror. Then ride to the stables office (behind the stables) and look in through the window,
+to the school gate to see the glass booth and the guard, and to the farm stall by the domes.
+
+Known bugs / to do:
+- The horse you see from the stable office is in the stable block behind it; the paddock is
+  on the far side of the block (and horses are another session's job).
+- You can walk into the stable office but there's nothing to do inside (the drop-off is at
+  the door, as before).
+
+## Session 56: The gym and the C Institute inside — 5 November 2026
+
+What works:
+- **The Wahat Gym is a real gym** (scripts/gym_room.gd). The building outside keeps its size
+  and its rounded back. The front (onto the spine) and the side next to the lap pool are glass
+  from the floor to the ceiling. Inside: 4 treadmills facing the glass with 3 people running,
+  3 exercise bikes with 2 people pedalling (their feet go round), 2 rowing machines by the pool
+  glass with people rowing (they slide back and forth and pull the handle), a squat rack on a
+  wooden platform with someone squatting a loaded barbell, a dumbbell rack and a flat bench in
+  front of a big mirror wall that says "Train hard · تمرّن بقوة", someone holding dumbbells,
+  3 yoga mats with someone stretching, kettlebells, a rubber tile floor, a 4.8 m ceiling with
+  light panels, a water fountain, a towel stand, and the reception desk with the receptionist,
+  smoothies and a smoothie cooler in front of a "Wahat Gym" logo wall. Gym music in the
+  background (room_gym.wav from tools/make_sounds.py). Everyone working out wears gym clothes
+  (PlaceLooks.gym_goer). The movements are in scripts/gym_motion.gd (numbers: GameConfig GYM_*).
+- **The C Institute lobby** (scripts/institute_room.gd) fills the whole building and is two
+  storeys tall. Glass on both long sides, both storeys, so you see right through (the front
+  faces the spine). Inside: a curved white reception desk with a big teal "C" logo wall behind
+  it, four wide wooden steps with cushions and 8 people on glowing laptops, facing a big talk
+  screen on the left wall, a balcony walkway along the back and right walls with a glass
+  railing and people looking down, a wooden staircase up to it, 12 hanging plants and trailing
+  plants on the balcony, a wood-slat ceiling, couches by the back glass and a quiet chatter
+  and typing sound.
+- **The talk screen changes during the shift** with the game clock (scripts/talk_screen.gd):
+  "Welcome · أهلاً" until 12:00, "Talk today · 4 PM" until 16:00, then "Solar cities of
+  tomorrow" (times in GameConfig TALK_SCREEN_TIMES).
+- Both receptions are inside their rooms, straight in from the door. The indoor camera works
+  in both (they are "venue rooms" now).
+- Checked: smoke test PASS (new Session 56 checks: the gym, the lobby, both receptions inside;
+  gym and institute deliveries and the staffed counter panel still work). New focused test
+  tests/venue_looks_test.gd PASS (45 checks: every gym machine, people in gym clothes, the
+  rower and lifter move, pool-side glass, two-storey glass both sides, the talk screen's three
+  slides, a clear walk to both receptions). Reception panel, interiors, detail world,
+  coplanar and static batch tests PASS. Headless Godot can't take screenshots, so the look
+  still needs Louis's eyes.
+
+**Louis's turn:** press F5 and do deliveries until one goes to the Wahat Gym (or ride there:
+it's on the spine next to the lap pool). Get off (F) and walk in through the sliding doors:
+treadmills with runners on the left, bikes on the right, rowers by the pool glass, someone
+squatting in front of the "Train hard" mirror. Walk to the reception desk and hold E. Then get
+an order to the C Institute: walk in and look up (it's two floors tall), look left at the talk
+screen and the people on laptops, and right at the stairs and the balcony. Check the talk
+screen in the morning, after 12:00 and after 16:00: it says something different each time.
+
+Known bugs / to do:
+- You can't walk up the institute stairs (they're for looking at).
+- The rowing handle has no cord, and the treadmill belts don't move.
+
+## Session 69: The beekeeper as a pickup — 5 November 2026
+
+What works:
+- **Wahat Bee Farm (مزرعة نحل الواحة).** A small wooden stall beside the beehives in the
+  spine (one new RESTAURANTS entry in tools/build_wahat_data.py, like the farm stall), with an
+  amber and white striped roof, a bilingual sign, two rows of honey jars and wax candles on
+  the counter. The beekeeper in the white suit stands between the stall and the hives.
+- Orders for **honey jars** or **wax candles** come from it like any restaurant, are picked up
+  at the stall and delivered to homes. Honey jars keep well but are glass (bumps hurt a bit);
+  wax candles go soft in the sun (they lose freshness faster). Their numbers are in the
+  freshness and damage tables in scripts/game_config.gd.
+- It shows on the phone ("Pick up · Wahat Bee Farm"), on the mini-map pin and name strip,
+  and on the full map (its building, its name and the "Beekeeper" label, with the orange P
+  when it's your pickup).
+- Checked: smoke test PASS (the "an order from Wahat Bee Farm works" check, plus new checks:
+  the stall is by the hives, the phone and mini-map show it, the full map shows the beekeeper,
+  a honey order is picked up and delivered). All focused tests PASS (minimap cache, navigation,
+  coplanar, phone refresh, lifecycle, static batch, detail world, touch controls, reception,
+  housing camera, bus recovery, district traffic). Play-test bot: 6 deliveries, 4.83 stars,
+  0 crashes, never stuck.
+
+**Louis's turn:** press F5 and do a few deliveries until you get a honey jars or wax candles
+order (or ride to the beehives east along the spine). The phone says Pick up · Wahat Bee Farm,
+the mini-map pin points there and M shows an orange P by the hives. Hold E at the stall, then
+ride to the home and hold E again. Watch out on the speed bumps with honey jars.
+
+## Session 68: People who live here — 5 November 2026
+
+What works:
+- **People walk home.** Every 9 seconds or so, if you're near the Plaza, someone with a
+  shopping bag walks out of a restaurant, along the lanes and paths (the same map scan the
+  GPS uses) to a home in one of the clusters, up to the front door and in through it. Only
+  once they're inside the house are they gone. Up to 4 at a time. (scripts/home_walkers.gd,
+  scripts/home_walker.gd, made by CustomerSpawner.) Near you they stand on the real ground
+  (down the Plaza steps too).
+- **Only people near you are fully animated.** Closer than 45 m: full animation. Further:
+  they keep moving along but hold their pose. Past the life view distance: hidden. This now
+  covers the route walkers too (LifeBuilder), not just the new people.
+- **Each place has its own people** (scripts/place_looks.gd for the clothes,
+  scripts/place_crowds.gd for where they stand):
+  - all three pools: swimmers in swim shorts or rash guards (some with swim caps) and a
+    lifeguard in red and yellow with a rescue float
+  - gym: gym clothes, a towel and a water bottle (also the gym's customers at the door)
+  - school: pupils in uniform running about the yard, teachers with lanyards
+  - stables: a rider in jodhpurs and a helmet, grooms
+  - Plaza: waiters in aprons outside four restaurants, shoppers with bags walking round,
+    a parent and child
+  - bus station: commuters with backpacks and suitcases
+  - spine paths: joggers in sports kit, dog walkers (with a dog on a lead), a parent pushing
+    a buggy
+  - cluster plazas and playgrounds: neighbours chatting, a parent on each bench
+  - beekeeper: white suit, wide hat and a dark veil, gloves
+  - building sites: workers in hi-vis vests and hard hats
+  - farm beds and planters: gardeners in straw sun hats
+- Checked: smoke test PASS (new checks: every kind of person is there, all 9 swimmers wear
+  swimwear, the near/mid/far animation rule, someone walks from 1000 Pizza to C1 Villa 1,
+  253 m, and goes in the door), coplanar, detail world and static batch tests PASS.
+
+Known bugs / to do:
+- Majlis Gardens isn't built yet (Session 66), so its kids and benches aren't there; the
+  cluster playgrounds have them.
+- People walking home aren't solid (like customers), so the bike rides through them.
+- People walking home use the lanes, not only the pavements.
+
+**Louis's turn:** press F5 and ride into the Plaza. Wait by a restaurant: someone with a bag
+walks out. Follow them (slowly): they walk all the way to a cluster and go in their front door.
+Then ride round: swimmers in swimwear and a lifeguard at the community pool, the lap pool by
+the gym and the school pools; gym clothes outside the gym; pupils and teachers in the school
+yard; waiters outside the restaurants; commuters with suitcases at the bus station; a dog
+walker and a buggy on the spine; the beekeeper in white by the hives; hard hats at the
+building sites; gardeners in sun hats at the farm beds.
+
+## Session 67: Glitch fixes, full map and resolution setting — 5 November 2026
+
+What works:
+- **No flicker on the Plaza walkways.** The Plaza paving sat only 5 mm under the Plaza Road
+  and the bench bases, so it flickered from far away. Its top is now 2 cm up (PlazaBuilder
+  PAVING_TOP), a clear 2 cm under the roads. The fountain water and the teal floor ring also
+  got a real 2.5 cm step. tests/coplanar_test.gd now also checks for surfaces only a few
+  millimetres apart around the Plaza restaurants (0 left).
+- **School pool shades stand up.** Both school pool shades (and the two school playground
+  shades, which floated too) have white posts with foot plates, beams, a trim round the edge
+  and a raised middle. The posts are solid.
+- **Full map on M.** Press M: the whole community fills the screen with roads, parks, homes,
+  shops and names (clusters, Plaza, school, gym, pools, gates, beekeeper and more), a white
+  arrow where you are (also when walking), the pickup (orange P) and drop-off (teal D) of
+  your order and a legend. M or Esc closes it. The game is paused while it's open.
+  (scripts/full_map.gd, made by scripts/hud.gd, drawn with the mini-map's own drawing.)
+- **Resolution.** Settings has two new rows under Graphics: Window (Auto, 1280 x 720,
+  1600 x 900, 1920 x 1080, 2560 x 1440; desktop only) and Render scale (50, 75, 100%,
+  everywhere; the browser starts at 75%). Both are saved with the other settings.
+- Checked: smoke test PASS (new checks: full map opens, pauses, has names, closes; render
+  scale is used and saved; the pool shades have posts), coplanar test PASS. Headless Godot
+  can't take screenshots, so the screenshot step was skipped.
+
+Known bugs / to do:
+- The north restaurant row's back 3 m sits over the ring road (hidden under the shop floor).
+  That's road layout, left for the roads sessions.
+- On phones there's no M key yet, so the full map can't be opened there.
+
+**Louis's turn:** open the project in Godot and press F5, start a shift. Press M: you should
+see the whole map with names, your white arrow and a legend; everything stops moving. Press M
+again (or Esc) to close it. Accept an order and press M: an orange P at the restaurant and a
+teal D at the home. Ride into the Plaza and look at the paving in front of the restaurants from
+far away: no flickering. Ride to the school pools: the shade roofs stand on posts. Press Esc,
+Settings: change Render scale to 50% (the world gets softer), then back to 100%. Try a Window
+size. Quit and start again: your choices are still there.
+## Session 55: The other 5 (Tok Tok Thai, Sushi You, Mario Bonito, Burgerology, Grand Groceries) — 5 November 2026
+
+What works (scripts/restaurant_recipes_more.gd and scripts/grocery_room.gd, same room template):
+- **Tok Tok Thai:** three woks over flickering flames on the kit stoves, an extractor hood,
+  nine red silk lanterns that swing a little, dark wood floor, gold trim and pictures.
+- **Sushi You:** a sushi bar on the right with a **moving conveyor belt** (14 coloured plates
+  going round, GameConfig SUSHI_BELT_SPEED), diners on stools eating off the belt, the bar chef
+  plus the kitchen chef (two chefs), a glass fish case on the pick-up counter (with a
+  bilingual "Pick-up" sign), a navy curtain over the kitchen door, a booth with a couch and two
+  people, white paper lanterns and bamboo.
+- **Mario Bonito:** a band of colourful painted tiles round the walls, three strings of paper
+  bunting, cactus pots (floor, tables, counter), the taco counter with trays of fillings, a
+  tortilla stack and tacos in a stand, and a painted sun.
+- **Burgerology:** white metro tiles, a flat grill with patties and buns under the hood, a
+  fryer with two baskets, a glowing pink neon "Burgerology" sign (Arabic too), ketchup and
+  mustard on every table, black-and-white floor.
+- **Grand Groceries is a real little supermarket:** a wall of 8 drinks fridges with a "Cold
+  drinks" sign, 3 shelf units full of products with yellow price strips and hanging bilingual
+  aisle signs (1 Snacks, 2 Rice and pasta, 3 Home), a fruit and veg stand made of kit crates,
+  a bread shelf, a sweets rack, 2 checkouts with belts (checkout 1 open with the cashier,
+  checkout 2 "Closed"), baskets and trolleys by the door, and shoppers: one pushing a trolley
+  up and down aisle 2, one with a basket, one at the fruit. You collect at checkout 1, and the
+  queue waits there too.
+- Every counter is far enough inside that you have to walk in (checked by a test).
+- People inside the shops are only drawn within 80 m, and the hidden queue people don't
+  animate, to keep Low graphics fast.
+- Smoke test: walks into all 10 places, waits in the queue, holds E and walks out. The
+  interiors test checks each place's own things and that Sushi You's belt moves.
+
+**Louis's turn:** press F5 and take orders from Sushi You and Grand Groceries (and any of the
+others). In Sushi You, watch the plates go round the bar. In Grand Groceries, walk in, look up
+at the aisle signs, then go to checkout 1 (the green "1"): if someone is in front of you, wait,
+then hold E. Check that no two restaurants look the same inside.
+
+Known bugs / to do:
+- No screenshots yet (headless Godot can't draw), so the exact look of each room still needs
+  Louis's eyes: sizes of props, lamp brightness and the indoor camera distance may need tuning
+  (all in game_config.gd or the recipe files).
+- The doors slide open for you and the queue people; they're only glass to look at, so a bike
+  could still be ridden in through the doorway, as before.
+
+## Session 54: The new restaurant room and the first 5 restaurants — 5 November 2026
+
+What works:
+- **One restaurant room template** (scripts/restaurant_room.gd). The building outside keeps its
+  size; inside is a cosy 12 x 10 m room with a 4.5 m ceiling, and the rest is a storeroom you
+  can't get into. Big glass front, sliding glass doors that open as you walk up (and close
+  behind you), the kitchen with a cook at the back, the menu board (Arabic + English title,
+  four dishes with Dh prices), the counter with the staff member, 4 tables with people eating,
+  a glass drinks fridge, a bin, plants, warm hanging lamps (one light with soft shadows) and a
+  tiled floor in the shop's own colours. Tables, chairs, counters and crates come from the
+  KayKit kits, joined into one mesh per room.
+- **The first 5 shops** (scripts/restaurant_styles.gd for colours, scripts/restaurant_recipes.gd
+  for their own things):
+  - 1000 Pizza: brick dome oven with flickering flames and a chimney, logs, a pizza peel,
+    stacked pizza boxes, black-and-white checker floor, red band and red-and-white cloths.
+  - Brain Freeze Gelato: glass freezer of 8 colourful tubs, cone jar, pink-and-white striped
+    walls, pastel floor.
+  - Spill the Tea: 4 tea taps, cup sealing machine, cups with pearls, a plant wall and a neon sign.
+  - Shawarma Supreme: two spinning shawarma grills with glowing heaters, stacks of bread,
+    Arabic star tiles on the floor and walls.
+  - Bread & Zaatar: steel bread oven with glowing doors, glass cake display (two shelves),
+    bread baskets, manakish trays.
+- **Short queue** (scripts/venue_queue.gd): half the time nobody's there; otherwise 1 (or
+  sometimes 2) people wait at the counter. When you reach the counter they're served and walk
+  out, 2 to 4 seconds, and the panel says "1 person ahead of you · just a moment". Holding E
+  only fills after that. Chances and times: GameConfig QUEUE_*.
+- **Indoor camera:** inside a walk-in room the camera comes closer (2.9 m) and a bit higher, and
+  goes back out when you leave (GameConfig CAMERA_INDOOR_*).
+- **Background sound per place** made by tools/make_sounds.py (room_*.wav, 5 s loops): oven
+  crackle, freezer hum and scooping, tea shaker and sealer, grill sizzle and chopping, bakery
+  clinks, plus quiet chatter. Heard only inside and at the door.
+- Smoke test: walks into each of the 5 rooms, waits in a queue of 1 or 2, holds E, walks out
+  (tests/smoke_rooms.gd). New focused test: tests/interiors_test.gd.
+- Tok Tok Thai, Sushi You, Mario Bonito, Burgerology and Grand Groceries still use the old room
+  until Session 55.
+- Headless Godot can't take screenshots, so there are no pictures of the rooms yet.
+
+**Louis's turn:** press F5 and take an order from 1000 Pizza (or any of the five). Park, press
+F and walk to the glass door: it should slide open. Inside, the camera comes closer. Look for
+the oven with flames, the menu board and people eating. If someone is at the counter, wait a
+couple of seconds until they walk out, then hold E. Walk out again: the door opens and the
+camera moves back. Also walk past the shops in the Plaza and look in through the glass.
+
+## Session 53: The free asset kits — 5 November 2026
+
+What works:
+- **Two free CC0 kits** from the official KayKit GitHub pages: KayKit Restaurant Bits (kitchen
+  counters, stoves, fridges, tables, chairs, crates of veg, plates, food) and KayKit Furniture
+  Bits (cactus pots, couch, wooden chairs and stools, shelves, rugs, picture frames). Both say
+  CC0 in their licence files. Only the 73 models the game uses are in assets/kits/ (about
+  2 MB, glTF), each kit with its License.txt, and both are listed in CREDITS.md.
+- **Prop library.** `Props.kit(name, parent, position, rotation, scale)` places a kit model by
+  name (e.g. `"restaurant/chair_A"`). `Props.bake_kits(room)` then joins every kit model in a
+  room into one mesh per kit, so a full restaurant is only a couple of draws (good for Low).
+  Kit models are hidden further than 90 m away.
+- **Props built in code** for things the kits don't have (scripts/room_props.gd): a glass drinks
+  fridge with bottles, a bin, a big plant, a warm hanging lamp, a menu board, glass panes and
+  tiled floors (checker, plain, Arabic star, wood planks, painted tiles, metro tiles).
+- **Kit gallery:** scenes/kit_gallery.tscn shows a row of every model from each kit, with names.
+- New test: tests/kit_props_test.gd (licences, credits, every model loads, place and join).
+
+Skipped (and why): kenney.nl is blocked from the build machine and there is no official GitHub
+copy of the Kenney Furniture Kit or Food Kit (only an unofficial mirror, which I didn't use).
+The CC0 supermarket pack (itch.io) and the Poly Pizza gym models can't be reached either. The
+food, drinks, shelves and supermarket bits are built from basic shapes in code instead.
+The gym models are for Session 56 (not this wave).
+
+**Louis's turn:** open scenes/kit_gallery.tscn and press F6. You should see two long rows of
+models (restaurant bits, then furniture bits) with their names floating above, and a third
+row with the fridge, bin, plant and lamp. Use the arrow keys to slide the camera along.
+## Session 63: Greenery, round tracks and no bare sand — 5 November 2026
+
+- **Green edge.** Palms, round shade trees and hedges in the strip between the ring road and
+  the blue track, all the way round (open at the two gate roads and where the horses cross).
+  The trunks and hedges are solid (scripts/edge_builder.gd).
+- **Round tracks.** The blue run-and-cycle track and the horse track have rounded corners with
+  the same centres as the ring road's (radius 25 m and 37 m). The white horse rails, the horse
+  riders and the track jogger follow the curves. The blue track has a fine rubbery texture with
+  white lane lines (assets/textures/bike_track_1k.jpg, made by tools/make_road_textures.py).
+- **No bare sand.** The ground is grass now, and every cluster sits on pavers, so the front of
+  every home is paved. Sand stays only at the stables, the jumping arena and the horse track
+  (SAND_AREAS in the data); tyre dust only puffs up there now.
+- **Past the fence.** Three more rows of trees outside the walls (past the highway on the west),
+  56 low sand dunes, desert sand out to the horizon and 14 hazy far-off towers of Al Sarab.
+- Checked: smoke test PASS (new Session 63 checks), road mesh, district traffic, bus recovery,
+  coplanar, navigation, detail world, static batch, mini-map cache, housing camera and
+  lifecycle tests PASS. Play-test bot careful: 5 deliveries, 5.0 stars, never stuck; careless:
+  3 deliveries, 3 small and 1 big crash, never stuck.
+
+**Louis's turn:** press F5 and ride to the ring road, then out to its edge: a row of palms,
+trees and hedges between the road and the blue track. Ride round a corner of the ring road and
+look at the blue and sandy tracks: they curve too, and the blue track has lane lines. Ride
+through a cluster: pavers in front of the houses, no sand. Look out past the fence from the
+ring road: thick trees, dunes and far-off towers.
+
+**Known gaps (Sessions 61 to 63):** screenshots and the Medium frame-time check need a real
+graphics card (do them on the Mac in Session 74). The plain grass ground is one big texture;
+more planters beside the roads could come with Session 70's textures.
+
+## Session 62: The spine road and red walking tracks — 5 November 2026
+
+- **Like Louis's photo.** On both sides of the spine road: a 2 m planter (low kerbs, grass,
+  clipped hedges, pink bougainvillea and purple flower beds under the date palms), then a
+  2.5 m matte red-brown walking track, slightly raised (scripts/spine_tracks.gd, layout in
+  SPINE_TRACKS in the data). The red track uses a new CC0 texture made by
+  tools/make_road_textures.py.
+- **Kerbs keep you off.** A solid kerb on the road side and on the park side stops the bike
+  and buggies getting onto the red track. Gaps: at the Institute Back Road junction (white
+  stripes on the road where it crosses the track) and at nine paths (the planter becomes a
+  paved crossing with white stripes), including the C Institute path.
+- **Joggers and walkers** now use the red tracks: two joggers and two walkers, one of each per
+  side (they used to walk on the road).
+- **Palms** moved from z ±7 (where the track is) into the planters at z ±4, and now line the
+  whole spine road from the west end.
+- **C Institute.** Its path joins the spine road through a marked crossing. The stepped seats
+  now step down away from the glass, so the people sitting there face outwards, to the spine.
+- The Domes Path is gone: the north red track runs past the domes instead. The spine hills
+  moved 4 m south and stay flat near the road. The building site west of the C Institute
+  ends 13 m short of the spine road, so its fence is off the track.
+- Checked: smoke test PASS (new Session 62 checks: kerb blocks a ride onto the track, every gap
+  is open, routes on the tracks, palms off the tracks, institute path and seats), road mesh,
+  district traffic, bus recovery, coplanar, navigation, detail world and static batch tests
+  PASS. Play-test bot: 6 deliveries, 4.83 stars, no crashes, never stuck.
+
+**Louis's turn:** press F5 and ride along the spine road (the long road through the park). Red
+tracks on both sides behind a planter with palms, hedges and pink and purple flowers. Try to
+ride onto the red track: the kerb stops you. Find a white-striped crossing and ride through it.
+Watch the joggers on the red tracks. Ride to the C Institute: its path meets the spine road at
+a crossing, and the people on the stepped seats face the spine.
+
+## Session 61: Road surfaces, markings and junctions — 5 November 2026
+
+- **Smooth roads.** A new script, scripts/road_mesh.gd, joins the short road pieces from the
+  map data into one smooth strip per road, so rounded corners, the bus loop and the
+  roundabout are real curves (the roundabout now has 24 pieces, not 10). The ring road's four
+  corners are rounded too (12 m radius, in the generator).
+- **Asphalt.** A new asphalt texture (assets/textures/asphalt_road_1k.jpg, cut from the CC0
+  Poly Haven photo without its long cracks: those repeating cracks and the old white dashes on
+  the ring road were the "tyre marks"). The middle of each road is a little darker, with light
+  wear along it. Low graphics uses plain grey.
+- **Markings.** A yellow dashed centre line on every two-way asphalt road, and white arrows on
+  each side every 40 m (ring road every 60 m) showing which way to drive (on the right). The
+  roundabout (anticlockwise) and the bus loop are one-way, with arrows in the middle.
+- **Kerbs and junctions.** Low kerbs on both sides, with gaps where roads and paths join. Where
+  a road meets another it stops at the other road's edge and a curved corner piece fills the
+  gap. Roads that meet are a couple of millimetres apart in height, and pavers sit lower than
+  asphalt, so no two surfaces share a height (no flicker). Car park access roads are part of
+  the road mesh now.
+- **Traffic follows the curves.** Ring-road cars, car-park cars and buses drive the rounded ring.
+- **Skid marks.** A hard brake leaves a faint, short dark mark behind the back tyre; it fades
+  away after about 10 seconds (scripts/skid_marks.gd, numbers in game_config.gd).
+- **Speed bumps and road works** checked on the new roads, plus six narrower bumps on the
+  inside roads (spine loop and spine road).
+- Checked: smoke test PASS (new Session 61 checks), new tests/road_mesh_test.gd PASS, district
+  traffic, bus recovery, coplanar, navigation and detail world tests PASS. Screenshots and the
+  Medium frame-time check can't be done on the cloud machine (no graphics card); the roads add
+  about 170 merged meshes and replace about 155 road boxes.
+
+**Louis's turn:** open the project in Godot and press F5, start a shift. Ride onto the ring
+road: yellow dashes down the middle, white arrows on your side pointing the way you're going,
+grey kerbs at the edges. Ride round a corner of the ring road: it's a smooth curve now, and the
+cars go round it too. Ride to the roundabout east of the C Institute: it's round, with arrows
+going anticlockwise. Look at where a cluster lane meets the cross road: a curved corner, no
+flickering. Ride fast and brake hard (S): a short faint skid mark appears and fades away.
+
+## Session 60: The road network from the approved plan — 5 November 2026
+
+Built straight after looks pass Session 52, at Louis's request (the looks pass carries on
+with Session 53 next). The layout now follows docs/road_plan_2026-11-05.svg:
+- **Ring road is separate.** It only meets the two gates, the new bus loop and the stables
+  car park (plus the existing car park entrances). No cluster lane, school road or spine
+  road reaches it any more.
+- **Bus station loop.** Buses turn in off the north ring road, stop at the bay beside the
+  platform, go round and turn back out. The old bus road past the mosque is gone.
+- **Inside roads.** One connected network with rounded corners: the spine road, a loop round
+  the spine (cluster front road, south road, school road), the road behind the C Institute,
+  and a roundabout east of the C Institute whose north exit curves into the Plaza. Removed:
+  the Plaza Link, Western Link north part, Stables Road and the road beside the arena.
+- **Clusters.** Each has a front and a back cross road and one entrance link. Cluster 3
+  moved 10 m west and Clusters 4 and 5 moved 6 m north so nothing touches the ring road.
+  All 500 addresses keep their numbers.
+- **Car parks.** New stables car park with a roofed bay, and ten roofed school bays right at
+  the school entrance. The C2/C3 car park is 2 m narrower.
+- **Start spot** moved to beside the bus station, facing the Plaza.
+- The generator (tools/build_wahat_data.py) now also holds the looks pass Session 52 changes
+  that had only been typed into the data file (C Institute size, facing and access path).
+- Curves are made of short straight pieces for now; smooth curved road meshes, centre lines
+  and arrows come in Session 61.
+- Checked: smoke test PASS, all 17 focused test suites PASS (the bus recovery test now
+  blocks the new loop instead of the old road), play-test bot: 5 deliveries, 5.0 stars,
+  no crashes, never stuck.
+
+**Louis's turn:** open the project in Godot and press F5. You start next to the bus station
+facing the Plaza. Ride round: the ring road should only have exits at the gates, the bus loop
+and the stables car park. Watch a bus turn into the station loop and back out. Ride east
+behind the C Institute to the roundabout and take the north exit into the Plaza. Check the
+mini-map in the corner: every cluster's lanes should join up.
+
+## Next: the Looks pass (Sessions 52 to 59), planned 4 November 2026
+
+Louis played the detail pass. Next is the Looks pass in BUILD_PLAN.md: sharper full-screen
+graphics, no flicker, smaller and fuller interiors from free CC0 kits for every walk-in place,
+a real gym, the C Institute facing the spine with glass on both sides, more detail in the
+Plaza, streets and spine, and fixes for a crash loop and crashes costing too little.
+
+## Session 52 — Sharper graphics, no flicker, C Institute, crash fixes (4 November 2026)
+
+What works:
+- **Sharper full screen.** Anti-aliasing (smooths jagged edges) on every level: Low uses FXAA,
+  Medium MSAA 4x, High MSAA 4x + TAA. 4 shadow cascades and a bigger shadow map on Medium and
+  High. The sun turns in small steps, so shadows don't shimmer. Signs and 3D text are drawn at
+  double resolution, so they stay crisp.
+- **Graphics level picked for you.** On the very first start the game looks at the computer
+  (Apple M chips and gaming cards get High, laptops Medium, browser and phones Low). Settings
+  can still change it.
+- **No more flicker.** A new script, scripts/zfight_fix.gd, finds boxes whose faces sit exactly on
+  top of each other with different colours (speed bump stripes, gate pillars, roofs, Plaza floors,
+  the mosque) and grows the smaller one by 6 mm while the map loads. tests/coplanar_test.gd checks
+  the whole map: 0 overlapping faces left (126 fixed). The camera's near/far planes are now
+  0.1 m / 1500 m (GameConfig.CAMERA_NEAR / CAMERA_FAR).
+- **Domes.** The rib boards no longer stick out of the dome; each dome has a proper porch and door.
+- **C Institute** turned to face the spine (east), with the stepped seats and a teacher in front,
+  glass on both long sides, a small car park behind and a new "Institute Door" road.
+- **Crash loop fixed.** After a small fall the bike is moved 0.8 m away from what you hit, and for
+  2 seconds small knocks can't knock you off again (a big hit still counts).
+- **Crashes cost more.** Food damage per small crash is 40% (was 30%), and an order you crash with
+  gets no tip (the Delivered card says "Crashed on the way · no tip").
+- Play-test bot: careful 128 Dh with 0 crashes; careless 97 Dh with 4 crashes. No crash loops.
+
+Known gaps:
+- Standing people don't step aside yet; the push-back and grace time already stop the loop.
+- Full-screen sharpness must be checked on Louis's Mac (the cloud has no real graphics card).
+
+Next: Session 53, the free CC0 asset kits.
+
 ## Plan review fixes — 4 November 2026
 
 A check of the plan against the code found two bugs that were still there, now fixed:

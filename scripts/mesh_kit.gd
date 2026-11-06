@@ -53,7 +53,8 @@ func cylinder(top: float, bottom: float, height: float, colour: Color, spot: Vec
 
 
 ## A low-poly ball. squash < 1 makes it flatter. spot: its middle.
-func ball(radius: float, colour: Color, spot: Vector3, squash := 1.0) -> void:
+## turn (Session 92): an optional rotation, which may also stretch it into an egg shape.
+func ball(radius: float, colour: Color, spot: Vector3, squash := 1.0, turn := Basis()) -> void:
 	var rings := 4
 	var around := 8
 	for r in rings:
@@ -66,7 +67,7 @@ func ball(radius: float, colour: Color, spot: Vector3, squash := 1.0) -> void:
 			var out := (corners[0] + corners[1] + corners[2] + corners[3]).normalized()
 			for k in 4:
 				corners[k] = Vector3(corners[k].x, corners[k].y * squash, corners[k].z) * radius
-			_quad(corners, out, colour, spot, Basis())
+			_quad(corners, out, colour, spot, turn)
 	_parts += 1
 
 

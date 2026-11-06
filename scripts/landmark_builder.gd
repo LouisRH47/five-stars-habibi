@@ -37,6 +37,8 @@ func _ready() -> void:
 		_build_stables(_map["STABLES"])
 	if _map.has("BUILDING_SITE"):
 		_build_site(_map["BUILDING_SITE"])
+	if _map.has("PHASE3_SITE"):  # Session 66: the phase 3 site south of the mosque, same dressing
+		_build_site(_map["PHASE3_SITE"], "Phase3Site")
 	for place in _map["VILLAS"]:
 		if place.get("kind", "") == "spot" and not place.get("interior", false):
 			_build_spot(place)
@@ -74,13 +76,9 @@ func _build_school(school: Dictionary) -> void:
 		var panel := LowPoly.box(body, Vector3(4.0, 0.08, 2.2), Color(0.12, 0.2, 0.35, 1),
 				Vector3(-11.0 + i * 5.5, size.y + 0.9, 0))
 		panel.rotation.x = deg_to_rad(-15.0)
-	var pitch := Rect2(area.position.x + 5, top + 8, area.size.x - 10, 24)
-	LowPoly.box(holder, Vector3(pitch.size.x, 0.03, pitch.size.y), PITCH, Vector3(pitch.get_center().x, 0.03, pitch.get_center().y))
-	_fence_box(holder, pitch.grow(0.5), RAIL, 1.3, Vector2(gate_x - 2, gate_x + 2))
-	for x in [pitch.position.x + 0.8, pitch.end.x - 0.8]:
-		for z in [pitch.get_center().y - 3.5, pitch.get_center().y + 3.5]:
-			LowPoly.box(holder, Vector3(0.12, 2.4, 0.12), RAIL, Vector3(x, 1.2, z))
-		LowPoly.box(holder, Vector3(0.12, 0.12, 7.1), RAIL, Vector3(x, 2.4, pitch.get_center().y))
+	# Session 72: the full football pitch with goals, a running track, tall netted fence and
+	# floodlights (scripts/school_pitch.gd) replaces the small green pitch.
+	SchoolPitch.build(holder, school)
 	var flag := StaticBody3D.new()
 	flag.position = Vector3(gate_x + 6.0, 0, top + 4.0)
 	holder.add_child(flag)
@@ -115,7 +113,7 @@ func _build_stables(stables: Dictionary) -> void:
 		LowPoly.box(body, Vector3(2.0, 2.6, 0.1), WOOD, Vector3(x, 1.3, front + 0.05))
 		LowPoly.box(body, Vector3(1.6, 1.0, 0.12), DARK, Vector3(x, 2.1, front + 0.06))
 		if i % 2 == 1:
-			Props.animal(body, Vector3(x, -0.4, front - 1.0), 0.0, HORSES[i % HORSES.size()], true)
+			HorseModels.standing(body, Vector3(x, -0.4, front - 1.0), 0.0, HORSES[i % HORSES.size()], true)  # Session 70
 	LowPoly.box(body, Vector3(9.0, 1.4, 0.15), TEAL, Vector3(0, size.y + 0.9, front + 0.6))
 	_faces(body, stables["arabic"], stables["name"], Vector3(0, size.y + 0.9, front + 0.6), 0.0, 8.4, 0.15)
 	var paddock: Rect2 = stables["paddock"]
@@ -124,14 +122,14 @@ func _build_stables(stables: Dictionary) -> void:
 	_fence_box(holder, paddock, RAIL, 1.3)
 	for i in stables["horses"]:
 		var spot := Vector3(paddock.position.x + (i + 0.5) * paddock.size.x / stables["horses"], 0, paddock.get_center().y)
-		Props.animal(holder, spot, i * 75.0 + 20.0, HORSES[i % HORSES.size()], true)
+		HorseModels.standing(holder, spot, i * 75.0 + 20.0, HORSES[i % HORSES.size()], true)  # Session 70
 
 
 ## The building site: a tall fence all round (you can't get in), a crane, containers, sand
 ## piles and the bilingual "Phase 2 coming soon" sign.
-func _build_site(site: Dictionary) -> void:
+func _build_site(site: Dictionary, id := "BuildingSite") -> void:
 	var holder := Node3D.new()
-	holder.name = "BuildingSite"
+	holder.name = id
 	add_child(holder)
 	var area: Rect2 = site["area"]
 	_fence_box(holder, area, HOARDING, 2.2, Vector2.ZERO, true)
@@ -158,11 +156,9 @@ func _build_site(site: Dictionary) -> void:
 				Vector3(middle.x + 10.0, 1.25 + (2.5 if i == 2 else 0.0), middle.y - 8.0 + (i % 2) * 2.5))
 	for i in 2:
 		LowPoly.cylinder(holder, 0.0, 3.0, 2.0, SAND, Vector3(middle.x - 8.0 + i * 5.0, 1.0, middle.y + 10.0))
-	for i in 2:
-		var worker := PeopleLooks.resident(4, i)
-		worker.name = "SiteWorker%d" % i
-		worker.position = Vector3(middle.x - 4 + i * 3, 0, middle.y - 4)
-		holder.add_child(worker)
+	# Session 92: workers with jobs (carrying, hammering, mixing, talking by the crane).
+	var crane_at: Vector3 = site["crane"]
+	SiteCrew.make(holder, crane_at + Vector3(0, 0, -7.5), Vector3.RIGHT, 0 if id == "BuildingSite" else 2)
 	var sign_data: Dictionary = site["sign"]
 	_free_sign(holder, sign_data["arabic"], sign_data["name"], sign_data["position"], sign_data["facing"],
 			Vector2(6.0, 2.0), Color(0.9, 0.45, 0.1, 1))
@@ -172,13 +168,10 @@ func _build_site(site: Dictionary) -> void:
 func _build_spot(place: Dictionary) -> void:
 	var size: Vector3 = place["size"]
 	var booth: bool = place.get("look", "") == "booth"
-	var body := _solid_block(self, place["position"], size, RAIL if booth else WOOD.lightened(0.3))
-	body.name = "SchoolBooth" if booth else "StableOffice"
-	body.rotation_degrees.y = place["facing"]
+	# Looks pass Session 57: a glass security booth / a stable office you can see into.
+	var body := SpotBuildings.booth(place) if booth else SpotBuildings.office(place)
+	add_child(body)
 	var front := size.z * 0.5
-	LowPoly.box(body, Vector3(size.x + 0.6, 0.2, size.z + 0.6), TEAL if booth else WOOD, Vector3(0, size.y + 0.1, 0.2))
-	LowPoly.box(body, Vector3(0.9, 2.1, 0.1), DARK, Vector3(-size.x * 0.25, 1.05, front + 0.05))
-	LowPoly.box(body, Vector3(size.x * 0.35, 0.9, 0.1), GLASS, Vector3(size.x * 0.22, 1.5, front + 0.05))
 	var english := "Security" if booth else "Stable Office"
 	var arabic := "الأمن" if booth else "مكتب الإسطبل"
 	var board := Vector3(size.x - 0.2, 0.7, 0.12)

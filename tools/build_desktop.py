@@ -1,7 +1,9 @@
-"""Build private desktop review packages using an already installed Godot 4.7.2 SDK.
+"""Build the desktop games (Windows, Mac and Linux / Steam Deck) with one command, using a
+portable Godot 4.7.2 SDK (make one with tools/setup_export_sdk.py).
 
-Example:
-    python3 tools/build_desktop.py --godot /private/tmp/habibi-export-sdk/Godot.app/Contents/MacOS/Godot --output /private/tmp/habibi-desktop-review
+Examples:
+    python3 tools/build_desktop.py --godot /private/tmp/habibi-export-sdk/Godot.app/Contents/MacOS/Godot --output /private/tmp/habibi-desktop-review --verify-mac
+    python3 tools/build_desktop.py --godot /private/tmp/habibi-export-sdk/Godot.app/Contents/MacOS/Godot --output /private/tmp/habibi-desktop --mode distribution
 
 The default review mode redirects all user:// paths into output/userdata, so the
 exported Mac app can be tested without reading or replacing the player's real save.
@@ -16,6 +18,7 @@ import json
 import os
 import shutil
 import struct
+import tarfile
 import subprocess
 import sys
 import zipfile
@@ -86,7 +89,7 @@ def main():
     if not any((portable_root / name).exists() for name in ['_sc_', '._sc_']):
         raise SystemExit('Use a self-contained SDK copy in /private/tmp; do not change the installed editor settings')
     templates = portable_root / 'editor_data' / 'export_templates' / (VERSION + '.stable')
-    for template in ['macos.zip', 'windows_release_x86_64.exe', 'icudt_godot.dat']:
+    for template in ['macos.zip', 'windows_release_x86_64.exe', 'linux_release.x86_64', 'icudt_godot.dat']:
         if not (templates / template).is_file():
             raise SystemExit(f'Missing SDK export template: {templates / template}')
     output.mkdir(parents=True, exist_ok=True)
@@ -118,6 +121,11 @@ def main():
     windows.mkdir(exist_ok=True)
     windows_exe = windows / 'Five Stars Habibi.exe'
     run(prefix + ['--export-release', 'Windows Desktop', windows_exe], output / 'export-windows.log')
+    # Session 85: Linux (and the Steam Deck, which runs Linux).
+    linux = artifacts / (label + '-linux-x64')
+    linux.mkdir(exist_ok=True)
+    linux_bin = linux / 'FiveStarsHabibi.x86_64'
+    run(prefix + ['--export-release', 'Linux', linux_bin], output / 'export-linux.log')
     readme = ('PRIVATE REVIEW BUILD: user data is redirected to ' + str(userdata) + '\nNot for distribution.\n') if args.mode == 'review' else 'Desktop preview; release acceptance is tracked in docs/implementation-status.md.\n'
     with zipfile.ZipFile(mac_zip, 'a', compression=zipfile.ZIP_DEFLATED) as archive:
         archive.writestr('BUILD-NOTES.txt', readme)
@@ -125,6 +133,18 @@ def main():
     (windows / 'BUILD-NOTES.txt').write_text(readme)
     shutil.copy2(source / 'CREDITS.md', windows / 'CREDITS.md')
     windows_zip = Path(shutil.make_archive(str(artifacts / (label + '-windows-x64')), 'zip', windows))
+    (linux / 'BUILD-NOTES.txt').write_text(readme)
+    shutil.copy2(source / 'CREDITS.md', linux / 'CREDITS.md')
+    with linux_bin.open('rb') as stream:
+        header = stream.read(20)
+    # ELF, 64-bit, little-endian, machine x86_64 (62).
+    if header[:4] != b'\x7fELF' or header[4] != 2 or header[5] != 1 or struct.unpack('<H', header[18:20])[0] != 62:
+        raise SystemExit('Linux artifact is not an x86_64 ELF executable')
+    linux_bin.chmod(0o755)
+    # A tar keeps the "can run" flag that Linux needs (a zip would lose it).
+    linux_tar = artifacts / (label + '-linux-x64.tar.gz')
+    with tarfile.open(linux_tar, 'w:gz') as archive:
+        archive.add(linux, arcname=linux.name)
     with windows_exe.open('rb') as stream:
         if stream.read(2) != b'MZ':
             raise SystemExit('Windows artifact is not a PE executable')
@@ -145,15 +165,21 @@ def main():
         executables = [path for path in (apps[0] / 'Contents/MacOS').iterdir() if os.access(path, os.X_OK)]
         if len(executables) != 1:
             raise SystemExit('Expected one executable in the Mac application bundle')
-        run([executables[0], '--headless', '--log-file', output / 'mac-runtime.log', '--quit-after', '120'], output / 'mac-launch.log', 120)
-        mac_check = 'PASS: isolated review export launches headlessly'
+        # Session 85: the game's own self-test plays one delivery and saves (scripts/build_check.gd).
+        text = run([executables[0], '--headless', '--log-file', output / 'mac-runtime.log', '--', '--build-check'],
+                   output / 'mac-launch.log', 300)
+        if 'BUILD CHECK: PASS' not in text:
+            print(text[-4000:], file=sys.stderr)
+            raise SystemExit('The Mac build did not pass its build check (one delivery and a save)')
+        mac_check = 'PASS: isolated review export plays a delivery and saves'
     manifest = {'engine': version, 'engine_sha256': digest(godot), 'mode': args.mode, 'source_sha256': original_hash,
                 'mac_launch': mac_check, 'windows_runtime': 'not verified: no Windows host',
+                'linux_runtime': 'not verified: no Linux host',
                 'published': False, 'artifacts': []}
     template_source = portable_root / 'template-source.json'
     if template_source.is_file():
         manifest['template_source'] = json.loads(template_source.read_text())
-    for path in [mac_zip, windows_zip]:
+    for path in [mac_zip, windows_zip, linux_tar]:
         manifest['artifacts'].append({'name': path.name, 'bytes': path.stat().st_size, 'sha256': digest(path)})
     (output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     print(json.dumps(manifest, indent=2))

@@ -13,7 +13,6 @@ extends Control
 @export var start_page := "menu"
 
 const LIST := preload("res://data/application.gd")
-const PALM_SCENE := preload("res://scenes/palm_tree.tscn")
 const GAME_SCENE := "res://scenes/wahat_al_shams.tscn"
 
 const TEAL := Color(0.05882353, 0.29803923, 0.36078432, 1)
@@ -28,6 +27,8 @@ const WHITE := Color(1, 1, 1, 1)
 var name_box: LineEdit
 var country_box: OptionButton
 var look := 0
+## Session 88: the company picked on the form ("snackaroo", "zoomaroo" or "deliverooz").
+var company := "snackaroo"
 ## Which page the phone shows: "menu", "form", "reviewing" or "hired".
 var page := "menu"
 var play_button: Button
@@ -36,6 +37,8 @@ var settings_panel: SettingsPanel
 
 var _pages: Dictionary = {}       # page name -> Control
 var _look_cards: Array[Button] = []
+var _company_cards: Array[Button] = []
+var _brand: Label  # the company name at the top of the phone
 var _look_riders: Array[Node3D] = []
 var _submit: Button
 var _hired_text: Label
@@ -45,6 +48,11 @@ var _time := 0.0
 
 
 func _ready() -> void:
+	if BuildCheck.wanted():  # Session 85: self-test of an exported build, then quit
+		BuildCheck.run.call_deferred(get_tree())
+		set_process(false)
+		queue_free()
+		return
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(_build_desert())
 	add_child(_build_title())
@@ -55,6 +63,8 @@ func _ready() -> void:
 	settings_panel.set_meta("phone", phone)
 	_show_page(start_page)
 	_pick_look(GameState.rider_look)
+	if not GameState.hired:
+		_pick_company(Companies.LIST.DEFAULT)
 
 
 func _process(delta: float) -> void:
@@ -77,7 +87,7 @@ func play_scene() -> String:
 ## Play / Continue: straight into the game if you're hired, otherwise the application.
 func play() -> void:
 	if GameState.hired:
-		get_tree().change_scene_to_file(GAME_SCENE)
+		WorldLoader.open(get_tree(), GAME_SCENE)  # Session 86: behind the loading screen
 	else:
 		_show_page("form")
 
@@ -105,7 +115,7 @@ func submit() -> bool:
 	var rider := name_box.text.strip_edges()
 	if rider == "" or page != "form":
 		return false
-	GameState.hire(rider, country_box.get_item_text(country_box.selected), look)
+	GameState.hire(rider, country_box.get_item_text(country_box.selected), look, company)
 	_show_page("reviewing")
 	get_tree().create_timer(GameConfig.APPLICATION_REVIEW_TIME).timeout.connect(finish_review)
 	return true
@@ -121,7 +131,71 @@ func finish_review() -> void:
 
 ## "Start riding": off to Wahat Al Shams (the tutorial starts there).
 func start_riding() -> void:
-	get_tree().change_scene_to_file(GAME_SCENE)
+	WorldLoader.open(get_tree(), GAME_SCENE)  # Session 86: behind the loading screen
+
+
+## Session 88: one company card: its logo, name in its colour, and its perk.
+func _build_company_card(entry: Dictionary) -> Button:
+	var card := Button.new()
+	card.toggle_mode = true
+	card.custom_minimum_size = Vector2(140, 104)
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	for state in ["normal", "hover", "focus"]:
+		var plain := StyleBoxFlat.new()
+		plain.bg_color = SAND
+		plain.set_corner_radius_all(18)
+		if state == "focus":
+			plain.draw_center = false
+		card.add_theme_stylebox_override(state, plain)
+	var picked := StyleBoxFlat.new()
+	picked.bg_color = Color(1, 0.97, 0.92)
+	picked.border_color = entry["colour"]
+	picked.set_border_width_all(5)
+	picked.set_corner_radius_all(18)
+	card.add_theme_stylebox_override("pressed", picked)
+	card.add_theme_stylebox_override("hover_pressed", picked)
+	card.pressed.connect(_pick_company.bind(entry["id"]))
+	var inside := VBoxContainer.new()
+	inside.set_anchors_preset(Control.PRESET_FULL_RECT)
+	inside.offset_left = 6
+	inside.offset_right = -6
+	inside.offset_top = 6
+	inside.offset_bottom = -6
+	inside.add_theme_constant_override("separation", 0)
+	inside.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(inside)
+	var logo := TextureRect.new()
+	logo.texture = Companies.logo(entry)
+	logo.custom_minimum_size = Vector2(0, 34)
+	logo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	logo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	inside.add_child(logo)
+	var title := _label(entry["name"], 16, entry["dark"], "Heading")
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	inside.add_child(title)
+	var perk := _label(entry["perk"], 12, SOFT)
+	perk.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	inside.add_child(perk)
+	card.tooltip_text = entry["perk_long"]
+	card.set_meta("company", entry["id"])
+	_company_cards.append(card)
+	return card
+
+
+## Session 88: picks a company on the form: the phone's name and colour and the riders'
+## shirts change to match.
+func _pick_company(id: String) -> void:
+	var entry := Companies.find(id)
+	if entry.is_empty():
+		return
+	company = id
+	for card in _company_cards:
+		card.button_pressed = card.get_meta("company") == id
+	_brand.text = entry["name"]
+	_brand.add_theme_color_override("font_color", entry["colour"])
+	for i in _look_riders.size():
+		RiderLook.apply(_look_riders[i], i, id)
 
 
 func _pick_look(number: int) -> void:
@@ -141,69 +215,11 @@ func _show_page(which: String) -> void:
 
 # --- The 3D desert behind the title ---
 
+## The desert is built by scripts/desert_backdrop.gd (the loading screen shares it).
 func _build_desert() -> Control:
-	var frame := SubViewportContainer.new()
-	frame.stretch = true
-	frame.set_anchors_preset(Control.PRESET_FULL_RECT)
-	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var view := SubViewport.new()
-	view.own_world_3d = true
-	frame.add_child(view)
-	var world := Node3D.new()
-	view.add_child(world)
-	var sky_material := ProceduralSkyMaterial.new()
-	sky_material.sky_top_color = Color(0.31, 0.66, 0.84)
-	sky_material.sky_horizon_color = Color(0.98, 0.86, 0.66)
-	sky_material.ground_horizon_color = Color(0.98, 0.86, 0.66)
-	sky_material.ground_bottom_color = Color(0.85, 0.7, 0.45)
-	var sky := Sky.new()
-	sky.sky_material = sky_material
-	var environment := Environment.new()
-	environment.background_mode = Environment.BG_SKY
-	environment.sky = sky
-	environment.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
-	environment.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	environment.fog_enabled = true
-	environment.fog_light_color = Color(0.98, 0.86, 0.66)
-	environment.fog_density = 0.004
-	var lights := WorldEnvironment.new()
-	lights.environment = environment
-	world.add_child(lights)
-	var sun_light := DirectionalLight3D.new()
-	sun_light.rotation_degrees = Vector3(-25, -150, 0)
-	sun_light.light_color = Color(1, 0.9, 0.75)
-	sun_light.shadow_enabled = true
-	world.add_child(sun_light)
-	# The big pale sun, low over the dunes.
-	var glow := StandardMaterial3D.new()
-	glow.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	glow.albedo_color = Color(1, 0.96, 0.82)
-	var disc := SphereMesh.new()
-	disc.radius = 14.0
-	disc.height = 28.0
-	disc.material = glow
-	var sun_ball := MeshInstance3D.new()
-	sun_ball.mesh = disc
-	sun_ball.position = Vector3(-35, 16, -140)
-	world.add_child(sun_ball)
-	# Dunes: big squashed sand balls in a few warm shades.
-	var shades := [Color(0.93, 0.8, 0.58), Color(0.89, 0.74, 0.5), Color(0.96, 0.85, 0.65)]
-	var dunes := [[Vector3(-40, -10, -60), 36.0], [Vector3(30, -12, -80), 44.0], [Vector3(0, -14, -30), 30.0],
-			[Vector3(-80, -16, -110), 50.0], [Vector3(70, -15, -40), 34.0], [Vector3(10, -40, -5), 44.0]]
-	for i in dunes.size():
-		var dune := LowPoly.sphere(world, dunes[i][1], dunes[i][1] * 0.6, shades[i % shades.size()], dunes[i][0])
-		dune.scale = Vector3(1.6, 1.0, 1.0)
-	var palm: Node3D = PALM_SCENE.instantiate()
-	world.add_child(palm)
-	palm.setup(2)
-	palm.position = Vector3(9, 1.0, -22)
-	palm.scale = Vector3.ONE * 1.4
-	_desert_camera = Camera3D.new()
-	_desert_camera.fov = 55.0
-	world.add_child(_desert_camera)
-	_desert_camera.position = Vector3(0, 6, 12)
-	_desert_camera.rotation_degrees = Vector3(-4, 0, 0)
-	return frame
+	var desert := DesertBackdrop.build()
+	_desert_camera = desert["camera"]
+	return desert["frame"]
 
 
 # --- The title on the left ---
@@ -255,7 +271,9 @@ func _build_phone() -> Control:
 	rows.add_theme_constant_override("separation", 6)
 	phone.add_child(rows)
 	var header := HBoxContainer.new()
-	header.add_child(_label("Snackaroo", 40, ORANGE, "Heading"))
+	var current := Companies.current()
+	_brand = _label(current["name"], 40, current["colour"], "Heading")
+	header.add_child(_brand)
 	rows.add_child(header)
 	_spinner = Control.new()  # made here so _show_page can always reach it
 	_pages["menu"] = _build_menu()
@@ -298,6 +316,13 @@ func _build_form() -> VBoxContainer:
 	for country in LIST.COUNTRIES:
 		country_box.add_item(country)
 	form.add_child(country_box)
+	# Session 88: the three companies, each with its logo, colour and perk.
+	form.add_child(_label("Who do you want to ride for?", 18, INK))
+	var companies := HBoxContainer.new()
+	companies.add_theme_constant_override("separation", 8)
+	for entry: Dictionary in Companies.all():
+		companies.add_child(_build_company_card(entry))
+	form.add_child(companies)
 	form.add_child(_label("Pick your look", 18, INK))
 	var cards := HBoxContainer.new()
 	cards.add_theme_constant_override("separation", 8)

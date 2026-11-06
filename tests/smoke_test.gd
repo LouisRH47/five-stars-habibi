@@ -27,7 +27,7 @@ const STEPS := {
 	"bump_ride": 300,  # 5 seconds of pedalling from a standstill, over a speed bump
 	"critters": 120,   # 2 seconds for a kid on a scooter to ride into the bike
 	"crash_small": 30, # half a second to coast into a wall
-	"fallen": 150,     # long enough to get back on the bike
+	"fallen": 300,     # long enough to get back on the bike (Session 87: a ragdoll can take up to CRASH_FALL_MAX_TIME, 4 s)
 	"crash_big": 240,   # one second to ride fast into a wall
 	"shift": 90,       # 1.5 seconds, longer than the test's 1-second shift
 }
@@ -284,6 +284,13 @@ func _physics_process(_delta: float) -> bool:
 		"fallen":
 			if _frame >= STEPS.fallen:
 				_check("back on the bike after the small crash", _bike.fallen_left == 0.0, "")
+				var clinic: Node = _main.get_node("ClinicScreen")
+				_check("Session 87: a fall ends at the clinic with the small 30 Dh bill, and you ride on from there",
+						clinic.showing and clinic.light_visit and clinic.last_bills["paid"] == GameConfig.CRASH_FALL_BILL
+						and not clinic.last_bills["lost_order"], str(clinic.last_bills.get("paid", "-")))
+				var spot := _bike.global_position
+				clinic.close()
+				_check("after a fall's clinic visit the bike stays where you fell", _bike.global_position.distance_to(spot) < 0.01 and not paused, "")
 				_start_crash(true)
 		"crash_big":
 			if _bike.fallen_left > 0.0 and _bike.wrecked and not _main.get_node("ClinicScreen").showing:
@@ -818,12 +825,15 @@ func _check_tutorial() -> void:
 	var parts := []
 	for number in 3:
 		RiderLook.apply(model, number)
-		parts.append(model.get_node("Look").get_child_count())
+		# Session 92: every look now has the company logos too, so compare what's worn: the
+		# hat or helmet pieces, the helmet and the trousers' colour.
+		parts.append("%d pieces, helmet %s, trousers %s" % [model.get_node("Look").find_children("*", "MeshInstance3D", true, false).size(),
+				model.get_node("Helmet").visible, (model as Person)._colours["pants"].to_html()])
 		if number == 1:
 			_check("Sporty keeps the helmet (with stickers)", model.get_node("Helmet").visible, "")
 		else:
 			_check("look %d swaps the helmet for a hat" % number, not model.get_node("Helmet").visible, "")
-	_check("the 3 looks are different", parts[0] != parts[1] and parts[1] != parts[2], "%s parts" % [parts])
+	_check("the 3 looks are different", parts[0] != parts[1] and parts[1] != parts[2] and parts[0] != parts[2], "%s" % [parts])
 	RiderLook.apply(model, gs.rider_look)
 	var spawner := _main.get_node("CustomerSpawner")
 	var named: String = spawner.fill_line("Thanks, {name}!", gs.rider_name)
@@ -1163,8 +1173,8 @@ func _check_scoring() -> void:
 		var job := _quick_delivery(100.0, false)
 		if job["tip"] > 0:
 			tips += 1
-			tips_ok = tips_ok and job["tip"] >= GameConfig.TIP_MIN and job["tip"] <= GameConfig.TIP_MAX
-	_check("streak-boosted tips sometimes come on 5-star jobs, 2 to 15 Dh", tips > 100 and tips < 180 and tips_ok, "%d of 200" % tips)
+			tips_ok = tips_ok and job["tip"] >= GameConfig.TIP_MIN and job["tip"] <= Companies.tip_with_perk(GameConfig.TIP_MAX, gs.company)  # Session 88: Snackaroo +10%
+	_check("streak-boosted tips sometimes come on 5-star jobs, 2 to 15 Dh (+10% at Snackaroo)", tips > 100 and tips < 180 and tips_ok, "%d of 200" % tips)
 	var low_tips := 0
 	for i in 100:
 		low_tips += _quick_delivery(50.0, false)["tip"] + _quick_delivery(100.0, true)["tip"]
@@ -1346,12 +1356,22 @@ func _finish() -> void:
 	await _check_session33()
 	await _check_life_meets_events()
 	_check_session32()
+	_check_roads_polish()  # Sessions 61 to 63 (roads, spine tracks, greenery)
 	await _check_venue_handoffs()
+	await _check_world_polish()  # Sessions 67 to 69
+	load("res://tests/smoke_signs.gd").new().run(self)  # Sessions 64 to 66 (bus stop, signs, Majlis Gardens)
+	_check_looks_venues()  # looks pass Sessions 56 to 58
+	await _check_fix_pass()  # fix pass Sessions 75 to 83 (blocks at the end)
+	_check_session85()  # Steam pass: desktop builds and the Steam Deck
+	_check_session86()  # Life pass: the loading screen
+	# --- Looks pass (Sessions 54-55): walk into every restaurant room, queue, hold E, walk out ---
+	await preload("res://tests/smoke_rooms.gd").new().run(self)
 	_check_saving()
 	for action in ACTIONS:
 		Input.action_release(action)
 	_phase = "done"
 	print("RESULT: ", "FAIL" if _failed else "PASS")
+	await preload("res://tests/clean_exit.gd").run(self, _main)  # no sound still playing at exit
 	quit(1 if _failed else 0)
 
 
@@ -1452,7 +1472,8 @@ func _check_session28() -> void:
 		Settings.apply()  # applies straight away, without saving the settings file
 		cycle.apply_hour(12.5)
 		seen[level] = {"ssao": env.ssao_enabled, "haze": env.fog_enabled, "glow": env.glow_enabled,
-				"shimmer": cycle.get_node_or_null("HeatShimmer") != null, "shadows": sun.directional_shadow_max_distance}
+				"shimmer": cycle.get_node_or_null("HeatShimmer") != null, "shadows": sun.directional_shadow_max_distance,
+				"msaa": get_root().msaa_3d, "fxaa": get_root().screen_space_aa, "splits": sun.directional_shadow_mode}
 	_check("Low: no SSAO, haze or shimmer",
 			not seen[0]["ssao"] and not seen[0]["haze"] and not seen[0]["shimmer"], str(seen[0]))
 	_check("Medium: SSAO, haze and glow on, shimmer removed",
@@ -1460,6 +1481,13 @@ func _check_session28() -> void:
 	_check("High: visual effects on without heat shimmer", seen[2]["ssao"] and seen[2]["haze"] and not seen[2]["shimmer"], str(seen[2]))
 	_check("shadows reach further on higher settings",
 			seen[0]["shadows"] < seen[1]["shadows"] and seen[1]["shadows"] < seen[2]["shadows"], "")
+	_check("Session 52: Low uses FXAA, Medium and High use MSAA 4x",
+			seen[0]["fxaa"] == Viewport.SCREEN_SPACE_AA_FXAA and seen[1]["msaa"] == Viewport.MSAA_4X
+			and seen[2]["msaa"] == Viewport.MSAA_4X, "")
+	_check("Session 52: 4 shadow cascades on Medium and High",
+			seen[1]["splits"] == DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
+			and seen[2]["splits"] == DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS, "")
+	_check("Session 52: a graphics level is picked on first start", Settings.detect_graphics() in [0, 1, 2], "")
 	cycle.apply_hour(8.0)
 	_check("no heat shimmer in the morning", cycle.get_node_or_null("HeatShimmer") == null, "")
 	Settings.graphics = before
@@ -1542,8 +1570,9 @@ func _check_session26() -> void:
 			if _has_arabic_label(board) and _has_label_text(board, data["CLUSTER_NAMES"].get(id, "?")) \
 					and _has_label_text(board, "Cluster " + id.substr(1)):
 				signed[id] = signed.get(id, 0) + 1
-	_check("bilingual cluster signs at the lane ends of every cluster",
-			signed.size() == data["CLUSTER_NAMES"].size() and signed.values().all(func(n): return n >= 2), "%s" % [signed])
+	# Session 65: one green cluster sign per cluster, at its entrance (tests/smoke_signs.gd checks the rest).
+	_check("a bilingual cluster sign at the entrance of every cluster",
+			signed.size() == data["CLUSTER_NAMES"].size() and signed.values().all(func(n): return n == 1), "%s" % [signed])
 
 
 ## How many house parts (bodies called Villa...) a shape at this spot touches.
@@ -1589,7 +1618,8 @@ func _check_session27() -> void:
 	var gs: Node = _game_state
 	var foods := {"shawarma": ["shawarma"], "bakery": ["cake", "manakish"], "market": ["groceries"],
 			"farm": ["farm juice", "salad box"], "thai": ["pad thai"], "sushi": ["sushi"],
-			"tacos": ["tacos"], "burger": ["burgers"]}
+			"tacos": ["tacos"], "burger": ["burgers"],
+			"honey": ["honey jars", "wax candles"]}  # Session 69: the beekeeper
 	var start: Vector3 = data["START"]["position"]
 	for id in foods:
 		gs.reset()
@@ -2130,8 +2160,10 @@ func _check_session33() -> void:
 	events.tick(0.0)
 	if events.crossing != null:
 		_bike.speed = (GameConfig.CRASH_BIG_KMH + 5.0) / 3.6
+		_bike._knock_cooldown = 0.0
 		var crashed: bool = _bike._check_crash(1.0, events.crossing.get_node("Groom"))
-		_check("riding fast into the horses is a small crash", crashed and not _bike.wrecked and _bike.fallen_left > 0.0, "")
+		_check("Session 87: riding fast into the horses is only a bump (you stay on)", not crashed and not _bike.wrecked
+				and _bike.fallen_left <= 0.0 and _bike.last_bump.get("level", "") == "bump", str(_bike.last_bump.get("kmh", 0)))
 		_bike.fallen_left = 0.0
 		_bike.speed = 0.0
 	events.clear_all()
@@ -2456,3 +2488,1384 @@ func _check_goals() -> void:
 func _goal_done(id: String) -> bool:
 	var goals: Script = load("res://scripts/shift_goals.gd")
 	return goals.is_done(id, _game_state.history.slice(_game_state.shift_start_index), _game_state.shift_crashes)
+
+
+# --- World polish pass, Sessions 67 to 69 (people wave) ---
+
+func _check_world_polish() -> void:
+	await _check_session67()
+	_check_session68()
+	_check_session69()
+	_check_session70()  # Sessions 70 to 73: the Blender models (see the block at the end)
+	_check_session71()
+	_check_session72()
+	_check_session73()
+
+
+## Session 67: the full map on M, the resolution settings and the school pool shade posts.
+func _check_session67() -> void:
+	var hud := _main.get_node_or_null("HUD")
+	var full_map: Node = hud.get("full_map") if hud != null else null
+	_check("there is a full map (M)", full_map != null and InputMap.has_action("full_map"), "")
+	if full_map != null:
+		var key := InputEventAction.new()
+		key.action = "full_map"
+		key.pressed = true
+		full_map._input(key)
+		var names: Array = full_map.place_names().map(func(n): return n[0])
+		var start: Vector3 = _delivery.place_builder.data.get_script_constant_map()["START"]["position"]
+		var spot: Vector2 = full_map.world_to_screen(start)
+		var screen := Rect2(Vector2.ZERO, full_map._view.size)
+		_check("M opens the full map and pauses the game", full_map.is_open() and paused, "")
+		_check("the full map has names and your spot is on it", names.has("The Plaza") and names.has("Cluster 3")
+				and screen.has_point(spot), "%s at %s" % [names.size(), spot])
+		await process_frame  # it draws while paused
+		key = InputEventAction.new()
+		key.action = "pause"
+		key.pressed = true
+		full_map._input(key)
+		_check("Esc closes the full map and the game goes on", not full_map.is_open() and not paused, "")
+	var settings: Script = load("res://scripts/settings.gd")
+	var old_scale: int = settings.render_scale
+	settings.render_scale = 50
+	settings.save()
+	var file := ConfigFile.new()
+	file.load(settings.PATH)
+	_check("render scale 50% is used and saved", is_equal_approx(root.scaling_3d_scale, 0.5)
+			and file.get_value("video", "render_scale", 0) == 50 and file.has_section_key("video", "window_size"), "")
+	settings.render_scale = old_scale
+	settings.save()
+	var detail := _main.get_node_or_null("DistrictDetail")
+	var shades := detail.find_children("*SchoolPoolShade*", "", true, false) if detail != null else []
+	var posts := 0
+	for shade in shades:
+		posts += shade.find_children("*ShadePost*", "", true, false).size()
+	_check("the school pool shades stand on posts", shades.size() == 2 and posts >= 8, "%d shades, %d posts" % [shades.size(), posts])
+
+
+## Session 68: people dressed for each place, and people who walk home from a restaurant.
+func _check_session68() -> void:
+	var life := _main.get_node_or_null("LifeBuilder")
+	var crowds: Node = life.get("crowds") if life != null else null
+	_check("there are people for every place", crowds != null, "")
+	if crowds != null:
+		var have: Dictionary = crowds.outfits()
+		var wanted := ["swimwear", "lifeguard", "gym", "uniform", "lanyard", "jodhpurs", "groom", "shopping bag",
+				"apron", "luggage", "sports", "bee suit", "hi-vis", "sun hat", "casual", "dog walker", "buggy",
+				"parent on bench", "family"]
+		var missing := wanted.filter(func(kind): return not have.has(kind))
+		_check("each place has its own kind of people", missing.is_empty(), "missing %s" % [missing])
+		_check("all the pool swimmers wear swimwear", have.get("swimwear", 0) >= 9, "%d swimmers" % have.get("swimwear", 0))
+		var someone: Person = crowds.people[0][0]
+		var far: float = GameConfig.LIFE_VIEW_DISTANCE[1]
+		crowds.apply_detail(someone, 10.0, far)
+		var near_ok: bool = someone.visible and someone.process_mode == Node.PROCESS_MODE_INHERIT
+		crowds.apply_detail(someone, GameConfig.PEOPLE_ANIMATE_DISTANCE + 5.0, far)
+		var mid_ok: bool = someone.visible and someone.process_mode == Node.PROCESS_MODE_DISABLED
+		crowds.apply_detail(someone, far + 5.0, far)
+		var far_ok: bool = not someone.visible
+		_check("only people near you are fully animated", near_ok and mid_ok and far_ok, "")
+	var spawner := _main.get_node_or_null("CustomerSpawner")
+	var walkers: Node = spawner.get("home_walkers") if spawner != null else null
+	_check("people can walk home from the restaurants", walkers != null and _grid != null, "")
+	if walkers == null or _grid == null:
+		return
+	walkers.grid = _grid
+	var places: PlaceBuilder = _delivery.place_builder
+	var home := 101
+	var walker: Node = walkers.spawn_from("pizza", home)
+	_check("someone walks out of 1000 Pizza", walker != null and walker.points.size() > 4
+			and walker.points[0].distance_to(places.restaurant_approach("pizza")) < 12.0, "")
+	if walker == null:
+		return
+	var door: Vector3 = walker.door
+	var steps := 0
+	while walker.advance(0.25) and steps < 8000:
+		steps += 1
+	var villa: Dictionary = {}
+	for v in places.villas:
+		if v["number"] == home:
+			villa = v
+	var end: Vector3 = walker.position
+	var into_house: bool = Vector2(end.x, end.z).distance_to(Vector2(villa["position"].x, villa["position"].z)) < villa["size"].z * 0.5
+	_check("they walk home along the paths and go in the front door", walker.inside and into_house
+			and door.distance_to(places.villa_door(home)) > 0.1, "%d steps, %.0f m walked" % [steps, steps * 0.25 * walker.speed])
+	# Fix pass: they walk to a nearby home, so the route search is quick (no stutter).
+	var shop_at: Vector3 = places.restaurant_approach("pizza")
+	var near_home: int = walkers.nearby_home(shop_at)
+	var near_spot := Vector3.ZERO
+	for v in places.villas:
+		if v["number"] == near_home:
+			near_spot = v["position"]
+	# Timed three times, keeping the fastest, so a busy Mac doesn't fail it by chance.
+	var took := INF
+	var near_route: Array = []
+	for attempt in 3:
+		var started := Time.get_ticks_usec()
+		near_route = walkers.route_for("pizza", near_home)
+		took = minf(took, (Time.get_ticks_usec() - started) / 1000.0)
+	# Compared with the farthest home, timed the same way at the same moment, so a busy Mac
+	# (Godot open in the editor, other tests running) can't fail it on its own.
+	var far_home: int = near_home
+	var far_gap := 0.0
+	for v in places.villas:
+		if v.get("kind", "") != "spot" and Vector3(v["position"]).distance_to(shop_at) > far_gap:
+			far_gap = Vector3(v["position"]).distance_to(shop_at)
+			far_home = v["number"]
+	var far_took := INF
+	for attempt in 3:
+		var started := Time.get_ticks_usec()
+		walkers.route_for("pizza", far_home)
+		far_took = minf(far_took, (Time.get_ticks_usec() - started) / 1000.0)
+	_check("people walk home to a nearby house, and finding the way is quick",
+			near_spot.distance_to(shop_at) < 350.0 and not near_route.is_empty() and (took < 60.0 or took < far_took * 0.5),
+			"home %d, %.0f m away, route in %.1f ms (the farthest home: %.1f ms)" % [near_home, near_spot.distance_to(shop_at), took, far_took])
+
+
+## Session 69: the beekeeper's stall is a pickup: phone, mini-map and full map show it.
+func _check_session69() -> void:
+	var places: PlaceBuilder = _delivery.place_builder
+	var stall := places.get_node_or_null("Restaurant_honey")
+	_check("the beekeeper has a honey stall by the hives", stall != null and stall.get("goods") == "honey", "")
+	if stall == null:
+		return
+	var hives: Rect2 = places.data.get_script_constant_map()["BEEHIVES"]
+	var door := places.restaurant_door("honey")
+	_check("the stall is beside the hives", Vector2(door.x, door.z).distance_to(hives.get_center()) < 25.0, "%s" % door)
+	var gs: Node = _game_state
+	gs.reset()
+	var order: Order = _delivery.make_order("honey", 305)
+	var accepted: bool = gs.offer_order(order) and gs.accept_offer()
+	var phone := _main.get_node("Phone")
+	phone._process(0.0)
+	var hud := _main.get_node_or_null("HUD")
+	var full_map: Node = hud.get("full_map") if hud != null else null
+	_check("a honey order shows on the phone and the mini-map", accepted and phone._pick_up.text.contains("Wahat Bee Farm")
+			and _minimap.target_label() == "Wahat Bee Farm", phone._pick_up.text)
+	_check("the full map shows the beekeeper", full_map != null and full_map.place_names().any(func(n): return n[0] == "Beekeeper"), "")
+	var money: int = gs.money
+	var done: bool = gs.pick_up() and gs.deliver()
+	_close_card()
+	_check("a honey order can be picked up at the beekeeper and delivered", done and gs.money > money
+			and order.food in ["honey jars", "wax candles"], order.describe())
+# --- World polish pass (Sessions 61 to 63) -------------------------------------------
+
+func _on_any_road(data: Dictionary, spot: Vector2, slack := 0.0) -> bool:
+	for road: Dictionary in data["ROADS"]:
+		var width: float = road.get("width", data["ROAD_WIDTH"])
+		if Geometry2D.get_closest_point_to_segment(spot, road["from"], road["to"]).distance_to(spot) <= width * 0.5 + slack:
+			return true
+	return false
+
+
+func _check_roads_polish() -> void:
+	var data: Dictionary = (_main.get_node("WahatBuilder").data as Script).get_script_constant_map()
+	# Session 61: road surfaces, markings and junctions.
+	var roads: RoadMesh = _main.get_node_or_null("WahatBuilder/Roads")
+	_check("Session 61: roads are smooth strips with centre lines, arrows, kerbs and curved corners",
+			roads != null and roads.stats["dashes"] > 1000 and roads.stats["arrows"] > 200
+			and roads.stats["fillets"] >= 60 and roads.stats["kerb_pieces"] > 3000, "%s" % [roads.stats if roads else {}])
+	_check("Session 61: no two road surfaces meet at the same height", roads != null and roads.stats["same_height_overlaps"] == 0, "")
+	var ring_pieces: Array = data["ROADS"].filter(func(r): return r["name"] == "Ring Road")
+	_check("Session 61: the ring road has rounded corners", ring_pieces.size() > 20 and data.has("RING_ROAD"), "%d pieces" % ring_pieces.size())
+	var old_dashes := 0
+	for part: Node in _main.get_node("DistrictDetail/StreetFurniture").get_children():
+		if part is MeshInstance3D and part.mesh is BoxMesh and (part.mesh as BoxMesh).size.is_equal_approx(Vector3(0.14, 0.02, 4)):
+			old_dashes += 1
+	_check("Session 61: the old white ring-road dashes (tyre marks) are gone", old_dashes == 0, "%d left" % old_dashes)
+	var off_road: Array = []
+	for bump: Dictionary in data["SPEED_BUMPS"]:
+		if not _on_any_road(data, Vector2(bump["position"].x, bump["position"].z)):
+			off_road.append(bump["position"])
+	for works: Dictionary in data["ROAD_WORKS"]:
+		if not _on_any_road(data, works["centre"]):
+			off_road.append(works["name"])
+	_check("Session 61: speed bumps and road works sit on the new roads", off_road.is_empty(), "%s" % [off_road])
+	var traffic: Node = _main.get_node("DistrictTraffic")
+	_check("Session 61: ring-road cars follow the rounded ring", traffic.cars.size() > 0 and traffic.cars[0].points.size() > 20, "")
+	var skid: Node = _bike.get_node_or_null("SkidMarks")
+	_check("Session 61: the bike can leave skid marks", skid != null, "")
+	if skid != null:
+		skid.start_mark()
+		skid.add_point(_bike.global_position + Vector3(0, 0.06, 2))
+		var made: bool = skid.marks.size() > 0 and skid.marks.back()["view"].mesh != null
+		var fresh: float = skid.marks.back()["material"].albedo_color.a
+		skid._physics_process(GameConfig.SKID_MARK_HOLD + GameConfig.SKID_MARK_FADE + 0.5)
+		_check("Session 61: a hard brake leaves a faint, short skid mark that fades away",
+				made and fresh <= 0.4 and skid.marks.is_empty(), "%d marks" % skid.marks.size())
+	# Session 62: the spine road's planters and red walking tracks.
+	var tracks: SpineTracks = _main.get_node_or_null("WahatBuilder/SpineTracks")
+	var spec: Dictionary = data["SPINE_TRACKS"]
+	_check("Session 62: red tracks and planters on both sides of the spine road",
+			tracks != null and tracks.track_length > 1300.0 and tracks.plants > 40, "%s" % [tracks.track_length if tracks else 0.0])
+	var space := _bike.get_world_3d().direct_space_state
+	var ray := PhysicsRayQueryParameters3D.create(Vector3(60, 0.3, 0), Vector3(60, 0.3, 7))
+	ray.exclude = [_bike.get_rid()]
+	var hit := space.intersect_ray(ray)
+	_check("Session 62 (Session 75: no invisible walls): nothing invisible stops the bike riding onto the red track", hit.is_empty(), "%s" % [hit.get("collider")])
+	var open_gaps := 0
+	for gap: Array in spec["path_gaps"] + spec["road_gaps"]:
+		var side := -1.0 if int(gap[1]) < 0 else 1.0
+		ray.from = Vector3(gap[0], 0.3, 0)
+		ray.to = Vector3(gap[0], 0.3, 9.0 * side)
+		var through := space.intersect_ray(ray)
+		if through.is_empty() or not String((through["collider"] as Node).name).begins_with("SpineKerb"):
+			open_gaps += 1
+	_check("Session 62: crossing gaps at every junction and path", open_gaps == spec["path_gaps"].size() + spec["road_gaps"].size(), "%d open" % open_gaps)
+	var on_track := 0
+	for route: Dictionary in data["PEOPLE_ROUTES"]:
+		var z: float = route["points"][0].z
+		if absf(absf(z) - 6.25) <= 1.25 and absf(route["points"][-1].z - z) < 0.01:
+			on_track += 1
+	_check("Session 62: joggers and walkers use the red tracks", on_track >= 4, "%d routes" % on_track)
+	var palms_clear := true
+	for palm: Vector3 in data["PALM_TREES"]:
+		if palm.x > spec["from_x"] and palm.x < spec["to_x"] and absf(palm.z) > 5.0 and absf(palm.z) < 7.5:
+			palms_clear = false
+	_check("Session 62: no palm stands on a red track", palms_clear, "")
+	var access_ok := false
+	for road: Dictionary in data["ROADS"]:
+		if road["name"] == "Institute Access" and not access_ok and _on_any_road(data, road["from"], -2.0):  # Session 76: the first piece of the curve
+			access_ok = spec["path_gaps"].any(func(g): return absf(g[0] - road["from"].x) < 0.5)
+	_check("Session 62: the C Institute path joins the spine road through a crossing", access_ok, "")
+	var seats := _main.get_node("DistrictDetail/InstituteSeating")
+	var tiers: Array = seats.get_children().filter(func(n): return n is MeshInstance3D and n.mesh is BoxMesh)
+	var sitter: Node3D = seats.find_child("InstituteSitter", false, false)
+	_check("Session 62: the C Institute seats face outwards, away from the glass",
+			tiers.size() >= 2 and (tiers[0].mesh as BoxMesh).size.y > (tiers[1].mesh as BoxMesh).size.y
+			and sitter != null and is_equal_approx(sitter.rotation.y, PI), "")
+	# Session 63: greenery, round tracks and no bare sand.
+	var edge: EdgeBuilder = _main.get_node_or_null("WahatBuilder/EdgeBuilder")
+	_check("Session 63: palms, trees and hedges between the ring road and the blue track", edge != null and edge.greenery_count > 200, "%d" % (edge.greenery_count if edge else 0))
+	_check("Session 63: thick tree belt, dunes and far shapes past the fence",
+			edge != null and edge.belt_trees > 500 and edge.dunes >= 30 and edge.far_shapes >= 10, "")
+	var blue: Node = edge.get_node_or_null("BikeTrack") if edge else null
+	var blue_view: MeshInstance3D = blue.get_child(0) if blue and blue.get_child_count() > 0 else null
+	_check("Session 63: the blue track has a texture and rounded corners",
+			blue_view != null and (blue_view.material_override as StandardMaterial3D).albedo_texture != null and data["BIKE_TRACK"].get("radius", 0.0) > 0.0, "")
+	_check("Session 63: horse riders follow the rounded horse track", data["HORSE_RIDERS"].all(func(r): return r["points"].size() > 20), "")
+	var sandy: Array = []
+	for villa: Dictionary in data["VILLAS"]:
+		if villa.has("approach") and GroundType.is_sand(data, Vector2(villa["approach"].x, villa["approach"].z)):
+			sandy.append(villa["number"])
+	for spot: Vector2 in [Vector2(-300, -100), Vector2(0, 200), Vector2(420, 0), Vector2(-150, 30)]:
+		if GroundType.is_sand(data, spot):
+			sandy.append(spot)
+	var arena: Rect2 = data["JUMPING_ARENA"]
+	_check("Session 63: no bare sand except where the horses ride", sandy.is_empty() and GroundType.is_sand(data, arena.get_center())
+			and GroundType.is_sand(data, Vector2(0, -230)), "%s" % [sandy.slice(0, 5)])
+
+
+
+# --- Sessions 70 to 73 (Blender models, playgrounds, school pitch, stables) -----------
+
+## Session 70: horses and donkeys are the Blender models; the new textures are there.
+func _check_session70() -> void:
+	var life := _main.get_node_or_null("LifeBuilder")
+	var rider: Node3D = life.get_node_or_null("Horse_0") if life != null else null
+	var model: Node3D = rider.get("model") if rider != null else null
+	var tack := model.get_node_or_null("Tack") as Node3D if model != null else null
+	_check("the riders' horses are the Blender horse with a saddle", model != null and model.has_meta("coat")
+			and (model.get_meta("legs") as Array).size() == 4 and tack != null and tack.visible, "")
+	var stables := _main.get_node_or_null("LandmarkBuilder/Stables")
+	var horses := 0
+	var standing: Node3D = null
+	for node in stables.find_children("*", "Node3D", true, false) if stables != null else []:
+		if node.get_meta("animal", "") == "horse":
+			horses += 1
+			standing = node
+	_check("the stable and paddock horses are Blender horses", horses >= 7, "%d" % horses)
+	var ambient: Node = life.get("ambient") if life != null else null
+	var donkey: Node3D = ambient._donkeys[0]["node"] if ambient != null and not ambient._donkeys.is_empty() else null
+	_check("the donkeys are Blender donkeys, smaller than a horse", donkey != null
+			and donkey.get_meta("animal", "") == "donkey" and _height(donkey) < _height(standing) * 0.85,
+			"%.2f vs %.2f" % [_height(donkey), _height(standing)])
+	var missing := []
+	for texture in ["blue_track", "red_track", "horse_sand", "pavers", "play_surface"]:
+		if not ResourceLoader.exists("res://assets/textures/%s.png" % texture):
+			missing.append(texture)
+	_check("the new track, sand, paver and playground textures are there", missing.is_empty(), str(missing))
+
+
+## How tall the meshes under a node are (metres).
+func _height(node: Node3D) -> float:
+	if node == null:
+		return 0.0
+	var top := -INF
+	var bottom := INF
+	for view: MeshInstance3D in node.find_children("*", "MeshInstance3D", true, false):
+		if view.get_parent().name == "Tack" or view.name == "Tack":
+			continue
+		var box: AABB = view.global_transform * view.get_aabb()
+		top = maxf(top, box.end.y)
+		bottom = minf(bottom, box.position.y)
+	return top - bottom if top > bottom else 0.0
+
+
+## Session 71: every playground is the rounded Blender kit, with kids playing on it.
+func _check_session71() -> void:
+	var kits: Array = []
+	for builder in ["SpineBuilder", "DistrictDetail"]:
+		var node := _main.get_node_or_null(builder)
+		if node != null:
+			kits.append_array(node.find_children("PlaygroundKit", "", true, false))
+	var data: Dictionary = _delivery.place_builder.data.get_script_constant_map()
+	var wanted: int = 1 + data["MINI_PLAZAS"].size() + 2  # the spine, every cluster, the school's two
+	var floors := 0
+	var kids := 0
+	var pieces := 0
+	for kit: Node in kits:
+		var floor := kit.get_parent().get_node_or_null("PlayFloor") as MeshInstance3D
+		floors += 1 if floor != null and floor.material_override == SurfaceTextures.make("play_surface") else 0
+		kids += kit.kids.size()
+		pieces += kit.parts.size()
+	_check("every playground is the new rounded one on soft rubber", kits.size() == wanted and floors == wanted,
+			"%d of %d, %d floors" % [kits.size(), wanted, floors])
+	_check("kids play on the swings, roundabouts and spring riders", kids >= wanted * 2, "%d kids" % kids)
+	var kit: Node = kits[0] if not kits.is_empty() else null
+	var part: Node3D = kit.parts[0][0] if kit != null and not kit.parts.is_empty() else null
+	var before: Basis = part.basis if part != null else Basis()
+	if kit != null:
+		kit._near = true
+		kit._check_left = 1.0
+		kit._process(0.4)
+	_check("the swings, roundabouts and spring riders move", part != null and not part.basis.is_equal_approx(before), "%d moving parts" % pieces)
+
+
+## Session 72: the school football pitch, its floodlights and the courts gone.
+func _check_session72() -> void:
+	var pitch: Node = _main.get_node_or_null("LandmarkBuilder/School/SchoolPitch")
+	_check("the school has a full football pitch", pitch != null, "")
+	if pitch == null:
+		return
+	var turf: Rect2 = pitch.pitch
+	_check("the pitch has two goals, a running track and markings", pitch.goals.size() == 2
+			and pitch.get_node_or_null("TrackLines") != null and pitch.get_node_or_null("PitchLines") != null
+			and pitch.track.size.x > 60.0 and turf.size.x > 70.0, "%s" % turf)
+	_check("the fence posts are tall (taller than the old 1.3 m fence)", pitch.FENCE_HEIGHT >= 5.0, "")
+	var school: Dictionary = _delivery.place_builder.data.get_script_constant_map()["SCHOOL"]
+	var gate := Vector2(school["gate_x"], school["area"].position.y)
+	_check("the gate and the booth stay clear of the pitch", not pitch.fence.grow(1.0).has_point(gate)
+			and not pitch.fence.has_point(Vector2(-365, 32)), "%s" % pitch.fence)
+	var hour: float = _game_state.clock_hours()
+	pitch.update_lights(12.0)
+	var day_off: bool = not pitch.lights_on and not pitch.lights[0].visible
+	pitch.update_lights(GameConfig.FLOODLIGHT_ON_HOUR + 0.25)
+	var on: bool = pitch.lights_on and pitch.lights.size() == 4
+	var aimed := 0
+	for light: SpotLight3D in pitch.lights:
+		on = on and light.visible
+		var from := light.global_position
+		var way := -light.global_basis.z
+		var ground := from + way * (-from.y / way.y) if way.y < -0.01 else from
+		aimed += 1 if turf.has_point(Vector2(ground.x, ground.z)) else 0
+	_check("the floodlights are off in the day and come on at dusk", day_off and on, "")
+	_check("all four floodlights aim at the pitch", aimed == 4, "%d" % aimed)
+	pitch.update_lights(hour)
+	var playing := 0
+	for pupil: Person in pupil_list(pitch):
+		playing += 1 if turf.grow(2.0).has_point(Vector2(pupil.global_position.x, pupil.global_position.z)) else 0
+	var ball_from: Vector3 = pitch.ball.position
+	for i in 200:  # the ball can be between kicks: watch it for up to 20 s of play
+		pitch.play(0.1)
+		if pitch.ball.position.distance_to(ball_from) > 1.0:
+			break
+	_check("pupils play football on the pitch in the day", playing == GameConfig.PITCH_PUPILS
+			and pitch.ball.position.distance_to(ball_from) > 1.0, "%d pupils" % playing)
+	var courts := 0
+	var detail := _main.get_node_or_null("DistrictDetail/FairGradeCampus")
+	for view: MeshInstance3D in detail.find_children("*", "MeshInstance3D", true, false) if detail != null else []:
+		var at := view.global_position
+		if view.mesh is BoxMesh and (view.mesh as BoxMesh).size.y < 0.05 and Rect2(-418, 80, 89, 15).has_point(Vector2(at.x, at.z)):
+			courts += 1
+	_check("the tennis and basketball courts are gone", courts == 0, "%d court pieces" % courts)
+
+
+func pupil_list(pitch: Node) -> Array:
+	return pitch.pupils
+
+
+## Session 73: more jumps, riders taking turns over them, grooms walking horses.
+func _check_session73() -> void:
+	var life: Node = _main.get_node_or_null("DistrictTraffic/StableLife")
+	_check("the stables have their own life (jumps, riders, grooms)", life != null, "")
+	if life == null:
+		return
+	var waiting := 0
+	for rider: Node in life.riders:
+		waiting += 1 if rider.holding else 0
+	_check("the arena has six jumps and five riders, some waiting their turn", life.jumps.size() >= 6
+			and life.riders.size() >= 5 and waiting >= 2 and waiting < life.riders.size(), "%d waiting" % waiting)
+	var cleared := {}  # rider -> {jump index: true}
+	var max_out := 0
+	# Stepping by hand doesn't move the physics shapes, so the riders' "is someone ahead"
+	# check would see stale spots: switch their solid bodies off while we fast-forward.
+	var layers := []
+	for rider: Node in life.riders:
+		layers.append(rider.collision_layer)
+		rider.collision_layer = 0
+	for step in 640:  # 160 seconds of arena time
+		life._physics_process(0.25)
+		var out := 0
+		for rider: Node in life.riders:
+			rider._physics_process(0.25)
+			out += 0 if rider.holding else 1
+			if rider.jump_height > 0.7:
+				for j in life.jumps.size():
+					if Vector2(rider.position.x - life.jumps[j].x, rider.position.z - life.jumps[j].z).length() < 2.0:
+						if not cleared.has(rider.name):
+							cleared[rider.name] = {}
+						cleared[rider.name][j] = true
+		max_out = maxi(max_out, out)
+	for i in life.riders.size():
+		life.riders[i].collision_layer = layers[i]
+	var good := 0
+	var rounds := 0
+	for rider: Node in life.riders:
+		rounds += rider.rounds
+		good += 1 if cleared.has(rider.name) and cleared[rider.name].size() >= 4 else 0
+	_check("several riders take turns over several jumps", good >= 2 and rounds >= 1
+			and max_out <= GameConfig.ARENA_RIDERS_OUT, "%d riders cleared 4+ jumps, %d rounds, at most %d out" % [good, rounds, max_out])
+	var groom: Node3D = life.grooms[0] if not life.grooms.is_empty() else null
+	var from := groom.position if groom != null else Vector3.ZERO
+	for step in 8:
+		if groom != null:
+			groom._physics_process(0.5)
+	_check("grooms walk horses by the stables", life.grooms.size() >= 2 and groom.position.distance_to(from) > 1.0
+			and groom.model.get_node_or_null("Horse") != null, "")
+# --- Looks pass Sessions 56 to 58 (gym, institute, shops, outside detail) ---
+# The full checks are in tests/venue_looks_test.gd.
+func _check_looks_venues() -> void:
+	var places: PlaceBuilder = _delivery.place_builder
+	var gym := places.get_node_or_null("Gym")
+	var lobby := places.get_node_or_null("Institute")
+	if gym == null or lobby == null:
+		return
+	_check("Session 56: the gym is a real gym (treadmills, rack, mirror wall)", gym.get_meta("interior_style", "") == "gym"
+			and gym.get_node_or_null("Treadmill3") != null and gym.get_node_or_null("SquatRack") != null
+			and gym.get_node_or_null("TrainHard") != null, "")
+	_check("Session 56: the C Institute lobby is two storeys with a talk screen", lobby.get_meta("ceiling", 0.0) > 12.0
+			and lobby.get_node_or_null("TalkScreen") != null and lobby.get_node_or_null("Balcony") != null, "")
+	# Session 91: the second floor (full checks: tests/institute_upstairs_test.gd).
+	_check("Session 91: the C Institute has a lift, a meeting room with 6 people and people at desks upstairs",
+			lobby.get_node_or_null("Lift") != null and lobby.get_meta("meeting_people", 0) >= 6
+			and lobby.get_meta("desk_people", 0) >= 4 and lobby.get_node_or_null("StairSlope") != null
+			and _main.get_node_or_null("WahatBuilder/StreamPonds/PondDeck_2") != null, "")
+	_check("Session 56: both receptions are inside their rooms", RestaurantRoom.is_inside(lobby, places.villa_door(903))
+			and RestaurantRoom.is_inside(gym, places.villa_door(904)), "")
+	# Session 57: the shops, the two drop-off buildings and the farm stall are detailed.
+	var marks := _main.get_node_or_null("LandmarkBuilder")
+	var bikes := places.get_node_or_null("Shop_bikes")
+	var clothes := places.get_node_or_null("Shop_clothes")
+	_check("Session 57: the shops are rebuilt (hanging bikes, caps wall, sliding doors)", bikes != null and clothes != null
+			and bikes.get_node_or_null("HangingBikes") != null and clothes.get_node_or_null("CapsWall") != null
+			and bikes.get_node_or_null("SlidingDoor") != null, "")
+	_check("Session 57: the stable office, school booth and farm stall are detailed", marks != null
+			and marks.get_node_or_null("StableOffice/OfficeGroom") != null and marks.get_node_or_null("SchoolBooth/Guard") != null
+			and places.get_node_or_null("Restaurant_farm/Farmer") != null, "")
+	# Session 58: the Plaza, streets and spine have more detail, and lights for sunset.
+	var life := _main.get_node_or_null("PlazaBuilder/PlazaLife")
+	var streets := _main.get_node_or_null("PlazaBuilder/StreetDetails")
+	var green := _main.get_node_or_null("SpineBuilder/SpineGreenery")
+	_check("Session 58: café tables, a juice kiosk and string lights in the Plaza", life != null
+			and life.get_meta("counts", {}).get("tables", 0) >= 12 and life.get_node_or_null("PlazaFurniture/JuiceKiosk") != null
+			and life.get_meta("counts", {}).get("bulbs", 0) > 100, "")
+	_check("Session 58: street lamps, bins, street signs and bike racks", streets != null
+			and streets.get_meta("counts", {}).get("lamps", 0) >= 40 and streets.get_meta("counts", {}).get("racks", 0) >= 5, "")
+	_check("Session 58: flowers, rocks and trees in the spine (Session 82: no grass clumps)", green != null
+			and green.get_meta("counts", {}).get("flowers", 0) >= 500 and green.get_meta("counts", {}).get("trees", 0) >= 30, "")
+	_check("Session 58: the lights come on at sunset", SunsetLights.amount_at(GameConfig.SHIFT_START_HOUR) == 0.0
+			and SunsetLights.amount_at(GameConfig.SHIFT_END_HOUR) > 0.9, "")
+
+
+## Fix pass (Sessions 75 to 83). Each session fills in its own block below.
+func _check_fix_pass() -> void:
+	await _check_session75()
+	await _check_session76()
+	await _check_session77()
+	await _check_session78()
+	await _check_session79()
+	await _check_session80()
+	await _check_session81()
+	await _check_session82()
+	await _check_session83()
+	await _check_session75_people()  # the jump on foot
+	await _check_session80_people()  # seats
+	await _check_session81_people()  # swimmers and the lifeguard
+
+
+## Session 75: ride freely, jump on foot, buggies on roads.
+## (Session 75 checks go here.)
+func _check_session75() -> void:
+	var roads: RoadMesh = _main.get_node_or_null("WahatBuilder/Roads")
+	if roads == null:
+		print("      no RoadMesh on this map, Session 75 checks skipped")
+		return
+	var data: Dictionary = (_main.get_node("WahatBuilder").data as Script).get_script_constant_map()
+	# 1) No invisible walls: the spine's solid kerbs are gone; kerbs give a small bump instead.
+	_check("Session 75: no invisible solid kerbs left", _main.find_children("SpineKerb*", "", true, false).is_empty(), "")
+	var bumps: KerbBumps = roads.bumps
+	_check("Session 75: riding across the spine planter crosses kerb lines", bumps != null
+			and bumps.crosses(Vector2(70, 0), Vector2(70, 9)), "")
+	var keep_speed: float = _bike.speed
+	_bike.speed = 5.0
+	var crash_before: Dictionary = _bike.last_crash.duplicate()
+	_bike.hit_kerb()
+	_check("Session 75: a kerb is a small bump (a little speed lost, no crash)", _bike.speed > 4.0 and _bike.speed < 5.0
+			and _bike.fallen_left <= 0.0 and _bike.last_crash == crash_before, "%.2f m/s" % _bike.speed)
+	_bike.speed = keep_speed
+	# 2) Speed bumps only on the ring road.
+	var ring: Vector2 = data["RING_ROAD"]["half"]
+	var inside: Array = []
+	for bump: Dictionary in data["SPEED_BUMPS"]:
+		var p: Vector3 = bump["position"]
+		if absf(absf(p.x) - ring.x) > 3.0 and absf(absf(p.z) - ring.y) > 3.0:
+			inside.append(p)
+	_check("Session 75: speed bumps only on the ring road", inside.is_empty() and data["SPEED_BUMPS"].size() > 0, "%s" % [inside])
+	# 4) Buggies drive on the roads, on their side, and slow at junctions.
+	var life: Node = _main.get_node_or_null("LifeBuilder")
+	if life == null:
+		return
+	var off: Array = []
+	var sided := 0
+	for mover in life.movers:
+		if mover.kind != "buggy":
+			continue
+		if mover.lane > 0.0 and not mover.slow_spots.is_empty():
+			sided += 1
+		for p: Vector3 in mover.points:
+			if not roads.area.on_asphalt(Vector2(p.x, p.z), 0.6):
+				off.append(p)
+	_check("Session 75: every buggy route runs on asphalt", off.is_empty(), "%s" % [off.slice(0, 4)])
+	_check("Session 75: buggies keep right of the yellow line and slow at junctions", sided == data["BUGGIES"].size(), "%d" % sided)
+
+# --- end of Session 75 checks ---
+
+
+## Session 76: kerbs that join up and curved corners.
+## (Session 76 checks go here.)
+func _check_session76() -> void:
+	var roads: RoadMesh = _main.get_node_or_null("WahatBuilder/Roads")
+	var tracks: SpineTracks = _main.get_node_or_null("WahatBuilder/SpineTracks")
+	if roads == null or tracks == null:
+		print("      no RoadMesh on this map, Session 76 checks skipped")
+		return
+	var data: Dictionary = (_main.get_node("WahatBuilder").data as Script).get_script_constant_map()
+	# 4) No kerb ends in mid-air (the same check as tests/road_mesh_test.gd).
+	var loose: Array = load("res://tests/road_mesh_test.gd").dangling_ends(roads.kerbs, tracks.kerb_lines, roads.area)
+	_check("Session 76: no kerb ends in mid-air", loose.is_empty(), "%s" % [loose.slice(0, 4)])
+	# 1) Raised kerbs that wrap the whole roundabout (island and outside).
+	var centre: Vector2 = data["ROUNDABOUTS"][0]["centre"]
+	var island: bool = roads.kerbs.runs.any(func(r): return r["closed"] and (r["points"][0] as Vector2).distance_to(centre) < 7.0)
+	_check("Session 76: raised kerbs wrap the roundabout's island", island and GameConfig.KERB_HEIGHT >= 0.08, "")
+	# 2) Curved corners: at the roundabout, the cluster lane loops and where roads meet.
+	var near_round := roads.corners.filter(func(c): return (c["corner"] as Vector2).distance_to(centre) < 20.0)
+	var loops := roads.chains.filter(func(c): return String(c["name"]).ends_with(" Lane") and c["closed"])
+	_check("Session 76: curved corners at junctions, the roundabout and the cluster lane loops",
+			roads.corners.size() >= 80 and near_round.size() == 6 and loops.size() == 5,
+			"%d corners, %d at the roundabout, %d lane loops" % [roads.corners.size(), near_round.size(), loops.size()])
+	# 3) The C Institute access road is one smooth curve from the spine road to the door.
+	var access: Array = data["ROADS"].filter(func(r): return r["name"] == "Institute Access")
+	_check("Session 76: the C Institute access road is a smooth curve", access.size() >= 8
+			and access[0]["from"].distance_to(Vector2(-186, 0)) < 0.5 and access.back()["to"].distance_to(Vector2(-197, -33)) < 0.5, "")
+	# Nothing placed beside the roads stands on a curved corner.
+	var on_corner := 0
+	var details: Node = _main.find_child("StreetDetails", true, false)
+	var heads: Array = details.lamp_heads if details != null else []
+	for head: Transform3D in heads:
+		var pole: Vector3 = head.origin - head.basis * Vector3(0, 0, 1.2)
+		if roads.area.fillet_at(Vector2(pole.x, pole.z)) >= 0:
+			on_corner += 1
+	_check("Session 76: no street lamp stands on a curved corner", on_corner == 0, "%d" % on_corner)
+
+# --- end of Session 76 checks ---
+
+
+## Session 77: square Plaza floor and the Dune Drip buggy park.
+func _check_session77() -> void:
+	var places: Node = _main.get_node_or_null("PlaceBuilder")
+	var plaza_builder: Node = _main.get_node_or_null("PlazaBuilder")
+	if places == null or plaza_builder == null or not places.data.get_script_constant_map().get("PLAZA", {}).has("floor"):
+		print("      no square Plaza floor in this scene, Session 77 checks skipped")
+		return
+	var map: Dictionary = places.data.get_script_constant_map()
+	var plaza: Dictionary = map["PLAZA"]
+	# One square floor of the square concrete pavers photo, covering the whole square.
+	var floor := plaza_builder.get_node_or_null("Plaza") as MeshInstance3D
+	var look := floor.material_override as StandardMaterial3D if floor != null else null
+	var area: Rect2 = plaza["floor"]
+	var covers := floor != null and floor.get_aabb().size.x >= area.size.x - 0.1 and floor.get_aabb().size.z >= area.size.y - 0.1
+	_check("Session 77: the Plaza floor is one square of concrete pavers", covers and look != null and look.albedo_texture != null
+			and look.albedo_texture.resource_path.ends_with("square_concrete_pavers_diff_1k.jpg"), "%s" % [area])
+	# The ground at every restaurant entrance and in front of both shop doors is paving.
+	var off: Array = []
+	for shop: Dictionary in places.restaurants:
+		if not shop.get("interior", false):
+			continue  # the farm and honey stalls are out in the spine
+		for spot: Vector3 in [places.restaurant_entrance(shop["id"]), places.restaurant_approach(shop["id"])]:
+			if not PlazaFloor.is_paved(map, Vector2(spot.x, spot.z)):
+				off.append(shop["name"])
+	for shop: Dictionary in map["SHOPS"]:
+		var size: Vector3 = shop["size"]
+		var door := PlaceBuilder.door_point(shop["position"], shop["facing"], size)
+		var p: Vector3 = shop["position"]
+		var spots := [door]
+		for corner in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:  # the whole shop too
+			spots.append(Vector3(p.x + corner.x * size.z * 0.5, 0, p.z + corner.y * size.x * 0.5))
+		for spot: Vector3 in spots:
+			if not PlazaFloor.is_paved(map, Vector2(spot.x, spot.z)):
+				off.append(shop["name"])
+	_check("Session 77: the ground at every restaurant entrance and both shops is paving", off.is_empty(), "not paved: %s" % [off])
+	# The café tables stand on the paving (at the paving's height), not on the grass.
+	var tables := 0
+	var low: Array = []
+	for table: Node in plaza_builder.find_children("CafeTable*", "Node3D", true, false):
+		if table is CollisionShape3D:
+			continue
+		tables += 1
+		var at := Vector2((table as Node3D).position.x, (table as Node3D).position.z)
+		if not PlazaFloor.is_paved(map, at) or (table as Node3D).position.y < 0.01:
+			low.append(String(table.name))
+	_check("Session 77: every café table is on the paving", tables >= 10 and low.is_empty(), "%d tables, off: %s" % [tables, low])
+	var fountain := plaza_builder.get_node_or_null("Fountain") as Node3D
+	_check("Session 77: the fountain and sunken square stay in the middle", fountain != null
+			and Vector2(fountain.position.x, fountain.position.z).distance_to(plaza["centre"]) < 0.01
+			and not PlazaFloor.is_paved(map, plaza["centre"]), "")
+	# The Plaza road ends in the buggy park behind Dune Drip, not inside the Plaza.
+	var buggy_park := _session77_lot(map, "buggies")
+	var road_end := Vector2.INF
+	var into_plaza := false
+	for road: Dictionary in map["ROADS"]:
+		if road["name"] == "Plaza Road":
+			road_end = road["to"]
+			into_plaza = into_plaza or area.grow(-0.5).has_point(road["to"]) or area.grow(-0.5).has_point(road["from"])
+	var bays := 0
+	for row: Dictionary in buggy_park.get("rows", []):
+		bays += (row["bays"] as Array).size()
+	var dune_drip: Vector3 = map["SHOPS"][1]["position"]
+	var park_area: Rect2 = buggy_park.get("area", Rect2())
+	# Session 90: the buggy park is 3 times bigger (16 bays; tests/plaza_layout_test.gd checks more).
+	_check("Session 77: the Plaza road ends in a buggy park behind Dune Drip", not into_plaza and bays >= 15
+			and park_area.grow(0.2).has_point(road_end) and park_area.position.x >= dune_drip.x,
+			"%d bays, road ends at %s" % [bays, road_end])
+	var parked := _main.find_children("ParkedBuggy_*", "StaticBody3D", true, false).size()
+	var path_in := false
+	for apron: Rect2 in plaza.get("aprons", []):
+		path_in = path_in or (apron.grow(0.05).intersects(park_area) and apron.grow(0.05).intersects(area))
+	_check("Session 77: the buggy park has markings, a parked buggy and a footpath into the Plaza",
+			parked >= 1 and path_in and _main.get_node_or_null("DistrictDetail/CarParks/CarPark_BuggyPark/Markings") != null,
+			"%d buggies" % parked)
+
+
+## The first car park of this kind ("buggies" or "cars") in the data, or {}.
+func _session77_lot(map: Dictionary, kind: String) -> Dictionary:
+	for lot: Dictionary in map.get("PARKING_LOTS", []):
+		if lot["kind"] == kind:
+			return lot
+	return {}
+
+# --- end of Session 77 checks ---
+
+
+## Session 78: bike shop and Dune Drip buildings.
+## Both shops have an arcade with solid columns (open between them), a stepped roof with a
+## parapet, a wind tower, window bays and a colour band, and their own things outside; the
+## doors are still reachable on foot through the arcade; the walls facing the Plaza are dressed.
+func _check_session78() -> void:
+	await process_frame
+	var places: Node = _main.get_node_or_null("PlaceBuilder")
+	if places == null or places.get_node_or_null("Shop_bikes") == null:
+		print("      no shops on this map, Session 78 checks skipped")
+		return
+	var common := ["arcade", "parapet", "stepped_roof", "raised_back", "wind_tower", "window_bays", "colour_band", "back_door"]
+	var own := {"bikes": ["bike_rack", "pump_stand", "planters"], "clothes": ["planters", "bench"]}
+	for id: String in own:
+		var shop: Node3D = places.get_node("Shop_" + id)
+		var has: PackedStringArray = shop.get_meta("exterior", PackedStringArray())
+		var missing: Array = (common + own[id]).filter(func(part): return not has.has(part))
+		var count: int = shop.get_meta("exterior_parts", 0)
+		_check("Session 78: %s has an arcade, stepped roof, wind tower, window bays and its own things outside" % shop.name,
+				missing.is_empty() and count > 300 and shop.get_meta("arcade_columns", 0) >= 6, "missing %s, %d parts" % [missing, count])
+		_s78_check_arcade(shop)
+		_s78_check_reach(shop)
+	var floors := _main.get_node_or_null("DistrictDetail/PlazaUpperFloors")
+	if floors != null:
+		var on_top := floors.get_children().filter(func(n): return n is Node3D and (n as Node3D).position.distance_to(Vector3(-125, 0, -145)) < 5.0)
+		_check("Session 78: Dune Drip has its own stepped roof (no box hanging over it)", on_top.is_empty(), "%d" % on_top.size())
+		var walls := floors.get_node_or_null("PlazaWalls")
+		_check("Session 78: the restaurant side walls and upper floor ends facing the Plaza are dressed",
+				walls != null and walls.get_meta("walls", 0) >= 24, "%d walls" % (walls.get_meta("walls", 0) if walls else 0))
+
+
+## Real collision where you see something, and none where you don't: columns and piers are
+## solid, the gaps between the columns and the open ends of the arcade are free.
+func _s78_check_arcade(shop: Node3D) -> void:
+	var fz: float = 9.15
+	var cz: float = fz + GameConfig.SHOP_ARCADE_DEPTH - 0.35
+	var solid := []
+	for x: float in GameConfig.SHOP_COLUMN_XS:
+		for spot in [Vector3(x, 1.0, cz), Vector3(-x, 1.0, cz)]:
+			if not _s78_blocked(shop, spot):
+				solid.append(spot)
+	var open := []
+	for spot in [Vector3(0, 1.0, fz + 1.5), Vector3(4.65, 1.0, cz), Vector3(-4.65, 1.0, cz),
+			Vector3(9.85, 1.0, fz + 1.2), Vector3(-9.85, 1.0, fz + 1.2), Vector3(0, 1.0, fz + 0.5)]:
+		if _s78_blocked(shop, spot):
+			open.append(spot)
+	_check("Session 78: %s's columns are solid and the arcade is open to walk and ride through" % shop.name,
+			solid.is_empty() and open.is_empty(), "not solid %s, blocked %s" % [solid, open])
+
+
+func _s78_blocked(shop: Node3D, local: Vector3) -> bool:
+	var query := PhysicsPointQueryParameters3D.new()
+	query.position = shop.to_global(local)
+	for hit in shop.get_world_3d().direct_space_state.intersect_point(query, 8):
+		if hit["collider"] == shop or shop.is_ancestor_of(hit["collider"]):
+			return true
+	return false
+
+
+## The shop door can be reached on foot from the start: in front, under the arcade, inside.
+func _s78_check_reach(shop: Node3D) -> void:
+	if _grid == null:
+		return
+	var start: Vector3 = _main.get_node("PlaceBuilder").data.get_script_constant_map()["START"]["position"]
+	var stuck := []
+	for local in [Vector3(0, 0, 9.15 + GameConfig.SHOP_ARCADE_DEPTH + 2.5), Vector3(0, 0, 10.4), Vector3(0, 0, 5.0)]:
+		var spot := shop.to_global(local)
+		if not _grid.can_reach(Vector2(start.x, start.z), Vector2(spot.x, spot.z)):
+			stuck.append(local)
+	_check("Session 78: %s's door can be reached through the arcade" % shop.name, stuck.is_empty(), "stuck at %s" % [stuck])
+
+# --- end of Session 78 checks ---
+
+
+## Session 79: car parks and the mosque car park.
+func _check_session79() -> void:
+	var places: Node = _main.get_node_or_null("PlaceBuilder")
+	var parks := _main.get_node_or_null("DistrictDetail/CarParks")
+	if places == null or parks == null or not places.data.get_script_constant_map().has("PARKING_LOTS"):
+		print("      no car parks in this scene, Session 79 checks skipped")
+		return
+	var map: Dictionary = places.data.get_script_constant_map()
+	var cars: Array = map["PARKED_CARS"]
+	var wrong: Array = []
+	var narrow: Array = []
+	var roofless: Array = []
+	var empty: Array = []
+	var no_way_in: Array = []
+	for lot: Dictionary in map["PARKING_LOTS"]:
+		var node := parks.get_node_or_null("CarPark_" + String(lot["name"]).replace(" ", "").replace("-", "_"))
+		if lot["entrances"].is_empty() or not lot["entrances"][0].has("at"):
+			no_way_in.append(lot["name"])
+		if node == null or node.get_meta("roofs", 0) != (lot["rows"] as Array).size() or node.get_node_or_null("Markings") == null:
+			roofless.append(lot["name"])
+		if lot["kind"] != "cars":
+			continue
+		# One layout: a row along one side, two rows in the middle nose to nose, a row across
+		# the far end. Only a car park too narrow for the middle pair (C2-C3) may leave it out.
+		var rows := _session79_rows(lot)
+		var across: float = minf((lot["area"] as Rect2).size.x, (lot["area"] as Rect2).size.y)
+		if rows["side"] < 1 or rows["end"] < 1 or (rows["pairs"] < 1 and across >= 20.0):
+			wrong.append("%s %s" % [lot["name"], rows])
+		elif rows["pairs"] < 1:
+			narrow.append(lot["name"])
+		var bays := 0
+		for row: Dictionary in lot["rows"]:
+			bays += (row["bays"] as Array).size()
+		var parked := cars.filter(func(car): return (lot["area"] as Rect2).has_point(Vector2(car["position"].x, car["position"].z))).size()
+		if parked < bays * 0.7:
+			empty.append("%s %d/%d" % [lot["name"], parked, bays])
+	_check("Session 79: every car park has a side row, two middle rows nose to nose and an end row", wrong.is_empty(),
+			"wrong: %s; too narrow for the middle pair: %s" % [wrong, narrow])
+	_check("Session 79: every row has a solar roof and painted bay lines", roofless.is_empty(), "%s" % [roofless])
+	_check("Session 79: most bays have a car in them", empty.is_empty(), "%d cars; too empty: %s" % [cars.size(), empty])
+	_check("Session 79: every car park entrance is in the data (for the kerbs)", no_way_in.is_empty(), "%s" % [no_way_in])
+	# The entrances off the ring road stay where they were before Session 79.
+	var xs: Array = []
+	for area: Rect2 in map["PARKING_AREAS"]:
+		xs.append(RoadMesh.parking_access_x(area))
+	_check("Session 79: the car park entrances off the ring road stay where they were",
+			xs == [-53.5, 129.5, 278.5, -5.5, 208.5, 408.5, -144.5], "%s" % [xs])
+	# The mosque car park: about 12 bays, in front of the mosque (its door faces east), with its
+	# own road joining the ring road.
+	var mosque: Dictionary = map["MOSQUE"]
+	var lot := {}
+	for each: Dictionary in map["PARKING_LOTS"]:
+		if each["name"] == "Mosque":
+			lot = each
+	var mosque_bays := 0
+	for row: Dictionary in lot.get("rows", []):
+		mosque_bays += (row["bays"] as Array).size()
+	var mosque_area: Rect2 = lot.get("area", Rect2())
+	var link := {}
+	for road: Dictionary in map["ROADS"]:
+		if road["name"] == "Mosque Car Park Road":
+			link = road
+	var ring: Dictionary = map["RING_ROAD"]
+	var joins := not link.is_empty() and absf(absf((link["from"] as Vector2).y) - (ring["half"] as Vector2).y) < 0.5 \
+			and mosque_area.grow(0.5).has_point(link["to"])
+	_check("Session 79: the mosque has its own car park in front, joined to the ring road", mosque_bays >= 10 and mosque_bays <= 16
+			and mosque_area.position.x >= mosque["position"].x + mosque["size"].z * 0.5 and joins,
+			"%d bays at %s" % [mosque_bays, mosque_area])
+	# Parked cars stand in car parks, never on a road, and leave the visiting cars' spots free.
+	var on_road: Array = []
+	for car: Dictionary in cars:
+		var at := Vector2(car["position"].x, car["position"].z)
+		for road: Dictionary in map["ROADS"]:
+			var half: float = road.get("width", 6.0) * 0.5
+			if Geometry2D.get_closest_point_to_segment(at, road["from"], road["to"]).distance_to(at) < half + 1.0:
+				on_road.append("%s on %s" % [at, road["name"]])
+				break
+		for area: Rect2 in map["PARKING_AREAS"]:
+			if at.distance_to(Vector2(area.position.x + 4.0, area.end.y - 9.0)) < 3.0:
+				on_road.append("%s in a visiting car's spot" % at)
+	_check("Session 79: parked cars stand in their bays, off the roads", on_road.is_empty(), "%s" % [on_road.slice(0, 5)])
+	var batch := _main.get_node_or_null("DecorBuilder/ParkedCarBatch") as ParkedCarBatch
+	_check("Session 79: the parked cars are drawn in a few batches", not GameConfig.PARKED_CARS_BATCHED
+			or (batch != null and batch.count == cars.size() and batch.get_child_count() <= cars.size() / 4),
+			"%d cars in %d batches" % [batch.count if batch else 0, batch.get_child_count() if batch else 0])
+
+
+## Sorts a car park's rows: "end" rows run across the far end; the lengthwise rows are "side"
+## rows, or pairs parked nose to nose ("pairs" counts the pairs).
+func _session79_rows(lot: Dictionary) -> Dictionary:
+	var way: Dictionary = lot["entrances"][0]
+	var along := ((way["lot_at"] as Vector2) - (way["at"] as Vector2)).normalized()
+	var lengthwise: Array = []
+	var ends := 0
+	for row: Dictionary in lot["rows"]:
+		var nose := Vector2(sin(deg_to_rad(row["facing"])), cos(deg_to_rad(row["facing"])))
+		if absf(nose.dot(along)) > 0.9:
+			ends += 1
+		else:
+			lengthwise.append(row)
+	var paired := {}
+	for a: Dictionary in lengthwise:
+		for b: Dictionary in lengthwise:
+			var nose_a := Vector2(sin(deg_to_rad(a["facing"])), cos(deg_to_rad(a["facing"])))
+			var nose_b := Vector2(sin(deg_to_rad(b["facing"])), cos(deg_to_rad(b["facing"])))
+			var gap: float = ((b["bays"][0] as Vector2) - (a["bays"][0] as Vector2)).dot(nose_a)
+			if nose_a.dot(nose_b) < -0.9 and absf(gap - float(a["depth"])) < 0.3:
+				paired[a] = true
+				paired[b] = true
+	return {"side": lengthwise.size() - paired.size(), "pairs": paired.size() / 2, "end": ends}
+
+# --- end of Session 79 checks ---
+
+
+## Session 80: C Institute front, seats and the basketball court.
+## (Session 80 checks go here.)
+func _check_session80() -> void:
+	await process_frame
+	var data: Dictionary = _delivery.place_builder.data.get_script_constant_map()
+	# 1) No pale blue (pool-looking) ground in front of the C Institute: the institute plot is
+	# grass, and no flat blue slab covers the ground between its front and the plot's edge.
+	var plot_colour := Color.BLACK
+	for plot: Dictionary in data["PLOTS"]:
+		if plot["name"] == "C Institute":
+			plot_colour = plot["colour"]
+	var blue := _blue_ground_near(Vector2(-167, -33), 14.0)
+	_check("Session 80: no blue patch in front of the C Institute (its ground is grass)",
+			plot_colour.g > plot_colour.b and blue.is_empty(), "plot %s, blue slabs %s" % [plot_colour, blue])
+	# 2) The 5-a-side pitch: goals with nets, players playing in the day, off every road.
+	var pitch = _main.get_node_or_null("DistrictDetail/InstitutePitch")  # not typed: its class uses autoloads
+	var goals_ok: bool = pitch != null and pitch.goals.size() == 2
+	if goals_ok:
+		for goal: Node3D in pitch.goals:
+			var nets := 0
+			for part in goal.get_children():
+				var look := (part as MeshInstance3D).material_override as StandardMaterial3D if part is MeshInstance3D else null
+				nets += 1 if look != null and look.albedo_texture != null else 0
+			goals_ok = goals_ok and goal.get_node_or_null("GoalFrame") != null and nets >= 4
+	_check("Session 80: a 5-a-side pitch with lines and two goals with nets in front of the C Institute",
+			goals_ok and pitch.get_node_or_null("PitchLines") != null and _pitch_clear_of_roads(data, pitch.turf),
+			str(pitch.turf) if pitch != null else "no pitch")
+	var plays := false
+	if pitch != null:
+		pitch.update_play(11.0)
+		var before: Vector3 = pitch.ball.position
+		var spots: Array = pitch.players.map(func(p): return (p.get_parent() as Node3D).position)
+		for i in 20:
+			pitch.play(0.1)
+		var moved := 0
+		for i in pitch.players.size():
+			moved += 1 if (pitch.players[i].get_parent() as Node3D).position.distance_to(spots[i]) > 0.05 else 0
+		var by_day: bool = pitch.playing
+		pitch.update_play(17.5)
+		plays = by_day and not pitch.playing and pitch.ball.position.distance_to(before) > 0.3 and moved >= 3 \
+				and pitch.players.size() == GameConfig.INSTITUTE_PITCH_PLAYERS
+		pitch.update_play(_game_state.clock_hours())
+	_check("Session 80: people play football on it in the day and go home in the evening", plays,
+			"%d players" % (pitch.players.size() if pitch != null else 0))
+	# 3) The basketball court: hoops with backboards and nets, lines, a fence, benches, players.
+	var court = _main.get_node_or_null("SpineBuilder/BasketballCourt")
+	var hoops_ok: bool = court != null and court.hoops.size() == 2
+	if hoops_ok:
+		for side in ["West", "East"]:
+			var hoop: Node = court.get_node_or_null("Hoop_" + side)
+			hoops_ok = hoops_ok and hoop != null and hoop.get_node_or_null("Net") != null \
+					and hoop.get_node_or_null("HoopLook") != null
+	var fence: Node = court.get_node_or_null("CourtFence") if court != null else null
+	_check("Session 80: the basketball court has lines, two hoops with backboards and nets, a fence and benches",
+			hoops_ok and court.get_node_or_null("CourtLines") != null and fence != null
+			and fence.find_children("*", "CollisionShape3D", false, false).size() >= 4
+			and court.find_children("*", "StaticBody3D", false, false).size() >= 5, "")
+	var shoots := false
+	if court != null and not court.balls.is_empty():
+		court.update_play(11.0)
+		var start: Vector3 = court.balls[0].position
+		var highest := 0.0
+		# Shots come at random moments: watch for up to 20 game seconds, stop once one goes up.
+		for i in 200:
+			court.play(0.1)
+			highest = maxf(highest, court.balls[0].position.y)
+			if highest > 1.0 and court.balls[0].position.distance_to(start) > 0.3:
+				break
+		shoots = court.playing and court.players.size() >= 2 and court.balls[0].position.distance_to(start) > 0.3 and highest > 1.0
+		court.update_play(_game_state.clock_hours())
+	_check("Session 80: a couple of players dribble and shoot at the hoops", shoots,
+			"%d players" % (court.players.size() if court != null else 0))
+
+
+## Session 80 helper: flat bluish slabs (not water) on the ground near this spot.
+func _blue_ground_near(spot: Vector2, radius: float) -> Array:
+	var found: Array = []
+	for builder in ["WahatBuilder", "DistrictDetail", "LandmarkBuilder"]:
+		var node := _main.get_node_or_null(builder)
+		if node == null:
+			continue
+		for view: MeshInstance3D in node.find_children("*", "MeshInstance3D", true, false):
+			if not view.mesh is BoxMesh or view.material_override is ShaderMaterial:
+				continue
+			var box := view.global_transform * view.mesh.get_aabb()
+			if box.size.y > 0.2 or box.end.y > 0.2 or box.size.x < 2.0 or box.size.z < 2.0:
+				continue
+			if not Rect2(box.position.x, box.position.z, box.size.x, box.size.z).intersects(Rect2(spot - Vector2.ONE * radius, Vector2.ONE * radius * 2.0)):
+				continue
+			var material := view.material_override as StandardMaterial3D
+			if material == null:
+				material = (view.mesh as BoxMesh).material as StandardMaterial3D
+			if material != null and material.albedo_texture == null and material.albedo_color.b > material.albedo_color.g + 0.05:
+				found.append(str(view.get_path()))
+	return found
+
+
+## Session 80 helper: true if no road (or path) runs across this area.
+func _pitch_clear_of_roads(data: Dictionary, area: Rect2) -> bool:
+	for road: Dictionary in data["ROADS"]:
+		var half: float = road.get("width", 6.0) * 0.5
+		for t in 21:
+			var at: Vector2 = (road["from"] as Vector2).lerp(road["to"], t / 20.0)
+			if area.grow(half).has_point(at):
+				return false
+	return true
+
+# --- end of Session 80 checks ---
+
+
+## Session 81: gym, stream and pools.
+## (Session 81 checks go here.)
+func _check_session81() -> void:
+	await process_frame
+	var data: Dictionary = _delivery.place_builder.data.get_script_constant_map()
+	# 1) Flat ground round the gym and both spine pools: no hill rises there.
+	var gym: Dictionary = data["GYM"]
+	var g: Vector3 = gym["position"]
+	var size: Vector3 = gym["size"]
+	var turned := absf(sin(deg_to_rad(gym.get("facing", 0.0)))) > 0.5
+	var wide := size.z if turned else size.x
+	var deep := size.x if turned else size.z
+	var foot := Rect2(g.x - wide * 0.5, g.z - deep * 0.5, wide, deep)
+	var highest := 0.0
+	for area: Rect2 in [foot.grow(6.0), (data["COMMUNITY_POOL"] as Rect2).grow(5.0), (data["LAP_POOL"] as Rect2).grow(5.0)]:
+		for i in 25:
+			for j in 25:
+				highest = maxf(highest, _hill_height(data, area.position + area.size * Vector2(i / 24.0, j / 24.0)))
+	_check("Session 81: the ground round the gym and the pools is flat (no hill dips into water or the gym)",
+			highest < 0.02, "highest %.3f m" % highest)
+	# 2) The stream ends in a pond with stones before the gym, and never runs under it.
+	var stream: Dictionary = data["STREAM"]
+	var pond_list: Array = stream.get("ponds", [])
+	var ponds := _main.get_node_or_null("WahatBuilder/StreamPonds")
+	var before_gym := false
+	if not pond_list.is_empty():
+		var west: Dictionary = pond_list[0]
+		var centre: Vector2 = west["centre"]
+		before_gym = centre.x + west["radius"] < foot.position.x - 4.0 \
+				and absf(centre.y - (stream["z"] + sin(centre.x * 0.06) * 3.0)) < 1.0
+	var stones := ponds.find_children("PondStones_*", "MeshInstance3D", false, false) if ponds != null else []
+	var pond_water := ponds.find_children("PondWater_*", "MeshInstance3D", false, false) if ponds != null else []
+	_check("Session 81: the stream ends in a small pond with stones round it before the gym",
+			before_gym and stones.size() == pond_list.size() and pond_water.size() == pond_list.size(), "")
+	var under := 0
+	for chunk: MeshInstance3D in _main.get_node("WahatBuilder/Stream").get_children():
+		var box := chunk.global_transform * chunk.mesh.get_aabb()
+		if Rect2(box.position.x, box.position.z, box.size.x, box.size.z).intersects(foot.grow(1.0)):
+			under += 1
+	_check("Session 81: no stream water under the gym", under == 0, "%d stream pieces" % under)
+	# 3) The community pool looks finished.
+	var pool := _main.get_node_or_null("DistrictDetail/CommunityPool")
+	var parts: Dictionary = pool.get_meta("pool_parts", {}) if pool != null else {}
+	var deck: MeshInstance3D = pool.get_node_or_null("PoolDeck") if pool != null else null
+	_check("Session 81: the community pool has a tiled deck, an edge, ladders, lane ropes, loungers, umbrellas, a shower and plants",
+			deck != null and (deck.material_override as StandardMaterial3D).albedo_texture != null
+			and pool.get_node_or_null("PoolDetails") != null and parts.get("ladders", 0) >= 2
+			and parts.get("ropes", 0) >= 2 and parts.get("loungers", 0) >= 5 and parts.get("umbrellas", 0) >= 3
+			and parts.get("showers", 0) >= 1 and parts.get("plants", 0) >= 2
+			and pool.get_node_or_null("KidsWater") != null and pool.get_node_or_null("PoolGate") != null, str(parts))
+	# 4) All water (the pools, the lap pool, the stream, the ponds) uses the moving water look.
+	var waters: Array = []
+	for path in ["DistrictDetail/CommunityPool/Water", "DistrictDetail/LapPool/Water", "DistrictDetail/SchoolPool/Water"]:
+		waters.append(_main.get_node_or_null(path))
+	waters.append(_main.get_node("WahatBuilder/Stream").get_child(0))
+	waters.append_array(pond_water)
+	var plain := 0
+	for water in waters:
+		var look: Material = (water as MeshInstance3D).material_override if water != null else null
+		if not (look is ShaderMaterial and (look as ShaderMaterial).shader == WaterLook.SHADER):
+			plain += 1
+	var pool_water: MeshInstance3D = pool.get_node_or_null("Water") if pool != null else null
+	var pool_look := pool_water.material_override as ShaderMaterial if pool_water != null else null
+	_check("Session 81: every pool, the stream and the ponds use the moving water look",
+			plain == 0 and pool_look != null and pool_look.get_shader_parameter("pool_floor") > 0.5,
+			"%d of %d plain" % [plain, waters.size()])
+
+
+## Session 81 helper: how high the spine hills lift the ground here (like DistrictDetail._hill).
+func _hill_height(data: Dictionary, spot: Vector2) -> float:
+	var y := 0.0
+	for hill: Dictionary in data.get("HILLS", []):
+		var r := Vector2(spot.x - hill["position"].x, spot.y - hill["position"].z).length() / 10.0
+		var flat: Vector2 = hill.get("clear", Vector2(3, 6))
+		y += hill["height"] * pow(maxf(0.0, 1.0 - r * r), 2) * smoothstep(flat.x, flat.y, absf(spot.y))
+	return y
+
+# --- end of Session 81 checks ---
+
+
+## Session 82: textures.
+func _check_session82() -> void:
+	await process_frame
+	var places: Node = _main.get_node_or_null("PlaceBuilder")
+	if places == null or not places.data.get_script_constant_map().has("PAVED_AREAS"):
+		return
+	var map: Dictionary = places.data.get_script_constant_map()
+	# 1) Every surface's photo is there, loads, and has mipmaps (no shimmer far away).
+	var bad := []
+	for surface: String in SurfaceTextures.SURFACES:
+		var file: String = "res://assets/textures/" + SurfaceTextures.SURFACES[surface]["file"]
+		var settings := FileAccess.get_file_as_string(file + ".import")
+		if SurfaceTextures.picture(surface) == null or not settings.contains("mipmaps/generate=true"):
+			bad.append(surface)
+	_check("Session 82: every ground photo loads, with mipmaps", bad.is_empty(), str(bad))
+	var lawn := SurfaceTextures.make("grass") as ShaderMaterial
+	var ground := _s82_big_ground()
+	_check("Session 82: the lawn mixes aerial_grass_rock with leafy_grass", lawn != null
+			and lawn.get_shader_parameter("main_photo") == SurfaceTextures.picture("grass")
+			and lawn.get_shader_parameter("patch_photo") == SurfaceTextures.picture("leafy_grass")
+			and ground != null and ground.material_override == lawn, "")
+	_check("Session 82: sand is sand_01, pavers are the sandy brick photo, tracks are running_track",
+			SurfaceTextures.SURFACES["sand"]["file"] == "sand_01_diff_1k.jpg" and SurfaceTextures.SURFACES["horse_sand"]["file"] == "sand_01_diff_1k.jpg"
+			and SurfaceTextures.SURFACES["paving"]["file"] == "paving_sandy_1k.jpg"
+			and SpineTracks.track_material().albedo_texture == SurfaceTextures.picture("walking_track")
+			and _main.find_child("BikeTrack", true, false) != null, "")
+	# 2) No rectangle grass clumps anywhere.
+	var clumps := _main.find_children("GrassBlades", "", true, false).size() + _main.find_children("SpineGrassTufts", "", true, false).size()
+	_check("Session 82: no grass blade clumps", clumps == 0, "%d" % clumps)
+	# 3) Sign text: a sharp font (MSDF + mipmaps), drawn solid, a little in front of its board.
+	var base := (SignText.font() as FontVariation).base_font as FontFile
+	var close := 0
+	var labels := 0
+	for sign: Node3D in _main.find_children("ClusterSign_*", "", true, false) + _main.find_children("PoliceSign_*", "", true, false):
+		for label: Label3D in sign.find_children("*", "Label3D", false, false):
+			labels += 1
+			var front: float = (ClusterSigns.BOARD.z if sign.name.begins_with("Cluster") else PoliceSign.BOARD.z) * 0.5
+			if label.position.z < front + 0.005 or label.alpha_cut != Label3D.ALPHA_CUT_OPAQUE_PREPASS:
+				close += 1
+	_check("Session 82: sign text is sharp and doesn't flicker against the board", base.multichannel_signed_distance_field
+			and base.generate_mipmaps and labels > 20 and close == 0, "%d of %d labels too close" % [close, labels])
+	# 4) Bins are grey.
+	_check("Session 82: bins are grey, not green", StreetDetails.BIN == GameConfig.BIN_GREY
+			and absf(GameConfig.BIN_GREY.g - GameConfig.BIN_GREY.r) < 0.05, "")
+	# 5) No grass between each cluster playground and the roads in front of it.
+	var gaps := []
+	for mini: Dictionary in map["MINI_PLAZAS"]:
+		var spot: Vector3 = mini["playground"]
+		var toward := -signf(spot.z)  # the spine (z = 0) is in front of every cluster
+		for step in range(0, 80):
+			var at := Vector2(spot.x, spot.z + toward * step * 0.25)
+			var on := _s82_paved(map, at)
+			if on == "Spine Loop":
+				break  # reached the road round the spine
+			if on == "":
+				gaps.append("%s z %.1f" % [mini["cluster"], at.y])
+				break
+	_check("Session 82: paving all the way from every cluster playground to the road", gaps.is_empty(), str(gaps))
+
+
+## The big ground slab (the lawn under the whole map).
+func _s82_big_ground() -> MeshInstance3D:
+	for view: MeshInstance3D in _main.get_node("WahatBuilder").find_children("*", "MeshInstance3D", true, false):
+		if view.mesh is BoxMesh and (view.mesh as BoxMesh).size.z > 400.0:
+			return view
+	return null
+
+
+## What's at this spot: a road's name, "paving", or "" (grass).
+func _s82_paved(map: Dictionary, at: Vector2) -> String:
+	for road: Dictionary in map["ROADS"]:
+		if Geometry2D.get_closest_point_to_segment(at, road["from"], road["to"]).distance_to(at) <= road.get("width", 10.0) * 0.5:
+			return road["name"]
+	for area: Rect2 in map["PAVED_AREAS"] + map["CLUSTERS"].map(func(c): return c["area"]):
+		if area.has_point(at):
+			return "paving"
+	return ""
+
+# --- end of Session 82 checks ---
+
+
+## Session 83: people who look alive.
+## (Session 83 checks go here.)
+func _check_session83() -> void:
+	var everyone := _main.find_children("*", "Person", true, false)
+	var faces := everyone.filter(func(person): return person.get_node_or_null("Face/Eyes") != null)
+	_check("every person has eyes and a smile", faces.size() == everyone.size() and everyone.size() > 50,
+			"%d of %d" % [faces.size(), everyone.size()])
+	var talkers := everyone.filter(func(person): return person.pose.talking)
+	_check("people in pairs talk to each other", talkers.size() >= 8, "%d talking" % talkers.size())
+	# One person near the camera and one far away: only the near one moves about.
+	var camera := _main.get_viewport().get_camera_3d()
+	var near := PeopleLooks.resident(2, 0)
+	var far := PeopleLooks.resident(3, 0)
+	root.add_child(near)
+	root.add_child(far)
+	near.global_position = camera.global_position + Vector3(2.0, -1.5, 2.0)
+	far.global_position = camera.global_position + Vector3(400.0, -1.5, 0.0)
+	near.pose.talking = true
+	near.pose.own_time = 0.0  # so it's this one's turn to talk straight away
+	near.pose.look_wait = 100.0
+	near.pose.look_to = 40.0  # and it's about to look to the side
+	var heads := {}  # the furthest each head turned from where it started (degrees)
+	var hands := {}  # the furthest each right hand moved (metres, on the person)
+	var starts := {}
+	for person: Person in [near, far]:
+		person.skeleton.skeleton_updated.connect(func():
+			var head := person.skeleton.get_bone_global_pose(person.skeleton.find_bone("Head")).basis.get_rotation_quaternion()
+			var hand := person.pose.now("RightHand")
+			if not starts.has(person):
+				starts[person] = [head, hand]
+			heads[person] = maxf(heads.get(person, 0.0), rad_to_deg(head.angle_to(starts[person][0])))
+			hands[person] = maxf(hands.get(person, 0.0), hand.distance_to(starts[person][1])))
+	for i in 90:
+		await process_frame
+	_check("people near the rider look round and talk with their hands", heads.get(near, 0.0) > 15.0
+			and hands.get(near, 0.0) > 0.15, "head turned %.0f degrees, hand moved %.2f m" % [heads.get(near, 0.0), hands.get(near, 0.0)])
+	_check("people far away don't (it keeps the game fast)", not far.pose.get("_near"), "")
+	near.queue_free()
+	far.queue_free()
+
+# --- end of Session 83 checks ---
+
+
+## Session 75 (people): jumping on foot.
+func _check_session75_people() -> void:
+	if _on_foot == null:
+		return
+	var walker: Node = _on_foot.walker
+	var keep_bike := _bike.global_transform
+	var start: Vector3 = _main.get_node("PlaceBuilder").data.get_script_constant_map()["START"]["position"]
+	_move_bike_to(start)
+	_check("on the bike Space doesn't make the rider jump", not walker.jump(), "")
+	_check("you can get off for the jump test", _on_foot.get_off(), "")
+	walker.velocity = Vector3.ZERO
+	for i in 20:  # settle on the ground
+		await physics_frame
+	var ground: float = walker.global_position.y
+	var jumps_before: int = walker.jumps
+	Input.action_press("handbrake")
+	await physics_frame
+	Input.action_release("handbrake")
+	var top := ground
+	var landed := false
+	var tucked := false
+	for i in 90:
+		await physics_frame
+		top = maxf(top, walker.global_position.y)
+		tucked = tucked or walker.get_node("Model").pose.tuck > 0.05
+		landed = landed or walker.landing()
+	var rise := top - ground
+	_check("Space on foot jumps about 0.6 m", walker.jumps == jumps_before + 1 and rise > 0.45 and rise < 0.8, "%.2f m" % rise)
+	_check("the knees pull up in the air and bend on landing", tucked and landed, "")
+	walker.jump()
+	_check("a second jump has to wait a moment", not walker.jump(), "")
+	walker.global_position = _bike.global_position + Vector3.UP * 0.05
+	walker.velocity = Vector3.ZERO
+	_on_foot.get_on()
+	_check("back on the bike after the jump test", not _on_foot.on_foot, "")
+	_bike.global_transform = keep_bike
+	_bike.velocity = Vector3.ZERO
+
+# --- end of Session 75 (people) checks ---
+
+
+## Session 80 (people): seated people's feet show above the seat.
+func _check_session80_people() -> void:
+	# Three test sitters: a normal chair, a very low seat, and a big step (feet on the step below).
+	var cases := [[0.5, 0.0], [0.3, 0.0], [1.05, 0.7]]  # [hips height, floor height]
+	var sitters: Array = []
+	for spec in cases:
+		var sitter := PeopleLooks.resident(2, 0)
+		sitter.position = Vector3(5000.0 + sitters.size() * 3.0, spec[0] - sitter.spot("Hips").y, 5000.0)
+		root.add_child(sitter)
+		sitter.play("sit")
+		sitter.pose.floor_y = spec[1]
+		sitters.append(sitter)
+	# The pose is only there while the bones update, so measure the feet right then.
+	var soles := {}
+	for sitter: Person in sitters:
+		sitter.skeleton.skeleton_updated.connect(func(): soles[sitter] = _lowest_foot(sitter))
+	for i in 6:
+		await process_frame
+	var lowest := []
+	var feet_ok := true
+	for i in sitters.size():
+		var low: float = soles.get(sitters[i], -INF)
+		lowest.append("%.2f" % low)
+		feet_ok = feet_ok and low >= cases[i][1] - 0.01
+		sitters[i].queue_free()
+	_check("seated people's feet stay on top of the floor or step", feet_ok, "lowest soles %s" % [lowest])
+	var steps_set := true
+	for person: Person in _main.find_children("*", "Person", true, false):
+		if person.name == "InstituteSitter" or str(person.name).begins_with("LaptopPerson"):
+			steps_set = steps_set and person.action == "sit" and person.pose.floor_y > 0.3
+	_check("people on the C Institute steps rest their feet on a step", steps_set, "")
+
+
+## The height of the lowest sole (toe or heel) of a person, on the map.
+func _lowest_foot(person: Person) -> float:
+	var low := INF
+	var skeleton := person.skeleton
+	for bone in ["LeftFoot", "RightFoot", "LeftToe_End", "RightToe_End"]:
+		var i := skeleton.find_bone(bone)
+		var at := person.global_transform * (person.skeleton_to_me * skeleton.get_bone_global_pose(i).origin)
+		# The ankle bone is SIT_ANKLE_HEIGHT above the sole; the toe end is at the sole.
+		low = minf(low, at.y - (GameConfig.SIT_ANKLE_HEIGHT if bone.ends_with("Foot") else 0.0))
+	return low
+
+# --- end of Session 80 (people) checks ---
+
+
+## Session 81 (people): swimmers swim and the lifeguard watches.
+func _check_session81_people() -> void:
+	var life := _main.get_node_or_null("LifeBuilder")
+	var crowds: Node = life.get("crowds") if life != null else null
+	if crowds == null or crowds.swimmers == null:
+		_check("the pools have swimmers", false, "no PlaceCrowds swimmers")
+		return
+	var pools: PoolSwimmers = crowds.swimmers
+	var wanted_laps := GameConfig.SWIM_COMMUNITY_LAPS + GameConfig.SWIM_LAP_POOL_LAPS + GameConfig.SWIM_SCHOOL_LAPS * 2
+	_check("every pool has lap swimmers and people resting at the edge", pools.lappers.size() == wanted_laps
+			and pools.resters.size() >= 3, "%d swimming, %d resting" % [pools.lappers.size(), pools.resters.size()])
+	var dressed := true
+	for entry in pools.lappers + pools.resters:
+		dressed = dressed and entry["person"].get_meta("outfit", "") == "swimwear"
+	_check("the swimmers wear swimwear", dressed, "")
+	# Wake one lap swimmer and one resting swimmer up (as if the rider were close) and watch.
+	crowds.set("_check_left", 1000.0)  # don't let the distance check put them back to sleep
+	var swimmer: Dictionary = pools.lappers[0]
+	var rester: Dictionary = pools.resters[0]
+	var watched: Array[Person] = [swimmer["person"], rester["person"]]
+	for person in watched:
+		person.visible = true
+		person.process_mode = Node.PROCESS_MODE_INHERIT
+	var heads := {}  # the lowest the head went, for each person
+	var hands := {}  # where the right hand was first, for each person
+	var moved := {}  # the furthest the right hand got from there (it relative to the body)
+	for person in watched:
+		person.skeleton.skeleton_updated.connect(func():
+			var head := (_bone_on_map(person, "Head") + _bone_on_map(person, "HeadTop_End")) * 0.5  # the middle of the head
+			heads[person] = minf(heads.get(person, INF), head.y)
+			var hand := person.skeleton.get_bone_global_pose(person.skeleton.find_bone("RightHand")).origin
+			if not hands.has(person):
+				hands[person] = hand
+			moved[person] = maxf(moved.get(person, 0.0), (person.skeleton_to_me.basis * (hand - hands[person])).length()))
+	var start: Vector3 = swimmer["holder"].global_position
+	for i in 90:
+		await process_frame
+	var swum: float = Vector2(start.x, start.z).distance_to(Vector2(swimmer["holder"].global_position.x, swimmer["holder"].global_position.z))
+	var area: Rect2 = swimmer["area"]
+	var spot := Vector2(swimmer["holder"].global_position.x, swimmer["holder"].global_position.z)
+	_check("a swimmer swims along the pool and stays in it", swum > 0.3 and area.grow(0.5).has_point(spot), "%.1f m" % swum)
+	var water: float = swimmer["water"]  # each pool says how high its water is
+	_check("swimmers keep their heads above the water", heads.get(watched[0], -INF) > water + 0.08
+			and heads.get(watched[1], -INF) > water + 0.1, "lowest head %.2f / %.2f m" % [heads.get(watched[0], -INF), heads.get(watched[1], -INF)])
+	_check("the swimmer's arms stroke (nobody floats still)", watched[0].action == "swim" and moved.get(watched[0], 0.0) > 0.2, "hand moved %.2f m" % moved.get(watched[0], 0.0))
+	crowds.set("_check_left", 0.0)
+	var pool := Node3D.new()  # a pool that says how high its water is
+	pool.name = "TestPool"
+	pool.set_meta("water_y", 0.05)
+	root.add_child(pool)
+	_check("swimmers swim at the pool's own water height", is_equal_approx(PoolSwimmers.water_height(root, "TestPool"), 0.05)
+			and is_equal_approx(PoolSwimmers.water_height(root, "NoSuchPool"), GameConfig.SWIM_WATER_Y), "")
+	pool.free()
+	# The lifeguards sit on tall chairs, look around and now and then whistle.
+	var guards: Array = crowds.lifeguards
+	var seated := guards.size() >= 3
+	for chair: LifeguardChair in guards:
+		seated = seated and chair.person.action == "sit" and chair.person.position.y > 0.5
+	_check("a lifeguard sits on a tall chair at every pool", seated, "%d chairs" % guards.size())
+	if guards.size() > 0:
+		var chair: LifeguardChair = guards[0]
+		chair.stand_up()
+		_check("the lifeguard stands up and blows the whistle", chair.standing and chair.person.action == "whistle"
+				and chair.whistles > 0 and LifeguardChair.whistle_sound().get_length() > 0.3, "")
+
+
+## Where a bone of a person is right now, on the map.
+func _bone_on_map(person: Person, bone: String) -> Vector3:
+	var at := person.skeleton.get_bone_global_pose(person.skeleton.find_bone(bone)).origin
+	return person.global_transform * (person.skeleton_to_me * at)
+
+# --- end of Session 81 (people) checks ---
+
+
+## Session 85: the Linux (Steam Deck) build is set up, small screens get bigger menus, and
+## the exported game's self-test is there.
+func _check_session85() -> void:
+	var presets := ConfigFile.new()
+	var names: Array = []
+	if presets.load("res://export_presets.cfg") == OK:
+		for section in presets.get_sections():
+			if presets.has_section_key(section, "platform"):
+				names.append(presets.get_value(section, "platform"))
+	_check("there are Windows, Mac and Linux builds", names.has("Windows Desktop") and names.has("macOS") and names.has("Linux"), str(names))
+	_check("on the Steam Deck (1280 px wide) menus and HUD are bigger; on a big screen they aren't",
+			is_equal_approx(Settings.ui_scale_for(1280), GameConfig.SMALL_SCREEN_UI_SCALE)
+			and is_equal_approx(Settings.ui_scale_for(1920), 1.0) and GameConfig.SMALL_SCREEN_UI_SCALE > 1.0,
+			"%.2f / %.2f" % [Settings.ui_scale_for(1280), Settings.ui_scale_for(1920)])
+	_check("the smallest text stays at least 9 px on the Steam Deck",
+			13.0 * (1280.0 / 1920.0) * Settings.ui_scale_for(1280) >= 9.0, "")
+	_check("the exported game has its build self-test (and it's off in normal play)",
+			load("res://scripts/build_check.gd") != null and not BuildCheck.wanted(), "")
+
+
+
+## Session 86: the loading screen and the world built in named steps
+## (tests/loading_screen_test.gd builds the whole map through it).
+func _check_session86() -> void:
+	var builder: Node = _main.get_node_or_null("WahatBuilder")
+	if builder != null:
+		var steps: Array = builder.build_steps()
+		var named := steps.size() >= 6
+		for step: Array in steps:
+			named = named and step[0] is String and step[0].ends_with("...") and step[1] is Callable
+		_check("the world builder lists its work as named steps", named, "%d steps" % steps.size())
+		_check("a world built the normal way isn't marked as loading", not WorldLoader.is_staged(builder), "")
+	var screen := LoadingScreen.make()
+	root.add_child(screen)
+	screen.set_progress(3, 10, "Laying the roads...")
+	_check("the loading screen shows the step name and a tip",
+			"Laying the roads" in screen.step_label.text and screen.tip_label.text != "", screen.step_label.text)
+	_check("there are plenty of loading tips", preload("res://data/loading_tips.gd").TIPS.size() >= 20, "")
+	screen.free()

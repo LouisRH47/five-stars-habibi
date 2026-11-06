@@ -50,6 +50,13 @@ var _walk_route: Array[Vector2] = []
 var _walk_last := Vector2.ZERO
 var _walk_stuck := 0.0
 var _this_walk := 0.0   # seconds this walk has taken (to say when one takes too long)
+var _door_when_parked := Vector2.ZERO  # where the door was when we got off (did it move?)
+var _walk_best := INF    # closest we've got to where we're walking on this walk (metres)
+var _walk_no_gain := 0.0  # seconds without getting closer
+var _exit_left := 0.0  # seconds left following the way out of a building by its door
+var _repark_left := 0.0  # seconds of rolling back after parking in our own way
+var _walk_goal := Vector2.INF  # what _walk_best is measured to
+var _trail: Array[Vector2] = []  # the way we walked to the door (to walk back out the same way)
 var _crashes := {"small": 0, "big": 0}
 var _frames := 0
 var _grid: RefCounted
@@ -167,29 +174,77 @@ func _walk(delta: float) -> void:
 	var walker: Node3D = _on_foot.walker
 	var here := _flat(walker.global_position)
 	var goal := _flat(_dm.target_door() if going_to_door else _bike.global_position)
-	if going_to_door and here.distance_to(goal) > RIDE_INSTEAD_M and not _inside_delivery():
+	var door_moved := goal.distance_to(_door_when_parked) > 3.0
+	if going_to_door and door_moved and here.distance_to(goal) > RIDE_INSTEAD_M and not _inside_delivery():
 		# The door moved far away ("leave it with the neighbour"): ride there, like a player.
 		if _on_foot.near_bike():
 			_on_foot.toggle()
 			return
 		goal = _flat(_bike.global_position)
 	_this_walk += delta
+	if going_to_door and (_trail.is_empty() or _trail[_trail.size() - 1].distance_to(here) > 0.5):
+		_trail.append(here)
+	if goal.distance_to(_walk_goal) > 0.5:  # a new goal (the door, then the bike): start counting again
+		_walk_goal = goal
+		_walk_best = INF
+		_walk_no_gain = 0.0
+	if here.distance_to(goal) < _walk_best - 0.3:
+		_walk_best = here.distance_to(goal)
+		_walk_no_gain = 0.0
+	else:
+		_walk_no_gain += delta
+	if going_to_door and _walk_no_gain > 6.0 and _on_foot.near_bike():
+		# Not getting any closer and the bike is right here: it's probably parked in the way
+		# (like in the gym's doorway). Get on, roll back a bit and try again, like a player.
+		print("  parked in the way at %s: rolling back" % here)
+		_walk_no_gain = 0.0
+		_repark_left = 1.5
+		_on_foot.toggle()
+		return
+	if not going_to_door and _walk_no_gain > 6.0 and _trail.size() > 1:
+		# Not getting any closer to the bike (stuck inside a doorway): walk back out the way
+		# we came in.
+		_walk_no_gain = 0.0
+		_walk_route = _trail.duplicate()
+		_walk_route.reverse()
+		_walk_route.append(goal)
+		_trail.clear()
+	elif not going_to_door and _walk_no_gain > 12.0:
+		# Still stuck and no trail left (inside a restaurant, behind its glass front): walk to
+		# the nearest restaurant's own door first, then out to the bike, like a player would.
+		_walk_no_gain = 0.0
+		var exit := _nearest_restaurant_exit(here)
+		if not exit.is_empty():
+			_walk_route.assign(exit)
+			_walk_route.append(goal)
+			_exit_left = 15.0  # follow it; don't plan a new route through the glass straight away
+			print("  stuck inside at %s: walking out by the door" % here)
 	if int(_this_walk / 20.0) != int((_this_walk - delta) / 20.0):
 		_say_walk_trouble(here, goal, going_to_door)
 	# Walk round things too: a route from the grid, found again if we stop moving.
 	_walk_stuck = _walk_stuck + delta if here.distance_to(_walk_last) < 0.01 else 0.0
 	_walk_last = here
-	if _walk_route.is_empty() or _walk_route[_walk_route.size() - 1].distance_to(goal) > 0.5 or _walk_stuck > 1.0:
-		var from := here
+	_exit_left = maxf(_exit_left - delta, 0.0)
+	if _walk_route.is_empty() or _walk_route[_walk_route.size() - 1].distance_to(goal) > 0.5 or (_walk_stuck > 1.0 and _exit_left <= 0.0):
+		var from := _reachable_start(here)
 		if _walk_stuck > 1.0:
 			# Bumped into something the map scan doesn't know (like the parked bike):
-			# step sideways first, on the side away from the bike.
+			# step sideways first, on the side away from the bike, if we can get there.
 			var side := (goal - here).normalized().orthogonal() * 1.6
 			if (here + side).distance_to(_flat(_bike.global_position)) < (here - side).distance_to(_flat(_bike.global_position)):
 				side = -side
-			from = here + side
+			for step in [side, -side]:
+				if _grid.is_free(here + step) and _can_walk(here, here + step):
+					from = here + step
+					break
 		_walk_stuck = 0.0
 		_walk_route = _grid.path(from, goal)
+		if _walk_route.is_empty() and not going_to_door and _trail.size() > 1:
+			# No way out on the map (restaurant doorways are too narrow for its squares):
+			# walk back out the way we came in.
+			_walk_route = _trail.duplicate()
+			_walk_route.reverse()
+			_trail.clear()
 		if not _walk_route.is_empty():
 			_walk_route.pop_front()  # that's where we are
 		if from != here:
@@ -235,11 +290,21 @@ func _ride(delta: float) -> void:
 		_back_left = BACK_UP_TIME
 		_stuck_time = 0.0
 		return
+	if _repark_left > 0.0:
+		# We parked in our own way (in a narrow doorway): roll back a little, then get off again.
+		_repark_left -= delta
+		_let_go()
+		Input.action_press("move_back")
+		return
 	if _dm.is_near_target():
 		_let_go()
 		if absf(_bike.speed) < 0.5:
 			_walked_for = ""
 			_this_walk = 0.0
+			_walk_best = INF
+			_walk_no_gain = 0.0
+			_door_when_parked = _flat(door)
+			_trail.clear()
 			_on_foot.toggle()  # F: get off and walk to the door (Session 19)
 		else:
 			Input.action_press("move_back")
@@ -601,3 +666,53 @@ func _say_walk_trouble(here: Vector2, goal: Vector2, to_door: bool) -> void:
 	print("  walk taking long: %.0f s at %s, going to %s (%s, %.1f m away), near: %s" % [_this_walk, here,
 			"the door" if to_door else "the bike", goal, here.distance_to(goal), ", ".join(near)])
 
+
+
+## The inside and outside of the nearest walk-in building's door (a restaurant, the gym or the
+## C Institute), for walking out of it.
+func _nearest_restaurant_exit(here: Vector2) -> Array:
+	var places: Node = _dm.place_builder
+	var best: Array = []
+	var best_gap := 40.0
+	for place: Dictionary in places.restaurants:
+		var inside := _flat(places.restaurant_entrance(place["id"]))
+		var outside := _flat(places.restaurant_approach(place["id"]))
+		var gap := here.distance_to(inside)
+		if gap < best_gap:
+			best_gap = gap
+			best = [inside + (inside - outside).normalized() * 1.5, inside, outside]
+	for place: Dictionary in places.villas:
+		if not place.get("interior", false):
+			continue
+		var outside := _flat(places.villa_approach(place["number"]))
+		var middle := _flat(place["position"])
+		var gap := here.distance_to(middle)
+		if gap < best_gap:
+			best_gap = gap
+			var inward := (middle - outside).normalized()
+			best = [outside + inward * 4.0, outside + inward * 1.0, outside]
+	return best
+
+
+## Where to plan a walk from. Pressed against a wall (like the C Institute's glass front), the
+## map square we stand on counts as the wall, and the nearest free square can be on the far
+## side of it (inside the building), so a route from there goes straight through the glass.
+## Pick a free square nearby that we can actually walk to (nothing solid in between).
+func _reachable_start(spot: Vector2) -> Vector2:
+	if _grid.is_free(spot):
+		return spot
+	for reach in [0.8, 1.5, 2.2]:
+		for i in 8:
+			var way := Vector2.RIGHT.rotated(TAU * i / 8.0)
+			var spot2: Vector2 = spot + way * reach
+			if _grid.is_free(spot2) and _can_walk(spot, spot2):
+				return spot2
+	return spot
+
+
+## True if nothing solid (but us and the bike) stands between two spots, at waist height.
+func _can_walk(from: Vector2, to: Vector2) -> bool:
+	var space := (_main as Node3D).get_world_3d().direct_space_state
+	var look := PhysicsRayQueryParameters3D.create(Vector3(from.x, 0.9, from.y), Vector3(to.x, 0.9, to.y))
+	look.exclude = [(_on_foot.walker as CollisionObject3D).get_rid(), _bike.get_rid()]
+	return space.intersect_ray(look).is_empty()

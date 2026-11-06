@@ -47,7 +47,7 @@ func setup(from: Vector3, to: Vector3, horses: int) -> void:
 			var model := Node3D.new()
 			model.name = "Model"
 			member.add_child(model)
-			Props.animal(model, Vector3(0, 0, 0.1), 180.0, HORSE_COLOURS[(i - 1) % HORSE_COLOURS.size()], true)
+			HorseModels.standing(model, Vector3(0, 0, 0.1), 180.0, HORSE_COLOURS[(i - 1) % HORSE_COLOURS.size()], true)  # Session 70
 			member.make_body(HORSE_SIZE)
 		member.face(_to - _from)
 		_layers.append(member.collision_layer)
@@ -92,7 +92,12 @@ func _place_all() -> void:
 		member.position = _from.lerp(_to, clampf(along / length, 0.0, 1.0))
 		var model := member.get_node_or_null("Model") as Node3D
 		if model != null:  # horses nod along as they walk
-			model.position.y = absf(sin(along * 2.2)) * 0.05
+			model.position.y = absf(sin(along * 2.2)) * 0.03
+			var horse := model.get_child(0) as Node3D
+			var legs: Array = horse.get_meta("legs", []) if horse != null else []
+			for leg_index in legs.size():  # Session 70: legs walk in diagonal pairs
+				var pair := 1.0 if leg_index == 0 or leg_index == 3 else -1.0
+				(legs[leg_index] as Node3D).rotation.x = sin(along * 2.2) * 0.3 * pair
 
 
 func _someone_in_the_way() -> bool:

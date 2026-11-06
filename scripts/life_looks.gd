@@ -37,31 +37,10 @@ static func buggy(colour: Color) -> Array:
 
 
 ## A horse with a rider in a riding helmet. Returns [model, rider]. The legs are kept
-## (model meta "legs") so animate() can swing them.
+## (model meta "legs") so animate() can swing them. Session 70: the horse is the Blender
+## model (scripts/horse_models.gd), in the coat nearest `colour`, with its saddle on.
 static func horse(colour: Color) -> Array:
-	var dark := colour.darkened(0.35)
-	var kit := MeshKit.new()
-	kit.box(Vector3(0.6, 0.7, 1.7), colour, Vector3(0, 1.35, 0))                         # body
-	kit.box(Vector3(0.3, 0.9, 0.35), colour, Vector3(0, 1.9, -0.85), Basis(Vector3.RIGHT, -0.5))  # neck
-	kit.box(Vector3(0.3, 0.3, 0.7), colour, Vector3(0, 2.25, -1.3))                      # head
-	kit.box(Vector3(0.08, 0.5, 0.5), dark, Vector3(0, 2.05, -0.75), Basis(Vector3.RIGHT, -0.5))   # mane
-	for x in [-0.1, 0.1]:
-		kit.box(Vector3(0.06, 0.18, 0.06), dark, Vector3(x, 2.5, -1.05))                 # ears
-	kit.box(Vector3(0.1, 0.8, 0.1), dark, Vector3(0, 1.2, 0.9), Basis(Vector3.RIGHT, 0.35))      # tail
-	kit.box(Vector3(0.64, 0.1, 0.6), SADDLE, Vector3(0, 1.73, 0.0))                      # saddle
-	kit.box(Vector3(0.66, 0.3, 0.7), Color(0.9, 0.9, 0.85), Vector3(0, 1.6, 0.02))       # saddle cloth
-	var model := Node3D.new()
-	model.add_child(kit.finish())
-	var legs: Array[Node3D] = []
-	for z in [-0.65, 0.65]:
-		for x in [-0.22, 0.22]:
-			var hip := Node3D.new()
-			hip.position = Vector3(x, 1.05, z)
-			model.add_child(hip)
-			LowPoly.box(hip, Vector3(0.14, 1.05, 0.14), colour, Vector3(0, -0.52, 0))
-			LowPoly.box(hip, Vector3(0.15, 0.12, 0.16), dark, Vector3(0, -0.99, 0))      # hoof
-			legs.append(hip)
-	model.set_meta("legs", legs)
+	var model := HorseModels.horse(colour, true)
 	var rider := PeopleLooks.horse_rider()
 	_sit(rider, model, Vector3(0, 1.8, 0.05), [Vector3(-0.36, 1.05, -0.1), Vector3(0.36, 1.05, -0.1)],
 			[Vector3(-0.12, 1.95, -0.5), Vector3(0.12, 1.95, -0.5)], 8.0)
@@ -81,13 +60,14 @@ static func duck(brown: bool) -> Node3D:
 	return model
 
 
-## A gardener with a cap and a green hose, and a small flower bed `bed` metres in front.
+## A gardener with a straw sun hat and a green hose, and a small flower bed `bed` metres in front.
 ## Returns [model, person].
 static func gardener(bed: float) -> Array:
 	var model := Node3D.new()
 	var person := Person.new()
 	person.paint({"skin": PeopleLooks.SKINS.pick_random(), "shirt": Color(0.3, 0.5, 0.3), "pants": Color(0.35, 0.3, 0.25)})
-	PeopleLooks.cap(person, Color(0.9, 0.85, 0.7), person)
+	PlaceLooks.sun_hat(person)  # Session 68: gardeners wear a straw sun hat
+	person.set_meta("outfit", "sun hat")
 	PeopleLooks.shoes(person, Color(0.3, 0.22, 0.15))
 	model.add_child(person)
 	# Standing, both hands out in front holding the hose (the sitting pose with straight legs).
@@ -127,6 +107,35 @@ static func gardener(bed: float) -> Array:
 	return [model, person]
 
 
+## Session 68: a holder with the person and a small dog on a lead beside them.
+static func with_dog(person: Person) -> Node3D:
+	var holder := Node3D.new()
+	holder.add_child(person)
+	var dog := Node3D.new()
+	dog.name = "Dog"
+	dog.position = Vector3(0.55, 0, -0.6)
+	holder.add_child(dog)
+	var fur := [Color(0.85, 0.7, 0.45), Color(0.25, 0.2, 0.18)].pick_random() as Color
+	LowPoly.box(dog, Vector3(0.22, 0.2, 0.5), fur, Vector3(0, 0.32, 0))
+	LowPoly.box(dog, Vector3(0.18, 0.18, 0.2), fur, Vector3(0, 0.45, -0.3))
+	for x in [-0.08, 0.08]:
+		for z in [-0.18, 0.18]:
+			LowPoly.box(dog, Vector3(0.06, 0.24, 0.06), fur, Vector3(x, 0.12, z))
+	_tube(holder, Vector3(0.3, 0.95, -0.2), Vector3(0.55, 0.42, -0.85), 0.01, Color(0.8, 0.15, 0.15))  # the lead
+	return holder
+
+
+## Session 68: a holder with the person pushing a baby buggy in front of them.
+## Session 92: a real stroller (scripts/stroller.gd) with a child inside; both hands hold
+## the handle and the wheels turn as they walk.
+static func with_buggy(person: Person) -> Node3D:
+	var holder := Node3D.new()
+	holder.add_child(person)
+	var stroller := Stroller.make(randi() % Stroller.COLOURS.size())
+	stroller.push(person, holder)
+	return holder
+
+
 ## A kid in play clothes (smaller than a grown-up).
 static func kid() -> Person:
 	var person := Person.new(GameConfig.KID_HEIGHT)
@@ -146,6 +155,8 @@ static func _tube(parent: Node3D, from: Vector3, to: Vector3, radius: float, col
 static func animate(mover: RouteMover, delta: float, clock: float) -> void:
 	match mover.kind:
 		"person":
+			if mover.moving and mover.person.has_meta("stroller"):  # Session 92: the wheels turn
+				(mover.person.get_meta("stroller") as Stroller).roll(mover.speed * delta)
 			if not mover.moving:
 				mover.person.play("idle")
 			elif mover.speed > 2.0:

@@ -32,31 +32,61 @@ var _map: Dictionary = {}
 
 
 func _ready() -> void:
+	if not WorldLoader.is_staged(self):
+		WorldLoader.run_steps(build_steps())
+
+
+## Session 86: the build as named steps, so the loading screen can build a few per frame.
+func build_steps() -> Array:
 	if data == null:
 		push_error("WahatBuilder has no data list set in the scene")
-		return
+		return []
 	_map = data.get_script_constant_map()
-	_build_ground()
-	_build_tracks()
+	return [
+		["Pouring the sand...", _build_ground],
+		["Shaping the dunes and tracks...", func() -> void: EdgeBuilder.build(self, _map)],  # Session 63
+		["Paving the clusters...", _build_paving],
+		["Filling the stream...", _build_water],
+		["Laying the roads...", _build_roads],
+		["Planting the tree belt...", _build_tree_belt],
+		["Building the walls and the gate...", _build_walls_and_gate],
+		["Putting up the signs...", _build_signs],
+	]
+
+
+func _build_paving() -> void:
+	# Session 63: pavers under each whole cluster, so there's no bare sand in front of homes.
+	for cluster: Dictionary in _map["CLUSTERS"]:
+		var block: Rect2 = cluster["area"]
+		_flat(block.get_center(), block.size, 0.02, PAVING, 0.022)
 	for plot in _map["PLOTS"]:
 		var area: Rect2 = plot["area"]
 		_flat(area.get_center(), area.size, 0.02, plot["colour"], 0.01)
 	var spine: Rect2 = _map["SPINE"]
 	_flat(spine.get_center(), spine.size, 0.02, GRASS, 0.012)
+
+
+func _build_water() -> void:
 	var stream: Dictionary = _map["STREAM"]
 	_build_stream(stream)
+	StreamPond.build(self, stream)  # Session 81: ponds where the stream stops and starts again
 	for area: Rect2 in _map["PAVED_AREAS"]:
 		_flat(area.get_center(), area.size, 0.02, PAVING, 0.03)
-	for road in _map["ROADS"]:
-		_build_road(road)
+
+
+func _build_roads() -> void:
+	# Session 61: smooth road strips with markings, kerbs and curved corners.
+	var roads := RoadMesh.build(self, _map)
+	SpineTracks.build(self, _map, roads.bumps)  # Session 62: planters and red walking tracks on the spine road
 	for spot: Vector2 in _map["BOLLARDS"]:
 		var post := StaticBody3D.new()
 		post.position = Vector3(spot.x, 0, spot.y)
 		add_child(post)
 		LowPoly.cylinder(post, 0.1, 0.12, 0.9, BOLLARD, Vector3(0, 0.45, 0))
 		LowPoly.solid_cylinder(post, 0.12, 0.9, Vector3(0, 0.45, 0))
-	_build_tree_belt()
-	_build_walls_and_gate()
+
+
+func _build_signs() -> void:
 	_build_welcome()
 	ClusterSigns.build(self, _map)  # Session 26: "Cluster 1" signs at the lane ends
 
@@ -68,10 +98,13 @@ func _build_ground() -> void:
 	var plaza: Dictionary = _map["PLAZA"]
 	var c: Vector2 = plaza["centre"]
 	var hole: float = plaza.get("sunken_radius", 0.0)
-	_flat(Vector2((-half.x + c.x - hole) * 0.5, 0), Vector2(c.x - hole + half.x, half.y * 2.0), 1.0, SAND, 0.0, true)
-	_flat(Vector2((c.x + hole + half.x) * 0.5, 0), Vector2(half.x - c.x - hole, half.y * 2.0), 1.0, SAND, 0.0, true)
-	_flat(Vector2(c.x, (-half.y + c.y - hole) * 0.5), Vector2(hole * 2.0, c.y - hole + half.y), 1.0, SAND, 0.0, true)
-	_flat(Vector2(c.x, (c.y + hole + half.y) * 0.5), Vector2(hole * 2.0, half.y - c.y - hole), 1.0, SAND, 0.0, true)
+	# Session 63: the ground is grass now (sand only where the horses ride: their plots and
+	# the horse track are built on top).
+	var ground := GRASS if _map.has("SAND_AREAS") else SAND
+	_flat(Vector2((-half.x + c.x - hole) * 0.5, 0), Vector2(c.x - hole + half.x, half.y * 2.0), 1.0, ground, 0.0, true)
+	_flat(Vector2((c.x + hole + half.x) * 0.5, 0), Vector2(half.x - c.x - hole, half.y * 2.0), 1.0, ground, 0.0, true)
+	_flat(Vector2(c.x, (-half.y + c.y - hole) * 0.5), Vector2(hole * 2.0, c.y - hole + half.y), 1.0, ground, 0.0, true)
+	_flat(Vector2(c.x, (c.y + hole + half.y) * 0.5), Vector2(hole * 2.0, half.y - c.y - hole), 1.0, ground, 0.0, true)
 
 
 ## A flat coloured slab. middle: x/z. height: its thickness. top: how high its top is.
@@ -85,33 +118,6 @@ func _flat(middle: Vector2, size: Vector2, height: float, colour: Color, top: fl
 	LowPoly.box(body, Vector3(size.x, height, size.y), colour, Vector3.ZERO)
 	LowPoly.solid_box(body, Vector3(size.x, height, size.y), Vector3.ZERO)
 	return body
-
-
-## A road is a strip from one end of its middle line to the other, one width longer so
-## corners are filled in. Lanes (narrower) are light paving, roads are asphalt.
-func _build_road(road: Dictionary) -> void:
-	var width: float = road.get("width", _map["ROAD_WIDTH"])
-	var from: Vector2 = road["from"]
-	var to: Vector2 = road["to"]
-	var length := from.distance_to(to) + width
-	var strip := LowPoly.box(self, Vector3(width, 0.04, length), ROAD if width >= 6.0 else LANE,
-			Vector3((from.x + to.x) * 0.5, 0.02 if width >= 6.0 else 0.025, (from.y + to.y) * 0.5))
-	var way := to - from
-	strip.rotation.y = atan2(way.x, way.y)
-
-
-## The horse track and the bike track: rings of sand and red paving inside the tree belt.
-func _build_tracks() -> void:
-	for pair in [[_map["HORSE_TRACK"], HORSE_SAND, 0.008], [_map["BIKE_TRACK"], BIKE_RED, 0.01]]:
-		var track: Dictionary = pair[0]
-		var h: Vector2 = track["half"]
-		var w: float = track["width"]
-		var colour: Color = pair[1]
-		var top: float = pair[2]
-		_flat(Vector2(0, -h.y), Vector2(h.x * 2.0 + w, w), 0.02, colour, top)
-		_flat(Vector2(0, h.y), Vector2(h.x * 2.0 + w, w), 0.02, colour, top)
-		_flat(Vector2(-h.x, 0), Vector2(w, h.y * 2.0 + w), 0.02, colour, top)
-		_flat(Vector2(h.x, 0), Vector2(w, h.y * 2.0 + w), 0.02, colour, top)
 
 
 ## A winding blue stream through the spine (flat: you can ride through it).
@@ -130,16 +136,23 @@ func _build_stream(stream: Dictionary) -> void:
 		var origin := Vector3(x, 0.0, centre_z)
 		var chunk := SurfaceTool.new()
 		chunk.begin(Mesh.PRIMITIVE_TRIANGLES)
+		var pieces := 0
 		for index in PIECES_PER_CHUNK:
 			if x >= end_x:
 				break
+			if _in_stream_gap(stream, x, x + STEP):
+				x += STEP
+				continue  # Session 81: no stream here (it ends in a pond before the gym)
 			var z := centre_z + sin(x * 0.06) * 3.0
 			var z2 := centre_z + sin((x + STEP) * 0.06) * 3.0
 			var piece := BoxMesh.new()
 			piece.size = Vector3(width, 0.02, Vector2(STEP, z2 - z).length() + 0.8)
 			var middle := Vector3(x + STEP * 0.5, 0.03, (z + z2) * 0.5) - origin
 			chunk.append_from(piece, 0, Transform3D(Basis(Vector3.UP, atan2(STEP, z2 - z)), middle))
+			pieces += 1
 			x += STEP
+		if pieces == 0:
+			continue  # Session 81: no empty water chunks in the gap round the gym
 		chunk.set_material(LowPoly.material(WATER))
 		var view := MeshInstance3D.new()
 		view.mesh = chunk.commit()
@@ -258,3 +271,11 @@ func _build_welcome() -> void:
 	var faces := SignText.make_two_faces(welcome["arabic"], welcome["name"], size, Color(1, 1, 1, 1), board_size.z)
 	faces.position.y = 2.4
 	holder.add_child(faces)
+
+
+## True if a stream piece from x to x_end is in a gap (the STREAM "gaps" list: round the gym).
+func _in_stream_gap(stream: Dictionary, x: float, x_end: float) -> bool:
+	for gap: Vector2 in stream.get("gaps", []):
+		if x_end > gap.x and x < gap.y:
+			return true
+	return false

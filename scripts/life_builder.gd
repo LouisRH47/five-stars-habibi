@@ -14,11 +14,15 @@ extends Node3D
 
 const MOVER := preload("res://scripts/route_mover.gd")
 
-## Every RouteMover that was built (shown or not).
+## Every RouteMover that was built from the data lists (shown or not).
 var movers: Array[RouteMover] = []
+## Session 68: RouteMovers made for PlaceCrowds (Plaza shoppers, pupils, farm gardeners).
+var extra_movers: Array[RouteMover] = []
 ## The lowest Graphics level that shows each thing: {node: level}.
 var levels := {}
 var ambient: AmbientMotion
+## Session 68: the people dressed for each place (scripts/place_crowds.gd).
+var crowds: PlaceCrowds
 
 var _map := {}
 var _check_left := 0.0
@@ -33,21 +37,50 @@ func _ready() -> void:
 	var list: Array = _map.get("BUGGIES", [])
 	for i in list.size():
 		var look := LifeLooks.buggy(list[i]["colour"])
-		_add("Buggy_%d" % i, "buggy", list[i], GameConfig.BUGGY_SPEED, Vector3(1.3, 1.9, 2.4), look[0], look[1])
+		var buggy := _add("Buggy_%d" % i, "buggy", list[i], GameConfig.BUGGY_SPEED, Vector3(1.3, 1.9, 2.4), look[0], look[1])
+		# Session 75: buggies follow the roads, keep to their side and slow at junctions.
+		buggy.slow_spots = list[i].get("slow", [])
+		if list[i].get("lane", 0.0) > 0.0:
+			buggy.keep_right(list[i]["lane"])
 	list = _map.get("HORSE_RIDERS", [])
 	for i in list.size():
 		var look := LifeLooks.horse(list[i]["colour"])
 		var horse := _add("Horse_%d" % i, "horse", list[i], GameConfig.HORSE_WALK_SPEED, Vector3(0.9, 2.4, 3.0), look[0], look[1])
 		_set_animal_name(horse, list[i])
 	list = _map.get("PEOPLE_ROUTES", [])
+	var strollers := 0  # walkers who aren't jogging take turns: dog walker, then buggy
 	for i in list.size():
-		var walker := PeopleLooks.resident(list[i]["look"])
-		PeopleLooks.shoes(walker, Color(0.95, 0.95, 0.95) if list[i]["jog"] else Color(0.3, 0.22, 0.15))
+		# Session 68: joggers in sports kit, then dog walkers and parents with buggies.
+		var walker: Person
+		var holder: Node3D
+		var body := Vector3(0.5, 1.8, 0.5)
+		if list[i]["jog"]:
+			walker = PlaceLooks.jogger(i)
+			holder = _holder(walker)
+		elif strollers % 2 == 0:
+			strollers += 1
+			walker = PlaceLooks.neighbour(list[i]["look"])
+			walker.set_meta("outfit", "dog walker")
+			holder = LifeLooks.with_dog(walker)
+		else:
+			strollers += 1
+			walker = PlaceLooks.neighbour(list[i]["look"] + 1)
+			walker.set_meta("outfit", "buggy")
+			holder = LifeLooks.with_buggy(walker)
+			body = Vector3(0.7, 1.8, 1.6)
+		# Session 92: on the spine's raised red tracks, stand on top of them (feet and
+		# stroller wheels were sunk 8 cm into the track).
+		if list[i]["points"].all(func(p: Vector3) -> bool: return absf(p.z) > 5.0 and absf(p.z) < 8.0):
+			holder.position.y = SpineTracks.TRACK_TOP
 		var pace := GameConfig.JOGGER_SPEED if list[i]["jog"] else GameConfig.WALKER_SPEED
-		_add("Person_%d" % i, "person", list[i], pace, Vector3(0.5, 1.8, 0.5), _holder(walker), walker)
+		_add("Person_%d" % i, "person", list[i], pace, body, holder, walker)
 	_build_gardeners()
 	_build_kids()
 	_build_ducks()
+	crowds = PlaceCrowds.new()
+	crowds.name = "PlaceCrowds"
+	add_child(crowds)
+	crowds.build(self, _map)
 	ambient = AmbientMotion.new()
 	ambient.name = "AmbientMotion"
 	add_child(ambient)
@@ -86,9 +119,16 @@ func _process(delta: float) -> void:
 	if camera == null:
 		return
 	var far: float = GameConfig.LIFE_VIEW_DISTANCE[clampi(Settings.graphics, 0, 2)]
-	for mover in movers:
+	for mover in movers + extra_movers:
 		if mover.process_mode != Node.PROCESS_MODE_DISABLED:
-			mover.set_near(mover.global_position.distance_to(camera.global_position) < far)
+			var gap := mover.global_position.distance_to(camera.global_position)
+			mover.set_near(gap < far)
+			# Session 68: only people near the camera are fully animated; the rest keep
+			# moving along their route but hold their pose (cheap).
+			if mover.person != null and gap < far:
+				var mode := Node.PROCESS_MODE_INHERIT if gap < GameConfig.PEOPLE_ANIMATE_DISTANCE else Node.PROCESS_MODE_DISABLED
+				if mover.person.process_mode != mode:
+					mover.person.process_mode = mode
 
 
 ## Makes one RouteMover from a line in the data. place: the line (points, loop, level).
@@ -103,7 +143,10 @@ func _add(node_name: String, kind: String, place: Dictionary, pace: float, body:
 	add_child(mover)
 	var route: Array = place.get("points", [place.get("position", Vector3.ZERO)])
 	mover.setup(kind, route, place.get("loop", false), pace, body, look, rider)
-	movers.append(mover)
+	if place.get("extra", false):
+		extra_movers.append(mover)
+	else:
+		movers.append(mover)
 	register(mover, place.get("level", 0))
 	return mover
 

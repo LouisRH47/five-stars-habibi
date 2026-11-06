@@ -3,6 +3,8 @@ extends Critter
 ## Something that follows its own fixed route from the data list (Session 30): golf buggies,
 ## horses with riders, joggers, walkers, kids at the playgrounds and ducks. A gardener is one
 ## with a single point (it stays put). There's no traffic AI: it just goes point to point.
+## Session 75: a buggy's points are the middle of the roads it drives (found on the road
+## network by the map generator); it keeps to the right of them and slows at junctions.
 ## Back-and-forth routes turn round at each end, loops go round and round.
 ## It looks a little way ahead. If the bike, the rider on foot or another moving thing is
 ## there, it stops and waits (so it never pushes the parked bike). If you stay in the way
@@ -30,6 +32,12 @@ var moving := false
 ## The bike and the rider on foot (LifeBuilder fills it in). We look for these by where they
 ## are, not with physics, so a bike that was just moved (R, or the smoke test) counts at once.
 var watch: Array[Node3D] = []
+## Session 75 (buggies): how far right of the road's middle line it drives (its side of the
+## yellow line; 0: it follows the points exactly), and the spots where it slows down
+## (junctions, the roundabout): [{at, radius}, ...].
+var lane := 0.0
+var slow_spots: Array = []
+var _centre: Array[Vector3] = []  # the road's middle line, when keeping to one side
 
 var _next := 1            # the point it's heading for
 var _way := 1             # +1 forwards along the list, -1 backwards
@@ -60,6 +68,45 @@ func setup(what: String, route: Array, is_loop: bool, move_speed: float, body: V
 	_ahead.collide_with_areas = false
 	_ahead.exclude = [get_rid()]
 	_start_somewhere()
+
+
+## Session 75: drive `offset` metres to the right of the route (the route is the road's
+## middle line), like a car keeping to its side of the yellow line. Loops only.
+func keep_right(offset: float) -> void:
+	lane = offset
+	_centre = points.duplicate()
+	points = side_of(_centre, offset, loop)
+	# Always the way the route goes (the roundabout is one-way), somewhere along it.
+	start_at(randi() % (points.size() if loop else points.size() - 1), randf(), true)
+
+
+## The points `offset` metres to the right of a line (right = when facing along it).
+## At bends the corner point is pushed out so the side line stays the same distance away.
+static func side_of(line: Array[Vector3], offset: float, is_loop: bool) -> Array[Vector3]:
+	var out: Array[Vector3] = []
+	var n := line.size()
+	for k in n:
+		var prev := line[(k - 1 + n) % n] if (is_loop or k > 0) else line[k]
+		var next := line[(k + 1) % n] if (is_loop or k < n - 1) else line[k]
+		var d1 := (line[k] - prev).normalized() if line[k] != prev else (next - line[k]).normalized()
+		var d2 := (next - line[k]).normalized() if next != line[k] else d1
+		# Facing -Z, right is +X: right of (x, z) is (-z, x).
+		var r1 := Vector3(-d1.z, 0, d1.x)
+		var r2 := Vector3(-d2.z, 0, d2.x)
+		var mid := (r1 + r2).normalized()
+		var stretch := 1.0 / maxf(mid.dot(r1), 0.5)
+		out.append(line[k] + mid * offset * stretch)
+	return out
+
+
+## 1 normally; less near a junction or the roundabout (it slows down smoothly).
+func pace_share() -> float:
+	var share := 1.0
+	for spot: Dictionary in slow_spots:
+		var gap := Vector2(position.x - spot["at"].x, position.z - spot["at"].z).length() - float(spot["radius"])
+		var t := clampf(gap / GameConfig.BUGGY_SLOW_RAMP, 0.0, 1.0)
+		share = minf(share, lerpf(GameConfig.BUGGY_JUNCTION_SPEED_SHARE, 1.0, t))
+	return share
 
 
 ## Starts somewhere along the route (random), going a random way.
@@ -138,7 +185,7 @@ func _drive(delta: float) -> void:
 	rotation.y = lerp_angle(rotation.y, want, minf(1.0, delta * GameConfig.LIFE_TURN_SPEED))
 	var gap := points[_next] - position
 	gap.y = 0.0
-	var step := speed * delta
+	var step := speed * delta * pace_share()
 	moving = true
 	if gap.length() <= step:
 		position = points[_next]
@@ -160,6 +207,17 @@ func _arrive() -> void:
 
 
 func _turn_round() -> void:
+	if lane > 0.0 and loop and _centre.size() > 1:
+		# Keeping to its side: turn round onto the other side of the road and go back.
+		_centre.reverse()
+		points = side_of(_centre, lane, true)
+		_way = 1
+		var nearest := 0
+		for k in points.size():
+			if points[k].distance_to(position) < points[nearest].distance_to(position):
+				nearest = k
+		_next = (nearest + 1) % points.size()
+		return
 	_way = -_way
 	if loop:
 		_next = posmod(_next + _way, points.size())  # back to the point behind us

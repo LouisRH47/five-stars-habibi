@@ -32,6 +32,7 @@ def prepare_web(
     build_sha: str,
     build_version: str | None = None,
     max_file_size: int = MAX_FILE_SIZE,
+    size_limit_warns_only: bool = False,
 ) -> dict[str, str]:
     """Create a clean site only after all its files have passed the size limit."""
     source = source.resolve()
@@ -88,10 +89,15 @@ def prepare_web(
 
         for path in sorted(site.rglob("*")):
             if path.is_file() and path.stat().st_size >= max_file_size:
-                raise ValueError(
+                message = (
                     f"{path.relative_to(site)} is {path.stat().st_size:,} bytes; "
                     f"each Pages file must be smaller than {max_file_size:,} bytes."
                 )
+                if not size_limit_warns_only:
+                    raise ValueError(message)
+                # Nothing is published from this build (the browser version is paused),
+                # so a too-big file only matters once someone publishes by hand.
+                print(f"WARNING: {message} This build can't be published as it is.")
         # A failed build leaves the previous prepared site intact. On success,
         # replacing the whole directory also prevents stale exported files.
         if destination.exists():
@@ -116,6 +122,8 @@ def main() -> None:
             args.destination,
             build_sha=sha,
             build_version=os.environ.get("BUILD_VERSION"),
+            # Only a hand-started publish (workflow_dispatch) needs every file under the limit.
+            size_limit_warns_only=os.environ.get("GITHUB_EVENT_NAME", "workflow_dispatch") != "workflow_dispatch",
         )
     except (OSError, ValueError, subprocess.CalledProcessError) as error:
         parser.exit(1, f"Web preparation failed: {error}\n")

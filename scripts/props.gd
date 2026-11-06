@@ -121,3 +121,145 @@ static func _body(parent: Node3D, spot: Vector3, facing: float) -> StaticBody3D:
 	body.rotation_degrees.y = facing
 	parent.add_child(body)
 	return body
+
+
+# ---------------- Session 53: models from the free CC0 kits ----------------
+# The kits live in assets/kits/<pack>/ (glTF, see CREDITS.md). Props.kit() places one model
+# by name; Props.bake_kits() then joins every kit model in a room into one mesh per kit,
+# so a full restaurant costs only a couple of draws.
+
+## Short pack names and their folders. A name can be "chair_A" (looked up in this order)
+## or "furniture/chair_A_wood" to pick the pack.
+const KIT_PACKS := {
+	"restaurant": "res://assets/kits/kaykit_restaurant_bits/",
+	"furniture": "res://assets/kits/kaykit_furniture_bits/",
+}
+## Kit models are drawn up to this far away (metres); further off they are hidden.
+const KIT_DRAW_DISTANCE := 90.0
+
+static var _kit_parts: Dictionary = {}       # name -> [[mesh, transform], ...]
+static var _kit_materials: Dictionary = {}   # pack -> the one shared material
+
+
+## Places one kit model. rotation: degrees round Y (or a Vector3 of degrees).
+## size: a number (same in every direction) or a Vector3. Returns the holder node.
+static func kit(name: String, parent: Node3D, spot: Vector3, rotation = 0.0, size = 1.0) -> Node3D:
+	var holder := Node3D.new()
+	holder.name = "Kit_" + name.get_file()
+	holder.position = spot
+	holder.rotation_degrees = rotation if rotation is Vector3 else Vector3(0, float(rotation), 0)
+	holder.scale = size if size is Vector3 else Vector3.ONE * float(size)
+	holder.set_meta("kit_prop", name)
+	parent.add_child(holder, true)
+	var pack := kit_pack(name)
+	for part: Array in kit_parts(name):
+		var view := MeshInstance3D.new()
+		view.mesh = part[0]
+		view.transform = part[1]
+		view.material_override = kit_material(pack)
+		view.visibility_range_end = KIT_DRAW_DISTANCE
+		holder.add_child(view)
+	return holder
+
+
+## True if a model with this name is in one of the kits.
+static func has_kit(name: String) -> bool:
+	return kit_pack(name) != ""
+
+
+## Which pack a model is in ("" if none).
+static func kit_pack(name: String) -> String:
+	if "/" in name:
+		var pack := name.get_slice("/", 0)
+		return pack if KIT_PACKS.has(pack) and ResourceLoader.exists(KIT_PACKS[pack] + name.get_file() + ".gltf") else ""
+	for pack: String in KIT_PACKS:
+		if ResourceLoader.exists(KIT_PACKS[pack] + name + ".gltf"):
+			return pack
+	return ""
+
+
+## The meshes in one model and where they sit in it. Loaded once, then shared.
+static func kit_parts(name: String) -> Array:
+	if _kit_parts.has(name):
+		return _kit_parts[name]
+	var parts: Array = []
+	var pack := kit_pack(name)
+	if pack == "":
+		push_error("No kit model called " + name)
+		_kit_parts[name] = parts
+		return parts
+	var scene := load(KIT_PACKS[pack] + name.get_file() + ".gltf") as PackedScene
+	var model := scene.instantiate() as Node3D
+	for view: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+		var where := view.transform
+		var node := view.get_parent()
+		while node != model and node is Node3D:
+			where = (node as Node3D).transform * where
+			node = node.get_parent()
+		parts.append([view.mesh, where])
+	model.free()
+	_kit_parts[name] = parts
+	return parts
+
+
+## One shared material per kit: every model in a kit is painted from the same picture.
+static func kit_material(pack: String) -> StandardMaterial3D:
+	if not _kit_materials.has(pack):
+		var picture := "restaurantbits_texture.png" if pack == "restaurant" else "furniturebits_texture.png"
+		var made := StandardMaterial3D.new()
+		made.albedo_texture = load(KIT_PACKS[pack] + picture)
+		made.roughness = 0.8
+		_kit_materials[pack] = made
+	return _kit_materials[pack]
+
+
+## Joins every kit model under root (that isn't marked as moving) into one mesh per kit.
+## The holders are removed; root keeps meta "kit_props" (how many) and "kit_names".
+static func bake_kits(root: Node3D) -> int:
+	var tools := {}
+	var names: Array = []
+	var holders: Array[Node] = []
+	for holder: Node in root.find_children("*", "Node3D", true, false):
+		if not holder.has_meta("kit_prop") or _moving(holder, root):
+			continue
+		var pack := kit_pack(holder.get_meta("kit_prop"))
+		if not tools.has(pack):
+			var tool := SurfaceTool.new()
+			tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+			tools[pack] = tool
+		for view: MeshInstance3D in holder.get_children():
+			var where := _local_to(root, view)
+			for surface in view.mesh.get_surface_count():
+				tools[pack].append_from(view.mesh, surface, where)
+		names.append(holder.get_meta("kit_prop"))
+		holders.append(holder)
+	for pack: String in tools:
+		var view := MeshInstance3D.new()
+		view.name = "KitBatch_" + pack
+		view.mesh = tools[pack].commit()
+		view.material_override = kit_material(pack)
+		view.visibility_range_end = KIT_DRAW_DISTANCE
+		root.add_child(view)
+	for holder in holders:
+		holder.get_parent().remove_child(holder)
+		holder.free()
+	root.set_meta("kit_props", root.get_meta("kit_props", 0) + names.size())
+	root.set_meta("kit_names", root.get_meta("kit_names", []) + names)
+	return names.size()
+
+
+static func _moving(node: Node, root: Node) -> bool:
+	while node != null and node != root:
+		if node.get_meta("static_batch_dynamic", false):
+			return true
+		node = node.get_parent()
+	return false
+
+
+static func _local_to(root: Node, node: Node3D) -> Transform3D:
+	var where := node.transform
+	var parent := node.get_parent()
+	while parent != root and parent is Node3D:
+		where = (parent as Node3D).transform * where
+		parent = parent.get_parent()
+	return where

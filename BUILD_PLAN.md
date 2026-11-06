@@ -1131,6 +1131,1121 @@ Done when:
 - [ ] It's on itch.io
 - [ ] The browser version plays the same game on a Mac and an iPad
 
+## Looks pass (Sessions 52 to 59)
+
+From Louis's play-test of the detail pass on 4 November. Everything is in PRD.md, "Looks pass".
+Same rules as always: one session at a time, headless checks, smoke test and the focused tests,
+a check for every new thing, PROGRESS.md, commit. Check the frame rate on Low, Medium and High
+after every session that adds things, and take screenshots of what changed.
+
+### Session 52: Sharper graphics, no flicker, C Institute and the bug fixes
+
+```text
+Session 52. Read PRD.md "Looks pass" (Sharper graphics, No more flicker, C Institute
+fix, Bugs found in testing).
+1) Anti-aliasing per level: Low FXAA, Medium MSAA 4x, High MSAA 4x + TAA, full
+resolution on desktop (keep scaling_3d/scale.web = 0.75). 4 shadow cascades and a
+bigger shadow map on Medium and High. Crisp 3D text and signs. On first start, test
+the computer and pick Low/Medium/High (save it; Settings can change it).
+2) Fix the flicker: merge the flat ground layers (roads, lanes, paths, lawns, paving,
+courts, plazas) into one ground mesh with painted areas, or give each layer a clear
+height step plus render priority. Check the camera near/far planes. Fix the dome doors.
+3) Turn the C Institute so a long glass side faces the spine (east) with the stepped
+seats in front, and add big windows on the opposite side too.
+4) Fix the crash loop (push the bike back after a small crash with a short grace
+period; standing people step aside) and make crashes cost more so a careful shift
+clearly earns more than a careless one.
+Smoke test, all focused tests, and the play-test bot careful and careless (twice).
+Screenshots at full screen before and after.
+```
+
+Done when:
+
+- [ ] Full screen looks sharp on Louis's Mac, with no jagged edges
+- [ ] Roads, paths and the dome doors don't flicker
+- [x] The C Institute's glass and seats face the spine, with windows on both sides
+- [x] The careless bot earns clearly less than the careful one and never gets stuck in a crash loop
+
+### Session 53: The free asset kits (built, needs testing)
+
+```text
+Session 53. Read PRD.md "Looks pass", Interiors. Download the CC0 kits: KayKit
+Restaurant Bits and KayKit Furniture Bits (GitHub: KayKit-Game-Assets), Kenney
+Furniture Kit and Food Kit (kenney.nl), a CC0 supermarket pack, and CC0 gym models
+from Poly Pizza (check each model's licence is CC0, skip anything else). Put them
+in assets/kits/<pack>/ with their licence files, credit them in CREDITS.md, use the
+glTF versions, and make a small prop library (scripts/props.gd) that places a model
+by name with a position, rotation and scale. Keep the downloads small: only the
+models we use.
+```
+
+Done when:
+
+- [ ] The kits are in assets/kits with licences, and CREDITS.md lists them
+- [ ] A test scene shows a row of props from each kit
+
+### Session 54: The new restaurant room, and the first 5 restaurants (built, needs testing)
+
+```text
+Session 54. Read PRD.md "Looks pass", Interiors and the table. Make one restaurant
+room template: about 12 x 10 m inside, 4.5 m ceiling (the outside stays the same,
+the rest is a storeroom you can't enter), big glass front, sliding glass door, menu
+board, kitchen with a cook behind the counter, staff at the counter, tables with
+people eating, drinks fridge, bin, plants, hanging lamps with warm light and soft
+shadows, tiled floor in the shop's colours. Short queue: sometimes 1 or 2 people,
+2 to 4 seconds. The camera moves closer indoors. Each place gets its own background
+sound in tools/make_sounds.py. Build 1000 Pizza, Brain Freeze Gelato, Spill the Tea,
+Shawarma Supreme and Bread & Zaatar with the props from the table. Smoke test: walk
+into each, wait in the short queue, hold E, walk out.
+```
+
+Done when:
+
+- [ ] The 5 restaurants look like the designs, cosy and full, not big and empty
+- [ ] You can see inside from the Plaza, and the doors slide open
+- [ ] The queue is short and never annoying
+
+### Session 55: The other 5 (Tok Tok Thai, Sushi You, Mario Bonito, Burgerology, Grand Groceries) (built, needs testing)
+
+```text
+Session 55. Read PRD.md "Looks pass", the table. Using the Session 54 template, build
+Tok Tok Thai, Sushi You (sushi bar with a moving conveyor belt, stools, fish case,
+two chefs, lanterns, curtain, booth, pick-up counter), Mario Bonito and Burgerology.
+Grand Groceries is a supermarket instead: drinks fridges along the back wall, 3 shelf
+units with hanging bilingual aisle signs and price strips, fruit and veg stand, bread
+shelf, sweets rack, 2 checkouts with belts and a cashier; pick up at checkout 1;
+shoppers with trolleys and baskets. Smoke test: an order from each works.
+```
+
+Done when:
+
+- [ ] No two restaurants look alike, and Sushi You's belt moves
+- [ ] Grand Groceries looks like a real supermarket
+
+### Session 56: The gym and the C Institute inside (built, needs testing)
+
+```text
+Session 56. Read PRD.md "Looks pass", the Wahat Gym and C Institute rows. Build the
+gym as a real gym (glass wall onto the spine and lap pool, 4 treadmills facing the
+glass, bikes, squat rack with barbell, dumbbell rack, 2 rowing machines, yoga mats,
+kettlebells, mirror wall with "Train hard · تمرّن بقوة", rubber floor, water fountain,
+towel stand, reception with a smoothie cooler) with people running, rowing and
+lifting. Build the C Institute lobby two storeys tall (glass both sides, balcony,
+stairs, stepped seats with people on laptops, the talk screen that changes during
+the shift, hanging plants, wood ceiling, reception with the C logo). Smoke test: gym
+and institute orders work.
+```
+
+Done when:
+
+- [ ] The gym looks and feels like a gym
+- [ ] The C Institute lobby is tall and bright, and the talk screen changes
+
+### Session 57: Bike shop, clothes shop, stable office, farm stall and school booth (built, needs testing)
+
+```text
+Session 57. Read PRD.md "Looks pass", the last 5 rows of the table. Rebuild Pedal
+Point Bikes, Dune Drip, the stable office, the Wahat Farm Stall and the Fair Grade
+school gate booth to match. Keep the shop screens (side panel, cart, mirror) working.
+Smoke test: both shops still sell, and the three drop-off spots work.
+```
+
+Done when:
+
+- [ ] Every place you go into is as detailed as the restaurants
+
+### Session 58: Plaza, streets and the spine (built, needs testing)
+
+```text
+Session 58. Read PRD.md "Looks pass", More detail outside. Plaza: café tables outside
+the restaurants, a juice kiosk, string lights that come on at sunset, more people.
+Streets and lanes: street lamps that light up at sunset (road markings and kerbs are in Session 61),
+bins, bilingual street signs, bike racks. Spine: real grass blades (MultiMesh) on
+Medium and High, a sparser version on Low, plus flowers, rocks and more trees.
+```
+
+Done when:
+
+- [ ] The Plaza, streets and spine no longer look plain
+- [ ] Low still runs smoothly on an iPad-like setting
+
+### Session 59: Play-test the looks pass (automatic checks done, needs Louis's play)
+
+```text
+Session 59. Run the smoke test and every focused test, the play-test bot careful and
+careless, and the frame-rate check on Low, Medium and High at 1920 x 1080 and full
+screen. Screenshots of every interior, the Plaza, a street, the spine, and full
+screen from the bike. List anything that still flickers or looks plain and fix it.
+Then I'll play it myself; here's what felt off: [write it here].
+```
+
+Done when:
+
+- [ ] Every interior matches its design, and nothing flickers
+- [ ] 60 fps on Medium on Louis's Mac
+- [ ] Louis has played a full shift and is happy with how it looks
+
+## World polish pass (Sessions 60 to 74)
+
+**Order:** Session 60 (the road network) was built straight after looks pass Session 52, at Louis's request. Then do looks pass Sessions 53 to 59 (interiors), then Sessions 61 to 74. Road markings and kerbs from looks Session 58 are done in Session 61 instead, so they aren't built twice. Louis played the detail pass on 5 November 2026.
+He likes the houses, construction sites, grass, buggies, car parks, gym, community
+pool and swimmers, water, trees, food stall, light posts, lifeguard, gym pool, horse riding and
+the Medium and Low graphics settings. Leave those alone unless a session says otherwise.
+
+What he wants changed: a proper road network (the biggest job), real road textures, rounder
+shapes, no glitching textures, no blank sand, more greenery, real-looking signs, people who
+dress for where they are and don't vanish, a football pitch at the school, better horses,
+donkeys and playgrounds, a full map on M and a resolution setting.
+
+**The approved road plan is the source of truth for the layout:**
+[Wahat Al Shams road plan](https://claude.ai/artifact/M7enEb5UZm5waPm9WizpuD) (a copy is in
+`docs/road_plan_2026-11-05.svg`). Its numbered list explains each change. Reference photos
+Louis took in the real community are described in the sessions that use them.
+
+Same rules as before: one session at a time, headless checks, smoke test and play-test bot,
+a smoke test check for every new system, PROGRESS.md, commit. The map data is generated by
+`tools/build_wahat_data.py`: change the generator, then regenerate `data/wahat_al_shams.gd`.
+Never hand-edit the generated file. Keep all 500 addresses (100 per cluster, same numbers and
+IDs) even where homes move. Check the frame time on Medium after any session that adds things.
+
+**Working style:** before each session, write a short plan. Then split the work between
+several agents running in parallel where the parts don't touch the same files (for example
+textures, signs and data in Session 65).
+
+### Session 60: The road network from the approved plan (built, needs testing)
+
+```text
+Session 60. Read CLAUDE.md, PRD.md (City map: Wahat Al Shams) and PROGRESS.md, then open
+docs/road_plan_2026-11-05.svg. First update PRD.md's Wahat section to match the plan and
+add the decisions to the Decisions log. Then change tools/build_wahat_data.py and
+regenerate the data:
+1) The ring road is the only main road. It connects to exactly four things: the two gate
+   roads from the highway, the bus station loop (off the north side, next to the mosque)
+   and one wide road into the stables car park at the back. Nothing else touches it.
+2) Remove: the old Bus Access road, the Plaza Link, the Stables Road, the
+   road beside the jumping arena, the north part of the Western Link and the cluster
+   alleys that run through the end houses.
+3) The inside network is one connected set of roads with rounded corners (radius about
+   12 to 14 m), with no dead ends: the spine road (east-west, the only road with red
+   tracks); the cluster front road (z -40) that curves into a roundabout east of the
+   C Institute, loops round the east end of the park and comes back as the south road,
+   which curves into the school road; the school road, which bends up into the west end
+   of the spine road; the road behind the C Institute (from the roundabout west, then
+   down to the spine road); and the roundabout's north exit, which curves into the east
+   side of the Plaza between the restaurants and the clothes shop.
+4) Cluster lanes are asphalt. Every cluster has a front cross road and a back cross road
+   joining all five lanes; only the front one links out (one entrance link per cluster).
+   No cluster road touches the ring road. Keep at least 12 m between any cluster road and
+   the ring road (Cluster 3 moves 10 m west, Clusters 4 and 5 move 6 m north, and the back
+   cross roads sit at z -189 and 189).
+5) Add the stables car park (beside the stables, off the ring road) and a row of roofed
+   school car park bays right at the school entrance, beside the school road. The phase 3
+   site south of the mosque already exists. Majlis Gardens and the pitch come later
+   (Sessions 66 and 72).
+6) Buses only drive on the ring road and the bus loop. Move START to the bus station
+   platform. Update the route finder, GPS, mini-map, bus recovery and the play-test bot.
+Take a top-down screenshot and compare it with the plan.
+```
+
+Done when:
+
+- [ ] A top-down screenshot matches the approved road plan
+- [ ] Driving the ring road, the only ways off are the two gates, the bus loop and the stables car park
+- [ ] Every inside road joins another road or a roundabout: no road just stops
+- [ ] All 500 addresses still work and a full delivery works from the new start
+- [ ] Smoke test, navigation test and bus recovery test pass
+
+### Session 61: Road surfaces, markings and junctions (built, needs testing)
+
+```text
+Session 61. Make the roads look real.
+1) Use a proper CC0 asphalt texture (Poly Haven or ambientCG, credited in CREDITS.md),
+   with light wear and a slightly darker centre. Low graphics can use a plain version.
+2) Yellow dashed centre line on every road, and white direction arrows on each side
+   every 40 m (drive on the right, like the UAE). The ring road gets arrows every 60 m.
+3) Kerbs on both sides. Corners and junctions are real curved meshes, not overlapping
+   rectangles. Where asphalt meets pavers, the asphalt runs through on top and the
+   pavers stop at its edge. No two flat surfaces at the same height, so no flickering
+   ("glitching textures").
+4) Remove all the tyre marks. Instead, add faint, short skid marks only when the rider
+   brakes hard, and let them fade after a while.
+5) Re-place the speed bumps and road works on the new roads.
+```
+
+Done when:
+
+- [ ] Every road has a yellow centre line and arrows showing which way each side goes
+- [ ] No flickering anywhere where roads, pavers and grass meet (check every cluster junction)
+- [ ] No tyre marks except short fading ones after a hard brake
+- [ ] Frame time on Medium is no worse than before
+
+### Session 62: The spine road and red walking tracks (built, needs testing)
+
+```text
+Session 62. Louis's photo: a paver road with a yellow line, then a narrow planter with a
+low kerb and grass, then a smooth red walking track, all under leaning date palms, with
+hedges and purple flower beds. Copy that look for the spine road only.
+1) Spine road cross-section, both sides: asphalt, planter (about 2 m, kerb, grass, small
+   shrubs), red walking track (about 2.5 m, matte red-brown, slightly raised).
+2) Buggies and the bike can't drive onto the red track: a kerb blocks them, with marked
+   crossing gaps at each junction and path. People walk and jog on it.
+3) Date palms, hedges, bougainvillea and purple flower beds along the spine planters.
+4) Connect the grass pathway at the C Institute to the spine road, and turn the
+   C Institute benches so people sit facing outwards.
+```
+
+Done when:
+
+- [ ] The spine road looks like the photo, with red tracks on both sides
+- [ ] You can't ride onto the red track except at the crossing gaps
+- [ ] Joggers and walkers use the red tracks
+- [ ] The C Institute path goes somewhere and its benches face outwards
+
+### Session 63: Greenery, round tracks and no bare sand (built, needs testing)
+
+```text
+Session 63. Make the edges green and round.
+1) Palms, trees and hedges in the strip between the ring road and the blue track, all the
+   way round.
+2) Round corners on the blue track and the horse track, matching the ring road. Give the
+   blue track a texture (fine rubbery surface with lane lines), not flat blue.
+3) Replace bare sand in front of houses and beside roads with pavers, grass and planters.
+   Sand stays only at the stables, the jumping arena and the horse track, where the
+   horses ride.
+4) Make the edge of the map more detailed outside the horse track: a thick tree belt,
+   low dunes and a few far-off shapes so the world doesn't end in flat sand.
+```
+
+Done when:
+
+- [ ] There's no plain sand anywhere except the horse areas
+- [ ] The tracks have curved corners and the blue track has a texture
+- [ ] Looking out past the fence shows trees and dunes, not an empty edge
+
+### Session 64: Bus station loop, bus stop and car parks (built, needs testing)
+
+```text
+Session 64. 1) Build the bus station as a loop off the ring road: buses turn in, go round
+a platform island, then turn back out. The island has two detailed shelters (roof,
+glass back panel with a route map, benches, a bin and a small sign), and 3 to 5 people
+waiting who board when a bus stops. The bus stop is right next to the road, not far
+across the sand.
+2) Build the stables car park and the school car park with the same solar roofs, cars
+and markings as the other car parks.
+```
+
+Done when:
+
+- [ ] Buses loop through the station and people get on
+- [ ] Both new car parks look like the existing ones
+
+### Session 65: Cluster entrances and signs (built, needs testing)
+
+```text
+Session 65. Louis's photos are of the real signs.
+1) Cluster sign: a dark green board on a pale blue metal frame with a pole, like the
+   real "SIKKA E" sign. Ours says "Cluster 3" (Arabic المجموعة ٣ under it) where the real
+   one says SIKKA E, with arrows and house ranges ("Villa 1-25 ←") and an EXIT line.
+   One at each cluster entrance, standing on the planter beside the lane, never in the
+   road.
+2) Police sign: a white board with a red "Attention" header and a camera icon, a made-up
+   emblem (a star and a dhow, no real police badge) and the text "5-Star Habibi Police:
+   Area is monitored by Habibi Smart Home Security" in English and Arabic. One at each
+   cluster entrance and a few along the red tracks.
+3) Small bilingual STOP signs where each cluster entrance meets the road.
+4) Move the bins to the back of each cluster beside the road. Move the pool sign so it
+   stands in front of the gate, not behind it.
+5) Big end houses: a larger version of the normal house kit at the road end of each row
+   where there's empty space now.
+Check the Arabic letters are joined and right-to-left on every sign.
+```
+
+Done when:
+
+- [ ] Every cluster has its green sign, police sign and stop sign beside the lane
+- [ ] No sign stands in the road
+- [ ] The end houses match the others, just bigger
+- [ ] Bins are at the back and the pool sign is in front of the gate
+
+### Session 66: Majlis Gardens and the new building site (built, needs testing)
+
+```text
+Session 66. 1) Majlis Gardens in the empty strip between the car park and Cluster 1: a
+small fountain, palm shade, benches, curving paver paths that join the paths around it,
+a small community garden bed and a few people sitting or walking.
+2) Phase 3 building site south of the mosque, dressed like phase 2 (fence, crane,
+materials, sign "Phase 3 coming soon" in English and Arabic).
+```
+
+Done when:
+
+- [ ] The blank space by Cluster 1 is a park people use
+- [ ] The phase 3 site looks like phase 2
+
+### Session 67: Glitch fixes, full map and resolution setting (built, needs testing)
+
+```text
+Session 67. 1) Fix the flickering textures on the restaurant walkways and any other
+place where two surfaces overlap.
+2) The school pool shade floats: give it posts and a proper roof.
+3) Press M to open a full-screen map of the whole community, with names, your position,
+the current pickup and drop-off and a legend. M or Esc closes it. The game pauses while
+it's open.
+4) Add a Resolution option to the graphics tab: window size choices on desktop and a
+render scale (50, 75, 100%) everywhere, saved with the other settings.
+```
+
+Done when:
+
+- [ ] No flickering at the restaurants
+- [ ] M shows the whole map and closes again
+- [ ] Changing resolution works and is remembered
+
+### Session 68: People who live here (built, needs testing)
+
+```text
+Session 68. 1) Customers who walk out of a restaurant keep walking along the paths to a
+home in a cluster and go in the door. Nobody vanishes in plain sight. Only people near
+the rider are fully animated; the rest move along cheaply in the background.
+2) Give every place its own kind of person (list below). Swimmers wear swimwear.
+```
+
+| Place | Who you see |
+| --- | --- |
+| Community pool, gym pool, school pool | Swimmers in swimwear, lifeguard in red and yellow |
+| Gym | Gym clothes, towels, water bottles |
+| School | Pupils in uniform, teachers with lanyards |
+| Stables and arena | Riders in jodhpurs and helmets, grooms |
+| Plaza and restaurants | Shoppers with bags, families, waiters in aprons |
+| Bus station | Commuters with backpacks and suitcases |
+| Spine road red tracks | Joggers, dog walkers, parents with buggies |
+| Majlis Gardens and playgrounds | Kids playing, parents on benches |
+| Beekeeper | Beekeeper in a white suit and veil |
+| Building sites | Workers in hi-vis vests and hard hats |
+| Farm beds and planters | Gardeners with hats |
+| Clusters | Neighbours in casual clothes, kids on scooters |
+
+Done when:
+
+- [ ] Follow someone out of a restaurant: they walk home and go inside
+- [ ] Each place has its own kind of people and swimmers wear swimwear
+
+### Session 69: The beekeeper as a pickup (built, needs testing)
+
+```text
+Session 69. The beekeeper works like a restaurant: orders for honey jars and wax
+candles, picked up at a stall beside the hives and delivered to homes. It shows on the
+phone, mini-map and full map.
+```
+
+Done when:
+
+- [ ] A honey order can be picked up at the beekeeper and delivered
+
+### Session 70: Blender models and textures (built, needs testing)
+
+```text
+Session 70. Blender is installed on Louis's Mac. Run it from the command line (headless)
+with Python scripts kept in tools/blender/, so every model can be rebuilt. Export .glb
+files into assets/models/ with their own textures. Original work only.
+1) A new horse (better shape, mane and tail, a few coat colours) that works with the
+   existing riding animation, and a donkey (shorter, longer ears, grey-brown) for the
+   donkey pen. The current "horse" looks like a donkey: replace it.
+2) New textures for the things that need work: the blue track, the red track, the horse
+   track sand, the pavers and the playground surfaces.
+Keep the polygon count low so Low graphics still runs smoothly.
+```
+
+Done when:
+
+- [ ] The horses look like horses and the donkeys look like donkeys
+- [ ] The tracks and pavers use the new textures
+- [ ] The Blender scripts rebuild every model and texture
+
+### Session 71: New playgrounds (built, needs testing)
+
+```text
+Session 71. Design new playgrounds in Blender: rounded slides, a climbing frame, swings,
+a small spinner and soft rubber flooring, in bright but soft colours. Less blocky than
+now. Use them in every cluster playground and in Majlis Gardens, with kids playing.
+```
+
+Done when:
+
+- [ ] Every playground uses the new rounded designs and kids play on them
+
+### Session 72: School football pitch (built, needs testing)
+
+```text
+Session 72. Replace the green area in front of the school with a full football pitch:
+markings, two goals with nets, a running track along one side, and a fence of tall posts
+(taller than now) with netting. Remove the tennis court and the basketball court. Four
+floodlights light only the pitch, and switch on automatically when it gets dark. Add
+pupils playing during the day.
+```
+
+Done when:
+
+- [ ] There's a full pitch with goals and a running track, fenced with tall posts
+- [ ] The floodlights come on at dusk and light only the pitch
+
+### Session 73: More life at the stables (built, needs testing)
+
+```text
+Session 73. Add more jumps to the arena and more riders doing them. Use the new horses,
+with a few riders waiting their turn and grooms walking horses near the stables.
+```
+
+Done when:
+
+- [ ] Several riders take turns over several jumps
+
+### Session 74: Play-test the world polish pass (automatic checks done, needs Louis's play)
+
+```text
+Session 74. Run the smoke test, every focused test suite and the play-test bot. Check
+the frame time on Low, Medium and High at the busiest spots (Plaza, bus station, spine).
+Take a top-down screenshot and compare it with the approved road plan again. Then I'll
+play a full shift. Here's what felt off: [write it here].
+```
+
+Done when:
+
+- [ ] All tests pass and Medium stays at 60 fps
+- [ ] Louis plays a shift and is happy with the roads, greenery, signs and people
+
+### Later (not in this pass)
+
+- **Delivery robot:** a small robot that can do deliveries, as an upgrade. Plan it after
+  this pass.
+- **Desktop game instead of only the browser:** decided 6 Nov 2026. The game is a desktop
+  game for Steam and the browser version is paused. See the Steam pass (Sessions 85 to 90).
+
+
+## Fix pass (Sessions 75 to 84)
+
+From Louis's play on his Mac on 5 November 2026, after the world polish pass. Roads, signs,
+bus stop, playgrounds, Majlis Gardens, NPC placement and the gym are good. What needs work:
+invisible walls, kerbs that don't join up, sharp 90° corners, the Plaza floor, the box-shaped
+shops, car park layouts, textures that got worse, swimmers and the lifeguard, the gym/stream
+clash, NPCs that look lifeless, and a few odd spots (the blue patch at the C Institute, the
+grass gap at the cluster playgrounds).
+
+**Textures (chosen 5 Nov, real CC0 photo textures from Poly Haven, saved in tools/texture_sources/ for the
+build):** running_track (blue, with lane lines) for the blue bike track; the same photo
+recoloured red, one lane without the line, for the red walking tracks; brick_pavement_02,
+tinted warm sandy grey like Louis's lane photo, for paver lanes and footpaths;
+square_concrete_pavers for the new square Plaza floor; the old aerial_grass_rock (before
+5 Nov) mixed with leafy_grass for the lawns; the old sand_01 for sand; the old water look.
+Keep the new road asphalt. Credit each in CREDITS.md (Poly Haven, CC0).
+
+Same rules as always: one session at a time, headless checks, smoke test, focused tests,
+play-test bot careful and careless, a check for every new thing, PROGRESS.md, commit. Before
+handing over, open the game on Louis's Mac (Forward+) and take screenshots of what changed.
+
+### Session 75: Ride freely, jump on foot, buggies on roads (built, needs testing)
+
+```text
+Session 75. 1) Remove every invisible wall that isn't a real object: the solid spine kerbs
+(scripts/spine_tracks.gd _solid_kerb), any invisible kerbs along other red tracks, the
+blue track and car parks, and anything else the bike bumps into where nothing is visible
+(walk the bike along every road edge with a test to find them). Low visible kerbs stay;
+riding over one gives a small bump and a little speed loss, never a crash.
+2) Remove all speed bumps except the ones on the ring road.
+3) On foot only, Space makes the rider jump (about 0.6 m, short cooldown, a landing
+animation). On the bike Space stays the handbrake. Update the PRD Controls table and the
+pause menu key list.
+4) Buggies only drive on roads: build their routes from the road network (ROADS and the
+rounded road chains) instead of straight lines across the clusters, keep them on their side
+of the yellow line, and slow down at junctions and the roundabout.
+```
+
+Done when:
+
+- [ ] You can ride across every red track and kerb anywhere, with only a small bump
+- [ ] Speed bumps are only on the ring road
+- [ ] Space jumps when walking and still brakes on the bike
+- [ ] Every buggy stays on asphalt for a whole shift (test checks this)
+
+### Session 76: Kerbs that join up and curved corners (built, needs testing)
+
+Louis's screenshots from 5 Nov are in docs/fix_pass_screens/ (01 to 09). What they show:
+01 C Institute front: paving runs into the blue pool-like patch. 02 Spine road: the kerb is
+a flat white strip lying on the road and a grass gap separates road and paving. 03 A car
+park: one row of cars, the rest empty asphalt, no kerb where it meets grass. 04 Spine
+junction: the kerb curve stops dead where the side road joins. 05 Cluster entrance: white
+kerb strips end in sharp angles and don't follow the corners. 06 Pool: swimmers lie flat
+like they're dead. 07 Cluster 1 entrance: a curved kerb cuts across the lane and two kerb
+pieces overlap. 08 C Institute road: kerb pieces end in the middle of the road; blue patch
+again. 09 Pedal Point Bikes: a plain box with a sloped roof on grass, the path doesn't reach
+it. Fix every one of these and check each spot again with a screenshot on the Mac.
+
+```text
+Session 76. Louis's screenshots show kerbs that don't meet (roundabout, cluster entrances,
+junctions) and sharp 90° turns. 1) Rebuild kerbs as raised, continuous strips (not flat white lines on the road) that
+follow every road edge, never cross a lane, curve round every corner, close up at junctions (the kerb turns into the side
+road), wrap the whole roundabout (outer ring and island) and leave gaps only for crossings
+and car park entrances. 2) Every 90° corner where two roads meet gets a curved inside
+corner (radius about 6 m for lanes, 10 m for bigger roads), including the cluster lane
+corners and the cluster entrances. 3) The C Institute access road follows a smooth curve
+from the spine road to the door. 4) Add a test that finds kerb ends that don't touch
+another kerb, a gap or a crossing (0 allowed).
+```
+
+Done when:
+
+- [ ] No kerb ends in mid-air anywhere (the test finds 0)
+- [ ] The roundabout kerbs join all the way round
+- [ ] Every road corner is curved, including the C Institute road
+
+### Session 77: A square Plaza floor and the Dune Drip buggy park (built, needs testing)
+
+```text
+Session 77. 1) Replace the round Plaza paving with one square paved floor using the
+square_concrete_pavers texture, running from the bike shop to Dune Drip and from the north
+restaurant row to the south row, so every restaurant door, both shop doors and the café
+tables stand on paving. Nothing stands on grass. Keep the fountain and sunken square where
+they are now. 2) The road from the roundabout no longer ends at nothing: it leads to a small
+buggy car park (4 to 6 spaces, markings, a buggy or two parked) behind Dune Drip, with a
+footpath from there into the Plaza. 3) Check the ground at every restaurant entrance is
+paving (test).
+```
+
+Done when:
+
+- [ ] The Plaza floor is one square of paving touching every door
+- [ ] The Plaza road ends in a small buggy park behind Dune Drip
+
+### Session 78: Bike shop and Dune Drip look like real buildings (built, needs testing)
+
+```text
+Session 78. Keep their fronts and insides. Change the box shape: a stepped roofline with a
+parapet, a shaded arcade with columns along the Plaza side, a small wind tower or roof
+feature, window bays and trim on the side walls, a shop-colour band, and details round the
+outside (Pedal Point: bike rack with bikes, a pump stand; Dune Drip: planters, a bench).
+Make it look good and cool, in the same Arabic-modern style as the houses. Do the same for
+any other blank wall that faces the Plaza.
+```
+
+Done when:
+
+- [ ] Neither shop looks like a plain box from any side
+
+### Session 79: Car parks laid out properly, and a mosque car park (built, needs testing)
+
+```text
+Session 79. Every car park (between the clusters, beside C3 and C5, the stables and the
+school) uses one layout: a row of spaces along one side, two rows in the middle facing each
+other nose to nose, a row across the end, aisles between, solar roofs over every row and
+cars in most spaces. Painted bay lines and arrows. The entrance stays where it is. Add a
+mosque car park (about 12 spaces, same style) in front of the mosque, joined to the ring
+road (update the PRD: the ring road now also meets the mosque car park).
+```
+
+Done when:
+
+- [ ] Every car park has the side row, two middle rows and an end row, mostly full, with roofs
+- [ ] The mosque has its own car park off the ring road
+
+### Session 80: The C Institute front, seats and the basketball court (built, needs testing)
+
+```text
+Session 80. 1) Remove the blue (pool-looking) patch in front of the C Institute; make it
+grass and put a small 5-a-side football pitch there (lines, two small goals with nets) with
+people playing during the day. 2) Raise the outdoor seats/steps so seated NPCs' feet show
+above the surface (check every bench and step seat in the game for the same problem).
+3) Make the basketball court more detailed: proper lines, hoops with nets and backboards,
+a fence, benches and a couple of players.
+```
+
+Done when:
+
+- [ ] No blue patch, and people play football in front of the C Institute
+- [ ] Nobody's feet disappear into a seat
+- [ ] The basketball court looks finished
+
+### Session 81: Gym, stream and pools (built, needs testing)
+
+```text
+Session 81. 1) Flatten the ground around the gym and the community pool so no hill dips into
+water or a building. The stream ends in a small pond with stones round the edge before the
+gym instead of running under it. 2) The community pool keeps its layout but looks less
+basic: tiled deck, a proper edge and coping, ladders, lane ropes, loungers and umbrellas,
+a shower post, plants. 3) Swimmers in all three pools swim properly: arm strokes, kicking,
+heads above the water, laps across the pool, a couple resting at the edge; they wear
+swimwear and nobody floats like they're dead. 4) The lifeguard sits on a tall lifeguard
+chair, turns to look around, sometimes stands up and blows a whistle. 5) Water uses the old
+look from before 5 November (or better).
+```
+
+Done when:
+
+- [ ] Nothing glitches into the water or the gym
+- [ ] Swimmers swim and the lifeguard sits on his chair and watches
+
+### Session 82: Textures (built, needs testing)
+
+```text
+Session 82. Use the textures chosen above (copy them from tools/texture_sources/ into assets/textures/,
+with .import files, credited in CREDITS.md). 1) Grass: the old aerial_grass_rock mixed with
+leafy_grass so it doesn't repeat. Sand: the old sand_01. Pavers and footpaths:
+brick_pavement_02 tinted warm sandy grey. Blue track: running_track. Red track: running_track
+recoloured red (one lane, no line). Keep the new road asphalt. 2) Remove all the rectangle
+grass blade clumps (scripts/spine_greenery.gd); keep flowers, rocks and trees. 3) Fix the
+glitchy textures on signs (text flicker or shimmer). 4) Bins grey instead of green. 5) Fill
+the grass gap beside each cluster playground with the paving. 6) Look at every surface on
+Low, Medium and High on Louis's Mac and fix anything blurry, stretched or too repetitive
+(texture scale per surface in one place).
+```
+
+Done when:
+
+- [ ] Grass, sand, pavers and tracks look like real photos, not flat colour
+- [ ] No rectangle grass clumps
+- [ ] Signs don't shimmer, bins are grey, no grass gaps by the playgrounds
+
+### Session 83: People who look alive (built, needs testing)
+
+```text
+Session 83. 1) Every NPC that stands or sits moves a little: breathing, turning the head to
+look around, shifting weight, and pairs talking with hand gestures. Add simple eyes and a
+smile to faces. Keep it cheap: only people near the rider animate fully. 2) Check every
+outfit (swimwear, gym kit, uniforms, jodhpurs, hi-vis, bee suit, waiters, commuters) for
+clothes poking through bodies or floating, and fix them all. Add a test that builds each
+outfit and checks the clothes stay on the body.
+```
+
+Done when:
+
+- [ ] No NPC stands frozen, and faces have eyes
+- [ ] No glitched clothes on any outfit
+
+### Session 84: Play-test the fix pass on Louis's Mac (automatic checks done, needs Louis's play)
+
+```text
+Session 84. Run the smoke test, every focused suite and the play-test bot careful and
+careless. Then open the game on Louis's Mac and take screenshots of every spot changed in
+Sessions 75 to 83 (Plaza, shops, car parks, roundabout and kerbs, cluster entrances, pools,
+gym, C Institute front, tracks). Fix anything that still looks wrong, then hand over.
+```
+
+Done when:
+
+- [ ] All tests pass and Louis is happy with the screenshots and his own play
+
+
+## Life pass (Sessions 86 to 97)
+
+From Louis's play on 6 November 2026 after the fix pass. He likes the restaurants, the Plaza,
+the gym inside, the pools, the lifeguard, the roads, the signs, the playgrounds, Majlis Gardens,
+the football and basketball courts, the grocery store, the construction site and the juice stand.
+This pass adds the things he asked for: a loading screen, real crash physics, three delivery
+companies with logos, a proper phone app, a flea market, the mansion and its owner DJ Salad,
+and a long list of look fixes. **Build this block before the rest of the Steam pass** (Session 85
+is built; Sessions 98 to 102 are the old 86 to 90).
+
+Decisions Louis made on 6 Nov (all in the PRD Decisions log):
+- Loading screen: the start-screen desert with a bike riding along the bottom, a progress bar
+  and rotating tips; shown until the whole world is built, and again at the start of each shift.
+- Three companies on the application form, same jobs, one perk each: **Snackaroo** (orange,
+  default, +10% tips), **Zoomaroo** (green, customers wait 20% longer), **Deliverooz** (teal,
+  bigger box so less food damage). Switch later in the phone for a small fee. One drawn logo per
+  company on the box, shirt, phone, van and signs.
+- Crashes have three levels: bump (under 12 km/h or anything soft: wobble, 10 Dh, small rating
+  hit), fall (12 to 22 km/h: fall off, 30 Dh, food damage), big crash (over 22 km/h into something
+  hard: hospital, 150 Dh). Real ragdoll instead of the spinning stick; the message says the real
+  speed.
+- Flea market in the Plaza about every third Friday, 8 stalls, extra people, one-off orders;
+  the phone tells you the day before.
+- The mansion by Cluster 5 (between its car park and the road): Arab-modern, two floors,
+  courtyard pool, garage, wall and gate. 25,000 Dh, needs Tier 3 and DJ Salad's tasks. Once
+  owned you start shifts there, can walk in, and the garage holds your bikes.
+- **DJ Salad** owns it until you buy it: a bit overweight, DJ look, takes deliveries from day one,
+  "For sale" sign up from the start. At Tier 3 you message him; he sets 3 tasks (10 five-star
+  deliveries to him, a special package from the bee farm, a timed airport delivery once you're a
+  taxi driver) before he sells.
+- Press P opens a full phone with apps: Jobs, Profile, Collection, Messages, Company, Map,
+  Settings. Mock-up first, then build. Orders still pop up on the small corner phone.
+- C Institute: second floor inside (balcony, glass offices with people, meeting room, stairs and
+  a lift you can use); outside keeps the big glass but goes more modern.
+- Dubai-style skyline, very faint, far behind the Plaza, made-up shapes with one tall spire.
+- Space jumps on foot only (from the fix pass). Blender for new models (stroller, logos, mansion
+  details) with scripts in tools/blender/.
+
+Research notes (6 Nov): Godot's threaded-load progress only counts files and jumps 0 to 100, so
+the loading bar must count the world builder's own steps and build a few per frame. Ragdolls use
+PhysicalBone3D on the rider's Skeleton3D ("Create physical skeleton", then delete the tiny bones;
+keep about 8); start with physical_bones_start_simulation() and give the bones their own
+collision layer so the rider's capsule doesn't fight them. UAE delivery apps by size: Talabat
+(about 45%), Deliveroo, Careem Food, Noon Food. Modern Arabic villa look: white render, a tall
+pointed entrance arch with a full-height geometric mashrabiya screen, the upper floor as a
+"floating" box, courtyard pool, flat roof, sandstone and vertical fins, lights in the arches at
+night.
+
+Same rules as always: one session at a time, headless checks, smoke test, focused tests, the
+play-test bot careful and careless, a check for every new thing, PROGRESS.md, commit. Run the game
+on the Mac and screenshot every spot you change. Before each session write a short plan and use
+parallel agents where files don't overlap.
+
+### Session 86: Loading screen (built, needs testing)
+
+```text
+Session 86. Make a real loading screen. 1) Split the world build (WahatBuilder and
+everything it calls) into named steps: ground, roads, clusters, Plaza, venues, spine, edges,
+people, traffic, and so on. Build a few steps per frame instead of all at once, and report
+"step X of N" to the screen. 2) The screen: the start-screen desert (sun, dunes, one palm),
+a small 3D bike that rides along the bottom edge as the bar fills, a progress bar with the
+step name under it ("Laying the roads..."), and a tip that changes every 3 s (controls,
+facts about Al Sarab, Snackaroo jokes). Minimum 1 s on screen, fade out when done. 3) Show
+it at game start, on New game/Continue, and at the start of every shift (shorter). 4) Nothing
+from the world shows until the last step is built and textures are ready (warm the shaders:
+draw one frame hidden). Test: the smoke test checks the steps run in order and the screen
+closes.
+```
+
+Done when:
+
+- [x] A moving bar with step names, a riding bike and tips, no frozen frame, no half-built world
+
+### Session 87: Crash physics and the three crash levels (built, needs testing)
+
+```text
+Session 87. 1) Three crash levels in CrashImpact and game_config.gd: bump (speed under
+CRASH_BUMP_KMH 12, or soft things like hedges and bins at any speed: the bike wobbles, you
+stay on, 10 Dh repair, small rating hit, a short "Bump! 9 km/h" toast), fall (12 to 22 km/h:
+you fall off, 30 Dh, food damage as now), big (over 22 km/h into hard things: hospital, the
+clinic screen, 150 Dh). The message always shows the real speed at impact. 2) Replace the
+falling animation with a ragdoll: physical bones on the rider (about 8: head, chest, hips,
+upper and lower arms as one each, upper and lower legs as one each), the bike becomes a
+RigidBody3D that slides and tips over, the rider tumbles with the real speed, lies still,
+then gets up (blend back from ragdoll to the standing pose over 0.5 s) and walks to the bike.
+Camera follows the body, not the bike, while down. 3) Tune so a small bump at walking speed
+never throws you. Keep the 2 s grace time. 4) Update the PRD crash section. Tests: the crash
+impact test gets the three levels; the careless bot still finishes a shift.
+```
+
+Done when:
+
+- [x] Bumps don't knock you off, falls look like a real tumble, and the toast shows the real speed
+- [x] Three different bills, all in game_config.gd
+
+### Session 88: Three companies and their logos (built, needs testing)
+
+```text
+Session 88. 1) Logos: one drawn logo per company (vector made by a script in tools/logos/,
+exported as PNG at 1024 and 256): Snackaroo (orange rounded bag with a lightning bolt, bubbly
+font), Zoomaroo (green speech bubble with a wink), Deliverooz (teal kangaroo-ish shape, no
+real logo copied). Also an Arabic word mark under each. 2) The application form offers the
+three companies as cards with logo, colour and perk. The choice is saved and sets the box
+colour and logo, the shirt, the phone app's name and colour, the start-screen app, and the
+Snackaroo signs on buildings/vans where the company is shown. 3) Perks: Snackaroo +10% tips,
+Zoomaroo customers wait 20% longer before cancelling, Deliverooz box is bigger and food damage
+is 25% lower. All numbers in game_config.gd. 4) Switch company later in the phone's Company
+app for 50 Dh (keeps your stars and level). 5) Old saves default to Snackaroo. Tests: an order
+from each company, the perk numbers, the logo on the box.
+```
+
+Done when:
+
+- [x] You pick a company at the start and see its logo on your box, shirt and phone
+- [x] Each perk works and you can switch in the phone
+
+### Session 89: The phone app (built, needs testing)
+
+```text
+Session 89. First make a mock-up (one HTML page in docs/phone_mockup.html with every screen)
+and show Louis; build only after he says yes. Then: P opens a full phone in the middle of the
+screen (the game pauses). Home screen with app icons: Jobs (choose which order types you want
+offered next: normal, fragile, VIP, far; and see today's shift goals), Profile (name, company,
+stars, Rider Level with the XP bar and "X XP to level N", career tier and what the next tier
+needs, lifetime stats), Collection (bikes, looks, gear owned and locked), Messages (chats with
+the regulars and DJ Salad; unread badge on the icon), Company (switch), Map (the full map from
+M), Settings (the settings panel). Esc or P closes. The small corner phone stays for orders.
+On phones a HUD button opens it. Tests: every app opens and closes; the unread badge works.
+```
+
+Done when:
+
+- [x] Louis approved the mock-up, and every app on the phone works
+
+### Session 90: Plaza and gym fixes (built, needs testing)
+
+```text
+Session 90. 1) Extend the Plaza paving on the Dune Drip side only: from the shops past the
+buggy park and along the road almost to the roundabout, so the walk from the roundabout is
+paved; the other side of the road stays grass. No overlapping surfaces. 2) The buggy park is 3
+times bigger (about 15 spaces) and sits behind Dune Drip. 3) The homes above the restaurants:
+make them look like the house kit (windows with frames, trim, roof edge, AC units, plants on
+balconies) and close the gap between them and the restaurant fronts. 4) Every bench outside the
+restaurants faces outwards. 5) The pizza oven's flue connects to the oven. 6) The waiter
+outside each restaurant does something: wipes a table, carries plates in and out, chats to a
+diner, or goes inside; never just stands. 7) Gym: 15% smaller so it clears the road, a second
+entrance on the spine side, and the same outside treatment as the restaurants (glass front,
+colour band, sign, plants). 8) Majlis Gardens: the last path piece joins the road edge
+smoothly with a crossing, no overlap. Screenshots of every spot.
+```
+
+Done when:
+
+- [x] Paving reaches almost to the roundabout on one side, the buggy park is 3x and behind Dune Drip
+- [x] Nothing in the Plaza overlaps, benches face out, waiters move, the gym clears the road
+
+### Session 91: C Institute inside and out, and the pond (built, needs testing)
+
+```text
+Session 91. 1) Second floor inside: a balcony round the lobby, glass-walled offices with
+people at desks on laptops, a meeting room with a screen and 6 people, plants, stairs and a
+lift (press E, doors close, you come out upstairs). The talk screen stays. 2) Outside: keep the
+big glass but go more modern: slim white frames, a flat roof with a sun shade, vertical fins
+on the sunny side, a lit sign. 3) Where the stream ends near the C Institute, add a big pond
+with stones round the edge, reeds, a small wooden deck with two benches and ducks. 4) Make
+sure nothing overlaps the football pitch or the road.
+```
+
+Done when:
+
+- [x] You can go upstairs in the C Institute and see people working
+- [x] The pond looks right from the road and the Institute steps
+
+### Session 92: People fixes and the player's look (built, needs testing)
+
+```text
+Session 92. 1) New stroller model in Blender (tools/blender/make_stroller.py): hood, frame,
+four wheels that turn, a child inside. The parent holds the handle with both hands and pushes
+it (the stroller is attached to the hands, not sliding on its own). 2) Talking pairs: replace
+the mid-step idle pose with a relaxed standing pose (feet under hips), face each other at a
+polite distance, and take turns speaking so it doesn't look like a fight. 3) Sunbeds at the
+community pool: 4 people lying on them in swimwear, one reading. 4) Joggers' and runners'
+trousers and shirts: fix the stretching when the legs swing (check with the outfits test at
+run speed). 5) Construction workers: carry things, hammer, use the mixer, talk by the crane;
+clothes fixed. 6) The player: rounder shoes with laces and soles, a cap or helmet with the
+company logo, a company shirt, and the box with the logo. 7) Check every NPC on screen at the
+courts for the flicker Louis saw (probably two meshes at the same place).
+```
+
+Done when:
+
+- [x] Strollers look real and are pushed, pairs look like they're chatting, sunbeds are used
+- [x] No stretching clothes on runners, workers work, the player looks better
+
+### Session 93: Landscape
+
+```text
+Session 93. 1) Small hills, about 0.5 m high, in the empty areas only (between clusters and
+the ring road, round the park, past the school) with a test that no hill touches a road,
+building, path, pitch, pool or car park. 2) Bushes with more shape: rounded clumps of 3 to 5
+spheres with leaf texture and a few flowers, not one green cube. Trees get a slightly
+better trunk and 2 to 3 canopy layers; keep them cheap. 3) A faint Dubai-style skyline far
+behind the Plaza only: flat silhouettes with one very tall spire, hazy, made-up shapes.
+4) Crane: a real texture (rust, yellow paint, warning stripes) and a hook that moves slowly.
+5) Police sign: fix the back face (it's see-through or z-fights from behind). 6) Community
+pool: a fence all round with a gate, and a paved path from the red track to the gate.
+```
+
+Done when:
+
+- [ ] Gentle hills in empty ground only, better bushes and trees, a faint skyline from the Plaza
+- [ ] The police sign looks right from behind, the pool has a gate and path
+
+### Session 94: The flea market
+
+```text
+Session 94. On about every third Friday (game calendar; the phone's Messages app tells you
+the day before) the Plaza hosts a flea market: 8 stalls with canopies (old books, carpets and
+lamps, spices, dates, toys, phone cases, a tea stand, a falafel stand), stallholders, 20 extra
+people browsing, bunting and music. During it, 3 one-off orders come from the stalls (pickup
+at a stall, deliver to a home) with a 50% tip bonus. Stalls pack up at the end of the shift.
+Everything keeps clear of the restaurant doors and the paths. Test: force a market day and
+make a stall delivery.
+```
+
+Done when:
+
+- [ ] A market appears on market Fridays, with orders from the stalls
+
+### Session 95: The mansion and DJ Salad
+
+```text
+Session 95. 1) The plot: by Cluster 5, from its car park to the road, walled with a gate and
+a "For sale · للبيع" sign with a made-up agency and "25,000 Dh". 2) The house: Arab-modern in
+the same style as the villas but big: white render, a tall pointed entrance arch with a
+geometric mashrabiya screen, the upper floor as a floating box with sandstone and vertical
+fins, flat roof, a courtyard pool with loungers, palms, a double garage, lights in the arches
+at night. Inside: a big majlis, kitchen, a DJ corner with decks and speakers, stairs, two
+bedrooms upstairs, a roof terrace. Made with the house kit plus Blender pieces. 3) DJ Salad:
+a bit overweight (wider body, round belly), headphones round his neck, sunglasses, a bright
+shirt, gold chain; he hangs around the pool or his decks, and his music (a free chill track)
+plays faintly from the house. He takes deliveries from day one as a regular customer with his
+own lines ("Habibi, the beats don't drop without my shawarma"). 4) The house appears on the
+map and full map.
+```
+
+Done when:
+
+- [ ] The mansion stands by Cluster 5 with its sign, and DJ Salad orders from you
+
+### Session 96: Buying the mansion
+
+```text
+Session 96. 1) At Tier 3 (Snackaroo Pro) a Messages chat with DJ Salad unlocks: you can ask
+"Is the house for sale?" He replies with 3 tasks, shown as a checklist in the chat: deliver 10
+orders to him with 5 stars; bring him a special package from the bee farm (a one-off order
+that appears once you ask); once you're a taxi driver, a timed airport pickup for him (until
+Tier 4 exists, a timed delivery across the whole map). 2) When all three are done he offers the
+house for 25,000 Dh; buying it takes the money, removes the sign, and DJ Salad moves out (he
+becomes a regular who lives in Cluster 5 and still orders). 3) Owning it: you start every
+shift at the mansion, you can walk in and up to the roof, the garage shows your owned bikes,
+and the Profile app shows "Home: the mansion". Everything is saved. Tests: the task checklist,
+the purchase, the new start spot.
+```
+
+Done when:
+
+- [ ] You can message DJ Salad at Tier 3, do his tasks, buy the house and start there
+
+### Session 97: Play-test the life pass
+
+```text
+Session 97. Run the smoke test, every focused suite and the play-test bot careful and
+careless. On the Mac: screenshots of the loading screen, a bump, a fall and a big crash, each
+company's logo on the box, every phone app, the Plaza paving, the gym, the C Institute upstairs
+and the pond, a stroller, a talking pair, the sunbeds, the hills and skyline, the flea market,
+the mansion by day and night, and DJ Salad. Fix what's wrong, then hand over.
+```
+
+Done when:
+
+- [ ] All tests pass and Louis has played a shift with everything above
+
+
+## Steam pass (Session 85, then Sessions 98 to 102)
+
+Decided 6 November 2026: Five Stars Habibi is a game for Steam (PRD.md, "Release on Steam").
+It stays in Godot 4. Windows first, then Mac and Linux / Steam Deck. The browser version is
+paused. These sessions make the game ready for Steam. They don't launch it: when to launch
+and the price are still open in the PRD.
+
+**Grown-up steps (Michael), any time before Session 100 ends:** create the Steamworks
+developer account, pay the $100 Steam Direct fee, and send the game's App ID. Until then the
+sessions use Steam's free test App ID 480.
+
+Same rules as always: one session at a time, headless checks, smoke test, focused tests,
+play-test bot careful and careless, a check for every new thing, PROGRESS.md, commit. Never
+upload anything to Steam: building the store page and pressing publish is Michael's job.
+
+### Session 85: Windows, Mac and Steam Deck builds (built, needs testing)
+
+```text
+Session 85. 1) Add a Linux export preset next to the Mac and Windows ones (export_presets.cfg),
+and make tools/build_desktop.py build all three in distribution mode with one command. Saves
+go to the normal user folder on each system.
+2) Check the exported Mac build starts, rides and saves on Louis's Mac (in review mode, so his
+real save is untouched). Check the Windows and Linux builds export without errors.
+3) Steam Deck check: run the game at 1280x800 on Low and measure the frame rate riding round
+the map (aim for a steady 60 fps on this Mac at Low; note it in PROGRESS.md). Make text and
+the phone readable at 1280x800.
+4) Fix anything the builds show (missing files, wrong paths, error lines).
+```
+
+Done when:
+
+- [x] One command builds Windows, Mac and Linux
+- [x] The Mac build starts, plays a delivery and saves
+- [ ] At 1280x800 on Low the game is smooth and all text is readable (text: done; smooth:
+      about 80 fps on Low at 1920x1080 on this Mac, a few short stutters left, needs a real Deck)
+
+### Session 98: Controller support
+
+```text
+Session 98. 1) Every action in project.godot gets controller buttons as well as keys
+(Xbox / PlayStation / Steam Deck layout). A starting point: left stick steers and walks,
+right trigger pedals, left trigger brakes, A = E (accept, hold to pick up / drop off),
+B = F (get off / on), X = Space (handbrake, jump on foot), Y = Q (skip order), RB = sprint,
+LB = bell, right stick click = rocket booster, d-pad up = insurance, d-pad down = R (back on
+the road), View = full map, Menu = pause. Put the button list in the PRD Controls table.
+2) Menus, the start screen, the application form, the phone, shops, the wardrobe and the
+shift summary all work with a controller (focus moves with the d-pad or stick, A picks).
+3) On-screen hints ("Press E") show the controller button instead when the controller was
+used last. Use free CC0 button icons (Kenney Input Prompts) and credit them.
+4) Test: a check that every action has a controller button, and that the hints switch.
+```
+
+Done when:
+
+- [ ] A whole shift can be played with only a controller, from the start screen to the summary
+- [ ] Hints show keys or buttons, whichever you used last
+
+### Session 99: Settings for keys, buttons and screen
+
+```text
+Session 99. 1) Settings gets a Controls page: change the key or controller button for every
+action (press the new one), with a "Reset to default" button. Saved with the other settings.
+2) Screen: windowed / fullscreen / borderless, window size, and a frame rate cap
+(30 / 60 / 120 / unlimited) with vsync. Graphics level and volume stay as they are.
+3) Everything works with mouse, keyboard and controller.
+4) Test: a changed key survives restarting the game; reset puts the defaults back.
+```
+
+Done when:
+
+- [ ] You can change any key or button and it's remembered next time
+- [ ] Screen options work and are saved
+
+### Session 100: Steam achievements and cloud saves
+
+```text
+Session 100. 1) Add GodotSteam (free, MIT licence; credit it in CREDITS.md), the version that
+matches our Godot 4.7. Use App ID 480 for testing until Michael sends the real one, kept in
+one place in scripts/game_config.gd.
+2) One small script, scripts/steam_link.gd, talks to Steam. If Steam isn't running, the game
+works exactly as before (no errors, no achievements).
+3) Achievements (10 to 12, list them in the PRD): first delivery, first 5-star delivery, a
+perfect shift (every delivery 5 stars), 10 / 100 deliveries, deliver from every restaurant,
+deliver to every cluster, buy the carbon frame, reach Rider Level 10, finish the tutorial,
+a collection completed. They unlock from what GameState already counts.
+4) Steam Cloud: the save file and settings follow you to another computer.
+5) Tests: achievements unlock at the right moment (with a fake Steam in the test), and the
+game runs with no Steam at all.
+```
+
+Done when:
+
+- [ ] Achievements unlock in a test and with Steam running
+- [ ] The game still runs fine without Steam
+
+### Session 101: Store page kit
+
+```text
+Session 101. 1) A screenshot tool run (like tests/screenshot_spots.gd) that takes 8 to 10
+good-looking store screenshots at 1920x1080 on High: riding through the clusters, the Plaza,
+a restaurant inside, the phone with an order, a 5-star delivery, sunset.
+2) Capsule images (the store's box art) in the sizes Steam asks for, made from the game's
+own look and the made-up Snackaroo brand, with the game name. No real brands or logos.
+3) A short trailer: record about 45 seconds of gameplay shots in the game and save the clips
+(Louis or Michael puts them together).
+4) Write the short and long store description in simple English, and the list of features.
+5) Check every asset is CC0 or credited (CREDITS.md). Put everything in docs/steam/.
+```
+
+Done when:
+
+- [ ] docs/steam/ has screenshots, capsule images, trailer clips and the descriptions
+- [ ] Every asset in the game is CC0 or credited
+
+### Session 102: Play-test the Steam pass
+
+```text
+Session 102. Run every test and the play-test bot careful and careless. Build Windows, Mac
+and Linux. Play a whole shift on Louis's Mac with keyboard and with a controller, try every
+setting, and check achievements with Steam running. Fix anything that's wrong, then hand
+over.
+```
+
+Done when:
+
+- [ ] All tests pass, and Louis has played a shift with a controller and is happy
+
+
 ## When something breaks
 
 Copy one of these and fill in the brackets.
@@ -1172,6 +2287,7 @@ Once Sessions 47 to 51 feel fun and the game is on itch.io and in the browser (S
 
 - Simple low-poly graphics, using basic shapes and free CC0 asset packs like Kenney
 - Claude Code used through the Claude desktop app
-- Keyboard controls for now (W A S D, Shift, Space, E, Q); controller support later
+- Keyboard controls (W A S D, Shift, Space, E, Q); controller support in Session 86
+- The game is for Steam (Windows first, then Mac and Steam Deck), made in Godot 4
 - Built on a paid Claude plan (Claude Code doesn't work on the free plan)
 - About one 1-hour session a week

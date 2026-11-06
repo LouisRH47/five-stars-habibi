@@ -73,6 +73,7 @@ func _run() -> void:
 	_world.queue_free()
 	await process_frame
 	SaveGame.delete(_state.save_path)
+	await preload("res://tests/clean_exit.gd").run(self)  # no sound still playing at exit
 	print("RESULT: ", "FAIL reception panel" if _failed else "PASS reception panel")
 	quit(1 if _failed else 0)
 

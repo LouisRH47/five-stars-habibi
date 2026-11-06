@@ -184,7 +184,12 @@ func _draw_ground(canvas: CanvasItem = null) -> void:
 		canvas.draw_rect(plot["area"], plot["colour"])
 	if _map.has("SPINE"):
 		canvas.draw_rect(_map["SPINE"], GRASS)
-	if _map.has("PLAZA"):
+	if _map.has("PLAZA") and _map["PLAZA"].has("floor"):  # Session 77: the square Plaza floor
+		for area: Rect2 in [_map["PLAZA"]["floor"]] + _map["PLAZA"].get("aprons", []):
+			canvas.draw_rect(area, PAVING)
+		for walk: PackedVector2Array in PlazaFloor.walks(_map["PLAZA"]):  # Session 90
+			canvas.draw_colored_polygon(walk, PAVING)
+	elif _map.has("PLAZA"):
 		canvas.draw_circle(_map["PLAZA"]["centre"], _map["PLAZA"]["radius"], PAVING)
 	for area in _map.get("PAVED_AREAS", []):
 		canvas.draw_rect(area, PAVING)
@@ -192,6 +197,9 @@ func _draw_ground(canvas: CanvasItem = null) -> void:
 		canvas.draw_rect(area, PAVING)
 	for area in _map.get("PARKING_AREAS", []):
 		canvas.draw_rect(area, ROAD)
+	for lot: Dictionary in _map.get("PARKING_LOTS", []):  # Session 79: the rest of each car park
+		for pad: Rect2 in lot["pads"]:
+			canvas.draw_rect(pad, ROAD)
 
 
 func _draw_roads(canvas: CanvasItem = null) -> void:

@@ -54,7 +54,7 @@ func _process(_delta: float) -> void:
 	var order := GameState.current_order
 	match GameState.stage:
 		GameState.Stage.OFFERED:
-			_show("Boss: Welcome to Snackaroo, %s! Your first order is on your phone (top right). Press E to accept it." % name)
+			_show("Boss: Welcome to %s, %s! Your first order is on your phone (top right). Press E to accept it." % [Companies.current()["name"], name])
 		GameState.Stage.TO_RESTAURANT:
 			if near:
 				_show("You're there! Stop, press F to get off, walk to the door and hold E to pick up the pizza." if not delivery_manager.on_foot else "Hold E at the door to pick up the pizza. Then walk back to your bike and press F to ride.")

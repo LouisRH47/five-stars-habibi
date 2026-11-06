@@ -18,12 +18,16 @@ var obstructed := false
 var base_fov := 70.0
 ## The speed lines at the screen edges (scripts/speed_lines.gd).
 var speed_lines: CanvasLayer
+## Looks pass: 0 outside, 1 inside a walk-in place (the camera comes closer and higher).
+var indoor := 0.0
 
 
 func _ready() -> void:
 	# The camera moves every frame in _process, so it shouldn't be smoothed again by physics.
 	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	base_fov = fov
+	near = GameConfig.CAMERA_NEAR
+	far = GameConfig.CAMERA_FAR
 	_camera_shape.radius = GameConfig.CAMERA_COLLISION_RADIUS
 	_camera_query.shape = _camera_shape
 	_camera_query.margin = GameConfig.CAMERA_COLLISION_MARGIN
@@ -46,6 +50,7 @@ func _process(delta: float) -> void:
 	if target == null:
 		return
 	var catch_up := 1.0 - exp(-GameConfig.CAMERA_FOLLOW_SMOOTHING * delta)
+	indoor = lerpf(indoor, 1.0 if target_indoors() else 0.0, 1.0 - exp(-GameConfig.CAMERA_INDOOR_BLEND * delta))
 	var wanted := _wanted_position()
 	var previous_height := _ideal_position.y
 	_ideal_position = _ideal_position.lerp(wanted, catch_up)
@@ -101,7 +106,13 @@ func _comfy_tyres() -> bool:
 
 func _target_transform() -> Transform3D:
 	# The smoothed position of the bike between physics steps, so nothing shakes by accident.
-	return target.get_global_transform_interpolated()
+	var spot: Transform3D = target.get_global_transform_interpolated()
+	# Session 87: while you're lying on the ground after a fall, follow your body, not the bike.
+	if target.has_method("fallen_body_position"):
+		var body: Vector3 = target.fallen_body_position()
+		if body.is_finite():
+			spot.origin = Vector3(body.x, spot.origin.y, body.z)
+	return spot
 
 
 func _wanted_position() -> Vector3:
@@ -109,7 +120,19 @@ func _wanted_position() -> Vector3:
 	var behind := t.basis.z  # +Z points out the back of the bike
 	behind.y = 0.0
 	behind = behind.normalized()
-	return t.origin + behind * GameConfig.CAMERA_DISTANCE + Vector3.UP * GameConfig.CAMERA_HEIGHT
+	var distance := lerpf(GameConfig.CAMERA_DISTANCE, GameConfig.CAMERA_INDOOR_DISTANCE, indoor)
+	var height := lerpf(GameConfig.CAMERA_HEIGHT, GameConfig.CAMERA_INDOOR_HEIGHT, indoor)
+	return t.origin + behind * distance + Vector3.UP * height
+
+
+## True when the one we follow is inside a walk-in room (restaurants, the supermarket).
+func target_indoors() -> bool:
+	if target == null or not is_inside_tree():
+		return false
+	for room in get_tree().get_nodes_in_group("venue_room"):
+		if RestaurantRoom.is_inside(room, target.global_position):
+			return true
+	return false
 
 
 ## Sweep a sphere rather than only a ray, so the near plane also clears corners.

@@ -11,7 +11,7 @@ extends Area3D
 const YELLOW := Color(0.98, 0.78, 0.1, 1)
 const BLACK := Color(0.1, 0.1, 0.1, 1)
 const STRIPE_WIDTH := 0.6     # about how wide each yellow or black band is
-const ROAD_TOP := 0.04        # the road surface height (MapBuilder.ROAD_THICKNESS)
+const ROAD_TOP := 0.05        # the road surface height (RoadMesh.ASPHALT_TOP, Session 61)
 const TRIGGER_HEIGHT := 1.0   # the invisible trigger box reaches this high
 
 

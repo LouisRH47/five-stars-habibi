@@ -69,6 +69,58 @@ Shared albedo textures tile in world metres. License: https://polyhaven.com/lice
 
 Exact download URLs and SHA-256 checksums: assets/textures/sources.json.
 
+**World polish pass road and track textures** (Sessions 61 to 63), made by
+`tools/make_road_textures.py`:
+- `assets/textures/asphalt_road_1k.jpg`: cut from Poly Haven's Asphalt 02 (CC0 1.0, above),
+  keeping the part without long cracks and mirroring it so it tiles.
+- `assets/textures/red_track_1k.jpg` and `assets/textures/bike_track_1k.jpg`: made for this
+  game from random noise, CC0 (public domain).
+
 The riding wind loop (assets/audio/wind_loop.wav) is original generated CC0 audio; reproduce it with tools/make_wind.py.
 
 The PERFECT and tip jingles (assets/audio/perfect.wav and tip.wav) are original generated CC0 audio, reproduced by tools/make_sounds.py.
+
+**Fix pass Plaza floor** (Session 77): `assets/textures/square_concrete_pavers_diff_1k.jpg`,
+Poly Haven "Square Concrete Pavers" (CC0 1.0), https://polyhaven.com/a/square_concrete_pavers
+(copied from tools/texture_sources/; the game tints it a pale sandy stone).
+**Fix pass ground photos (Session 82)**: Poly Haven, CC0 1.0 (public domain),
+https://polyhaven.com/license. The original photos are kept in `tools/texture_sources/`;
+`tools/make_photo_textures.gd` makes the game's versions from them.
+- Leafy Grass: https://polyhaven.com/a/leafy_grass
+  (`assets/textures/leafy_grass_diff_1k.jpg`, unchanged; mixed into the lawns with Aerial Grass Rock)
+- Brick Pavement 02: https://polyhaven.com/a/brick_pavement_02
+  (`assets/textures/paving_sandy_1k.jpg`, recoloured warm sandy grey: pavers and footpaths)
+- Running Track: https://polyhaven.com/a/running_track
+  (`assets/textures/blue_track_photo_1k.jpg`, turned and made more blue: the blue track;
+  `assets/textures/red_walking_track_1k.jpg`, one lane without its line, recoloured red: the
+  red walking tracks)
+- The lawns also use Aerial Grass Rock and the sand uses Sand 01 (both credited above).
+
+## Interior kits (looks pass, Session 53)
+
+Downloaded on 5 November 2026 from the official KayKit GitHub repositories. Only the models
+the game uses are included (glTF + .bin, sharing one texture per kit).
+
+**KayKit Restaurant Bits** (version 1.0) by Kay Lousberg (www.kaylousberg.com)
+- Licence: CC0 1.0 (public domain), licence text: `assets/kits/kaykit_restaurant_bits/License.txt`
+- Files: `assets/kits/kaykit_restaurant_bits/` (counters, stoves, fridge, tables, chairs,
+  crates, plates, food and the shared `restaurantbits_texture.png`)
+- Source: https://github.com/KayKit-Game-Assets/KayKit-Restaurant-Bits-1.0
+  (also https://kaylousberg.itch.io/restaurant-bits)
+
+**KayKit Furniture Bits** (version 1.0) by Kay Lousberg (www.kaylousberg.com)
+- Licence: CC0 1.0 (public domain), licence text: `assets/kits/kaykit_furniture_bits/License.txt`
+- Files: `assets/kits/kaykit_furniture_bits/` (cactus pots, couch, wooden chairs and stools,
+  shelves, rugs, lamps, picture frames and the shared `furniturebits_texture.png`)
+- Source: https://github.com/KayKit-Game-Assets/KayKit-Furniture-Bits-1.0
+  (also https://kaylousberg.itch.io/furniture-bits)
+
+Not included: the Kenney Furniture Kit and Food Kit (kenney.nl can't be reached from the build
+machine and there is no official GitHub copy), the CC0 supermarket pack (itch.io) and the Poly
+Pizza gym models (both not reachable). The things those would have given (supermarket shelves,
+food, drinks fridges, lamps) are built from basic shapes in code instead
+(`scripts/room_props.gd`, `scripts/restaurant_recipes.gd`), made for this game (CC0).
+
+The background sound of each walk-in place (`assets/audio/room_*.wav`, looks pass) is original
+generated CC0 audio, made by tools/make_sounds.py.
+- Horses, donkeys and playground models (assets/models/horse_*, donkey_*, play_*) and the textures blue_track, red_track, horse_sand, pavers and play_surface (assets/textures/): original work, made by the scripts in tools/blender/ (Sessions 70 and 71).

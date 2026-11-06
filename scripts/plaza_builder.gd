@@ -1,6 +1,6 @@
 extends Node3D
-## Builds the Plaza (Session 27) from data/wahat_al_shams.gd: the round paving, and in the
-## middle the sunken square: steps going down to a round floor with a fountain, benches and
+## Builds the Plaza (Session 27) from data/wahat_al_shams.gd: the paving (Session 77: one
+## square floor, PlazaFloor), and in the middle the sunken square: steps going down to a round floor with a fountain, benches and
 ## two shade sails. WahatBuilder leaves a square hole in the ground here; this fills it.
 ## The steps are only for looks: underneath them is one smooth, gentle slope (a "height map",
 ## a grid of heights) that the bike rolls down and back up without bumping.
@@ -19,16 +19,34 @@ const SAIL := Color(0.98, 0.96, 0.9, 1)
 const POST := Color(0.85, 0.85, 0.85, 1)
 const SEGMENTS := 48          # how round the rings are
 const SAIL_HEIGHTS := [4.9, 4.0, 4.9]
+## Session 67: height of the Plaza paving's top (metres). Roads are at 0.04.
+const PAVING_TOP := 0.02
 
 var _plaza: Dictionary
 var _centre := Vector3.ZERO
 
 
 func _ready() -> void:
+	if not WorldLoader.is_staged(self):
+		WorldLoader.run_steps(build_steps())
+
+
+## Session 86: the build as named steps for the loading screen.
+func build_steps() -> Array:
 	if data == null:
 		push_error("PlazaBuilder has no data list set in the scene")
-		return
+		return []
 	var map := data.get_script_constant_map()
+	var clear := ClearSpots.new(map)
+	return [
+		["Paving the Plaza...", _build_square.bind(map)],
+		["Filling the fountain...", _build_fountain_and_benches.bind(map)],
+		["Setting the café tables...", func() -> void: add_child(PlazaLife.make(map, clear))],
+		["Putting up the street lamps...", func() -> void: add_child(StreetDetails.make(map, clear))],
+	]
+
+
+func _build_square(map: Dictionary) -> void:
 	_plaza = map["PLAZA"]
 	_centre = Vector3(_plaza["centre"].x, 0, _plaza["centre"].y)
 	var outer: float = _plaza["radius"]
@@ -36,8 +54,14 @@ func _ready() -> void:
 	var bottom: float = _plaza["floor_radius"]
 	var depth: float = _plaza["depth"]
 	var steps: int = _plaza["steps"]
-	# The paving from the edge of the Plaza to the top step.
-	_ring(top, outer, 0.035, 0.035 + depth * 0.5 / steps, PAVING).name = "Plaza"
+	# The paving from the edge of the Plaza to the top step. Session 67: its top sits at
+	# PAVING_TOP, a clear 2 cm under the roads (4 cm) and over the sand (0), so the walkways
+	# in front of the restaurants don't flicker where a road or bench base meets them.
+	# Session 77: one square floor of concrete pavers (PlazaFloor) instead of the round paving.
+	if _plaza.has("floor"):
+		PlazaFloor.build(self, _plaza, PAVING_TOP, PAVING_TOP + depth * 0.5 / steps)
+	else:
+		_ring(top, outer, PAVING_TOP, PAVING_TOP + depth * 0.5 / steps, PAVING).name = "Plaza"
 	# The steps, each a ring a bit lower than the last, then the round floor.
 	var width := (top - bottom) / steps
 	for k in steps:
@@ -45,13 +69,18 @@ func _ready() -> void:
 		var drop := depth / steps if k < steps - 1 else depth * 0.5 / steps
 		_ring(top - (k + 1) * width, top - k * width, step_top, drop, STEP_COLOURS[k % STEP_COLOURS.size()])
 	LowPoly.cylinder(self, bottom, bottom, 0.1, FLOOR, _centre + Vector3(0, -depth - 0.05, 0))
-	_ring(4.2, 5.0, -depth + 0.01, 0.0, FLOOR_RING)
+	_ring(4.2, 5.0, -depth + 0.025, 0.0, FLOOR_RING)  # Session 67: 2.5 cm up, no flicker
 	_build_slope(top, bottom, depth)
-	_build_fountain(depth)
+
+
+func _build_fountain_and_benches(map: Dictionary) -> void:
+	_build_fountain(_plaza["depth"])
 	for bench in map.get("PLAZA_BENCHES", []):
 		Props.bench(self, bench["position"], bench["facing"])
 	for posts in map.get("PLAZA_SAILS", []):
 		_build_sail(posts)
+	# Looks pass Session 58: the next steps add café tables, the juice kiosk, string lights and
+	# more people, then street lamps, bins, street name signs and bike racks round the community.
 
 
 ## The invisible ground under the sunken square: flat at the top, a gentle slope over the
@@ -87,7 +116,7 @@ func _build_fountain(depth: float) -> void:
 	body.position = _centre + Vector3(0, -depth, 0)
 	add_child(body)
 	LowPoly.cylinder(body, radius, radius + 0.15, 0.6, FOUNTAIN_STONE, Vector3(0, 0.3, 0))
-	LowPoly.cylinder(body, radius - 0.25, radius - 0.25, 0.05, WATER, Vector3(0, 0.58, 0)).name = "Water"
+	LowPoly.cylinder(body, radius - 0.25, radius - 0.25, 0.05, WATER, Vector3(0, 0.6, 0)).name = "Water"  # 2.5 cm over the rim (Session 67)
 	LowPoly.cylinder(body, 0.35, 0.45, 1.6, FOUNTAIN_STONE, Vector3(0, 1.2, 0))
 	LowPoly.cylinder(body, 1.2, 0.5, 0.35, FOUNTAIN_STONE, Vector3(0, 2.1, 0))
 	LowPoly.cylinder(body, 1.0, 1.0, 0.05, WATER, Vector3(0, 2.26, 0)).name = "BowlWater"

@@ -34,7 +34,12 @@ func _process(_delta: float) -> void:
 	if room == null or not room.get_meta("walk_in", false):
 		_close()
 		return
-	_panel.show_counter(title, "%s\n%s" % [order.food.capitalize(), "Hold E to collect your delivery" if GameState.stage == GameState.Stage.TO_RESTAURANT else "Hold E to hand over the food"], _delivery.hold_progress())
+	var line := "Hold E to collect your delivery" if GameState.stage == GameState.Stage.TO_RESTAURANT else "Hold E to hand over the food"
+	var queue := get_parent().get_node_or_null("VenueQueue")
+	if queue != null and queue.waiting():
+		var ahead: int = maxi(1, queue.ahead)  # looks pass: the short queue
+		line = ("1 person" if ahead == 1 else "%d people" % ahead) + " ahead of you · just a moment"
+	_panel.show_counter(title, "%s\n%s" % [order.food.capitalize(), line], _delivery.hold_progress())
 	_panel.footer.text = "Hold E to complete the handoff"
 	if _staff == null:
 		_staff = room.get_node_or_null("CounterStaff")
