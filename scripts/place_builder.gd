@@ -21,6 +21,7 @@ const MARKET_SCENE := preload("res://scenes/supermarket.tscn")
 const STALL_SCRIPT := preload("res://scripts/farm_stall.gd")
 const VENUE_ANIMATION_RESUME_M := 70.0
 const VENUE_ANIMATION_PAUSE_M := 85.0
+const VILLAS_PER_STEP := 6  # Session 86: homes built per loading-screen step
 
 
 ## The lists read from the data script. Other scripts (the DeliveryManager) use these.
@@ -48,34 +49,86 @@ func _enter_tree() -> void:
 
 
 func _ready() -> void:
+	if WorldLoader.is_staged(self):
+		return  # the loading screen runs build_steps() and finish_steps() (Session 86)
+	WorldLoader.run_steps(build_steps())
+	for step: Array in finish_steps():
+		step[1].call_deferred()
+
+
+## Session 86: the build as named steps (one per restaurant, venue and shop, the homes in
+## small groups), so the loading screen can build a few per frame.
+func build_steps() -> Array:
+	if restaurants.is_empty() and villas.is_empty():
+		_enter_tree()  # not in the game yet: read the lists now
+	var steps: Array = []
 	for place in restaurants:
-		var shop := _make_shop(place)
-		shop.name = "Restaurant_" + place["id"]
-		shop.position = place["position"]
-		shop.rotation_degrees = Vector3(0.0, place["facing"], 0.0)
-		add_child(shop)
+		steps.append(["Opening %s..." % place["name"], _build_restaurant.bind(place)])
 	var joined: Array = []
 	for place in villas:
 		if place.get("row_mode", false):
 			joined.append(place)
 	if not joined.is_empty():
-		add_child(HousingRows.build(joined, villa_size))
+		var rows := HousingRows.new()
+		rows.name = "HousingRows"
+		steps.append(["Building the town houses...", add_child.bind(rows)])
+		var groups := HousingRows.row_groups(joined)
+		for row: String in groups:
+			steps.append(["Building the town houses...", rows.build_row.bind(row, groups[row], villa_size)])
+	var group: Array = []
 	for place in villas:
 		if place.get("row_mode", false):
 			continue
 		if place.get("interior", false):
-			var room_data: Dictionary = place.duplicate()
-			room_data["name"] = "C Institute" if place["number"] == 903 else "Wahat Gym"
-			room_data["arabic"] = "معهد سي" if place["number"] == 903 else "نادي الواحة الرياضي"
-			room_data["venue_type"] = "institute" if place["number"] == 903 else "gym"
-			var room := VenueBuilder.build(room_data, villa_size_of(place))
-			room.name = "Institute" if place["number"] == 903 else "Gym"
-			room.position = place["position"]
-			room.rotation_degrees.y = place["facing"]
-			add_child(room)
+			if not group.is_empty():  # keep the homes in the same order as before
+				steps.append(["Building the homes...", _build_villas.bind(group)])
+				group = []
+			var title := "the C Institute" if place["number"] == 903 else "the gym"
+			steps.append(["Building %s..." % title, _build_venue.bind(place)])
 			continue
 		if is_spot(place):
 			continue  # the school booth and the stable office are built by LandmarkBuilder
+		group.append(place)
+		if group.size() == VILLAS_PER_STEP:
+			steps.append(["Building the homes...", _build_villas.bind(group)])
+			group = []
+	if not group.is_empty():
+		steps.append(["Building the homes...", _build_villas.bind(group)])
+	for shop_data: Dictionary in data.get_script_constant_map().get("SHOPS", []):
+		steps.append(["Stocking the %s..." % shop_data.get("name", "shop"), func() -> void: add_child(ShopInterior.build(shop_data))])
+	steps.append(["Unlocking the doors...", _find_venue_people])
+	return steps
+
+
+## Work that waits until the bike, the camera and the walker are in the game.
+func finish_steps() -> Array:
+	if data.get_script_constant_map().has("SHOPS"):
+		return [["Hiring the shop staff...", _setup_shops]]
+	return []
+
+
+func _build_restaurant(place: Dictionary) -> void:
+	var shop := _make_shop(place)
+	shop.name = "Restaurant_" + place["id"]
+	shop.position = place["position"]
+	shop.rotation_degrees = Vector3(0.0, place["facing"], 0.0)
+	add_child(shop)
+
+
+func _build_venue(place: Dictionary) -> void:
+	var room_data: Dictionary = place.duplicate()
+	room_data["name"] = "C Institute" if place["number"] == 903 else "Wahat Gym"
+	room_data["arabic"] = "معهد سي" if place["number"] == 903 else "نادي الواحة الرياضي"
+	room_data["venue_type"] = "institute" if place["number"] == 903 else "gym"
+	var room := VenueBuilder.build(room_data, villa_size_of(place))
+	room.name = "Institute" if place["number"] == 903 else "Gym"
+	room.position = place["position"]
+	room.rotation_degrees.y = place["facing"]
+	add_child(room)
+
+
+func _build_villas(group: Array) -> void:
+	for place: Dictionary in group:
 		if place.has("kind"):
 			add_child(VillaBuilder.build(place, villa_size))  # Session 26: the house kit
 			continue
@@ -85,17 +138,15 @@ func _ready() -> void:
 		villa.setup(place.get("house", place["number"]), villa_size)
 		villa.name = "Villa%d" % place["number"]  # unique, even when two clusters both have a Villa 7
 		add_child(villa)
-	var lists := data.get_script_constant_map()
-	for shop_data: Dictionary in lists.get("SHOPS", []):
-		add_child(ShopInterior.build(shop_data))
+
+
+func _find_venue_people() -> void:
 	for venue in get_children():
 		if venue.has_meta("walk_in"):
 			for person in venue.get_children():
 				if person is Person:
 					_venue_people.append(person)
 	set_process(not _venue_people.is_empty())
-	if lists.has("SHOPS"):
-		_setup_shops.call_deferred()
 
 
 func _process(delta: float) -> void:

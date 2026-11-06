@@ -1353,6 +1353,7 @@ func _finish() -> void:
 	_check_looks_venues()  # looks pass Sessions 56 to 58
 	await _check_fix_pass()  # fix pass Sessions 75 to 83 (blocks at the end)
 	_check_session85()  # Steam pass: desktop builds and the Steam Deck
+	_check_session86()  # Life pass: the loading screen
 	# --- Looks pass (Sessions 54-55): walk into every restaurant room, queue, hold E, walk out ---
 	await preload("res://tests/smoke_rooms.gd").new().run(self)
 	_check_saving()
@@ -3813,3 +3814,23 @@ func _check_session85() -> void:
 	_check("the exported game has its build self-test (and it's off in normal play)",
 			load("res://scripts/build_check.gd") != null and not BuildCheck.wanted(), "")
 
+
+
+## Session 86: the loading screen and the world built in named steps
+## (tests/loading_screen_test.gd builds the whole map through it).
+func _check_session86() -> void:
+	var builder: Node = _main.get_node_or_null("WahatBuilder")
+	if builder != null:
+		var steps: Array = builder.build_steps()
+		var named := steps.size() >= 6
+		for step: Array in steps:
+			named = named and step[0] is String and step[0].ends_with("...") and step[1] is Callable
+		_check("the world builder lists its work as named steps", named, "%d steps" % steps.size())
+		_check("a world built the normal way isn't marked as loading", not WorldLoader.is_staged(builder), "")
+	var screen := LoadingScreen.make()
+	root.add_child(screen)
+	screen.set_progress(3, 10, "Laying the roads...")
+	_check("the loading screen shows the step name and a tip",
+			"Laying the roads" in screen.step_label.text and screen.tip_label.text != "", screen.step_label.text)
+	_check("there are plenty of loading tips", preload("res://data/loading_tips.gd").TIPS.size() >= 20, "")
+	screen.free()

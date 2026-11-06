@@ -27,10 +27,26 @@ var _centre := Vector3.ZERO
 
 
 func _ready() -> void:
+	if not WorldLoader.is_staged(self):
+		WorldLoader.run_steps(build_steps())
+
+
+## Session 86: the build as named steps for the loading screen.
+func build_steps() -> Array:
 	if data == null:
 		push_error("PlazaBuilder has no data list set in the scene")
-		return
+		return []
 	var map := data.get_script_constant_map()
+	var clear := ClearSpots.new(map)
+	return [
+		["Paving the Plaza...", _build_square.bind(map)],
+		["Filling the fountain...", _build_fountain_and_benches.bind(map)],
+		["Setting the café tables...", func() -> void: add_child(PlazaLife.make(map, clear))],
+		["Putting up the street lamps...", func() -> void: add_child(StreetDetails.make(map, clear))],
+	]
+
+
+func _build_square(map: Dictionary) -> void:
 	_plaza = map["PLAZA"]
 	_centre = Vector3(_plaza["centre"].x, 0, _plaza["centre"].y)
 	var outer: float = _plaza["radius"]
@@ -55,16 +71,16 @@ func _ready() -> void:
 	LowPoly.cylinder(self, bottom, bottom, 0.1, FLOOR, _centre + Vector3(0, -depth - 0.05, 0))
 	_ring(4.2, 5.0, -depth + 0.025, 0.0, FLOOR_RING)  # Session 67: 2.5 cm up, no flicker
 	_build_slope(top, bottom, depth)
-	_build_fountain(depth)
+
+
+func _build_fountain_and_benches(map: Dictionary) -> void:
+	_build_fountain(_plaza["depth"])
 	for bench in map.get("PLAZA_BENCHES", []):
 		Props.bench(self, bench["position"], bench["facing"])
 	for posts in map.get("PLAZA_SAILS", []):
 		_build_sail(posts)
-	# Looks pass Session 58: café tables, the juice kiosk, string lights and more people,
-	# then street lamps, bins, street name signs and bike racks round the community.
-	var clear := ClearSpots.new(map)
-	add_child(PlazaLife.make(map, clear))
-	add_child(StreetDetails.make(map, clear))
+	# Looks pass Session 58: the next steps add café tables, the juice kiosk, string lights and
+	# more people, then street lamps, bins, street name signs and bike racks round the community.
 
 
 ## The invisible ground under the sunken square: flat at the top, a gentle slope over the

@@ -50,14 +50,20 @@ func end_shift() -> void:
 		shift_screen.show_summary(summary)
 
 
-## The "Start next shift" button: fresh clock, bike back at the start.
+## The "Start next shift" button: fresh clock, bike back at the start. Session 86: the short
+## loading screen covers the jump back to the start.
 func start_next_shift() -> void:
+	var screen := LoadingScreen.make(true)
+	get_tree().root.add_child(screen)
+	screen.set_progress(1, 3, "Clocking in...")
 	var walking := get_parent().get_node_or_null("OnFoot")
 	if walking != null:
 		walking.get_on(true)
 	GameState.start_shift()
 	if bike != null:
 		bike.reset_to_start()
+	screen.set_progress(2, 3, "Pumping up the tyres...")
+	screen.finish()
 
 
 func _on_order_delivered(_order: Order) -> void:

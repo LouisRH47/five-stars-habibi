@@ -75,6 +75,11 @@ static func apply(root: Node) -> int:
 	return total
 
 
+## One round of apply() (Session 86: the loading screen does one round per step).
+static func apply_once(root: Node) -> int:
+	return _apply_once(root)
+
+
 static func _apply_once(root: Node) -> int:
 	var list := boxes(root)
 	var pairs := find(list)

@@ -1887,7 +1887,7 @@ play-test bot careful and careless, a check for every new thing, PROGRESS.md, co
 on the Mac and screenshot every spot you change. Before each session write a short plan and use
 parallel agents where files don't overlap.
 
-### Session 86: Loading screen
+### Session 86: Loading screen (built, needs testing)
 
 ```text
 Session 86. Make a real loading screen. 1) Split the world build (WahatBuilder and
@@ -1905,7 +1905,7 @@ closes.
 
 Done when:
 
-- [ ] A moving bar with step names, a riding bike and tips, no frozen frame, no half-built world
+- [x] A moving bar with step names, a riding bike and tips, no frozen frame, no half-built world
 
 ### Session 87: Crash physics and the three crash levels
 

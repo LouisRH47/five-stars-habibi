@@ -687,3 +687,11 @@ const LIFEGUARD_WHISTLE_HEARD := 45.0 # m, how far away you hear the whistle
 # --- Steam pass (Session 85): desktop builds and the Steam Deck ---
 const SMALL_SCREEN_WIDTH := 1600       # px: windows narrower than this (Steam Deck 1280x800) get bigger menus and HUD
 const SMALL_SCREEN_UI_SCALE := 1.15    # how much bigger (13 px text becomes 10 px on the Deck, not 9; more makes the phone cover the speed panel)
+
+# --- Life pass Session 86: the loading screen ---
+const LOADING_MIN_SECONDS := 1.0       # s the loading screen stays up at least (even if the world builds faster)
+const LOADING_SHIFT_SECONDS := 1.2     # s the short loading screen shows at the start of each new shift
+const LOADING_TIP_SECONDS := 3.0       # s each tip shows before the next one
+const LOADING_FADE_SECONDS := 0.4      # s the screen takes to fade out at the end
+const LOADING_FRAME_BUDGET_MS := 25    # ms of building per frame before the screen gets to draw again
+const LOADING_WARM_FRAMES := 3         # frames the finished world draws behind the screen (warms the shaders)

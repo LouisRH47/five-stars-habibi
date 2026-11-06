@@ -8,36 +8,105 @@ const TEAL := Color(0.16, 0.56, 0.61)
 const GLASS := Color(0.32, 0.53, 0.64)
 
 func _ready() -> void:
+	if WorldLoader.is_staged(self):
+		return  # the loading screen runs build_steps() and finish_steps() (Session 86)
+	WorldLoader.run_steps(build_steps())
+	_finish_static_world.call_deferred()
+
+
+## Session 86: the build as named steps for the loading screen.
+func build_steps() -> Array:
 	_map = data.get_script_constant_map()
-	_checkpoints_and_station()
-	_plaza_floors()
-	_school_details()
+	return [
+		["Opening the petrol station...", _checkpoints_and_station],
+		["Tiling the floors...", _plaza_floors],
+		["Ringing the school bell...", _school_details],
+		["Building the Institute steps...", _institute_and_hills],
+		["Watering the plants...", _planting],
+		["Filling the pools...", _pools],
+		["Parking the cranes...", _building_sites],
+		["Painting the kerbs...", _street_details],
+		["Building the big end houses...", func() -> void: EndHouses.build(self, _map)],  # Session 65
+		["Planting Majlis Gardens...", func() -> void: MajlisGardens.build(self, _map)],  # Session 66
+		["Texturing the ground...", _dress_ground],
+	]
+
+
+## Work that waits until every part of the world is in the game.
+func finish_steps() -> Array:
+	var steps: Array = [["Smoothing the edges...", _fix_round.bind(true)]]
+	for round in 3:
+		steps.append(["Smoothing the edges...", _fix_round.bind(false)])
+	for builder: String in StaticBatch.BUILDERS:
+		steps.append(["Polishing everything...", _bake_one.bind(builder)])
+	steps.append(["Polishing everything...", _report_batch])
+	return steps
+
+
+func _institute_and_hills() -> void:
 	_institute_steps()
 	for hill: Dictionary in _map.get("HILLS", []):
 		_hill(hill)
-	_planting()
+
+
+func _pools() -> void:
 	_pool(_map["LAP_POOL"], "LapPool", false)
 	_pool(_map["COMMUNITY_POOL"], "CommunityPool", true)
+
+
+func _dress_ground() -> void:
+	TerrainMaterials.dress_ground(get_parent().get_node("WahatBuilder"))
+	TerrainMaterials.dress_ground(get_parent().get_node("SpineBuilder"))
+
+
+func _building_sites() -> void:
 	for area: Rect2 in _map.get("BUILDING_SITES", []).slice(1):
 		if _map.has("PHASE3_SITE") and area == _map["PHASE3_SITE"]["area"]:
 			continue  # Session 66: LandmarkBuilder dresses the phase 3 site like phase 2
 		_site(area)
-	_street_details()
-	EndHouses.build(self, _map)  # Session 65: big end houses at the row ends
-	MajlisGardens.build(self, _map)  # Session 66: the park between the car park and Cluster 1
-	TerrainMaterials.dress_ground(get_parent().get_node("WahatBuilder"))
-	TerrainMaterials.dress_ground(get_parent().get_node("SpineBuilder"))
-	_finish_static_world.call_deferred()
 
 
 func _finish_static_world() -> void:
+	await _fix_flicker()
+	set_meta("static_batch_report", StaticBatch.bake(get_parent(), 48.0))
+	_report_batch()
+
+
+func _fix_flicker() -> void:
 	# AmbientMotion and deferred shop setup must bind their live nodes first.
 	await get_tree().process_frame
 	# Session 52: stop flicker where two boxes share a face, before they're merged.
 	set_meta("zfight_fixed", ZFightFix.apply(get_parent()))
-	var report := StaticBatch.bake(get_parent(), 48.0)
-	set_meta("static_batch_report", report)
-	print("STATIC_BATCH: ", JSON.stringify(report))
+
+
+## Session 86: one round of the flicker fix per loading step (like ZFightFix.apply, which
+## stops after a round that changes nothing).
+func _fix_round(first: bool) -> void:
+	if first:
+		await get_tree().process_frame  # AmbientMotion and the shops bind their live nodes first
+		set_meta("zfight_fixed", 0)
+		set_meta("zfight_settled", false)
+	if get_meta("zfight_settled"):
+		return
+	var changed := ZFightFix.apply_once(get_parent())
+	set_meta("zfight_fixed", int(get_meta("zfight_fixed")) + changed)
+	set_meta("zfight_settled", changed == 0)
+
+
+## Session 86: the loading screen merges one builder per step.
+func _bake_one(builder_name: String) -> void:
+	var builder := get_parent().get_node_or_null(NodePath(builder_name)) as Node3D
+	if builder == null:
+		return
+	var report := StaticBatch.bake_builder(builder, 48.0)
+	var total: Dictionary = get_meta("static_batch_report", {"source_meshes": 0, "batches": 0, "draws_saved": 0, "vertices": 0})
+	for key in total:
+		total[key] += report[key]
+	set_meta("static_batch_report", total)
+
+
+func _report_batch() -> void:
+	print("STATIC_BATCH: ", JSON.stringify(get_meta("static_batch_report", {})))
 
 
 func _planting() -> void:

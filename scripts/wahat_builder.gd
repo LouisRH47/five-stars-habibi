@@ -32,12 +32,29 @@ var _map: Dictionary = {}
 
 
 func _ready() -> void:
+	if not WorldLoader.is_staged(self):
+		WorldLoader.run_steps(build_steps())
+
+
+## Session 86: the build as named steps, so the loading screen can build a few per frame.
+func build_steps() -> Array:
 	if data == null:
 		push_error("WahatBuilder has no data list set in the scene")
-		return
+		return []
 	_map = data.get_script_constant_map()
-	_build_ground()
-	EdgeBuilder.build(self, _map)  # Session 63: round tracks, edge greenery, dunes
+	return [
+		["Pouring the sand...", _build_ground],
+		["Shaping the dunes and tracks...", func() -> void: EdgeBuilder.build(self, _map)],  # Session 63
+		["Paving the clusters...", _build_paving],
+		["Filling the stream...", _build_water],
+		["Laying the roads...", _build_roads],
+		["Planting the tree belt...", _build_tree_belt],
+		["Building the walls and the gate...", _build_walls_and_gate],
+		["Putting up the signs...", _build_signs],
+	]
+
+
+func _build_paving() -> void:
 	# Session 63: pavers under each whole cluster, so there's no bare sand in front of homes.
 	for cluster: Dictionary in _map["CLUSTERS"]:
 		var block: Rect2 = cluster["area"]
@@ -47,11 +64,17 @@ func _ready() -> void:
 		_flat(area.get_center(), area.size, 0.02, plot["colour"], 0.01)
 	var spine: Rect2 = _map["SPINE"]
 	_flat(spine.get_center(), spine.size, 0.02, GRASS, 0.012)
+
+
+func _build_water() -> void:
 	var stream: Dictionary = _map["STREAM"]
 	_build_stream(stream)
 	StreamPond.build(self, stream)  # Session 81: ponds where the stream stops and starts again
 	for area: Rect2 in _map["PAVED_AREAS"]:
 		_flat(area.get_center(), area.size, 0.02, PAVING, 0.03)
+
+
+func _build_roads() -> void:
 	# Session 61: smooth road strips with markings, kerbs and curved corners.
 	var roads := RoadMesh.build(self, _map)
 	SpineTracks.build(self, _map, roads.bumps)  # Session 62: planters and red walking tracks on the spine road
@@ -61,8 +84,9 @@ func _ready() -> void:
 		add_child(post)
 		LowPoly.cylinder(post, 0.1, 0.12, 0.9, BOLLARD, Vector3(0, 0.45, 0))
 		LowPoly.solid_cylinder(post, 0.12, 0.9, Vector3(0, 0.45, 0))
-	_build_tree_belt()
-	_build_walls_and_gate()
+
+
+func _build_signs() -> void:
 	_build_welcome()
 	ClusterSigns.build(self, _map)  # Session 26: "Cluster 1" signs at the lane ends
 

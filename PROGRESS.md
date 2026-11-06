@@ -1,5 +1,38 @@
 # Progress
 
+## Session 86: the loading screen — 6 November 2026
+
+What works now:
+- **A real loading screen** when you press Play, Continue or Start riding: the start-screen
+  desert, the name of what's being built ("Laying the roads...", "Opening 1000 Pizza..."),
+  "step 30 of 104", an orange bar, a tip that changes every 3 s (25 tips: keys, facts about
+  Wahat Al Shams, Snackaroo jokes) and your rider on the bike riding along the bottom as the
+  bar fills. It fades out when the world is ready (scripts/loading_screen.gd,
+  scripts/loading_bike.gd, scripts/desert_backdrop.gd, data/loading_tips.gd).
+- **The world builds in about 100 small steps** instead of one long freeze
+  (scripts/world_loader.gd). The big builders list their work as named steps (WahatBuilder,
+  PlazaBuilder, PlaceBuilder one restaurant and one row of homes per step, DistrictDetail),
+  a few steps run per frame, then the scenery is merged one builder per step. The game is
+  paused while building, Esc does nothing, and the clock only starts once the screen is gone.
+  The finished world draws 3 frames behind the screen first, so it's ready when you see it.
+- **A short version (about 1.2 s) at the start of every new shift.**
+- Tests and the exported game's self-test still build the world in one go, exactly as before.
+- New test tests/loading_screen_test.gd: builds the map normally and through the loading
+  screen and checks they come out the same (same number of parts in each builder), the
+  steps are in order and all counted, the shops get set up, the screen closes, the game is
+  paused while building, and the new-shift screen shows and closes. Smoke test checks too.
+- Tuning numbers in game_config.gd (LOADING_...). The start screen looks the same as before.
+
+How to test: open the project, press F5, press Continue (or Play). You should see the desert,
+the bar filling with step names, a tip, and the bike riding to the right. Then the game.
+Finish a shift (or wait for 6 PM) and press "Start next shift": the short screen shows.
+
+Known bugs:
+- Two steps still take about half a second each on this Mac (laying the roads, and one
+  round of the flicker fix), so the bike on the loading screen stops for a moment there.
+- While the short new-shift screen shows, the game runs slowly behind it (about 14 fps in my
+  test) because the world still draws under the screen.
+
 ## Session 85: Windows, Mac and Steam Deck builds — 6 November 2026
 
 What works now:
