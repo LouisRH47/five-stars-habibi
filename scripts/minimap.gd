@@ -187,6 +187,8 @@ func _draw_ground(canvas: CanvasItem = null) -> void:
 	if _map.has("PLAZA") and _map["PLAZA"].has("floor"):  # Session 77: the square Plaza floor
 		for area: Rect2 in [_map["PLAZA"]["floor"]] + _map["PLAZA"].get("aprons", []):
 			canvas.draw_rect(area, PAVING)
+		for walk: PackedVector2Array in PlazaFloor.walks(_map["PLAZA"]):  # Session 90
+			canvas.draw_colored_polygon(walk, PAVING)
 	elif _map.has("PLAZA"):
 		canvas.draw_circle(_map["PLAZA"]["centre"], _map["PLAZA"]["radius"], PAVING)
 	for area in _map.get("PAVED_AREAS", []):

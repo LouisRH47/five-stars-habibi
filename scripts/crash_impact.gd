@@ -49,7 +49,8 @@ static func capture(incoming_velocity: Vector3, normal: Vector3, obstacle: Objec
 static func level_for(kmh: float, head_on: float, score: float, soft: bool, boosted := false) -> String:
 	if boosted:
 		return "big"
-	if kmh < GameConfig.CRASH_BUMP_MIN_KMH or head_on < GameConfig.CRASH_GLANCING_MIN:
+	# A scrape along a wall counts a fifth of its speed (the score), so it's rarely a bump.
+	if score < GameConfig.CRASH_BUMP_MIN_KMH or head_on < GameConfig.CRASH_GLANCING_MIN:
 		return ""
 	if soft or score < GameConfig.CRASH_BUMP_KMH:
 		return "bump"

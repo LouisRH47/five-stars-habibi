@@ -5,7 +5,9 @@ extends Node3D
 ## majlis (a sitting area with low sofas and a coffee table), benches, a community garden
 ## bed, low hedges and curving paver paths that join the cluster's lanes, the car park and
 ## the spine loop road. The people here (sitting, walking, gardening) come from PlaceCrowds.
-## Made by DistrictDetail.
+## Session 90: the south path ends square on the spine loop road's edge, and a zebra crossing
+## (ZEBRA_CROSSINGS, painted by RoadMesh) takes you over the road to the spine (no kerb at
+## either end). Made by DistrictDetail.
 
 const PAVERS := Color(0.86, 0.8, 0.69)
 const PLAZA := Color(0.9, 0.85, 0.75)
@@ -257,3 +259,4 @@ func _sign(spec: Dictionary) -> void:
 	var faces := SignText.make_two_faces(spec["arabic"], spec["name"], size, Color(0.2, 0.3, 0.2), 0.5)
 	faces.position.y = 0.45
 	body.add_child(faces)
+

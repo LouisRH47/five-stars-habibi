@@ -83,7 +83,8 @@ static func _upper_ends(kit: MeshKit, upper: StaticBody3D) -> int:
 		for z in [-5.0, 0.0, 5.0]:
 			for y in [2.0, 4.5]:
 				WallTrim.window(kit, Vector3(face, bottom + y, middle.z + z), out, 1.3, 1.3)
-		kit.box(Vector3(size.z + 0.1, 0.22, 0.12), WallTrim.TRIM, Vector3(face + s * 0.04, bottom + 3.15, middle.z), turn)
+		# Session 90: level with the homes' trim between the floors (scripts/plaza_homes.gd).
+		kit.box(Vector3(size.z + 0.1, 0.14, 0.12), WallTrim.TRIM, Vector3(face + s * 0.04, bottom + GameConfig.PLAZA_HOME_STOREY, middle.z), turn)
 		for z in [-1.0, 1.0]:  # corner trims, top to bottom
 			var spot := Vector3(face + s * 0.04, bottom + size.y * 0.5, middle.z + z * (size.z * 0.5 - 0.2))
 			kit.box(Vector3(0.4, size.y, 0.12), WallTrim.PIER, spot, turn)

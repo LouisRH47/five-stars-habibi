@@ -76,14 +76,16 @@ func _check_gym(places: PlaceBuilder) -> void:
 				runners += 1
 	_expect(runners == 3, "three people run on treadmills facing the glass", str(runners))
 	_expect(dressed, "everyone working out wears gym clothes")
-	# Glass on the front and on the pool side (local -X).
-	var pool_glass := false
+	# Glass on the front and on the pool side (local -X). Session 90: the gym is 15% smaller
+	# and the pool-side glass has the second door in it, so it is two runs of glass.
+	var half: float = WahatAlShams.GYM["size"].x * 0.5
+	var pool_glass := 0.0
 	for view in gym.get_children():
-		if view is MeshInstance3D and view.material_override == RoomProps.glass() and view.position.x < -17.5 and (view.mesh as BoxMesh).size.z > 15.0:
-			pool_glass = true
-	_expect(pool_glass, "the pool side of the gym is a glass wall")
+		if view is MeshInstance3D and view.material_override == RoomProps.glass() and view.position.x < -half + 0.5 and (view.mesh as BoxMesh).size.y > 4.0:
+			pool_glass += (view.mesh as BoxMesh).size.z
+	_expect(pool_glass > 10.0, "the pool side of the gym is a glass wall", "%.1f m" % pool_glass)
 	var lap: Rect2 = WahatAlShams.LAP_POOL
-	var pool_side := gym.to_global(Vector3(-18, 0, 0))
+	var pool_side := gym.to_global(Vector3(-half, 0, 0))
 	_expect(Vector2(pool_side.x, pool_side.z).distance_to(lap.get_center()) < Vector2(gym.global_position.x, gym.global_position.z).distance_to(lap.get_center()),
 			"the glass side faces the lap pool")
 	# People move when you're close.

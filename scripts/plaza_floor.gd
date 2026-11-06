@@ -4,7 +4,8 @@ extends RefCounted
 ## from the north restaurant row to the south row, so every door, both shops and the café
 ## tables stand on paving. A round hole in the middle leaves room for the sunken square
 ## (its steps and fountain stay where they were). The "aprons" go round Dune Drip to the
-## buggy park behind it. The floor is the CC0 square_concrete_pavers photo (Poly Haven).
+## buggy park behind it. Session 90: the "walks" carry it along the Plaza road on the Dune Drip
+## side, almost to the roundabout. The floor is the CC0 square_concrete_pavers photo (Poly Haven).
 ## PlazaBuilder calls build(); is_paved() tells anyone whether a spot is on this floor.
 
 const TEXTURE := "res://assets/textures/square_concrete_pavers_diff_1k.jpg"
@@ -46,6 +47,11 @@ static func build(parent: Node3D, plaza: Dictionary, top: float, lip: float) -> 
 	for apron: Rect2 in plaza.get("aprons", []):
 		_quad(tool, _at(apron.position, top), _at(Vector2(apron.end.x, apron.position.y), top),
 				_at(apron.end, top), _at(Vector2(apron.position.x, apron.end.y), top), Vector3.UP)
+	# Session 90: the walks (outlines) carry the paving along the road towards the roundabout.
+	for walk: PackedVector2Array in walks(plaza):
+		var corners := Geometry2D.triangulate_polygon(walk)
+		for i in range(0, corners.size(), 3):
+			_triangle(tool, [_at(walk[corners[i]], top), _at(walk[corners[i + 1]], top), _at(walk[corners[i + 2]], top)], Vector3.UP)
 	var view := MeshInstance3D.new()
 	view.name = "Plaza"
 	view.mesh = tool.commit()
@@ -79,7 +85,19 @@ static func is_paved(map: Dictionary, spot: Vector2) -> bool:
 	for apron: Rect2 in plaza.get("aprons", []):
 		if apron.has_point(spot):
 			return true
+	for walk: PackedVector2Array in walks(plaza):
+		if Geometry2D.is_point_in_polygon(spot, walk):
+			return true
 	return false
+
+
+## Session 90: the paved walks beside the Plaza road (data: PLAZA "walks", outlines of x, z
+## points), each as a PackedVector2Array.
+static func walks(plaza: Dictionary) -> Array[PackedVector2Array]:
+	var out: Array[PackedVector2Array] = []
+	for walk: Array in plaza.get("walks", []):
+		out.append(PackedVector2Array(walk))
+	return out
 
 
 ## Where a line from the middle going `direction` leaves the square.
@@ -104,10 +122,14 @@ static func _at(spot: Vector2, height: float) -> Vector3:
 ## front when its corners go round clockwise, so the order is flipped when needed.
 static func _quad(tool: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3, normal: Vector3) -> void:
 	for tri: Array in [[a, b, c], [a, c, d]]:
-		var p: Vector3 = tri[0]
-		var q: Vector3 = tri[1]
-		var r: Vector3 = tri[2]
-		var corners := [p, q, r] if (q - p).cross(r - p).dot(normal) < 0.0 else [p, r, q]
-		tool.set_normal(normal)
-		for corner: Vector3 in corners:
-			tool.add_vertex(corner)
+		_triangle(tool, tri, normal)
+
+
+static func _triangle(tool: SurfaceTool, tri: Array, normal: Vector3) -> void:
+	var p: Vector3 = tri[0]
+	var q: Vector3 = tri[1]
+	var r: Vector3 = tri[2]
+	var corners := [p, q, r] if (q - p).cross(r - p).dot(normal) < 0.0 else [p, r, q]
+	tool.set_normal(normal)
+	for corner: Vector3 in corners:
+		tool.add_vertex(corner)

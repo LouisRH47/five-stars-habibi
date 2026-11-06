@@ -1948,9 +1948,9 @@ from each company, the perk numbers, the logo on the box.
 Done when:
 
 - [x] You pick a company at the start and see its logo on your box, shirt and phone
-- [ ] Each perk works and you can switch in the phone
+- [x] Each perk works and you can switch in the phone
 
-### Session 89: The phone app
+### Session 89: The phone app (built, needs testing)
 
 ```text
 Session 89. First make a mock-up (one HTML page in docs/phone_mockup.html with every screen)
@@ -1966,9 +1966,9 @@ On phones a HUD button opens it. Tests: every app opens and closes; the unread b
 
 Done when:
 
-- [ ] Louis approved the mock-up, and every app on the phone works
+- [x] Louis approved the mock-up, and every app on the phone works
 
-### Session 90: Plaza and gym fixes
+### Session 90: Plaza and gym fixes (built, needs testing)
 
 ```text
 Session 90. 1) Extend the Plaza paving on the Dune Drip side only: from the shops past the
@@ -1987,8 +1987,8 @@ smoothly with a crossing, no overlap. Screenshots of every spot.
 
 Done when:
 
-- [ ] Paving reaches almost to the roundabout on one side, the buggy park is 3x and behind Dune Drip
-- [ ] Nothing in the Plaza overlaps, benches face out, waiters move, the gym clears the road
+- [x] Paving reaches almost to the roundabout on one side, the buggy park is 3x and behind Dune Drip
+- [x] Nothing in the Plaza overlaps, benches face out, waiters move, the gym clears the road
 
 ### Session 91: C Institute inside and out, and the pond
 

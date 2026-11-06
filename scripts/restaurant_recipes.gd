@@ -153,7 +153,15 @@ static func pizza(body: StaticBody3D, back: float, tint: Color, motion: VenueMot
 	LowPoly.box(body, Vector3(1.15, 0.12, 0.34), BRICK.darkened(0.35), oven + Vector3(0, 1.55, 0.86))
 	for i in 3:
 		flame(body, oven + Vector3(-0.25 + i * 0.25, 0.92, 0.7), motion, 1.0 + (i % 2) * 0.3)
-	LowPoly.cylinder(body, 0.22, 0.22, 2.0, Color(0.3, 0.3, 0.32), oven + Vector3(0, 3.4, -0.2))
+	# Session 90: the flue starts inside the top of the dome and goes up into the ceiling,
+	# with a collar where it meets the dome and a plate where it meets the ceiling.
+	var flue_bottom := 1.85
+	var flue_top := RestaurantRoom.CEILING + 0.08
+	var flue := LowPoly.cylinder(body, 0.22, 0.22, flue_top - flue_bottom, Color(0.3, 0.3, 0.32),
+			oven + Vector3(0, (flue_top + flue_bottom) * 0.5, -0.2))
+	flue.name = "OvenFlue"
+	LowPoly.cylinder(body, 0.3, 0.36, 0.14, BRICK.darkened(0.3), oven + Vector3(0, 1.96, -0.2))
+	LowPoly.cylinder(body, 0.34, 0.34, 0.05, Color(0.3, 0.3, 0.32), oven + Vector3(0, RestaurantRoom.CEILING - 0.035, -0.2))
 	# Logs stacked beside it.
 	for i in 4:
 		var wood := LowPoly.cylinder(body, 0.07, 0.07, 0.5, Color(0.45, 0.3, 0.18), Vector3(-5.6, 0.08 + (i / 2) * 0.14, back + 0.4 + (i % 2) * 0.16))

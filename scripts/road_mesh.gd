@@ -60,12 +60,13 @@ var bumps: KerbBumps
 ## Counts for the smoke test.
 var stats := {"chains": 0, "asphalt_chains": 0, "dashes": 0, "arrows": 0, "fillets": 0,
 		"kerb_pieces": 0, "kerb_runs": 0, "kerb_metres": 0, "dead_end_caps": 0,
-		"same_height_overlaps": 0, "meshes": 0}
+		"same_height_overlaps": 0, "meshes": 0, "zebras": 0, "zebra_stripes": 0}
 
 var _joins: Array = []       # roads that end on another road (for the curved corners)
 var _crosses: Array = []     # asphalt roads that cross each other in the middle
 var _dead_ends: Array = []   # [chain, end] of roads that just stop
 
+var _zebra_list: Array = []  # Session 90: ZEBRA_CROSSINGS from the data
 var _batches := {}           # Vector3i(kind, square x, square z) -> {kind, verts, normals, colours, uvs}
 var _materials := {}
 static var _asphalt_cache: StandardMaterial3D
@@ -112,6 +113,7 @@ func apply_graphics() -> void:
 
 func make(map: Dictionary) -> void:
 	chains = make_chains(map.get("ROADS", []), map.get("ROAD_WIDTH", 10.0))
+	_zebra_list = map.get("ZEBRA_CROSSINGS", [])
 	var clock := Time.get_ticks_msec()  # build times (ms since the start) go in stats
 	_add_parking_access(map)
 	var junctions := _find_junctions()
@@ -512,7 +514,7 @@ func _build_chain(index: int, info: Dictionary) -> void:
 	# Kept for the kerbs: the road's edges are these points moved half the width sideways.
 	chain["drawn"] = pts
 	chain["sides"] = sides
-	var no_paint: Array = info["gaps"] + info["crossings"]
+	var no_paint: Array = info["gaps"] + info["crossings"] + _zebras(pts, half, top)
 	var one_way: int = ONE_WAY.get(chain["name"], 0)
 	if one_way == 0:
 		_centre_line(pts, along, closed, top, no_paint)
@@ -704,6 +706,40 @@ func _centre_line(pts: Array, along: Array, closed: bool, top: float, no_paint: 
 			_paint_strip("yellow", [a, m, b], 0.0, LINE_WIDTH, top)
 			stats["dashes"] += 1
 		s += DASH * 2.0
+
+
+## Session 90: paints the zebra crossings (ZEBRA_CROSSINGS) that lie on this road: white bars
+## as long as the crossing is wide, lying along the road, one after another from one edge to
+## the other (you step over them as you cross). Returns [middle, half length] for each, so the
+## centre line and arrows leave the crossing clear.
+func _zebras(pts: Array, half: float, top: float) -> Array:
+	var clear: Array = []
+	for zebra: Dictionary in _zebra_list:
+		var a: Vector2 = zebra["from"]
+		var b: Vector2 = zebra["to"]
+		var middle := (a + b) * 0.5
+		var on_road := false
+		for k in pts.size() - 1:
+			on_road = on_road or Geometry2D.get_closest_point_to_segment(middle, pts[k], pts[k + 1]).distance_to(middle) < half * 0.5
+		if not on_road:
+			continue
+		var across := (b - a).normalized()
+		var along := Vector2(-across.y, across.x)
+		var width: float = zebra.get("width", 3.0)
+		var stripe := GameConfig.ZEBRA_STRIPE
+		var length := a.distance_to(b)
+		var count := maxi(1, int((length - 0.3 + stripe) / (stripe * 2.0)))  # bar, gap, bar...
+		for k in count:
+			var centre := middle + across * ((k - (count - 1) * 0.5) * stripe * 2.0)
+			var p := centre - across * stripe * 0.5
+			var q := centre + across * stripe * 0.5
+			var side := along * width * 0.5
+			var quad := [p - side, p + side, q - side, q + side]
+			_quad("white", quad, top + MARK_LIFT, [WHITE, WHITE, WHITE, WHITE], quad)
+			stats["zebra_stripes"] += 1
+		stats["zebras"] += 1
+		clear.append([middle, width * 0.5 + 1.0])
+	return clear
 
 
 ## White arrows: one on each side (pointing the way that side drives), or one in the

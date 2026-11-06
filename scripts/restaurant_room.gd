@@ -166,8 +166,10 @@ static func outside(body: StaticBody3D, place: Dictionary, size: Vector3, tint: 
 	body.add_child(sign)
 	var awning := LowPoly.box(body, Vector3(ROOM_WIDTH + 0.5, 0.18, 2.0), tint, Vector3(0, GLASS_TOP + 0.35, front + 1.0))
 	awning.rotation.x = 0.12
+	# Session 90: the benches face out (towards the Plaza), their backs to the shop.
 	for side in [-1.0, 1.0]:
-		Props.bench(body, Vector3(side * 5.0, 0, front + 2.2), 180)
+		var bench := Props.bench(body, Vector3(side * 5.0, 0, front + 2.2), 0.0)
+		bench.name = "OutsideBench"
 
 
 ## The service counter in the shop colour with a wooden top, a till, and low walls from

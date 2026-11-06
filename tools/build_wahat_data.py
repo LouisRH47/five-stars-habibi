@@ -184,7 +184,9 @@ put('INSTITUTE',{'position':v3(-215,0,-33),'size':v3(46,14,36),'facing':90.,'nam
 # Session 80: a small 5-a-side football pitch on the grass in front of the C Institute, east
 # of its access path. area: the turf (x, z, width, depth); lines: inside the white lines.
 put('INSTITUTE_PITCH',{'area':rect(-177,-49,20,32),'lines':rect(-175,-47,16,28)})
-put('GYM',{'position':v3(115,0,22),'size':v3(36,8,22),'facing':180.,'name':'Wahat Gym','arabic':'نادي الواحة الرياضي'})
+# Session 90: 15% smaller (30.6 x 18.7 m, was 36 x 22) and 1 m north, so its rounded back
+# clears the spine loop road (its kerb is at z 31.75).
+put('GYM',{'position':v3(115,0,21),'size':v3(30.6,8,18.7),'facing':180.,'name':'Wahat Gym','arabic':'نادي الواحة الرياضي'})
 put('COMMUNITY_POOL',rect(190,-32,50,20));put('JUMPING_ARENA',rect(-282,65,115,88))  # Session 65: the pool is off the red track, inside its fence
 put('STABLES',{'name':'Wahat Stables','arabic':'إسطبلات الواحة','block':{'position':v3(-224,0,174),'size':v3(100,5,14)},'paddock':rect(-280,157,110,9),'horses':4})
 put('BUILDING_SITE',{'area':rect(-135,55,110,135),'crane':v3(-80,0,120),'sign':{'name':'Phase 2 coming soon','arabic':'المرحلة الثانية قريباً','position':v3(-140,0,110),'facing':-90.}})
@@ -210,7 +212,7 @@ homes += [
  {'number':901,'house':0,'cluster':'','address':'Fair Grade School · Gate','map_address':'School Gate','kind':'spot','look':'booth','position':v3(-365,0,32),'facing':180.,'size':v3(4,3,4),'who':'teacher'},
  {'number':902,'house':0,'cluster':'','address':'Wahat Stables · Office','map_address':'Stables Office','kind':'spot','position':v3(-224,0,190),'facing':0.,'size':v3(7,4,6),'who':'groom'},
  {'number':903,'house':0,'cluster':'','address':'C Institute · Reception','map_address':'C Institute','kind':'spot','position':v3(-215,0,-33),'facing':90.,'size':v3(46,14,36),'interior':True,'who':'staff'},
- {'number':904,'house':0,'cluster':'','address':'Wahat Gym · Reception','map_address':'Gym','kind':'spot','position':v3(115,0,22),'facing':180.,'size':v3(36,8,22),'interior':True,'who':'gym_goer'},
+ {'number':904,'house':0,'cluster':'','address':'Wahat Gym · Reception','map_address':'Gym','kind':'spot','position':v3(115,0,21),'facing':180.,'size':v3(30.6,8,18.7),'interior':True,'who':'gym_goer'},
 ]
 put('VILLAS',homes)
 put('REGULARS',[{'id':'mariam','name':'Auntie Mariam','villa':207,'shop':'boba','food':'bubble tea','who':'resident','look':1},{'id':'rashid','name':'Mr Rashid','villa':503,'shop':'shawarma','food':'shawarma','who':'resident','look':0},{'id':'dana','name':'Ms Dana','villa':901,'shop':'bakery','food':'cake','who':'teacher','look':-1},{'id':'hamdan','name':'Hamdan','villa':902,'shop':'farm','food':'farm juice','who':'groom','look':-1}])
@@ -296,7 +298,9 @@ def smooth(ctrl,steps=6):
     return [v2(x,z) for x,z in out]
 mx,mz=-33.5,-117.0  # the fountain
 majlis_paths=[
- smooth([(-31,-43.5),(-29,-60),(-37,-78),(-31,-96),(mx,mz+5.5)]),          # south: from the spine loop road
+ # Session 90: the south path's last piece runs straight and square to the spine loop road for
+ # 3.5 m and stops exactly on the road's edge (z -43), where a zebra crossing takes you over.
+ [v2(-31,-43)]+smooth([(-31,-46),(-29.6,-52),(-29,-60),(-37,-78),(-31,-96),(mx,mz+5.5)]),  # south: from the spine loop road
  smooth([(mx,mz-5.5),(-38,-134),(-30,-152),(-36,-170),(-27,-178),(-14.5,-177)]),  # north: to Cluster 1's west lane (Session 76: the lane's corner is round now)
  smooth([(mx+5.5,mz-1),(-23,-121),(-14.5,-126)]),                       # east: the C1 cross row alley
  smooth([(mx-5.5,mz),(-44,-114),(-50.5,-112)]),                          # west: the car park
@@ -317,7 +321,9 @@ put('MAJLIS_GARDENS',{'area':rect(-48,-186,29,138),'name':'Majlis Gardens','arab
  'walk':[v3(x,0,z) for x,z in [(-30.5,-50),(-31,-96),(mx,mz+7),(mx+7,mz),(mx,mz-7),(-30,-152),(-27,-178),(-30,-152),(mx,mz-7),(mx-7,mz),(mx,mz+7),(-31,-96)]]})
 # Session 76: kerb gaps where paths that aren't in ROADS meet a road (RoadMesh reads this list;
 # car park entrances can go in CAR_PARK_ENTRANCES the same way).
-put('KERB_GAPS',[{'at':v2(-31,-43.5),'half':1.5,'kind':'path'},{'at':v2(-14.5,-177),'half':1.5,'kind':'path'}])
+# Session 90: zebra crossings painted on a road (RoadMesh): from one road edge to the other.
+put('ZEBRA_CROSSINGS',[{'name':'Majlis Gardens','from':v2(-31,-43),'to':v2(-31,-37),'width':3.0}])
+put('KERB_GAPS',[{'at':v2(-31,-43),'half':1.3,'kind':'path'},{'at':v2(-31,-37),'half':1.3,'kind':'path'},{'at':v2(-14.5,-177),'half':1.5,'kind':'path'}])
 # Session 66: the phase 3 building site south of the mosque, dressed like phase 2.
 put('PHASE3_SITE',{'area':rect(-413,-89,100,76),'crane':v3(-372,0,-55),'sign':{'name':'Phase 3 coming soon','arabic':'المرحلة الثالثة قريباً','position':v3(-363,0,-12.2),'facing':0.}})
 put('SPEED_BUMP_SIZE',v3(10,.12,.5))
@@ -495,6 +501,42 @@ def car_park(name,corner,across,along,columns,length,gap,end_bays=-1,depth=BAY_D
          'rows':rows,'arrows':arrows,'entrances':list(entrances),'access':v2(*at(access_u,0))}
     return lot,area,filled
 import random
+def plaza_walk():
+    """Session 90: the Plaza paving goes on along the Dune Drip side of the Plaza road, so the
+    walk from the roundabout is paved. The Dune Drip side is the road's left side going from
+    the roundabout to the buggy park: west of its first leg, north of the bend, west of its
+    last leg. The paving's road edge follows the road's middle line PLAZA_WALK_GAP metres out,
+    so it stops just past the kerb (road half width 3 m + kerb 0.25 m) and never lies under the
+    road or the kerb. At the roundabout end it follows the curved corner where the road meets
+    the roundabout (RoadCorners rounds it with a 10 m circle), so it comes within 13 m of the
+    roundabout's middle. It runs beside the last restaurant of the south row (x -138.6, clear
+    of its wall trim) and joins the Plaza floor (x -134, z -99) and the apron's south edge
+    (z -131). The other side of the road stays grass."""
+    mid=[]
+    for r in roads:
+        if r['name']=='Plaza Road':
+            for q in (r['from'],r['to']):
+                xz=tuple(float(c) for c in str(q)[8:-1].split(', '))
+                if not mid or math.dist(mid[-1],xz)>0.01: mid.append(xz)
+    cx,cz,r=PLAZA_WALK_CORNER; r-=PLAZA_WALK_GAP-3.0
+    start=cz  # the corner's curve meets the road's edge level with its centre
+    mid=[(x,z) for x,z in mid if z<=start-0.5]
+    mid.insert(0,(-132.0,start))
+    edge=[]
+    for i,(x,z) in enumerate(mid):
+        normals=[]
+        for a,b in ([(mid[i-1],mid[i])] if i>0 else [])+([(mid[i],mid[i+1])] if i<len(mid)-1 else []):
+            l=math.dist(a,b); normals.append(((b[1]-a[1])/l,-(b[0]-a[0])/l))  # left of the way
+        nx=sum(n[0] for n in normals); nz=sum(n[1] for n in normals); l=math.hypot(nx,nz); nx/=l; nz/=l
+        out=PLAZA_WALK_GAP/(nx*normals[0][0]+nz*normals[0][1])  # mitred, so it stays parallel
+        edge.append((round(x+nx*out,2),round(z+nz*out,2)))
+    floor_east,floor_south,apron_south,wall_x=-134.0,-99.0,-131.0,-138.6
+    top=math.acos((wall_x-cx)/r)  # where the corner's curve reaches the restaurant side
+    corner=[(round(cx+r*math.cos(top*(1-j/6)),2),round(cz+r*math.sin(top*(1-j/6)),2)) for j in range(6)]
+    poly=corner+edge+[(floor_east,apron_south),(floor_east,floor_south),(wall_x,floor_south)]
+    constants['PLAZA']['walks']=[[v2(x,z) for x,z in poly]]
+PLAZA_WALK_GAP=3.28    # metres from the road's middle line to the paving (3 m road + 0.25 m kerb + 3 cm)
+PLAZA_WALK_CORNER=(-145.0,-79.75,10.0)  # the curved corner (centre x, z, radius) where the road meets the roundabout
 def fix_pass_car_parks():
     lots=[];parked=[];areas=[]
     def entrance(x,ring_z,lot_z,road='Ring Road'):
@@ -548,11 +590,16 @@ def fix_pass_car_parks():
     # Session 77: the Plaza road from the roundabout no longer stops inside the Plaza: it turns
     # east before the Plaza and ends in a small buggy park behind Dune Drip (6 bays, 2 buggies).
     roads[:]=[r for r in roads if r['name']!='Plaza Road']
-    rounded('Plaza Road',[(-132,-71),(-132,-96),(-105.7,-96),(-105.7,-126)],6.,10.)
-    lot,area,bays=car_park('Buggy Park',(-113,-126),(1,0),(0,-1),[('row',-1,True),('aisle',ACCESS,True),('row',1,True)],11,2.0,
-        end_bays=0,depth=4.0,entrances=[{'road':'Plaza Road','at':v2(-105.7,-126),'lot_at':v2(-105.7,-126),'width':ACCESS}],kind='buggies',fill=0.0)
-    lot['buggies']=[{'position':row['bays'][k],'facing':row['facing']} for row,k in [(lot['rows'][0],1),(lot['rows'][1],2)]]
+    # Session 90: the buggy park is 3 times bigger (16 bays, 6 buggies) and sits right behind
+    # Dune Drip (its back wall is at x -116): from the apron's edge (x -113) east, and from
+    # z -131 (the apron's south edge) to z -155 (Dune Drip's north wall). The road goes 5 m
+    # further north to reach it.
+    rounded('Plaza Road',[(-132,-71),(-132,-96),(-105.7,-96),(-105.7,-131)],6.,10.)
+    lot,area,bays=car_park('Buggy Park',(-113,-131),(1,0),(0,-1),[('row',-1,True),('aisle',ACCESS,True),('row',1,True)],24,2.0,
+        end_bays=0,depth=4.0,entrances=[{'road':'Plaza Road','at':v2(-105.7,-131),'lot_at':v2(-105.7,-131),'width':ACCESS}],kind='buggies',fill=0.0)
+    lot['buggies']=[{'position':row['bays'][k],'facing':row['facing']} for row,ks in [(lot['rows'][0],(1,4,6)),(lot['rows'][1],(2,5,7))] for k in ks]
     lots.append(lot)
+    plaza_walk()
     put('PARKING_LOTS',lots)
     put('PARKED_CARS',parked)
 fix_pass_car_parks()

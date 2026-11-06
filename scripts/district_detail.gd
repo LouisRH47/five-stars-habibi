@@ -190,25 +190,12 @@ func _plaza_floors() -> void:
 	var blocks := Node3D.new()
 	blocks.name = "PlazaUpperFloors"
 	add_child(blocks)
-	# Four shopfronts per pair of upper blocks. (Session 78: Dune Drip's block is gone; the
-	# shop has its own stepped roof now, scripts/shop_exterior.gd.)
+	# The homes above each restaurant row. (Session 78: Dune Drip's block is gone; the
+	# shop has its own stepped roof now, scripts/shop_exterior.gd.) Session 90: one long
+	# block per row in the house kit's style (scripts/plaza_homes.gd), no gap in the middle.
 	for row in [-1.0, 1.0]:
-		for col in [-1.0, 1.0]:
-			var centre := Vector3(-200 + col * 32, 0, -145 + row * 50)
-			_upper(blocks, centre, Vector3(60, 6, 16), -row)
+		PlazaHomes.build(blocks, Vector3(-200, 0, -145 + row * 50), Vector3(124, 6, 16), -row)
 	PlazaWalls.build(blocks, _map)  # Session 78: dress the blank walls facing the Plaza
-
-
-func _upper(parent: Node3D, at: Vector3, size: Vector3, front: float) -> void:
-	var body := StaticBody3D.new()
-	body.position = at
-	parent.add_child(body)
-	_solid(body, size, SAND, Vector3(0, 8 + size.y * 0.5, 0))
-	LowPoly.box(body, Vector3(size.x + 0.4, 0.3, size.z + 0.4), WHITE, Vector3(0, 14.1, 0))
-	for level in [10.0, 12.5]:
-		for x in range(2, int(size.x), 4):
-			LowPoly.box(body, Vector3(2, 1.4, 0.1), GLASS, Vector3(x - size.x * 0.5, level, front * (size.z * 0.5 + 0.08)))
-	LowPoly.box(body, Vector3(size.x, 0.3, 1.4), WHITE, Vector3(0, 10.9, front * (size.z * 0.5 + 0.3)))
 
 
 func _school_details() -> void:

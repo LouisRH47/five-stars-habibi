@@ -1,5 +1,80 @@
 # Progress
 
+## Session 90: Plaza and gym fixes — 6 November 2026
+
+What works now:
+- **Paving to the roundabout:** the Plaza floor now carries on along the Plaza road on the Dune
+  Drip side only, round the bend and up to about 12 m from the roundabout's middle, so the walk
+  from the roundabout is paved. The other side stays grass. It's part of the same floor, so
+  nothing overlaps (scripts/plaza_floor.gd; it also shows on the minimap).
+- **Buggy park:** 16 bays (two rows of 8) with 6 buggies under solar roofs, right behind
+  Dune Drip; the Plaza road goes 5 m further to reach it.
+- **The homes above the restaurants** (new scripts/plaza_homes.gd) look like the house kit:
+  framed windows, trim between floors, a cornice, balconies with plants and glass doors, AC units,
+  a roof with a parapet and water tanks. One long block per row, sitting right on the shop
+  fronts with no gap.
+- **Benches** outside the restaurants face out to the Plaza. **The pizza oven's flue** goes from
+  the dome up into the ceiling.
+- **Waiters** (new scripts/restaurant_waiter.gd, one per restaurant, 9 in all) wipe a table,
+  chat to a diner, carry a tray inside (the doors slide open), come back out and serve.
+  They never stand still for more than a second.
+- **The gym** is 15% smaller (30.6 x 18.7 m) and clears the road; a second door with sliding
+  glass on the lap-pool side (the spine side), a colour band all round, a second bilingual
+  sign, canopies and planters by both doors.
+- **Majlis Gardens:** the last path piece ends square on the road edge with a zebra crossing
+  (zebra crossings are now a list in the map data, ZEBRA_CROSSINGS).
+- New tests: tests/plaza_layout_test.gd (29 checks) and tests/restaurant_fronts_test.gd
+  (32 checks).
+
+How to test: F5 and ride to the Plaza. Look up at the flats above the shops, watch a waiter
+for half a minute, ride from the roundabout to Dune Drip on the paving, check the buggy park
+behind Dune Drip, then ride to the gym on the spine and walk in through either door.
+
+Not sure: the gym's second door is on the lap-pool side (east). If "the spine side" meant
+the west wall (towards the pond), it needs to move.
+
+Known bugs:
+- The new paved square between Dune Drip, the bend and the buggy park is plain; it could use
+  benches or planters.
+
+## Session 89: the phone app — 6 November 2026
+
+What works now (built to the mock-up Louis approved, docs/phone_mockup.html):
+- **P opens a big phone** in the middle of the screen and the game pauses
+  (scripts/phone_app.gd). P closes it; Esc goes back, then closes. Arrow keys + E or the mouse
+  pick an app. The small corner phone stays for orders; its button now says "Phone · P". On
+  touch screens there's a Phone button.
+- **Home screen:** the time, "Shift N · kind of day", 7 app icons drawn as shapes (no emoji,
+  so they look the same on Windows and the Steam Deck), a red unread badge on Messages, and
+  your money, stars and level at the bottom. The Company icon is your company's logo.
+- **Jobs:** switch which kinds of order you're offered (normal, fragile, VIP = regulars and big
+  family orders, far = over 360 m from shop to door); at least one stays on. Today's shift
+  goals and your current order. Turning a kind off makes the game re-roll those orders, but
+  never the tutorial, goal orders or special stall orders.
+- **Profile:** name, company, stars, Rider Level with the XP bar, the career card (what Tier 2,
+  Dune Express, needs), lifetime numbers, and a button to the old stamp card page.
+- **Collection:** Bikes, Looks and Gear tabs; owned things in colour, locked ones grey with
+  what unlocks them.
+- **Messages:** chats with the regulars (they thank you after a delivery, and you can tap a
+  reply), your company's boss (a welcome, then a note after every shift), and Plaza news
+  (Session 94 will post the flea market there). Unread chats have a red dot. Saved.
+- **Company:** the three companies; switch for 50 Dh (keeps your stars and level).
+- **Map:** opens the big map (same as M). **Settings:** the settings panel inside the phone.
+- New tests: tests/phone_app_test.gd (44 checks: every app opens and closes, the badge, keys,
+  switching company) and tests/messages_test.gd (38 checks: chats, unread, saving, the order
+  filters really change which orders you get).
+- The play-test bot now walks out of a restaurant by its door when it gets stuck behind the
+  glass (it once stood inside Spill the Tea for 12 minutes).
+- The smoke test waits long enough for a ragdoll fall to finish, and times the walkers' route
+  search three times (a busy Mac made it fail by chance).
+
+How to test: F5, start riding, press P. Try each app. Esc goes back. Deliver to a regular
+(Auntie Mariam, Mr Rashid...) and a red 1 appears on Messages.
+
+Known bugs:
+- "Lifetime" numbers on the Profile come from the last 200 jobs the save keeps.
+- The Map app is a button that opens the big map, not a map drawn inside the phone.
+
 ## Session 88: three companies and their logos — 6 November 2026
 
 What works now:

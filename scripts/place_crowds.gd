@@ -183,15 +183,16 @@ func _stables() -> void:
 func _plaza() -> void:
 	if not _map.has("PLAZA"):
 		return
+	# Session 90: a busy waiter outside every restaurant (scripts/restaurant_waiter.gd).
 	var restaurants: Array = _map.get("RESTAURANTS", [])
+	var size: Vector3 = _map.get("RESTAURANT_SIZE", Vector3(18, 8, 16))
 	var waiter := 0
-	for shop in restaurants:
-		if not shop.get("interior", false) or waiter >= 4:
+	for shop: Dictionary in restaurants:
+		if not shop.get("interior", false) or RestaurantStyles.style(shop.get("venue_type", "")).get("supermarket", false):
 			continue
-		var at: Vector3 = shop["position"]
-		var facing: float = shop["facing"]
-		var out := Vector3(sin(deg_to_rad(facing)), 0, cos(deg_to_rad(facing)))
-		place(PlaceLooks.waiter(waiter), at + out * 11.5 + Vector3(3.0, 0.02, 0), facing, waiter % 2)
+		var busy := RestaurantWaiter.make(shop, shop.get("size", size), waiter, _builder.get_parent())
+		add_child(busy)
+		people.append([busy.person, waiter % 2])
 		waiter += 1
 	var centre: Vector2 = _map["PLAZA"]["centre"]
 	var ring: Array[Vector3] = []

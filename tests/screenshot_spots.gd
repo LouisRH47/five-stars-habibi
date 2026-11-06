@@ -110,6 +110,31 @@ const SPOTS := {
 	"p_chat_pair": [Vector3(32.6, 1.6, -58.6), Vector3(32.6, 1.3, -56.0)],
 	"p_chat_pair_side": [Vector3(30.2, 1.7, -57.8), Vector3(32.6, 1.2, -56.0)],
 	"p_stables_pair": [Vector3(-204.4, 1.6, 183.6), Vector3(-204.4, 1.3, 186.0)],
+	# Session 90 (restaurants): the homes above the shops, benches, the pizza oven, waiters
+	"s90_restaurant_row": [Vector3(-212, 3.0, -160), Vector3(-212, 7.5, -190)],
+	"s90_row_join": [Vector3(-236, 6.0, -177), Vector3(-232, 8.2, -187)],
+	"s90_row_north": [Vector3(-188, 3.0, -128), Vector3(-188, 7.5, -100)],
+	"s90_benches": [Vector3(-246, 1.8, -178.5), Vector3(-252, 0.5, -185)],
+	"s90_pizza_oven": [Vector3(-251.0, 1.8, -189.5), Vector3(-255.7, 2.6, -196.3)],
+	"s90_waiter_pizza": [Vector3(-244, 2.0, -176), Vector3(-252, 0.9, -184)],
+	"s90_waiter_sushi": [Vector3(-193, 2.0, -113), Vector3(-200, 0.9, -106)],
+	"s90_homes_back": [Vector3(-215, 3.0, -222), Vector3(-205, 9.0, -203)],
+	"s90_homes_roof": [Vector3(-222, 28, -168), Vector3(-208, 13, -195)],
+	# Session 90 (layout): the paving to the roundabout, the buggy park, the gym, Majlis path
+	"s90_paving_roundabout": [Vector3(-126, 2.2, -74), Vector3(-121, 0.8, -110)],
+	"s90_paving_top": [Vector3(-108, 80, -72), Vector3(-118, 0, -114)],
+	"s90_paving_corner_top": [Vector3(-126, 28, -64), Vector3(-136, 0, -86)],
+	"s90_paving_walk_up": [Vector3(-137, 1.7, -72), Vector3(-134, 1.0, -100)],
+	"s90_buggy_park": [Vector3(-90, 5.0, -112), Vector3(-108, 0.5, -146)],
+	"s90_buggy_park_top": [Vector3(-98, 55, -118), Vector3(-108, 0, -150)],
+	"s90_gym_road": [Vector3(115, 2.5, 50), Vector3(115, 2.5, 22)],
+	"s90_gym_spine": [Vector3(115, 2.5, -4), Vector3(115, 2.5, 22)],
+	"s90_gym_west": [Vector3(78, 3.0, 26), Vector3(115, 2.0, 22)],
+	"s90_gym_top": [Vector3(115, 60, 62), Vector3(115, 0, 22)],
+	"s90_gym_side_door": [Vector3(139, 2.2, 9), Vector3(129, 2.0, 18)],
+	"s90_gym_inside": [Vector3(127.5, 1.9, 19.5), Vector3(112, 1.2, 20)],
+	"s90_majlis_end": [Vector3(-31, 2.0, -53), Vector3(-31, 0, -40)],
+	"s90_majlis_end_top": [Vector3(-31, 20, -58), Vector3(-31, 0, -42)],
 }
 
 var _main: Node

@@ -699,13 +699,13 @@ const LOADING_WARM_FRAMES := 3         # frames the finished world draws behind 
 # --- Life pass Session 87: three crash levels ---
 # The impact "score" is the speed into the thing in km/h (a scrape counts a fifth of its speed),
 # times how hard the thing is (CRASH_MATERIAL_HARDNESS: a car 1.15, a wall 1, a palm 0.8).
-const CRASH_BUMP_MIN_KMH := 6.0        # slower than this: just a nudge (no bill, no message)
+const CRASH_BUMP_MIN_KMH := 6.0        # an impact score under this: just a nudge or a scrape (no bill, no message)
 const CRASH_BUMP_KMH := 12.0           # under this (or anything soft, at any speed): a bump, you stay on
 const CRASH_FALL_KMH := 22.0           # 12 to 22: you fall off; over 22 into something hard: big crash
 const CRASH_BUMP_BILL := 10            # Dh, a bump (small repair)
 const CRASH_FALL_BILL := 30            # Dh, a fall (bike repair)
 const CRASH_BUMP_DAMAGE := 8.0         # % off the food's damage meter for a bump (a small rating hit)
-const CRASH_BUMP_COOLDOWN := 1.5       # s before another bump can count (sliding along a wall)
+const CRASH_BUMP_COOLDOWN := 3.0       # s before another bump can count (pushing against a wall; was 1.5)
 const CRASH_WOBBLE_TIME := 0.7         # s the bike wobbles after a bump
 const CRASH_WOBBLE_DEG := 14.0         # degrees the bike leans side to side in the wobble
 const CRASH_TOAST_SECONDS := 2.2       # s the "Bump! 9 km/h" message stays up
@@ -737,3 +737,24 @@ const PHONE_APP_SHADE := 0.55              # how dark the see-through shade behi
 const CAREER_TIER2_STARS := 4.0            # Profile app: stars Tier 2 (Dune Express) needs (PRD career ladder)
 const CAREER_TIER2_DELIVERIES := 20        # Profile app: deliveries Tier 2 needs
 const MOTORBIKE_TEST_PRICE := 200          # Dh, the motorbike test's first try (PRD; the test isn't built yet)
+
+# --- Session 90 (restaurants): the homes above the Plaza restaurants, and the waiters ---
+const PLAZA_HOME_BAY := 6.2             # m, how wide one flat is along the row
+const PLAZA_HOME_STOREY := 3.0          # m per floor of the homes (two floors, 8 m to 14 m up)
+const PLAZA_HOME_BASE_TOP := 8.42       # m, top of the thick band that sits on the shop fronts
+const PLAZA_HOME_BASE_STICK := 0.36     # m the bottom band stands out from the wall (covers the join)
+const PLAZA_HOME_CORNICE := 13.72       # m, bottom of the cornice under the roof edge
+const PLAZA_HOME_BALCONY_DEPTH := 1.2   # m a balcony sticks out
+const PLAZA_HOME_BALCONY_WIDTH := 2.8   # m, how wide a balcony is
+const WAITER_WALK_SPEED := 1.2          # m/s, a waiter walking between the tables and the door
+const WAITER_WIPE_SECONDS := 4.5        # s spent wiping a table
+const WAITER_CHAT_SECONDS := 5.0        # s chatting to a diner at a table
+const WAITER_INSIDE_SECONDS := 2.5      # s inside the restaurant (fetching plates)
+const WAITER_SERVE_SECONDS := 2.0       # s putting plates down at a table
+const WAITER_PAUSE_SECONDS := 1.0       # s a waiter stops at the door before going on (never longer)
+const WAITER_TRAY_HEIGHT := 1.05        # m, how high a waiter holds the tray
+
+# --- Session 90 (layout): Plaza paving, buggy park, gym, Majlis crossing ---
+const ZEBRA_STRIPE := 0.5              # m, how wide one white bar of a zebra crossing is (gaps are the same)
+const GYM_DOOR_PLANTER := 2.1          # m from a gym door's middle to the planter on each side of it
+const GYM_SIDE_DOOR_Z := 3.3           # m, where the gym's second door (on the lap pool side) is, front to back
