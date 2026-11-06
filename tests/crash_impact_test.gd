@@ -119,7 +119,12 @@ func _run() -> void:
 	bike.speed = 13.5 / 3.6
 	_check("a low-speed collision selects a gentle fall", bike._check_crash(1.0, wall) and bike.fall_kind == "tip" and not bike.wrecked)
 	bike._step_fall(GameConfig.CRASH_FALL_MAX_TIME)
-	_check("minor falls return control without a clinic bill", bike.fallen_left == 0.0 and not clinic.showing and not gs.boss_paid_crash)
+	_check("Session 87: a fall gives control back and opens the light clinic (30 Dh, no boss cover used)",
+			bike.fallen_left == 0.0 and clinic.showing and clinic.light_visit
+			and clinic.last_bills["paid"] == GameConfig.CRASH_FALL_BILL and not gs.boss_paid_crash)
+	var spot: Vector3 = bike.global_position
+	clinic.close()
+	_check("Session 87: after the fall's clinic you ride on from where you fell", bike.global_position.distance_to(spot) < 0.01 and not paused)
 	bike.speed = 3.0
 	_check("Session 52: right after getting up, a small knock doesn't knock you off again", not bike._check_crash(1.0, wall))
 	bike.speed = 0.0
