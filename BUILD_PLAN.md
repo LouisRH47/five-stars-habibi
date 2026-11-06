@@ -1618,10 +1618,8 @@ Done when:
 
 - **Delivery robot:** a small robot that can do deliveries, as an upgrade. Plan it after
   this pass.
-- **Desktop game instead of only the browser:** the repo already has
-  `tools/build_desktop.py`. Decide after Session 74 whether the main version should be the
-  Mac and Windows download (faster loading, bigger textures) with the browser version kept
-  as a lighter demo.
+- **Desktop game instead of only the browser:** decided 6 Nov 2026. The game is a desktop
+  game for Steam and the browser version is paused. See the Steam pass (Sessions 85 to 90).
 
 
 ## Fix pass (Sessions 75 to 84)
@@ -1836,6 +1834,133 @@ Done when:
 - [ ] All tests pass and Louis is happy with the screenshots and his own play
 
 
+## Steam pass (Sessions 85 to 90)
+
+Decided 6 November 2026: Five Stars Habibi is a game for Steam (PRD.md, "Release on Steam").
+It stays in Godot 4. Windows first, then Mac and Linux / Steam Deck. The browser version is
+paused. These sessions make the game ready for Steam. They don't launch it: when to launch
+and the price are still open in the PRD.
+
+**Grown-up steps (Michael), any time before Session 88 ends:** create the Steamworks
+developer account, pay the $100 Steam Direct fee, and send the game's App ID. Until then the
+sessions use Steam's free test App ID 480.
+
+Same rules as always: one session at a time, headless checks, smoke test, focused tests,
+play-test bot careful and careless, a check for every new thing, PROGRESS.md, commit. Never
+upload anything to Steam: building the store page and pressing publish is Michael's job.
+
+### Session 85: Windows, Mac and Steam Deck builds
+
+```text
+Session 85. 1) Add a Linux export preset next to the Mac and Windows ones (export_presets.cfg),
+and make tools/build_desktop.py build all three in distribution mode with one command. Saves
+go to the normal user folder on each system.
+2) Check the exported Mac build starts, rides and saves on Louis's Mac (in review mode, so his
+real save is untouched). Check the Windows and Linux builds export without errors.
+3) Steam Deck check: run the game at 1280x800 on Low and measure the frame rate riding round
+the map (aim for a steady 60 fps on this Mac at Low; note it in PROGRESS.md). Make text and
+the phone readable at 1280x800.
+4) Fix anything the builds show (missing files, wrong paths, error lines).
+```
+
+Done when:
+
+- [ ] One command builds Windows, Mac and Linux
+- [ ] The Mac build starts, plays a delivery and saves
+- [ ] At 1280x800 on Low the game is smooth and all text is readable
+
+### Session 86: Controller support
+
+```text
+Session 86. 1) Every action in project.godot gets controller buttons as well as keys
+(Xbox / PlayStation / Steam Deck layout). A starting point: left stick steers and walks,
+right trigger pedals, left trigger brakes, A = E (accept, hold to pick up / drop off),
+B = F (get off / on), X = Space (handbrake, jump on foot), Y = Q (skip order), RB = sprint,
+LB = bell, right stick click = rocket booster, d-pad up = insurance, d-pad down = R (back on
+the road), View = full map, Menu = pause. Put the button list in the PRD Controls table.
+2) Menus, the start screen, the application form, the phone, shops, the wardrobe and the
+shift summary all work with a controller (focus moves with the d-pad or stick, A picks).
+3) On-screen hints ("Press E") show the controller button instead when the controller was
+used last. Use free CC0 button icons (Kenney Input Prompts) and credit them.
+4) Test: a check that every action has a controller button, and that the hints switch.
+```
+
+Done when:
+
+- [ ] A whole shift can be played with only a controller, from the start screen to the summary
+- [ ] Hints show keys or buttons, whichever you used last
+
+### Session 87: Settings for keys, buttons and screen
+
+```text
+Session 87. 1) Settings gets a Controls page: change the key or controller button for every
+action (press the new one), with a "Reset to default" button. Saved with the other settings.
+2) Screen: windowed / fullscreen / borderless, window size, and a frame rate cap
+(30 / 60 / 120 / unlimited) with vsync. Graphics level and volume stay as they are.
+3) Everything works with mouse, keyboard and controller.
+4) Test: a changed key survives restarting the game; reset puts the defaults back.
+```
+
+Done when:
+
+- [ ] You can change any key or button and it's remembered next time
+- [ ] Screen options work and are saved
+
+### Session 88: Steam achievements and cloud saves
+
+```text
+Session 88. 1) Add GodotSteam (free, MIT licence; credit it in CREDITS.md), the version that
+matches our Godot 4.7. Use App ID 480 for testing until Michael sends the real one, kept in
+one place in scripts/game_config.gd.
+2) One small script, scripts/steam_link.gd, talks to Steam. If Steam isn't running, the game
+works exactly as before (no errors, no achievements).
+3) Achievements (10 to 12, list them in the PRD): first delivery, first 5-star delivery, a
+perfect shift (every delivery 5 stars), 10 / 100 deliveries, deliver from every restaurant,
+deliver to every cluster, buy the carbon frame, reach Rider Level 10, finish the tutorial,
+a collection completed. They unlock from what GameState already counts.
+4) Steam Cloud: the save file and settings follow you to another computer.
+5) Tests: achievements unlock at the right moment (with a fake Steam in the test), and the
+game runs with no Steam at all.
+```
+
+Done when:
+
+- [ ] Achievements unlock in a test and with Steam running
+- [ ] The game still runs fine without Steam
+
+### Session 89: Store page kit
+
+```text
+Session 89. 1) A screenshot tool run (like tests/screenshot_spots.gd) that takes 8 to 10
+good-looking store screenshots at 1920x1080 on High: riding through the clusters, the Plaza,
+a restaurant inside, the phone with an order, a 5-star delivery, sunset.
+2) Capsule images (the store's box art) in the sizes Steam asks for, made from the game's
+own look and the made-up Snackaroo brand, with the game name. No real brands or logos.
+3) A short trailer: record about 45 seconds of gameplay shots in the game and save the clips
+(Louis or Michael puts them together).
+4) Write the short and long store description in simple English, and the list of features.
+5) Check every asset is CC0 or credited (CREDITS.md). Put everything in docs/steam/.
+```
+
+Done when:
+
+- [ ] docs/steam/ has screenshots, capsule images, trailer clips and the descriptions
+- [ ] Every asset in the game is CC0 or credited
+
+### Session 90: Play-test the Steam pass
+
+```text
+Session 90. Run every test and the play-test bot careful and careless. Build Windows, Mac
+and Linux. Play a whole shift on Louis's Mac with keyboard and with a controller, try every
+setting, and check achievements with Steam running. Fix anything that's wrong, then hand
+over.
+```
+
+Done when:
+
+- [ ] All tests pass, and Louis has played a shift with a controller and is happy
+
+
 ## When something breaks
 
 Copy one of these and fill in the brackets.
@@ -1877,6 +2002,7 @@ Once Sessions 47 to 51 feel fun and the game is on itch.io and in the browser (S
 
 - Simple low-poly graphics, using basic shapes and free CC0 asset packs like Kenney
 - Claude Code used through the Claude desktop app
-- Keyboard controls for now (W A S D, Shift, Space, E, Q); controller support later
+- Keyboard controls (W A S D, Shift, Space, E, Q); controller support in Session 86
+- The game is for Steam (Windows first, then Mac and Steam Deck), made in Godot 4
 - Built on a paid Claude plan (Claude Code doesn't work on the free plan)
 - About one 1-hour session a week

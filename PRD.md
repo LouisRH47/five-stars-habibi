@@ -195,7 +195,7 @@ These stop deliveries from feeling the same after a few. All numbers are startin
 
 ## Controls (Tier 1, keyboard)
 
-Keys are placeholders until the controls are tested. Controller support comes later.
+Keys are placeholders until the controls are tested. Controller support comes in the Steam pass (see "Release on Steam").
 
 | Key | What it does |
 | --- | --- |
@@ -578,6 +578,25 @@ The names are made-up spoofs of the real Plaza's restaurants (Louis's picks), so
 
 **Music:** chill Arabic-style background music, the kind you'd hear in a cafe or a taxi here. Only music that's free to use (CC0 or properly credited).
 
+## Release on Steam
+
+Decided 6 Nov 2026: Five Stars Habibi is a game for **Steam**. The browser version is paused and isn't the goal any more.
+
+**Engine:** it stays in Godot 4 (GDScript). Steam doesn't need a different engine, and many Steam games are made in Godot. Porting to Unreal would mean rebuilding the whole game.
+
+**Platforms:** Windows first (most Steam players), then Mac and Linux / Steam Deck. On the Steam Deck (1280x800) the Low graphics setting must run smoothly.
+
+**What the game needs for Steam:**
+- **Controller:** every action works on a controller (Xbox and PlayStation layouts, Steam Deck buttons), including menus, the phone and the shops. On-screen hints show keyboard keys or controller buttons, whichever you used last.
+- **Settings:** change keys and controller buttons, screen size or fullscreen, graphics level, and volume, all saved.
+- **Steam achievements:** about 10 to 12, for example first delivery, first 5-star delivery, a perfect shift, 100 deliveries, every restaurant, buy the carbon frame. All based on things the game already counts.
+- **Steam Cloud:** the save file follows you to another computer.
+- **Works without Steam too:** the same game still runs as a normal download (for example for play-testers), just without achievements.
+- **Store page kit:** capsule images (the store's box art), at least 5 screenshots, a short trailer, a short and a long description. All English.
+- **Licences:** every asset is CC0 or credited in CREDITS.md. No real company names or logos, as always.
+
+**Things only a grown-up can do (Michael):** create the Steamworks developer account (bank and tax details), pay the $100 Steam Direct fee for the game (paid back after the game earns $1,000), and get the game's Steam App ID. Until then we test with Steam's free test App ID (480).
+
 ## Milestones
 
 Build it in milestones and play-test at the end of each one. Only move on when the current milestone feels good. The exact sessions are in BUILD_PLAN.md.
@@ -591,13 +610,15 @@ Build it in milestones and play-test at the end of each one. Only move on when t
 7. **Start screen and polish:** application form and the 3 presets, menu, saving, sounds and music, then the polish pass (hold E, get off the bike, screens like the mockup).
 8. **Graphics pass:** the Wahat Al Shams community, the house kit, light and weather, animated people, the real bike, juice, life on the map, special orders, goals and events.
 9. **Detail pass:** real-size Wahat Al Shams with joined rows of homes, walk-in restaurants, Fair Grade School, the C Institute, gym and pools, horse tracks, textures, the bike shop and the clothes shop.
-10. **Reasons to come back:** streaks, choosing orders, tomorrow's special, collections, then release on itch.io and the browser site.
-11. **Motorbike test:** yard course, instructor, theory quiz, fail and retake rules.
-12. **Tier 2 and beyond:** motorbike, Old Town, then the next tiers one by one.
+10. **Reasons to come back:** streaks, choosing orders, tomorrow's special, collections, then release on itch.io (the browser site was paused on 6 Nov 2026).
+11. **Steam pass:** Windows, Mac and Steam Deck builds, controller, key settings, Steam achievements and cloud saves, store page kit (see "Release on Steam").
+12. **Motorbike test:** yard course, instructor, theory quiz, fail and retake rules.
+13. **Tier 2 and beyond:** motorbike, Old Town, then the next tiers one by one.
 
 ## Still open
 
-- Final name (Five Stars Habibi for now, might change later)
+- When to launch on Steam: Early Access with the bicycle tier, or wait for more tiers. And the price (or free).
+- Final name (Five Stars Habibi for now, might change later). It must be picked before the Steam store page goes up.
 - Tuning all pay, bills and insurance numbers once Tier 1 is playable
 - Whether the motorbike can carry several orders at once, later on
 - Exact keys for the taxi requests
@@ -716,6 +737,7 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 6 Nov 2026 | Session 81: the stream ends in a stone-ringed pond before the gym and restarts from a spring pond after the lap pool; pools get tiled decks, coping, ladders and lane ropes; one water look for all water; swimmers swim laps with their heads up and some rest at the edge; lifeguards sit on tall chairs and whistle |
 | 6 Nov 2026 | Session 82: ground textures are real CC0 photos with their sizes in one table; lawns mix aerial grass with leafy grass; no grass clumps; bins are grey; sign text uses MSDF |
 | 6 Nov 2026 | Session 83: people near the rider breathe, look round, shift their weight and talk in pairs with hand gestures; faces have eyes and a smile; every outfit stays on the body (tested) |
+| 6 Nov 2026 | The game is for Steam (Windows first, then Mac and Steam Deck). It stays in Godot 4; no Unreal port. Steam pass planned as Sessions 85 to 90: desktop builds, controller, key settings, Steam achievements and cloud saves, store page kit, play-test. Michael sets up the Steamworks account and App ID |
 
 ## Sources
 
