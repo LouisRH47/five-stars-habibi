@@ -1990,7 +1990,7 @@ Done when:
 - [x] Paving reaches almost to the roundabout on one side, the buggy park is 3x and behind Dune Drip
 - [x] Nothing in the Plaza overlaps, benches face out, waiters move, the gym clears the road
 
-### Session 91: C Institute inside and out, and the pond
+### Session 91: C Institute inside and out, and the pond (built, needs testing)
 
 ```text
 Session 91. 1) Second floor inside: a balcony round the lobby, glass-walled offices with
@@ -2004,10 +2004,10 @@ sure nothing overlaps the football pitch or the road.
 
 Done when:
 
-- [ ] You can go upstairs in the C Institute and see people working
-- [ ] The pond looks right from the road and the Institute steps
+- [x] You can go upstairs in the C Institute and see people working
+- [x] The pond looks right from the road and the Institute steps
 
-### Session 92: People fixes and the player's look
+### Session 92: People fixes and the player's look (built, needs testing)
 
 ```text
 Session 92. 1) New stroller model in Blender (tools/blender/make_stroller.py): hood, frame,
@@ -2025,8 +2025,8 @@ courts for the flicker Louis saw (probably two meshes at the same place).
 
 Done when:
 
-- [ ] Strollers look real and are pushed, pairs look like they're chatting, sunbeds are used
-- [ ] No stretching clothes on runners, workers work, the player looks better
+- [x] Strollers look real and are pushed, pairs look like they're chatting, sunbeds are used
+- [x] No stretching clothes on runners, workers work, the player looks better
 
 ### Session 93: Landscape
 

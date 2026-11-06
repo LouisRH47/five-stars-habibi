@@ -52,8 +52,13 @@ put('SPINE',rect(-145,-35,560,70))
 # Session 81: the stream no longer runs under the gym. It ends in a small pond with stones
 # round it 10 m before the gym (west) and starts again from a little spring pond after the
 # gym's lap pool (east). gaps: no stream there. ponds: centre (x, z) and radius in metres.
-put('STREAM',{'z':25.0,'from_x':-135.0,'to_x':405.0,'width':3.0,'gaps':[v2(82,188)],
- 'ponds':[{'centre':v2(82,22),'radius':5.0},{'centre':v2(190.5,23),'radius':3.5}]})
+# Session 91: the stream starts 4 m further west, out of a big pond near the C Institute
+# (south of the spine road, across from the basketball court) with more reeds, a small
+# wooden deck with two benches (size: x and z in metres; it faces the crossing at x -145)
+# and ducks paddling about.
+put('STREAM',{'z':25.0,'from_x':-139.0,'to_x':405.0,'width':3.0,'gaps':[v2(82,188)],
+ 'ponds':[{'centre':v2(82,22),'radius':5.0},{'centre':v2(190.5,23),'radius':3.5},
+  {'centre':v2(-143,19.5),'radius':7.0,'reeds':10,'ducks':4,'deck':{'centre':v2(-145,12.8),'size':v2(4.2,3.6)}}]})
 clusters=[(1,48,-126),(2,203,-126),(3,348,-126),(4,73,120),(5,303,120)]
 put('CLUSTERS',[{'id':f'C{n}','area':rect(cx-65,cz-75,130,150),'centre':v2(cx,cz)} for n,cx,cz in clusters])
 roads=[]
@@ -232,6 +237,8 @@ put('SPINE_TRACKS',{'from_x':-334.0,'to_x':398.0-3.0-LANE_CORNER,'road_half':3.0
 # arena and the horse track); GroundType uses these for the tyre dust.
 put('SAND_AREAS',[rect(-282,65,115,88),rect(-282,157,115,43)])
 put('EDGE_GREENERY',{'half':v2(433,213),'radius':20.0,'width':6.0,'spacing':9.0})
+# Session 91: three palms round the big pond by the C Institute, so you can spot it from afar.
+palms+=[v3(-152,0,23.5),v3(-134.5,0,26.5),v3(-138.5,0,10.5)]
 put('PALM_TREES',palms);put('PARKED_CAR_SIZE',v3(1.9,1.5,4.3))
 # PARKED_CARS and SCHOOL_PARKING are made by fix_pass_car_parks() below (Session 79).
 # --- World polish pass Sessions 64 to 66 (signs wave) -------------------------------------

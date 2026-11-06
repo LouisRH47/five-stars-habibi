@@ -58,6 +58,7 @@ static func build(room: Node3D, area: Rect2, kind: String, deck: Rect2) -> void:
 		parts["loungers"] = 7
 		parts["umbrellas"] = 6
 		_loungers(kit, area, deck)
+		room.set_meta("loungers", lounger_spots(area, deck))  # Session 92: for the sunbathers
 		_shower(kit, Vector3(area.position.x + 6.5, GameConfig.POOL_DECK_Y, (area.end.y + COPING_WIDTH + deck.end.y) * 0.5))
 		parts["showers"] = 1
 		parts["plants"] = _plants(kit, deck)
@@ -170,10 +171,20 @@ static func _loungers(kit: MeshKit, area: Rect2, deck: Rect2) -> void:
 	var y := GameConfig.POOL_DECK_Y
 	var z := (deck.position.y + area.position.y - COPING_WIDTH) * 0.5
 	var middle := area.get_center().x
-	for i in 7:
-		_lounger(kit, Vector3(middle - 18 + i * 6, y, z), i)
+	var spots := lounger_spots(area, deck)
+	for i in spots.size():
+		_lounger(kit, spots[i], i)
 	for i in 6:
 		_umbrella(kit, Vector3(middle - 15 + i * 6, y, z), UMBRELLAS[i % UMBRELLAS.size()])
+
+
+## Session 92: the middle of each of the 7 loungers (on the deck, north of the pool).
+static func lounger_spots(area: Rect2, deck: Rect2) -> Array[Vector3]:
+	var z := (deck.position.y + area.position.y - COPING_WIDTH) * 0.5
+	var spots: Array[Vector3] = []
+	for i in 7:
+		spots.append(Vector3(area.get_center().x - 18 + i * 6, GameConfig.POOL_DECK_Y, z))
+	return spots
 
 
 ## One lounger (along x, its back raised at the +x end) on the deck at `at`.

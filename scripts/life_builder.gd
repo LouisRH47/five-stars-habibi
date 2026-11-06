@@ -68,6 +68,10 @@ func _ready() -> void:
 			walker.set_meta("outfit", "buggy")
 			holder = LifeLooks.with_buggy(walker)
 			body = Vector3(0.7, 1.8, 1.6)
+		# Session 92: on the spine's raised red tracks, stand on top of them (feet and
+		# stroller wheels were sunk 8 cm into the track).
+		if list[i]["points"].all(func(p: Vector3) -> bool: return absf(p.z) > 5.0 and absf(p.z) < 8.0):
+			holder.position.y = SpineTracks.TRACK_TOP
 		var pace := GameConfig.JOGGER_SPEED if list[i]["jog"] else GameConfig.WALKER_SPEED
 		_add("Person_%d" % i, "person", list[i], pace, body, holder, walker)
 	_build_gardeners()

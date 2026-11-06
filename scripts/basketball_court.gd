@@ -123,6 +123,7 @@ func play(delta: float) -> void:
 					game["phase"] = "dribble"
 					game["time"] = 0.0
 					game["target"] = _random_spot(game["hoop"])
+	CourtSpacing.spread(CourtSpacing.holders_of(players), GameConfig.COURT_PLAYER_GAP)  # Session 92: no two on one spot
 
 
 func _spot(i: int) -> Vector3:

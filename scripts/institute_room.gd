@@ -8,6 +8,10 @@ extends RefCounted
 ##           screen on the left wall (it changes during the shift: scripts/talk_screen.gd)
 ##   Right:  a staircase up to the balcony walkway (glass railing) along the right and back
 ## A wood-slat ceiling, hanging plants, couches by the back glass, quiet chatter.
+## Session 91: a real second floor (scripts/institute_upstairs.gd): offices with people
+## typing, a meeting room (scripts/institute_offices.gd), stairs you can walk up and a
+## glass lift (scripts/institute_lift.gd). Outside: slim white frames, a flat roof with a
+## sun shade, fins on the sunny side and lit signs (scripts/institute_outside.gd).
 
 const WHITE := Color(0.97, 0.97, 0.96)
 const CREAM := Color(0.94, 0.91, 0.85)
@@ -18,6 +22,7 @@ const STONE := Color(0.88, 0.86, 0.82)
 const STONE_B := Color(0.82, 0.8, 0.76)
 const STEEL := Color(0.7, 0.72, 0.74)
 const LEAF := Color(0.24, 0.55, 0.28)
+const FRAME := Color(0.93, 0.93, 0.92)  # Session 91: slim white window frames
 const CUSHIONS := [Color(0.95, 0.55, 0.25), Color(0.1, 0.5, 0.56), Color(0.85, 0.75, 0.3), Color(0.75, 0.35, 0.4)]
 
 const FLOOR2 := 6.5          # the balcony floor
@@ -36,6 +41,7 @@ static func build(place: Dictionary, size: Vector3) -> StaticBody3D:
 	body.set_meta("interior_style", "institute_lobby")
 	body.set_meta("room_rect", Rect2(-size.x * 0.5, -size.z * 0.5, size.x, size.z))
 	body.set_meta("ceiling", CEILING)
+	body.set_meta("inside_height", CEILING)  # Session 91: upstairs counts as inside too
 	body.set_meta("counter_spot", COUNTER_SPOT)
 	body.add_to_group("venue_room")
 	var doors := VenueMotion.new()
@@ -45,7 +51,10 @@ static func build(place: Dictionary, size: Vector3) -> StaticBody3D:
 	_outside(body, place, size)
 	_reception(body)
 	_stepped_seats(body, size)
-	_balcony_and_stairs(body, size)
+	InstituteUpstairs.build(body)
+	InstituteOffices.build(body)
+	InstituteLift.build(body, FLOOR2)
+	_balcony_people(body)
 	_plants(body, size)
 	_lounge(body, size)
 	_lights(body)
@@ -61,20 +70,20 @@ static func _shell(body: StaticBody3D, size: Vector3) -> void:
 	var front := size.z * 0.5
 	for side in [-1.0, 1.0]:
 		VenueParts.block(body, Vector3(0.3, size.y, size.z), CREAM, Vector3(side * half, size.y * 0.5, 0))
-	VenueParts.block(body, Vector3(size.x + 0.4, 0.3, size.z + 0.4), CREAM, Vector3(0, size.y + 0.15, 0))
+	LowPoly.solid_box(body, Vector3(size.x + 0.4, 0.3, size.z + 0.4), Vector3(0, size.y + 0.15, 0))  # the roof (InstituteOutside draws it)
 	var low := FLOOR2 - 0.2
 	for z in [front, -front]:
 		if z > 0.0:
 			for side in [-1.0, 1.0]:
-				VenueParts.glass_run(body, Vector3(side * DOOR_HALF, 0, z), Vector3(side * half, 0, z), low, 3.8)
+				VenueParts.glass_run(body, Vector3(side * DOOR_HALF, 0, z), Vector3(side * half, 0, z), low, 3.8, 0.0, true, FRAME)
 			RoomProps.pane(body, Vector3(DOOR_HALF * 2, low - RestaurantRoom.GLASS_TOP, 0.06),
 					Vector3(0, (low + RestaurantRoom.GLASS_TOP) * 0.5, z))
-			LowPoly.box(body, Vector3(DOOR_HALF * 2 + 0.2, 0.12, 0.16), VenueParts.POST, Vector3(0, RestaurantRoom.GLASS_TOP, z + 0.01))
+			LowPoly.box(body, Vector3(DOOR_HALF * 2 + 0.2, 0.12, 0.16), FRAME, Vector3(0, RestaurantRoom.GLASS_TOP, z + 0.01))
 		else:
-			VenueParts.glass_run(body, Vector3(-half, 0, z), Vector3(half, 0, z), low, 3.8)
-		# The band between the storeys, then the upper glass, then a band under the roof.
-		LowPoly.box(body, Vector3(size.x, 0.4, 0.3), Color(0.2, 0.22, 0.24), Vector3(0, FLOOR2, z))
-		VenueParts.glass_run(body, Vector3(-half, 0, z), Vector3(half, 0, z), CEILING - FLOOR2 - 0.2, 3.8, FLOOR2 + 0.2, false)
+			VenueParts.glass_run(body, Vector3(-half, 0, z), Vector3(half, 0, z), low, 3.8, 0.0, true, FRAME)
+		# The band between the storeys (slim and white), then the upper glass, then a band under the roof.
+		LowPoly.box(body, Vector3(size.x, 0.4, 0.3), FRAME, Vector3(0, FLOOR2, z))
+		VenueParts.glass_run(body, Vector3(-half, 0, z), Vector3(half, 0, z), CEILING - FLOOR2 - 0.2, 3.8, FLOOR2 + 0.2, false, FRAME)
 		LowPoly.box(body, Vector3(size.x, size.y - CEILING, 0.3), TEAL if z > 0.0 else CREAM, Vector3(0, (size.y + CEILING) * 0.5, z))
 	RestaurantRoom.sliding_doors(body, front)
 	# The wood-slat ceiling: dark backing with light slats every 0.6 m.
@@ -92,12 +101,7 @@ static func _shell(body: StaticBody3D, size: Vector3) -> void:
 
 
 static func _outside(body: StaticBody3D, place: Dictionary, size: Vector3) -> void:
-	var front := size.z * 0.5
-	var y := (size.y + CEILING) * 0.5
-	var sign := SignText.make_face(place.get("arabic", "معهد سي"), place.get("name", "C Institute"), 52, Color.WHITE)
-	sign.name = "BilingualSign"
-	sign.position = Vector3(0, y, front + 0.17)
-	body.add_child(sign)
+	InstituteOutside.build(body, place, size)  # Session 91: roof, sun shade, fins, lit signs
 
 
 ## A curved white reception desk (the drop-off) with the receptionist, and a white wall
@@ -198,72 +202,18 @@ static func _laptop_person(body: StaticBody3D, seat: Vector3, i: int) -> void:
 	lid.material_override = VenueParts.glow(Color(0.6, 0.8, 0.95), 0.8)
 
 
-## The balcony walkway along the back and right walls with a glass railing, and a wooden
-## staircase up to it along the right wall.
-static func _balcony_and_stairs(body: StaticBody3D, size: Vector3) -> void:
-	var half := size.x * 0.5
-	var back := -size.z * 0.5
-	var depth := 3.0
-	var inner_z := back + depth + 0.15
-	var inner_x := half - depth - 0.15
-	var balcony := Node3D.new()
-	balcony.name = "Balcony"
-	body.add_child(balcony)
-	LowPoly.box(balcony, Vector3(size.x - 0.3, 0.3, depth), WHITE, Vector3(0, FLOOR2 - 0.15, back + 0.15 + depth * 0.5))
-	var side_from := inner_z
-	var side_to := 12.0
-	LowPoly.box(balcony, Vector3(depth, 0.3, side_to - side_from), WHITE, Vector3(half - 0.15 - depth * 0.5, FLOOR2 - 0.15, (side_from + side_to) * 0.5))
-	# Wood on the walkway floor.
-	LowPoly.box(balcony, Vector3(size.x - 0.4, 0.02, depth - 0.1), WOOD, Vector3(0, FLOOR2 + 0.01, back + 0.15 + depth * 0.5))
-	LowPoly.box(balcony, Vector3(depth - 0.1, 0.02, side_to - side_from - 0.1), WOOD, Vector3(half - 0.15 - depth * 0.5, FLOOR2 + 0.01, (side_from + side_to) * 0.5))
-	# Glass railing with a steel top rail (a gap at the top of the stairs).
-	var rail := 1.1
-	var runs := [[Vector3(-half + 0.2, 0, inner_z), Vector3(inner_x, 0, inner_z)],
-			[Vector3(inner_x, 0, inner_z), Vector3(inner_x, 0, -5.0)],
-			[Vector3(inner_x, 0, -1.6), Vector3(inner_x, 0, side_to)],
-			[Vector3(inner_x, 0, side_to), Vector3(half - 0.2, 0, side_to)]]
-	for run: Array in runs:
-		var a: Vector3 = run[0]
-		var b: Vector3 = run[1]
-		VenueParts.glass_run(body, a, b, rail, 2.0, FLOOR2, false)
-		var along_x := absf(b.x - a.x) > absf(b.z - a.z)
-		var length := a.distance_to(b)
-		LowPoly.box(balcony, Vector3(length, 0.06, 0.08) if along_x else Vector3(0.08, 0.06, length), STEEL, (a + b) * 0.5 + Vector3(0, FLOOR2 + rail, 0))
-	# Slim white columns under the walkway edge.
-	for x in [-16.0, -6.0, 6.0]:
-		LowPoly.cylinder(balcony, 0.16, 0.16, FLOOR2 - 0.3, WHITE, Vector3(x, (FLOOR2 - 0.3) * 0.5, inner_z - 0.2))
-		LowPoly.solid_cylinder(body, 0.18, FLOOR2, Vector3(x, FLOOR2 * 0.5, inner_z - 0.2))
-	# People on the balcony looking down.
+## Session 91: two people at the upstairs railing, looking down into the lobby.
+static func _balcony_people(body: StaticBody3D) -> void:
 	for i in 2:
 		var person := PlaceLooks.teacher() if i == 0 else PeopleLooks.resident(4, 1)
 		person.name = "BalconyPerson%d" % i
-		person.position = Vector3(-8.0 + i * 14.0, FLOOR2 + 0.02, inner_z - 0.7)
+		person.position = Vector3(-14.0 + i * 12.0, FLOOR2 + 0.02, InstituteUpstairs.EDGE_Z - 0.6)
 		person.rotation.y = PI  # looking into the lobby (+Z)
 		body.add_child(person, true)
-	# The staircase: 26 wooden treads from the floor (z = 10) up to the walkway (z = -2).
-	var stairs := Node3D.new()
-	stairs.name = "Staircase"
-	body.add_child(stairs)
-	var sx := inner_x - 1.25
-	var steps := 26
-	var bottom := 10.0
-	var top_z := -2.0
-	var run_len := (bottom - top_z) / steps
-	var rise := FLOOR2 / steps
-	for i in steps:
-		LowPoly.box(stairs, Vector3(2.3, 0.07, run_len + 0.04), WOOD, Vector3(sx, rise * (i + 1) - 0.035, bottom - run_len * (i + 0.5)))
-	var slope := atan2(FLOOR2, bottom - top_z)
-	var length := Vector2(bottom - top_z, FLOOR2).length()
-	for side in [-1.2, 1.2]:
-		var stringer := LowPoly.box(stairs, Vector3(0.08, 0.36, length), WHITE, Vector3(sx + side, FLOOR2 * 0.5 - 0.15, (bottom + top_z) * 0.5))
-		stringer.rotation.x = slope
-	var handrail := LowPoly.box(stairs, Vector3(0.06, 0.06, length), STEEL, Vector3(sx - 1.2, FLOOR2 * 0.5 + 0.95, (bottom + top_z) * 0.5))
-	handrail.rotation.x = slope
-	LowPoly.box(stairs, Vector3(2.5, 0.3, 3.4), WHITE, Vector3(sx, FLOOR2 - 0.15, top_z - 1.7))  # the landing
-	LowPoly.solid_box(body, Vector3(2.5, 2.2, bottom - top_z), Vector3(sx, 1.1, (bottom + top_z) * 0.5))
 
 
-## Plants hanging from the ceiling on long cords, and trailing plants on the balcony edge.
+## Plants hanging from the ceiling on long cords (Session 91: the trailing plants on the
+## old balcony edge are gone; the upstairs has potted plants now).
 static func _plants(body: StaticBody3D, size: Vector3) -> void:
 	var count := 0
 	for x in [-12.0, -3.5, 5.0, 12.0]:
@@ -280,12 +230,6 @@ static func _plants(body: StaticBody3D, size: Vector3) -> void:
 				LowPoly.sphere(holder, 0.22, 0.6, LEAF.lightened(0.04 * i), Vector3(cos(a) * 0.28, -0.2 - (i % 3) * 0.15, sin(a) * 0.28))
 			LowPoly.sphere(holder, 0.32, 0.35, LEAF, Vector3(0, 0.22, 0))
 			count += 1
-	var edge := -size.z * 0.5 + 3.15
-	for i in 10:
-		var x := -20.0 + i * 4.2
-		LowPoly.box(body, Vector3(1.4, 0.3, 0.3), Color(0.95, 0.94, 0.9), Vector3(x, FLOOR2 + 0.15, edge - 0.35))
-		var vine := LowPoly.box(body, Vector3(1.2, 1.2, 0.12), LEAF.darkened(0.1), Vector3(x, FLOOR2 - 0.6, edge + 0.08))
-		vine.name = "TrailingPlant%d" % i
 	body.set_meta("hanging_plants", count)
 
 
@@ -313,4 +257,7 @@ static func _lounge(body: StaticBody3D, size: Vector3) -> void:
 static func _lights(body: StaticBody3D) -> void:
 	VenueParts.room_light(body, "InteriorLight", Vector3(0, 8.5, 7.0), 1.5, 22.0, true)
 	VenueParts.room_light(body, "SeatsLight", Vector3(-13.0, 7.5, 0.0), 1.2, 16.0)
-	VenueParts.room_light(body, "BalconyLight", Vector3(12.0, 9.0, -8.0), 1.0, 16.0)
+	VenueParts.room_light(body, "BalconyLight", Vector3(4.0, 10.0, -12.0), 1.2, 18.0)  # Session 91: over the offices
+	VenueParts.room_light(body, "MeetingLight", Vector3(-17.0, 9.6, -14.7), 0.9, 9.0)
+	for i in 3:  # Session 91: warm lights along the upstairs walkway
+		VenueParts.room_light(body, "UpstairsLight%d" % i, Vector3(-15.0 + i * 14.0, 9.4, -9.3), 1.4, 11.0)

@@ -751,6 +751,8 @@ One line per decision, newest at the bottom. Add a line whenever the design chan
 | 6 Nov 2026 | Louis approved the phone app mock-up (docs/phone_mockup.html): P opens a big phone with Jobs, Profile, Collection, Messages, Company, Map and Settings; the game pauses |
 | 6 Nov 2026 | Louis: a fall also goes to the clinic screen, with a smaller bill (30 Dh). The order and the shift go on; only a big crash cancels the order and ends the shift |
 | 6 Nov 2026 | Session 90: Plaza paving runs to the roundabout on the Dune Drip side only; the buggy park has 16 bays behind Dune Drip; the gym is 15% smaller (30.6 x 18.7 m) with a second door on the lap-pool side; zebra crossings are a data list (ZEBRA_CROSSINGS) |
+| 6 Nov 2026 | Session 91: the C Institute gets a second floor (offices, a meeting room, stairs and a lift on E) and a modern outside; the stream now ends in a big pond with a deck and ducks across the spine road from the basketball court |
+| 6 Nov 2026 | Session 92: strollers from Blender pushed with both hands, talking pairs take turns, sunbathers at the community pool, building-site crews with job loops, and the player wears the company logo on cap/helmet, chest and back |
 | 6 Nov 2026 | DJ Salad owns the mansion until you buy it: a bit overweight, DJ look, orders from day one; once sold he moves to Cluster 5 and keeps ordering |
 
 ## Sources

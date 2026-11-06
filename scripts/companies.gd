@@ -30,6 +30,11 @@ static func logo(company: Dictionary) -> Texture2D:
 	return load(company.get("logo", "")) as Texture2D if company.has("logo") else null
 
 
+## Session 92: the company's name and logo side by side (the wide picture, 256 px), or null.
+static func mark(company: Dictionary) -> Texture2D:
+	return load(company.get("mark", "")) as Texture2D if company.has("mark") else null
+
+
 # --- The perks (numbers in game_config.gd) ---
 
 ## Snackaroo: tips 10% bigger, rounded up.

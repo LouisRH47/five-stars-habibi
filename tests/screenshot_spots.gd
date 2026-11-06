@@ -135,6 +135,67 @@ const SPOTS := {
 	"s90_gym_inside": [Vector3(127.5, 1.9, 19.5), Vector3(112, 1.2, 20)],
 	"s90_majlis_end": [Vector3(-31, 2.0, -53), Vector3(-31, 0, -40)],
 	"s90_majlis_end_top": [Vector3(-31, 20, -58), Vector3(-31, 0, -42)],
+	# Session 91: the C Institute inside and out, and its pond
+	"s91_area_top": [Vector3(-170, 90, 30), Vector3(-170, 0, -5)],
+	"s91_pond_top": [Vector3(-150, 45, 30), Vector3(-150, 0, 14)],
+	"s91_institute_road": [Vector3(-163, 2.0, 3.0), Vector3(-212, 6.0, -30)],
+	"s91_institute_front": [Vector3(-178, 2.2, -14), Vector3(-212, 6.0, -36)],
+	"s91_institute_south": [Vector3(-222, 2.0, 1.5), Vector3(-218, 6.0, -12)],
+	"s91_lobby_balcony": [Vector3(-200, 1.7, -38), Vector3(-225, 6.0, -33)],
+	"s91_stairs": [Vector3(-203, 2.0, -45), Vector3(-215, 3.0, -51.5)],
+	"s91_upstairs_offices": [Vector3(-223.4, 8.3, -34), Vector3(-230.5, 7.1, -24)],
+	"s91_meeting_room": [Vector3(-227, 8.4, -19.8), Vector3(-230, 7.0, -14)],
+	"s91_lift": [Vector3(-212, 1.8, -46.25), Vector3(-220.15, 3.0, -46.25)],
+	"s91_lift_top": [Vector3(-224.5, 8.2, -41), Vector3(-221, 7.5, -46.25)],
+	"s91_pond_road": [Vector3(-152, 2.2, 3.5), Vector3(-143, 0.3, 17)],
+	"s91_pond_steps": [Vector3(-195.5, 2.6, -24), Vector3(-143, 0.3, 18)],
+	"s91_pond_close": [Vector3(-136, 2.0, 10), Vector3(-144, 0.2, 18)],
+	# Session 92 (people): the talking pair, the sunbeds, the workers, the courts
+	"s92_chat_pair": [Vector3(34.6, 1.7, -58.6), Vector3(32.6, 1.1, -56.0)],
+	"s92_sunbeds": [Vector3(208, 2.4, -38.5), Vector3(212, 0.4, -34.6)],
+	"s92_sunbeds_close": [Vector3(208.4, 1.45, -31.4), Vector3(209.4, 0.7, -33.8)],
+	"s92_sunbeds_side": [Vector3(213.0, 1.2, -32.4), Vector3(209.0, 0.6, -33.8)],
+	"s92_workers": [Vector3(-366, 3.0, -76), Vector3(-372, 0.8, -55)],
+	"s92_workers_phase2": [Vector3(-80, 3.0, 102), Vector3(-80, 0.8, 120)],
+	"s92_workers_close": [Vector3(-366.5, 1.9, -69.5), Vector3(-371, 0.9, -61.5)],
+	"s92_basketball": [Vector3(-133, 3.5, -15), Vector3(-133, 0.6, -27)],
+	"s92_football": [Vector3(-156, 4.0, -20), Vector3(-167, 0.5, -33)],
+}
+
+## Session 92: spots that follow something that moves, or show the rider close up.
+## name: [what, camera offset (metres, on the thing: +X its right, -Z its front), look height].
+##   "mover:<outfit>": the first moving person on a route with that outfit (e.g. "buggy")
+##   "look:<n>": the rider on the bike wearing look n (0 Classic, 1 Sporty, 2 Chill)
+##   "stage:<who>:<action>": one person (see _stage_person) doing an action on the grass
+const FOLLOW := {
+	"s92_stage_jogger": ["stage:jogger:jog", Vector3(1.3, 1.0, -0.6), 0.85],
+	"s92_stage_jogger_back": ["stage:jogger:jog", Vector3(-0.9, 1.0, 1.2), 0.85],
+	"s92_stage_rider_jog": ["stage:rider0:jog", Vector3(1.3, 1.0, -0.6), 0.85],
+	"s92_stage_rider_jog_back": ["stage:rider0:jog", Vector3(-0.9, 1.0, 1.2), 0.85],
+	"s92_stage_kid_jog": ["stage:kid:jog", Vector3(1.0, 0.8, -0.6), 0.6],
+	"s92_stage_worker": ["stage:worker:jog", Vector3(1.3, 1.0, -0.6), 0.85],
+	"s92_stage_look0": ["stage:rider0:idle", Vector3(0.6, 1.5, -1.5), 1.1],
+	"s92_stage_look1": ["stage:rider1:idle", Vector3(0.6, 1.5, -1.5), 1.1],
+	"s92_stage_look2": ["stage:rider2:idle", Vector3(0.6, 1.5, -1.5), 1.1],
+	"s92_stage_look0_back": ["stage:rider0:idle", Vector3(-0.5, 1.5, 1.5), 1.1],
+	"s92_stage_look1_back": ["stage:rider1:idle", Vector3(-0.5, 1.5, 1.5), 1.1],
+	"s92_stage_look2_back": ["stage:rider2:idle", Vector3(-0.5, 1.5, 1.5), 1.1],
+	"s92_stage_shoes": ["stage:rider0:walk", Vector3(0.7, 0.45, -0.7), 0.1],
+	"s92_stage_jogger_shoes": ["stage:jogger:jog", Vector3(0.8, 0.5, -0.6), 0.2],
+	"s92_stage_crew": ["crew", Vector3(2.0, 3.5, 9.0), 0.8],
+	"s92_stage_stroller": ["stroller", Vector3(1.4, 0.7, 0.3), 0.4],
+	"s92_stage_shoes_frozen": ["stage:rider0:walk:freeze", Vector3(0.7, 0.45, -0.7), 0.1],
+	"s92_stage_jogger_slow": ["stage:jogger:jog:slow", Vector3(1.3, 1.0, -0.6), 0.85],
+	"s92_stroller": ["mover:buggy", Vector3(1.6, 1.5, -2.4), 0.8],
+	"s92_stroller_side": ["mover:buggy", Vector3(2.4, 1.2, -0.4), 0.8],
+	"s92_jogger": ["mover:sports", Vector3(1.6, 1.3, -1.4), 0.9],
+	"s92_jogger_side": ["mover:sports", Vector3(2.2, 1.0, 0.0), 0.9],
+	"s92_look0": ["look:0", Vector3(1.0, 1.7, -1.6), 1.3],
+	"s92_look1": ["look:1", Vector3(1.0, 1.7, -1.6), 1.3],
+	"s92_look2": ["look:2", Vector3(1.0, 1.7, -1.6), 1.3],
+	"s92_look0_back": ["look:0", Vector3(-0.8, 1.8, 1.8), 1.3],
+	"s92_look1_back": ["look:1", Vector3(-0.8, 1.8, 1.8), 1.3],
+	"s92_look2_back": ["look:2", Vector3(-0.8, 1.8, 1.8), 1.3],
 }
 
 var _main: Node
@@ -149,6 +210,9 @@ var _wait := 0
 var _camera: Camera3D
 var _last_hash := 0
 var _retries := 0
+var _follow: Node3D  # Session 92: the thing the camera follows (FOLLOW spots)
+var _follow_spot: Array = []
+var _staged: Node3D  # Session 92: the person put on the grass for a "stage:" spot
 
 
 func _initialize() -> void:
@@ -208,6 +272,8 @@ func _process(_delta: float) -> bool:
 		for layer in _main.find_children("*", "CanvasLayer", true, false):
 			layer.visible = false
 	_wait -= 1
+	if _follow != null and is_instance_valid(_follow):
+		_aim_follow()
 	if _wait > 0:
 		return false
 	if _index >= 0:
@@ -231,6 +297,10 @@ func _process(_delta: float) -> bool:
 	if _index >= _names.size():
 		print("RESULT: DONE")
 		return true
+	_follow = null
+	if FOLLOW.has(_names[_index]):
+		_start_follow(FOLLOW[_names[_index]])
+		return false
 	var spot: Array = SPOTS.get(_names[_index], [])
 	if spot.is_empty():
 		print("unknown spot ", _names[_index])
@@ -257,3 +327,90 @@ func _set_hour(hour: float) -> void:
 	var state := root.get_node("GameState")
 	var share := (hour - GameConfig.SHIFT_START_HOUR) / (GameConfig.SHIFT_END_HOUR - GameConfig.SHIFT_START_HOUR)
 	state.shift_time_left = GameConfig.SHIFT_LENGTH * (1.0 - share)
+
+
+## Session 92: finds what a FOLLOW spot looks at and keeps the camera on it.
+func _start_follow(spot: Array) -> void:
+	_follow_spot = spot
+	var what: String = spot[0]
+	var bike := _main.get_node("Bike") as Node3D
+	if _staged != null:
+		_staged.queue_free()
+		_staged = null
+	if what == "stroller":  # a stroller on its own, close up
+		_staged = load("res://scripts/stroller.gd").make(0)
+		_main.add_child(_staged)
+		_staged.global_position = Vector3(100, 0.0, 5.9)  # on the red track
+		bike.global_position = Vector3(20, 0.1, -40)
+		_follow = _staged
+	elif what == "crew":  # a building site crew on the grass
+		_staged = Node3D.new()
+		_main.add_child(_staged)
+		_staged.global_position = Vector3(20, 0.0, -15)
+		load("res://scripts/site_crew.gd").make(_staged, Vector3.ZERO, Vector3.RIGHT, 0)
+		bike.global_position = Vector3(20, 0.1, -40)
+		_follow = _staged
+	elif what.begins_with("stage:"):
+		var parts := what.split(":")
+		_staged = _stage_person(parts[1])
+		_main.add_child(_staged)
+		_staged.global_position = Vector3(20, 0.0, -15)
+		_staged.play(parts[2])
+		if parts.size() > 3 and parts[3] == "slow":  # very slow (to compare with normal speed)
+			_staged.play(parts[2], 0.05)
+		elif parts.size() > 3:  # hold still part way through (to compare with playing)
+			_staged.set_meta("freeze", true)
+		bike.global_position = Vector3(20, 0.1, -40)
+		_follow = _staged
+	elif what.begins_with("look:"):
+		var look := int(what.trim_prefix("look:"))
+		var state := root.get_node("GameState")
+		state.rider_look = look
+		bike.global_position = Vector3(-30, 0.1, -6.3)
+		bike.global_rotation = Vector3(0, PI * 0.5, 0)
+		if bike is RigidBody3D:
+			(bike as RigidBody3D).linear_velocity = Vector3.ZERO
+		var rider := bike.find_child("Rider", true, false)
+		if rider != null:
+			load("res://scripts/rider_look.gd").apply(rider, look)
+		_follow = bike.find_child("Model", true, false) as Node3D
+	else:
+		var outfit := what.trim_prefix("mover:")
+		for mover: Node3D in _main.get_node("LifeBuilder").movers:
+			if mover.person != null and str(mover.person.get_meta("outfit", "")) == outfit:
+				_follow = mover
+				break
+		# The bike waits far off, so it is never in their way.
+		bike.global_position = _follow.global_position + Vector3(0, 0.1, 30) if _follow != null else bike.global_position
+	if _follow == null:
+		print("nothing to follow for ", what)
+		_wait = 1
+		return
+	_camera.make_current()
+	_wait = 90
+	_aim_follow()
+
+
+func _aim_follow() -> void:
+	if _staged != null and _staged.has_method("roll"):
+		_staged.roll(0.02)
+	if _staged != null and _staged.has_meta("freeze") and _wait == 30:
+		_staged.player.pause()
+	var offset: Vector3 = _follow_spot[1]
+	var target := _follow.global_position + Vector3(0, float(_follow_spot[2]), 0)
+	var eye := _follow.global_transform * offset
+	eye.y = _follow.global_position.y + offset.y
+	_camera.global_position = eye
+	_camera.look_at(target)
+
+
+## Session 92: makes the person for a "stage:" spot.
+func _stage_person(who: String) -> Node3D:
+	match who:
+		"jogger": return load("res://scripts/place_looks.gd").jogger(0)
+		"kid": return load("res://scripts/life_looks.gd").kid()
+		"worker": return load("res://scripts/place_looks.gd").worker(0)
+	var looks: Script = load("res://scripts/rider_look.gd")
+	var rider: Node3D = looks.make_rider()
+	looks.apply(rider, int(who.trim_prefix("rider")))
+	return rider

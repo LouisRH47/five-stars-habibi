@@ -126,22 +126,13 @@ static func with_dog(person: Person) -> Node3D:
 
 
 ## Session 68: a holder with the person pushing a baby buggy in front of them.
+## Session 92: a real stroller (scripts/stroller.gd) with a child inside; both hands hold
+## the handle and the wheels turn as they walk.
 static func with_buggy(person: Person) -> Node3D:
 	var holder := Node3D.new()
 	holder.add_child(person)
-	var buggy := Node3D.new()
-	buggy.name = "Pram"
-	buggy.position = Vector3(0, 0, -0.85)
-	holder.add_child(buggy)
-	var colour := [Color(0.2, 0.3, 0.5), Color(0.55, 0.2, 0.3), Color(0.2, 0.2, 0.22)].pick_random() as Color
-	LowPoly.box(buggy, Vector3(0.45, 0.35, 0.7), colour, Vector3(0, 0.6, 0))
-	LowPoly.sphere(buggy, 0.3, 0.4, colour.darkened(0.2), Vector3(0, 0.8, 0.15))  # the hood
-	_tube(buggy, Vector3(-0.2, 0.75, 0.35), Vector3(-0.2, 1.0, 0.6), 0.015, Color(0.15, 0.15, 0.15))
-	_tube(buggy, Vector3(0.2, 0.75, 0.35), Vector3(0.2, 1.0, 0.6), 0.015, Color(0.15, 0.15, 0.15))
-	for x in [-0.22, 0.22]:
-		for z in [-0.28, 0.28]:
-			var wheel := LowPoly.cylinder(buggy, 0.12, 0.12, 0.04, Color(0.1, 0.1, 0.1), Vector3(x, 0.12, z))
-			wheel.rotation.z = PI * 0.5
+	var stroller := Stroller.make(randi() % Stroller.COLOURS.size())
+	stroller.push(person, holder)
 	return holder
 
 
@@ -164,6 +155,8 @@ static func _tube(parent: Node3D, from: Vector3, to: Vector3, radius: float, col
 static func animate(mover: RouteMover, delta: float, clock: float) -> void:
 	match mover.kind:
 		"person":
+			if mover.moving and mover.person.has_meta("stroller"):  # Session 92: the wheels turn
+				(mover.person.get_meta("stroller") as Stroller).roll(mover.speed * delta)
 			if not mover.moving:
 				mover.person.play("idle")
 			elif mover.speed > 2.0:

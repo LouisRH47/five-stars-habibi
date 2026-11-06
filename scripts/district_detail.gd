@@ -390,10 +390,9 @@ func _site(area: Rect2) -> void:
 	LowPoly.box(holder, Vector3(5, 2.6, 3.5), WHITE, c + Vector3(6, 1.3, 3))
 	for i in 3:
 		LowPoly.cylinder(holder, 0, 2, 1.6, SAND, c + Vector3(-6 + i * 5, 0.8, 5))
-	for i in 2:
-		var worker := PeopleLooks.resident(4, i)
-		worker.position = c + Vector3(i * 3, 0, -3)
-		holder.add_child(worker)
+	# Session 92: workers with jobs, along the site's long side, beside the crane.
+	var along := Vector3.RIGHT if area.size.x >= area.size.y else Vector3.BACK
+	SiteCrew.make(holder, c + along * 12.0, along, get_child_count())
 	_sign(holder, "قريباً", "Coming soon", c + Vector3(0, 2.6, -area.size.y * 0.5 - 0.1), 180, 52)
 
 

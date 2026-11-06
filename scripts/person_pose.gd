@@ -45,6 +45,13 @@ var alive := true
 var talking := false
 var talk_turn := 0.0
 var auto_look := true
+## Session 92: relaxed: standing at ease (straight legs, feet under the hips, arms down)
+## instead of the idle clip's wide, bent-knee stance. People chatting stand like this.
+## talk_seed: the two people in a pair share it, so their turns to talk never overlap.
+var relaxed := false
+var talk_seed := 0.0
+## Session 92, for "lounge": holding a book up to read (scripts/lounge_pose.gd).
+var reading := false
 ## Each person's own timing, so a crowd doesn't move in step.
 var own_time := randf() * 100.0
 ## Where the head is turning to, and how long until it looks somewhere new.
@@ -73,6 +80,10 @@ func _process_modification_with_delta(delta: float) -> void:
 		PoolPoses.rest(self)
 	elif mode == "whistle":
 		PoolPoses.whistle(self)
+	elif mode == "lounge":
+		LoungePose.apply(self)
+	elif relaxed and person.action == "idle":
+		AlivePose.stand(self)
 	if alive and (mode == "sit" or (mode == "" and person.action == "idle")) and _close(delta):
 		AlivePose.apply(self, delta)
 	if absf(look) > 0.5 and mode != "swim":

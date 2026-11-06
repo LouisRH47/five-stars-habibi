@@ -160,14 +160,6 @@ static func shoes(person: Person, colour: Color) -> void:
 
 
 ## One shoe on the "Left" or "Right" foot. Returns its holder.
+## Session 92: rounded, in two pieces that bend with the foot (scripts/shoes.gd).
 static func shoes_on(person: Person, side: String, colour: Color) -> Node3D:
-	var foot := person.follow(side + "Foot")
-	var ankle := person.spot(side + "Foot")
-	var toes := person.spot(side + "Toe_End")
-	# Line the shoe up with the foot, from the heel (just behind the ankle) to the toes.
-	var along := (toes - ankle).normalized()
-	var up := (Vector3.UP - along * along.dot(Vector3.UP)).normalized()
-	var shoe := LowPoly.box(foot, Vector3(0.12, 0.09, ankle.distance_to(toes) + 0.1), colour,
-			(ankle + toes) * 0.5 - along * 0.04 - up * 0.03)
-	shoe.basis = Basis.looking_at(along, up)
-	return foot
+	return Shoes.one(person, side, colour, colour.darkened(0.35))

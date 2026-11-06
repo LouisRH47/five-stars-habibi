@@ -12,8 +12,9 @@ const POST := Color(0.16, 0.17, 0.19)
 
 ## A solid glass wall from `a` to `b` (on the floor, along X or along Z), `height` tall,
 ## starting `base` metres up. Thin dark posts every `post_every` metres. Returns the glass.
+## Session 91: post_colour (the C Institute has slim white frames).
 static func glass_run(body: StaticBody3D, a: Vector3, b: Vector3, height: float,
-		post_every := 3.0, base := 0.0, solid := true) -> MeshInstance3D:
+		post_every := 3.0, base := 0.0, solid := true, post_colour := POST) -> MeshInstance3D:
 	var along_x := absf(b.x - a.x) >= absf(b.z - a.z)
 	var length := absf(b.x - a.x) if along_x else absf(b.z - a.z)
 	var middle := (a + b) * 0.5 + Vector3(0, base + height * 0.5, 0)
@@ -25,7 +26,7 @@ static func glass_run(body: StaticBody3D, a: Vector3, b: Vector3, height: float,
 	for i in posts + 1:
 		var t := float(i) / posts
 		var at := a.lerp(b, t) + Vector3(0, base + height * 0.5, 0)
-		LowPoly.box(body, Vector3(0.1, height, 0.14) if along_x else Vector3(0.14, height, 0.1), POST, at)
+		LowPoly.box(body, Vector3(0.1, height, 0.14) if along_x else Vector3(0.14, height, 0.1), post_colour, at)
 	return glass
 
 

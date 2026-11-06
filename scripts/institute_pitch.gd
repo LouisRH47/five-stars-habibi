@@ -92,11 +92,14 @@ func play(delta: float) -> void:
 	for rank in outfield.size():
 		var i: int = outfield[rank]
 		var want := ball.position if rank < 2 else _homes[i].lerp(ball.position, 0.35)
+		if rank == 1:  # Session 92: the second chaser closes in but stays a little way off
+			want = ball.position + (_homes[i] - ball.position).normalized() * GameConfig.PITCH_SECOND_CHASER_GAP
 		_run_to(i, want, delta)
 	for i in 2:  # the keepers: on their line, level with the ball
 		var want := _homes[i]
 		want.x = clampf(ball.position.x, lines.get_center().x - GOAL_WIDTH * 0.4, lines.get_center().x + GOAL_WIDTH * 0.4)
 		_run_to(i, want, delta, ball.position)
+	CourtSpacing.spread(CourtSpacing.holders_of(players), GameConfig.COURT_PLAYER_GAP)  # Session 92: no two on one spot
 
 
 func _run_to(i: int, want: Vector3, delta: float, face := Vector3.INF) -> void:

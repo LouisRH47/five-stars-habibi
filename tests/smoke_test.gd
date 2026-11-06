@@ -825,12 +825,15 @@ func _check_tutorial() -> void:
 	var parts := []
 	for number in 3:
 		RiderLook.apply(model, number)
-		parts.append(model.get_node("Look").get_child_count())
+		# Session 92: every look now has the company logos too, so compare what's worn: the
+		# hat or helmet pieces, the helmet and the trousers' colour.
+		parts.append("%d pieces, helmet %s, trousers %s" % [model.get_node("Look").find_children("*", "MeshInstance3D", true, false).size(),
+				model.get_node("Helmet").visible, (model as Person)._colours["pants"].to_html()])
 		if number == 1:
 			_check("Sporty keeps the helmet (with stickers)", model.get_node("Helmet").visible, "")
 		else:
 			_check("look %d swaps the helmet for a hat" % number, not model.get_node("Helmet").visible, "")
-	_check("the 3 looks are different", parts[0] != parts[1] and parts[1] != parts[2], "%s parts" % [parts])
+	_check("the 3 looks are different", parts[0] != parts[1] and parts[1] != parts[2] and parts[0] != parts[2], "%s" % [parts])
 	RiderLook.apply(model, gs.rider_look)
 	var spawner := _main.get_node("CustomerSpawner")
 	var named: String = spawner.fill_line("Thanks, {name}!", gs.rider_name)
@@ -2601,9 +2604,22 @@ func _check_session68() -> void:
 		var started := Time.get_ticks_usec()
 		near_route = walkers.route_for("pizza", near_home)
 		took = minf(took, (Time.get_ticks_usec() - started) / 1000.0)
+	# Compared with the farthest home, timed the same way at the same moment, so a busy Mac
+	# (Godot open in the editor, other tests running) can't fail it on its own.
+	var far_home: int = near_home
+	var far_gap := 0.0
+	for v in places.villas:
+		if v.get("kind", "") != "spot" and Vector3(v["position"]).distance_to(shop_at) > far_gap:
+			far_gap = Vector3(v["position"]).distance_to(shop_at)
+			far_home = v["number"]
+	var far_took := INF
+	for attempt in 3:
+		var started := Time.get_ticks_usec()
+		walkers.route_for("pizza", far_home)
+		far_took = minf(far_took, (Time.get_ticks_usec() - started) / 1000.0)
 	_check("people walk home to a nearby house, and finding the way is quick",
-			near_spot.distance_to(shop_at) < 350.0 and not near_route.is_empty() and took < 60.0,
-			"home %d, %.0f m away, route in %.1f ms" % [near_home, near_spot.distance_to(shop_at), took])
+			near_spot.distance_to(shop_at) < 350.0 and not near_route.is_empty() and (took < 60.0 or took < far_took * 0.5),
+			"home %d, %.0f m away, route in %.1f ms (the farthest home: %.1f ms)" % [near_home, near_spot.distance_to(shop_at), took, far_took])
 
 
 ## Session 69: the beekeeper's stall is a pickup: phone, mini-map and full map show it.
@@ -2930,6 +2946,11 @@ func _check_looks_venues() -> void:
 			and gym.get_node_or_null("TrainHard") != null, "")
 	_check("Session 56: the C Institute lobby is two storeys with a talk screen", lobby.get_meta("ceiling", 0.0) > 12.0
 			and lobby.get_node_or_null("TalkScreen") != null and lobby.get_node_or_null("Balcony") != null, "")
+	# Session 91: the second floor (full checks: tests/institute_upstairs_test.gd).
+	_check("Session 91: the C Institute has a lift, a meeting room with 6 people and people at desks upstairs",
+			lobby.get_node_or_null("Lift") != null and lobby.get_meta("meeting_people", 0) >= 6
+			and lobby.get_meta("desk_people", 0) >= 4 and lobby.get_node_or_null("StairSlope") != null
+			and _main.get_node_or_null("WahatBuilder/StreamPonds/PondDeck_2") != null, "")
 	_check("Session 56: both receptions are inside their rooms", RestaurantRoom.is_inside(lobby, places.villa_door(903))
 			and RestaurantRoom.is_inside(gym, places.villa_door(904)), "")
 	# Session 57: the shops, the two drop-off buildings and the farm stall are detailed.

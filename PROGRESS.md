@@ -1,5 +1,58 @@
 # Progress
 
+## Session 92: people fixes and the player's look — 6 November 2026
+
+What works now:
+- **Strollers** made in Blender (tools/blender/make_stroller.py → assets/models/stroller_*.glb,
+  three colours): hood, frame, a child with a blanket, four wheels that turn. The parent pushes
+  it with both hands on the handle (scripts/stroller.gd, push_arms.gd).
+- **Talking pairs** stand at ease, face each other 1.1 m apart and take turns: the talker
+  gestures and nods, the listener nods. Only one talks at a time.
+- **Sunbeds** at the community pool: four people in swimwear lying back, one reading a book
+  (scripts/sunbathers.gd, lounge_pose.gd).
+- **Joggers' clothes** no longer stretch down the legs (the shirt was tied to the thigh bones);
+  shorts, shins and shoes are painted on the body so they bend with it. The outfits test now
+  checks stretching at walking and running speed.
+- **Building site crews** (scripts/site_crew.gd): a foreman with a clipboard by the crane and
+  three workers who swap jobs every 14 s (carry blocks, hammer the frame, shovel into the mixer
+  with its turning drum, talk to the foreman), in hi-vis vests, hard hats and boots.
+- **Your rider:** rounder trainers with soles and laces; your company's logo on the cap, helmet
+  or hat, on the chest, and the company name and logo on the back. The three looks still differ.
+- **Flicker at the courts:** two players could end up on the same spot (now kept 0.8 m apart),
+  and moving people's bodies could vanish while their hats stayed (fixed draw box).
+- New test tests/people_life_test.gd (22 checks).
+
+How to test: F5, ride along the spine's red track (strollers), past the community pool
+(sunbeds) and the building sites (workers). Look at your rider from behind for the logo.
+
+Known bugs (older ones, still there):
+- Things that follow a bone (hats, vests) are drawn one frame behind the body.
+- Some residents walk through the building sites in normal clothes.
+
+## Session 91: the C Institute inside and out, and the pond — 6 November 2026
+
+What works now:
+- **A second floor** inside the C Institute: a balcony with glass railings round the lobby,
+  four glass offices with 6 people typing on laptops, a meeting room with a screen and 6 people,
+  a lounge corner and plants (scripts/institute_upstairs.gd, institute_offices.gd).
+- **Stairs** you can walk up, and **a lift:** press E at the lift door, the doors close, a short
+  ride, and you step out on the other floor (scripts/institute_lift.gd). The talk screen stays.
+- **A more modern outside:** slim white frames on the glass, a thin flat roof with a slatted sun
+  shade, 21 white fins on the sunny side, and two lit bilingual signs that glow at dusk
+  (scripts/institute_outside.gd).
+- **The pond:** the stream now runs into a new big pond across the spine road from the basketball
+  court, with 56 stones, reeds, lily pads, a wooden deck with two benches, stepping stones from the
+  crossing, three palms and four ducks paddling about (scripts/pond_deck.gd, pond_ducks.gd).
+- Nothing overlaps the pitch, roads, tracks or the Institute steps (checked).
+- New test tests/institute_upstairs_test.gd (25 checks: walks up the stairs, rides the lift).
+
+How to test: F5, ride to the C Institute, get off (F), walk in, take the stairs or press E at
+the lift. Then look across the spine road for the pond and the ducks.
+
+Known bugs:
+- From the Institute steps the pond is mostly hidden behind the spine road's hedges.
+- On the stairs your feet can sink a little into the steps (you walk on a smooth slope).
+
 ## Session 90: Plaza and gym fixes — 6 November 2026
 
 What works now:

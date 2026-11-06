@@ -13,6 +13,8 @@ extends Node3D
 var people: Array = []
 ## Session 81 (people): the pools' swimmers and the lifeguards on their tall chairs.
 var swimmers: PoolSwimmers
+## Session 92: people lying on the community pool's loungers, one reading.
+var sunbathers: Sunbathers
 var lifeguards: Array[LifeguardChair] = []
 
 var _builder: Node3D
@@ -87,11 +89,28 @@ func place(person: Person, at: Vector3, facing: float, level := 0, action := "id
 
 
 ## Session 83: two people chatting take turns to talk with their hands (scripts/alive_pose.gd).
+## Session 92: if they're both standing, they stand at ease (not the idle clip's wide
+## stance), a polite GameConfig.TALK_GAP apart, turned to face each other.
 static func talk(a: Person, b: Person) -> void:
-	a.pose.talking = true
-	b.pose.talking = true
+	var seed := randf() * 100.0
+	for who: Person in [a, b]:
+		who.pose.talking = true
+		who.pose.talk_seed = seed
+		who.pose.relaxed = who.action == "idle"
 	a.pose.talk_turn = 0.0
 	b.pose.talk_turn = 1.0
+	if a.action == "idle" and b.action == "idle":
+		face_each_other(a.get_parent() as Node3D, b.get_parent() as Node3D, GameConfig.TALK_GAP)
+
+
+## Moves two holders so they're `gap` metres apart (round their middle), facing each other.
+static func face_each_other(a: Node3D, b: Node3D, gap: float) -> void:
+	var middle := (a.position + b.position) * 0.5
+	var way := Vector3(b.position.x - a.position.x, 0, b.position.z - a.position.z).normalized()
+	a.position = Vector3(middle.x - way.x * gap * 0.5, a.position.y, middle.z - way.z * gap * 0.5)
+	b.position = Vector3(middle.x + way.x * gap * 0.5, b.position.y, middle.z + way.z * gap * 0.5)
+	a.rotation.y = atan2(-way.x, -way.z)  # a Person faces -Z
+	b.rotation.y = atan2(way.x, way.z)
 
 
 ## Sits someone on a bench (Props.bench at `at`, facing `facing`).
@@ -129,6 +148,10 @@ func _pools() -> void:
 	people += swimmers.build(_map, _builder.get_parent())
 	if _map.has("COMMUNITY_POOL"):
 		var pool: Rect2 = _map["COMMUNITY_POOL"]
+		sunbathers = Sunbathers.new()  # Session 92: people lying on the loungers
+		sunbathers.name = "Sunbathers"
+		add_child(sunbathers)
+		people += sunbathers.build(_map, _builder.get_parent())
 		_lifeguard(Vector3(pool.end.x + 0.9, 0.08, pool.get_center().y), -90.0, 0)
 	if _map.has("LAP_POOL"):  # the gym's lap pool
 		var lap: Rect2 = _map["LAP_POOL"]

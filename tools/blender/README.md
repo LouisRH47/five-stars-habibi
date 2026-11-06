@@ -21,6 +21,7 @@ After rebuilding, open the project in Godot once (or run
 | make_donkey.py | donkey_grey, donkey_brown (.glb) |
 | make_playground.py | play_slide, play_climber, play_swings, play_spinner, play_springer (.glb) |
 | make_textures.py | blue_track, red_track, horse_sand, pavers, play_surface, net (.png) |
+| make_stroller.py | stroller_navy, stroller_berry, stroller_grey (.glb): a pushchair with a child inside, wheels that turn (Session 92) |
 
 `kit.py` and `equine.py` are shared helpers (shapes, materials, the horse/donkey body).
 `out/` holds the coat pictures that go inside the horse files; it's not part of the game.

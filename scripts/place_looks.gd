@@ -176,18 +176,11 @@ static func neighbour(i: int) -> Person:
 
 # --- Parts ---
 
-## Swim or sports shorts: a short tube round each thigh (lined up with the leg, so the leg
-## never pokes out of the side) and a wider tube round the hips.
+## Swim or sports shorts. Session 92: painted on the body down to the knee with bare
+## shins below (Person "shins"), so they bend and swing with the legs: no stiff tubes that
+## left gaps, flickered against the body and lagged behind the legs when running.
 static func shorts(person: Person, colour: Color) -> void:
-	for side in ["Left", "Right"]:
-		var thigh := person.follow(side + "UpLeg")
-		var top := person.spot(side + "UpLeg")
-		var knee := person.spot(side + "Leg")
-		var leg := LowPoly.cylinder(thigh, 0.1, 0.088, top.distance_to(knee) * 0.5, colour, top.lerp(knee, 0.22))
-		leg.basis = Basis(Quaternion(Vector3.UP, (top - knee).normalized()))
-	var hips := person.follow("Hips")
-	var waist := LowPoly.cylinder(hips, 0.17, 0.18, 0.17, colour, person.spot("Hips") + Vector3(0, -0.01, 0.0))
-	waist.scale = Vector3(1.0, 1.0, 0.72)  # flatter front to back, like hips
+	person.repaint({"pants": colour, "shins": person._colours["skin"]})
 
 
 static func swim_cap(person: Person, colour: Color) -> void:

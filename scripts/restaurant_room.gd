@@ -302,7 +302,8 @@ static func is_inside(place: Node3D, spot: Vector3) -> bool:
 	if not place.has_meta("room_rect") or not place.is_inside_tree():
 		return false
 	var local := place.global_transform.affine_inverse() * spot
-	return (place.get_meta("room_rect") as Rect2).has_point(Vector2(local.x, local.z)) and local.y < 3.0
+	# Session 91: a room can be taller inside (the C Institute's second floor counts too).
+	return (place.get_meta("room_rect") as Rect2).has_point(Vector2(local.x, local.z)) and local.y < place.get_meta("inside_height", 3.0)
 
 
 ## A coloured solid box.

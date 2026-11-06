@@ -156,11 +156,9 @@ func _build_site(site: Dictionary, id := "BuildingSite") -> void:
 				Vector3(middle.x + 10.0, 1.25 + (2.5 if i == 2 else 0.0), middle.y - 8.0 + (i % 2) * 2.5))
 	for i in 2:
 		LowPoly.cylinder(holder, 0.0, 3.0, 2.0, SAND, Vector3(middle.x - 8.0 + i * 5.0, 1.0, middle.y + 10.0))
-	for i in 2:
-		var worker := PeopleLooks.resident(4, i)
-		worker.name = "SiteWorker%d" % i
-		worker.position = Vector3(middle.x - 4 + i * 3, 0, middle.y - 4)
-		holder.add_child(worker)
+	# Session 92: workers with jobs (carrying, hammering, mixing, talking by the crane).
+	var crane_at: Vector3 = site["crane"]
+	SiteCrew.make(holder, crane_at + Vector3(0, 0, -7.5), Vector3.RIGHT, 0 if id == "BuildingSite" else 2)
 	var sign_data: Dictionary = site["sign"]
 	_free_sign(holder, sign_data["arabic"], sign_data["name"], sign_data["position"], sign_data["facing"],
 			Vector2(6.0, 2.0), Color(0.9, 0.45, 0.1, 1))

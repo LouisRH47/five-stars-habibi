@@ -40,7 +40,7 @@ const PLAZA_BENCHES := [
 
 const SPINE := Rect2(-145, -35, 560, 70)
 
-const STREAM := {"z": 25.0, "from_x": -135.0, "to_x": 405.0, "width": 3.0, "gaps": [Vector2(82, 188)], "ponds": [{"centre": Vector2(82, 22), "radius": 5.0}, {"centre": Vector2(190.5, 23), "radius": 3.5}]}
+const STREAM := {"z": 25.0, "from_x": -139.0, "to_x": 405.0, "width": 3.0, "gaps": [Vector2(82, 188)], "ponds": [{"centre": Vector2(82, 22), "radius": 5.0}, {"centre": Vector2(190.5, 23), "radius": 3.5}, {"centre": Vector2(-143, 19.5), "radius": 7.0, "reeds": 10, "ducks": 4, "deck": {"centre": Vector2(-145, 12.8), "size": Vector2(4.2, 3.6)}}]}
 
 const CLUSTERS := [
 	{"id": "C1", "area": Rect2(-17, -201, 130, 150), "centre": Vector2(48, -126)},
@@ -1131,6 +1131,9 @@ const PALM_TREES := [
 	Vector3(-190, -0.45, -155),
 	Vector3(-210, -0.45, -135),
 	Vector3(-190, -0.45, -135),
+	Vector3(-152, 0, 23.5),
+	Vector3(-134.5, 0, 26.5),
+	Vector3(-138.5, 0, 10.5),
 ]
 
 const PARKED_CAR_SIZE := Vector3(1.9, 1.5, 4.3)
